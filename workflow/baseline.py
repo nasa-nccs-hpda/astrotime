@@ -1,4 +1,5 @@
 import numpy as np
+from typing import List, Optional, Dict, Type, Any
 from astrotime.encoders.baseline import ValueEncoder
 from astrotime.models.cnn_powell import SinusoidPeriodModel
 from astrotime.callbacks.printers import ShapePrinter
@@ -19,15 +20,15 @@ encoder = ValueEncoder(seq_length)
 model = SinusoidPeriodModel(seq_length)
 model.compile(optimizer=optimizer, loss=loss)
 
-tdset = sinusoid_loader.get_dataset(train_dset_idx)
-train_data = encoder.encode_dset(tdset)
-train_target = tdset['target']
+tdset: Dict[ str, np.ndarray] = sinusoid_loader.get_dataset(train_dset_idx)
+train_data:   np.ndarray  = encoder.encode_dset(tdset)
+train_target: np.ndarray  = tdset['target']
 
 vdset = sinusoid_loader.get_dataset(valid_dset_idx)
-valid_data  = encoder.encode_dset(vdset)
-valid_target = vdset['target']
+valid_data:   np.ndarray  = encoder.encode_dset(vdset)
+valid_target: np.ndarray  = vdset['target']
 
 shape_printer = ShapePrinter(input_shapes=train_data.shape)
-train_args = dict( epochs=epochs, batch_size=batch_size, shuffle=True, callbacks=[shape_printer], verbose=1  )
+train_args: Dict[str,Any] = dict( epochs=epochs, batch_size=batch_size, shuffle=True, callbacks=[shape_printer], verbose=1  )
 
 history = model.fit( train_data, train_target, validation_data=(valid_data, valid_target), **train_args )

@@ -9,9 +9,9 @@
 import time, numpy as np
 import  warnings
 from warnings import catch_warnings, warn
-from numpy import sum, pi, cos, sin, arctan2, exp, log, sqrt, dot, arange
+from numpy import sum, pi, cos, sin, arctan2, exp, log, sqrt, dot, arange, ones
 from typing import Any, Dict, List, Tuple, Type, Optional, Union, Hashable
-from fusion.base.util.logging import lgm, exception_handled, log_timing
+from ..util.logging import lgm, exception_handled, log_timing
 Array = np.ndarray
 C0 = 1 / (8 * np.pi ** 2)
 
@@ -37,24 +37,24 @@ def wwz(ys: Array, ts: Array, freq: Array, tau: Array, c: float = C0, rank: int=
     if tau is None: tau = 0.5 *(ts[:,nts/2] + ts[:,nts/2+1])
     verbose = True
 
-    tau = tau[:, None, None].expand(nb, nf, nts)
+    tau = tau[:, None, None]     # expand(nb, nf, nts)
     omega = 2 * np.pi * freq
-    omega_ = omega[None,:,None].expand(nb,nf,nts)
-    ts = ts[:,None,:].expand(nb,nf,nts)
+    omega_ = omega[None,:,None]  # expand(nb,nf,nts)
+    ts = ts[:,None,:]            # expand(nb,nf,nts)
     if verbose: lgm().log( f"wwz: ys{list(ys.shape)} ts{list(ts.shape)} freq{list(freq.shape)} tau{list(tau.shape)} omega_{list(omega_.shape)} c={c}" )
     dt = (ts - tau)
     dz = omega_ * dt
-    weights = torch.exp(-c * dz ** 2)
-    sum_w = torch.sum(weights,dim=-1)
+    weights = exp(-c * dz ** 2)
+    sum_w = sum(weights, axis=-1)
     if verbose: lgm().log( f"wwz-1: ys{list(ys.shape)} ts{list(ts.shape)} omega{list(omega.shape)} omega_{list(omega_.shape)} dz{list(dz.shape)} weights{list(weights.shape)} sum_w = {list(sum_w.shape)}")
 
     def w_prod(xs, ys):
-        return torch.sum(weights * xs * ys, dim=-1) / sum_w
+        return sum(weights * xs * ys, axis=-1) / sum_w
 
     theta = omega_ * ts
-    sin_basis = torch.sin(theta)
-    cos_basis = torch.cos(theta)
-    one_v = torch.ones((nb,nf,nts), dtype=torch.float32, device=device)
+    sin_basis = sin(theta)
+    cos_basis = cos(theta)
+    one_v = ones((nb,nf,nts), dtype=np.float32)
 
     sin_one = w_prod(sin_basis, one_v)
     cos_one = w_prod(cos_basis, one_v)
@@ -65,14 +65,14 @@ def wwz(ys: Array, ts: Array, freq: Array, tau: Array, c: float = C0, rank: int=
 
     numerator = 2 * (sin_cos - sin_one * cos_one)
     denominator = (cos_cos - cos_one ** 2) - (sin_sin - sin_one ** 2)
-    time_shift = torch.arctan2(numerator, denominator) / (2 * omega)  # Eq. (S5)
+    time_shift = arctan2(numerator, denominator) / (2 * omega)  # Eq. (S5)
     time_shift_ = time_shift[:, :, None].expand(nb, nf, nts)
     if verbose: lgm().log(f"wwz-3:  numerator{list(numerator.shape)} denominator{list(denominator.shape)}  time_shift{list(time_shift.shape)}  ")
 
-    sin_shift = torch.sin(omega_ * (ts - time_shift_))
-    cos_shift = torch.cos(omega_ * (ts - time_shift_))
-    sin_tau_center = torch.sin(omega * (time_shift - tau[:,:,0]))
-    cos_tau_center = torch.cos(omega * (time_shift - tau[:,:,0]))
+    sin_shift = sin(omega_ * (ts - time_shift_))
+    cos_shift = cos(omega_ * (ts - time_shift_))
+    sin_tau_center = sin(omega * (time_shift - tau[:,:,0]))
+    cos_tau_center = cos(omega * (time_shift - tau[:,:,0]))
     if verbose: lgm().log(f"wwz-4: sin_shift{list(sin_shift.shape)} cos_shift{list(cos_shift.shape)} sin_tau_center{list(sin_tau_center.shape)} cos_tau_center{list(cos_tau_center.shape)}")
 
     ys_cos_shift = w_prod(ys, cos_shift)
@@ -91,7 +91,7 @@ def wwz(ys: Array, ts: Array, freq: Array, tau: Array, c: float = C0, rank: int=
     a2 = sin_tau_center * A + cos_tau_center * B   # Eq. (S7)
 
     if verbose: lgm().log(f"wwz-7: a0{list(a0.shape)} a1{list(a1.shape)} a2{list(a2.shape)}")
-    wwp: torch.Tensor = a1**2 + a2**2
-    phase: torch.Tensor = torch.arctan2(a2, a1)
+    wwp = a1**2 + a2**2
+    phase = arctan2(a2, a1)
     coeff = (a0, a1, a2)
     return wwp, phase, coeff

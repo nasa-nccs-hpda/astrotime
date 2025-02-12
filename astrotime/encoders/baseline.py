@@ -9,7 +9,7 @@ class ValueEncoder(Encoder):
 		super().__init__()
 		self.series_len = series_len
 
-	def encode_dset(self, batch_data: Dict):
+	def encode_dset(self, batch_data: Dict[str,np.ndarray]) -> np.ndarray:
 		val_Xs = []
 		for s in batch_data['y']:
 			scaler = MinMaxScaler()
