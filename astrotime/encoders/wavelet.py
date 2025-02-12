@@ -20,8 +20,9 @@ class WaveletEncoder(Encoder):
 		return fspace( self.fbeg, self.fend, self.nfreq )
 
 	def encode_dset(self, dset: Dict[str,np.ndarray]) -> np.ndarray:
+		print(f"WaveletEncoder: dset keys = {list(dset.keys())}")
 		ydata: np.ndarray = dset['y']
-		print( f"WaveletEncoder: ydata{ydata.shape} y{ydata[0].shape} y{ydata[100].shape} y{ydata[1000].shape}")
+		print( f"  --> ydata{ydata.shape} y{ydata[0].shape} y{ydata[100].shape} y{ydata[1000].shape}")
 	#	tr = self.series_len // 2
 	#	t0 = random.randrange(kr, t.shape[1] - kr)
 

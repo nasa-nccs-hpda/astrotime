@@ -9,9 +9,9 @@ class ValueEncoder(Encoder):
 		super().__init__()
 		self.series_len = series_len
 
-	def encode_dset(self, batch_data: Dict[str,np.ndarray]) -> np.ndarray:
+	def encode_dset(self, dset: Dict[str,np.ndarray]) -> np.ndarray:
 		val_Xs = []
-		for s in batch_data['y']:
+		for s in dset['y']:
 			scaler = MinMaxScaler()
 			val_Xs.append(scaler.fit_transform(s[:self.series_len].reshape(-1, 1))[:, 0])
 		result = np.array(val_Xs)
