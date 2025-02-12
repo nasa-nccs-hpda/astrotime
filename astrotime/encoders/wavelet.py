@@ -3,7 +3,7 @@ from sklearn.preprocessing import MinMaxScaler
 from typing import Any, Dict, List, Optional, Tuple
 from astrotime.encoders.base import Encoder
 from astrotime.transforms.wwz import wwz
-from astrotime.util.math import logspace
+from astrotime.util.math import logspace, shp
 
 class WaveletEncoder(Encoder):
 
@@ -14,19 +14,32 @@ class WaveletEncoder(Encoder):
 		self.nfreq = nfreq
 		self.fscale = fscale
 		self.freq: np.ndarray = self.create_freq()
+		self.slmax = 6000
 
 	def create_freq(self) -> np.ndarray:
 		fspace = logspace if (self.fscale == "log") else np.linspace
 		return fspace( self.fbeg, self.fend, self.nfreq )
 
 	def encode_dset(self, dset: Dict[str,np.ndarray]) -> np.ndarray:
-		print(f"WaveletEncoder: dset keys = {list(dset.keys())}")
-		ydata: np.ndarray = dset['y']
-		print( f"  --> ydata{ydata.shape} y{ydata[0].shape} y{ydata[100].shape} y{ydata[1000].shape}")
-	#	tr = self.series_len // 2
-	#	t0 = random.randrange(kr, t.shape[1] - kr)
-
-		return y
+		val_Xs = []
+		ys, ts = dset['y'], dset['t']
+		for y,t in zip(ys,ts):
+			scaler = MinMaxScaler()
+			t0 = random.randrange(0, self.slmax - self.series_len )
+			y1 = scaler.fit_transform( y[t0:t0+self.series_len].reshape(-1, 1) )[:, 0]
+			t1 = t[t0:t0+self.series_len]
+			print(f" **dset: y1{shp(y1)} t1{shp(t1)} f{shp(self.freq)} ")
+			amp, phase, coeff = wwz( y1, t1, self.freq )
+			print( f" **wavelet: amp{shp(amp)} phase{shp(phase)} coeff-0{shp(coeff[0])} ")
+		# result = np.array(val_Xs)
+		#
+		# print(f"WaveletEncoder: dset keys = {list(dset.keys())}")
+		# ydata: np.ndarray = dset['y']
+		# print( f"  --> ydata{ydata.shape} y{ydata[0].shape} y{ydata[100].shape} y{ydata[1000].shape}")
+	 	# tr = self.series_len // 2
+		# t0 = random.randrange(tr, self.slmax - tr)
+		#
+		# return y
 
 	#
 	#
