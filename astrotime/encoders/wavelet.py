@@ -1,4 +1,4 @@
-import numpy as np
+import random, numpy as np
 from sklearn.preprocessing import MinMaxScaler
 from typing import Any, Dict, List, Optional, Tuple
 from astrotime.encoders.base import Encoder
@@ -19,9 +19,11 @@ class WaveletEncoder(Encoder):
 		fspace = logspace if (self.fscale == "log") else np.linspace
 		return fspace( self.fbeg, self.fend, self.nfreq )
 
-	def encode_dset(self, batch_data: Dict[str,np.ndarray]) -> np.ndarray:
-		y: np.ndarray = batch_data['y']
-		print( f"WaveletEncoder: y{y.shape}")
+	def encode_dset(self, dset: Dict[str,np.ndarray]) -> np.ndarray:
+		ydata: np.ndarray = dset['y']
+		print( f"WaveletEncoder: ydata{ydata.shape} y{ydata[0].shape} y{ydata[100].shape} y{ydata[1000].shape}")
+	#	tr = self.series_len // 2
+	#	t0 = random.randrange(kr, t.shape[1] - kr)
 
 		return y
 
