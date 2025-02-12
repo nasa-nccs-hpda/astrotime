@@ -4,8 +4,11 @@ from astrotime.encoders.baseline import ValueEncoder
 from astrotime.models.cnn_powell import SinusoidPeriodModel
 from astrotime.callbacks.printers import ShapePrinter
 from astrotime.loaders.sinusoid import SinusoidLoader
+from astrotime.callbacks.checkpoints import CheckpointCallback
 
 data_dir = "/explore/nobackup/projects/ilab/data/astro_sigproc/sinusoids/npz/"
+results_dir = "/explore/nobackup/projects/ilab/data/astro_sigproc/results"
+model_name = "baseline"
 # data_dir = "/Users/tpmaxwel/Data/astro_sigproc/sinusoids"
 seq_length = 1000
 epochs=1000
@@ -29,6 +32,7 @@ valid_data:   np.ndarray  = encoder.encode_dset(vdset)
 valid_target: np.ndarray  = vdset['target']
 
 shape_printer = ShapePrinter(input_shapes=train_data.shape)
-train_args: Dict[str,Any] = dict( epochs=epochs, batch_size=batch_size, shuffle=True, callbacks=[shape_printer], verbose=1  )
+checkpointer = CheckpointCallback( model_name, f"{results_dir}/checkpoints" )
+train_args: Dict[str,Any] = dict( epochs=epochs, batch_size=batch_size, shuffle=True, callbacks=[shape_printer,checkpointer], verbose=1  )
 
 history = model.fit( train_data, train_target, validation_data=(valid_data, valid_target), **train_args )
