@@ -15,7 +15,7 @@ from ..util.logging import lgm, exception_handled, log_timing
 Array = np.ndarray
 C0 = 1 / (8 * np.pi ** 2)
 
-def wwz(ys: Array, ts: Array, freq: Array, tau: Array, c: float = C0, rank: int=0) -> Tuple[Array, Array, Tuple[Array, Array, Array]]:
+def wwz(ys: Array, ts: Array, freq: Array, tau: Array, c: float = C0) -> Tuple[Array, Array, Tuple[Array, Array, Array]]:
     '''
         Compute the weighted wavelet amplitude (WWA)
     ---------- Parameters:
