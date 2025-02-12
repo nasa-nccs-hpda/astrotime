@@ -22,19 +22,17 @@ class WaveletEncoder(Encoder):
 
 	def encode_dset(self, dset: Dict[str,np.ndarray]) -> np.ndarray:
 		ys, ts = dset['y'], dset['t']
-		yL, tL, tauL = [], [], []
+		amps, phases, coeffs = [], [], []
 		for y,t in zip(ys,ts):
 			scaler = MinMaxScaler()
 			t0 = random.randrange(0, self.slmax - self.series_len )
 			y1 = scaler.fit_transform( y[t0:t0+self.series_len].reshape(-1, 1) )[:, 0]
 			t1 = t[t0:t0+self.series_len]
-			yL.append( y1 )
-			tL.append( t1 )
-			tauL.append( t1[self.series_len//2] )
-
-		yL, tL, tauL = np.array(yL), np.array(tL), np.array(tauL)
-		print(f" **dset: yL{shp(yL)} tL{shp(tL)} f{shp(self.freq)} tauL{shp(tauL)}")
-		amp, phase, coeff = wwz( yL, tL, self.freq, tauL )
+			amp, phase, coeff = wwz(y1, t1, self.freq, t1[self.series_len//2] )
+			amps.append( amp )
+			phases.append( phase )
+			coeffs.append( coeff )
+		amp, phase, coeff = np.array(amps), np.array(phases), np.array(coeffs)
 		print( f" **wavelet: amp{shp(amp)} phase{shp(phase)} coeffs: {shp(coeff[0])} {shp(coeff[1])} {shp(coeff[2])}")
 
 		# result = np.array(val_Xs)
