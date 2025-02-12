@@ -28,7 +28,7 @@ class WaveletEncoder(Encoder):
 			t0 = random.randrange(0, self.slmax - self.series_len )
 			y1 = scaler.fit_transform( y[t0:t0+self.series_len].reshape(-1,1) ).transpose()
 			t1 = t[t0:t0+self.series_len].reshape(1,-1)
-			amp, phase, coeff = wwz(y1, t1, self.freq, t1[self.series_len//2] )
+			amp, phase, coeff = wwz(y1, t1, self.freq, t1[:,self.series_len//2] )
 			amps.append( amp )
 			phases.append( phase )
 			coeffs.append( coeff )
