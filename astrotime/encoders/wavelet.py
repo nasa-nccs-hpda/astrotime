@@ -34,12 +34,13 @@ class WaveletEncoder(Encoder):
 			y1.append( scaler.fit_transform( y[t0:t0+self.series_len].reshape(-1,1) ).transpose() )
 			t1.append( t[t0:t0+self.series_len].reshape(1,-1) )
 			if idx % self.batch_size == self.batch_size-1:
+				print(f" **wavelet: encoding batch {idx // self.batch_size} of {len(ys) // self.batch_size}, etime={time.time() - start_time:.2f}s")
 				Y, T = np.concatenate(y1), np.concatenate(t1)
 				amp, phase, cs = wwz(Y, T, self.freq, T[:,self.series_len//2] )
 				amps.append( amp )
 				phases.append( phase )
 				for coeff, c in zip(coeffs, cs): coeff.append( c )
-				print(f" **wavelet: encoding batch {idx // self.batch_size} of {len(ys) // self.batch_size}, etime={time.time() - start_time:.2f}s: amp{shp(amp)} phase{shp(phase)} coeffs: {shp(cs[0])} {shp(cs[1])} {shp(cs[2])}")
+				print(f" ----------**>> amp{shp(amp)} phase{shp(phase)} coeffs: {shp(cs[0])} {shp(cs[1])} {shp(cs[2])}")
 				y1, t1 = [], []
 		amp, phase, coeff = np.concatenate(amps), np.concatenate(phases), [ np.concatenate(c) for c in coeffs ]
 		print( f" **wavelet: amp{shp(amp)} phase{shp(phase)} coeffs: {shp(coeff[0])} {shp(coeff[1])} {shp(coeff[2])}")
