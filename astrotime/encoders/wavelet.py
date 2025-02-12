@@ -1,4 +1,4 @@
-import random, numpy as np
+import random, time, numpy as np
 from sklearn.preprocessing import MinMaxScaler
 from typing import Any, Dict, List, Optional, Tuple
 from astrotime.encoders.base import Encoder
@@ -27,12 +27,14 @@ class WaveletEncoder(Encoder):
 		ys, ts = dset['y'], dset['t']
 		amps, phases, coeffs = [], [], ([], [], [])
 		y1, t1 = [], []
+		t0 = time.time()
 		for idx, (y,t) in enumerate(zip(ys,ts)):
 			scaler = MinMaxScaler()
 			t0 = random.randrange(0, self.slmax - self.series_len )
 			y1.append( scaler.fit_transform( y[t0:t0+self.series_len].reshape(-1,1) ).transpose() )
 			t1.append( t[t0:t0+self.series_len].reshape(1,-1) )
 			if idx % self.batch_size == self.batch_size-1:
+				print( f" **wavelet: encoding batch {idx//self.batch_size} of {len(ys)//self.batch_size}, etime={time.time()-t0:.2f}s")
 				Y, T = np.concatenate(y1), np.concatenate(t1)
 				amp, phase, cs = wwz(Y, T, self.freq, T[:,self.series_len//2] )
 				amps.append( amp )
