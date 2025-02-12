@@ -35,7 +35,7 @@ def wwz(ys: Array, ts: Array, freq: Array, tau: Array, c: float = C0) -> Tuple[A
     nts: int = ts.shape[1]
     nf: int  = freq.shape[0]
     if tau is None: tau = 0.5 *(ts[:,nts/2] + ts[:,nts/2+1])
-    verbose = True
+    verbose = False
 
     tau = tau[:, None, None]     # expand(nb, nf, nts)
     omega = 2 * np.pi * freq
