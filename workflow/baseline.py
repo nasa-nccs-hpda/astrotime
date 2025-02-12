@@ -4,13 +4,13 @@ from astrotime.models.cnn_powell import SinusoidPeriodModel
 from astrotime.callbacks.printers import ShapePrinter
 from astrotime.loaders.sinusoid import SinusoidLoader
 
-# data_dir = "/explore/nobackup/projects/ilab/data/astro_sigproc/sinusoids/npz/"
-data_dir = "/Users/tpmaxwel/Data/astro_sigproc/sinusoids"
+data_dir = "/explore/nobackup/projects/ilab/data/astro_sigproc/sinusoids/npz/"
+# data_dir = "/Users/tpmaxwel/Data/astro_sigproc/sinusoids"
 seq_length = 1000
 epochs=1000
 batch_size=64
-train_dset_idx = 2
-valid_dset_idx = 3
+train_dset_idx = 0
+valid_dset_idx = 1
 optimizer='rmsprop'
 loss='mae'
 
