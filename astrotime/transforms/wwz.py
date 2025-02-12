@@ -37,10 +37,10 @@ def wwz(ys: Array, ts: Array, freq: Array, tau: Array, c: float = C0) -> Tuple[A
     if tau is None: tau = 0.5 *(ts[:,nts/2] + ts[:,nts/2+1])
     verbose = False
 
-    tau = tau[:, None, None]     # expand(nb, nf, nts)
+    tau = tau[:, None, None]     # broadcast-to(nb,nf,nts)
     omega = 2 * np.pi * freq
-    omega_ = omega[None,:,None]  # expand(nb,nf,nts)
-    ts = ts[:,None,:]            # expand(nb,nf,nts)
+    omega_ = omega[None,:,None]  # broadcast-to(nb,nf,nts)
+    ts = ts[:,None,:]            # broadcast-to(nb,nf,nts)
     if verbose: lgm().log( f"wwz: ys{list(ys.shape)} ts{list(ts.shape)} freq{list(freq.shape)} tau{list(tau.shape)} omega_{list(omega_.shape)} c={c}" )
     dt = (ts - tau)
     dz = omega_ * dt
@@ -66,7 +66,7 @@ def wwz(ys: Array, ts: Array, freq: Array, tau: Array, c: float = C0) -> Tuple[A
     numerator = 2 * (sin_cos - sin_one * cos_one)
     denominator = (cos_cos - cos_one ** 2) - (sin_sin - sin_one ** 2)
     time_shift = arctan2(numerator, denominator) / (2 * omega)  # Eq. (S5)
-    time_shift_ = time_shift[:, :, None].expand(nb, nf, nts)
+    time_shift_ = time_shift[:, :, None]  #  broadcast-to(nb,nf,nts)
     if verbose: lgm().log(f"wwz-3:  numerator{list(numerator.shape)} denominator{list(denominator.shape)}  time_shift{list(time_shift.shape)}  ")
 
     sin_shift = sin(omega_ * (ts - time_shift_))
