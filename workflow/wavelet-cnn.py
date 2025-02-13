@@ -3,8 +3,10 @@ from typing import List, Optional, Dict, Type, Any
 from astrotime.models.cnn_powell import SinusoidPeriodModel
 from astrotime.callbacks.printers import ShapePrinter
 from astrotime.loaders.wwz import WaveletLoader
+from astrotime.callbacks.checkpoints import CheckpointCallback
 
 data_dir = "/explore/nobackup/projects/ilab/projects/fusion/cache/encodings/"
+results_dir = "/explore/nobackup/projects/ilab/data/astro_sigproc/results"
 seq_length = 1000
 epochs=1000
 batch_size=64
@@ -13,6 +15,7 @@ train_dset_idx = 0
 valid_dset_idx = 1
 optimizer='rmsprop'
 loss='mae'
+model_name = f"wwz-{nfeatures}"
 
 sinusoid_loader = WaveletLoader(data_dir,nfeatures)
 model = SinusoidPeriodModel(seq_length)
@@ -27,6 +30,7 @@ valid_data:   np.ndarray  = vdset['y']
 valid_target: np.ndarray  = vdset['target']
 
 shape_printer = ShapePrinter(input_shapes=train_data.shape)
-train_args: Dict[str,Any] = dict( epochs=epochs, batch_size=batch_size, shuffle=True, callbacks=[shape_printer], verbose=1  )
+checkpointer = CheckpointCallback( model_name, f"{results_dir}/checkpoints" )
+train_args: Dict[str,Any] = dict( epochs=epochs, batch_size=batch_size, shuffle=True, callbacks=[shape_printer,checkpointer], verbose=1  )
 
 history = model.fit( train_data, train_target, validation_data=(valid_data, valid_target), **train_args )
