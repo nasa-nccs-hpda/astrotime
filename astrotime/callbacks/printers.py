@@ -21,11 +21,9 @@ class ShapePrinter(keras.callbacks.Callback):
 		print(f"Shape of sinusoid: {sinusoid_shape}")
 
 		# Create dummy inputs with the correct shape
-		sinusoid = tf.zeros((1,) + sinusoid_shape[1:])
+		x = tf.zeros((1,) + sinusoid_shape[1:])
 
-		# Expand dimensions
-		x = tf.expand_dims(sinusoid, axis=-1)
-		print(f"Shape after expand_dims: sinusoid {sinusoid.shape}")
+		print(f"Shape after expand_dims: sinusoid {x.shape}")
 
 		x = self.model.conv1(x)
 		print(f"Shape after conv1: {x.shape}")
