@@ -48,6 +48,7 @@ class SinusoidPeriodModel(keras.Model):
 		self.dense2 = layers.Dense(1)
 
 	def call(self, inputs: np.ndarray):
+		print( f"**INPUT: {inputs.shape}" )
 		x = inputs
 		x = self.conv1(x)
 		x = self.conv2(x)

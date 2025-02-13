@@ -15,6 +15,6 @@ class ValueEncoder(Encoder):
 		for s in dset['y']:
 			scaler = MinMaxScaler()
 			t0 = random.randrange(0, self.slmax - self.series_len )
-			val_Xs.append( scaler.fit_transform( s[t0:t0+self.series_len].reshape(-1, 1) ) )
+			val_Xs.append(scaler.fit_transform( s[t0:t0+self.series_len].reshape(-1, 1) )[:, 0] )
 		result = np.array(val_Xs)
 		return result
