@@ -16,4 +16,4 @@ class WaveletLoader(DataLoader):
 		y: xa.DataArray  = dset['batch']
 		x: xa.DataArray     = dset['freq']
 		target: xa.DataArray   = dset['target']
-		return dict( y=y.values, x=x.values, target=target )
+		return dict( y=y.values[:,1,:], x=x.values, target=target )
