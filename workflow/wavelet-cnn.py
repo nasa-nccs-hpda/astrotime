@@ -19,11 +19,11 @@ model = SinusoidPeriodModel(seq_length)
 model.compile(optimizer=optimizer, loss=loss)
 
 tdset: Dict[ str, np.ndarray] = sinusoid_loader.get_dataset(train_dset_idx)
-train_data:   np.ndarray  = tdset['y'].transpose(0,2,1)  # channels-last
+train_data:   np.ndarray  = tdset['y']
 train_target: np.ndarray  = tdset['target']
 
 vdset = sinusoid_loader.get_dataset(valid_dset_idx)
-valid_data:   np.ndarray  = vdset['y'].transpose(0,2,1)  # channels-last
+valid_data:   np.ndarray  = vdset['y']
 valid_target: np.ndarray  = vdset['target']
 
 shape_printer = ShapePrinter(input_shapes=train_data.shape)
