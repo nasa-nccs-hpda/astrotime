@@ -25,7 +25,7 @@ class WaveletEncoder(Encoder):
 		self.slmax = 6000
 		self.nfeatures = 5
 		self.chan_first = True
-		self.batch_size = 1000
+		self.batch_size = 100
 		self.wwz = WaveletEncoderModel()
 		self.wwz.compile()
 
@@ -37,7 +37,6 @@ class WaveletEncoder(Encoder):
 		ys, ts = dset['y'], dset['t']
 		amps, phases, coeffs = [], [], ([], [], [])
 		y1, t1, wwz_start_time, wwz_end_time = [], [], time.time(), time.time()
-		start_time = time.time()
 		for idx, (y,t) in enumerate(zip(ys,ts)):
 			scaler = MinMaxScaler()
 			t0 = random.randrange(0, self.slmax - self.series_len )
@@ -45,7 +44,7 @@ class WaveletEncoder(Encoder):
 			t1.append( t[t0:t0+self.series_len].reshape(1,-1) )
 			if idx % self.batch_size == self.batch_size-1:
 				wwz_start_time = time.time()
-				print(f" **wavelet: encoding batch {idx // self.batch_size} of {len(ys) // self.batch_size}, load-time={wwz_end_time - start_time:.2f}s")
+				print(f" **wavelet: encoding batch {idx // self.batch_size} of {len(ys) // self.batch_size}, load-time={wwz_start_time-wwz_end_time:.2f}s")
 				Y, T = np.concatenate(y1), np.concatenate(t1)
 				amp, phase, cs = self.wwz(Y, T, self.freq, T[:,self.series_len//2] )
 				amps.append( amp )
