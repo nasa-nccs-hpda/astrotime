@@ -16,4 +16,4 @@ class SinusoidLoader(DataLoader):
 		sinusoids: np.ndarray = data['sinusoids']
 		times: np.ndarray     = data['times']
 		periods: np.ndarray   = data['periods']
-		return dict( y=sinusoids, t=times, target=periods )
+		return dict( y=sinusoids, x=times, target=periods )
