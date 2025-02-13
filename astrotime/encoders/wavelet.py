@@ -1,11 +1,11 @@
 import random, time, numpy as np
 from sklearn.preprocessing import MinMaxScaler
 from typing import Any, Dict, List, Optional, Tuple
-from astrotime.encoders.base import Encoder
+import keras
 from astrotime.transforms.wwz import wwz
 from astrotime.util.math import logspace, shp
 
-class WaveletEncoder(Encoder):
+class WaveletEncoder(keras.Model):
 
 	def __init__(self, series_len: int = 1000, fbounds: Tuple[float,float] = (0.1,10.0), nfreq: int = 1000, fscale: str = "log" ):
 		super().__init__()
@@ -23,10 +23,10 @@ class WaveletEncoder(Encoder):
 		fspace = logspace if (self.fscale == "log") else np.linspace
 		return fspace( self.fbeg, self.fend, self.nfreq )
 
-	def encode_dset(self, dset: Dict[str,np.ndarray]) -> np.ndarray:
+	def call(self, dset: Dict[str,np.ndarray]) -> np.ndarray:
 		ys, ts = dset['y'], dset['t']
 		amps, phases, coeffs = [], [], ([], [], [])
-		y1, t1, wwz_start_time, wwz_start_time = [], [], 0, 0
+		y1, t1, wwz_start_time, wwz_end_time = [], [], time.time(), time.time()
 		start_time = time.time()
 		for idx, (y,t) in enumerate(zip(ys,ts)):
 			scaler = MinMaxScaler()
