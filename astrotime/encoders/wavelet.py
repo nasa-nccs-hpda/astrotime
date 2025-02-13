@@ -1,11 +1,19 @@
 import random, time, numpy as np
 from sklearn.preprocessing import MinMaxScaler
 from typing import Any, Dict, List, Optional, Tuple
-import keras
+from astrotime.encoders.base import Encoder
 from astrotime.transforms.wwz import wwz
 from astrotime.util.math import logspace, shp
+import keras
 
-class WaveletEncoder(keras.Model):
+class WaveletEncoderModel(keras.Model):
+	def __init__(self):
+		super(WaveletEncoderModel, self).__init__()
+
+	def call(self, y: np.ndarray, t: np.ndarray, freq: np.ndarray, tau: np.ndarray) -> Tuple[np.ndarray,np.ndarray,Tuple[np.ndarray,np.ndarray,np.ndarray]]:
+		return wwz(y, t, freq, tau )
+
+class WaveletEncoder(Encoder):
 
 	def __init__(self, series_len: int = 1000, fbounds: Tuple[float,float] = (0.1,10.0), nfreq: int = 1000, fscale: str = "log" ):
 		super().__init__()
@@ -18,12 +26,14 @@ class WaveletEncoder(keras.Model):
 		self.nfeatures = 5
 		self.chan_first = True
 		self.batch_size = 1000
+		self.wwz = WaveletEncoderModel()
+		self.wwz.compile()
 
 	def create_freq(self) -> np.ndarray:
 		fspace = logspace if (self.fscale == "log") else np.linspace
 		return fspace( self.fbeg, self.fend, self.nfreq )
 
-	def call(self, dset: Dict[str,np.ndarray]) -> np.ndarray:
+	def encode_dset(self, dset: Dict[str,np.ndarray]) -> np.ndarray:
 		ys, ts = dset['y'], dset['t']
 		amps, phases, coeffs = [], [], ([], [], [])
 		y1, t1, wwz_start_time, wwz_end_time = [], [], time.time(), time.time()
@@ -37,7 +47,7 @@ class WaveletEncoder(keras.Model):
 				wwz_start_time = time.time()
 				print(f" **wavelet: encoding batch {idx // self.batch_size} of {len(ys) // self.batch_size}, load-time={wwz_end_time - start_time:.2f}s")
 				Y, T = np.concatenate(y1), np.concatenate(t1)
-				amp, phase, cs = wwz(Y, T, self.freq, T[:,self.series_len//2] )
+				amp, phase, cs = self.wwz(Y, T, self.freq, T[:,self.series_len//2] )
 				amps.append( amp )
 				phases.append( phase )
 				for coeff, c in zip(coeffs, cs): coeff.append( c )
