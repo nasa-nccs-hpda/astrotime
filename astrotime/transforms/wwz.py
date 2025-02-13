@@ -35,18 +35,20 @@ def wwz(ys: Array, ts: Array, freq: Array, tau: Array, c: float = C0) -> Tuple[A
     nts: int = ts.shape[1]
     nf: int  = freq.shape[0]
     if tau is None: tau = 0.5 *(ts[:,nts/2] + ts[:,nts/2+1])
-    verbose = False
+    verbose = True
+    lprint = print # lgm().log
+    if verbose: lprint(f"wwz-0: nb={nb} nts={nts} nf={nf}")
 
     tau = tau[:, None, None]     # broadcast-to(nb,nf,nts)
     omega = 2 * np.pi * freq
     omega_ = omega[None,:,None]  # broadcast-to(nb,nf,nts)
     ts = ts[:,None,:]            # broadcast-to(nb,nf,nts)
-    if verbose: lgm().log( f"wwz: ys{list(ys.shape)} ts{list(ts.shape)} freq{list(freq.shape)} tau{list(tau.shape)} omega_{list(omega_.shape)} c={c}" )
+    if verbose: lprint( f"wwz: ys{list(ys.shape)} ts{list(ts.shape)} freq{list(freq.shape)} tau{list(tau.shape)} omega_{list(omega_.shape)} c={c}" )
     dt = (ts - tau)
     dz = omega_ * dt
     weights = exp(-c * dz ** 2)
     sum_w = sum(weights, axis=-1)
-    if verbose: lgm().log( f"wwz-1: ys{list(ys.shape)} ts{list(ts.shape)} omega{list(omega.shape)} omega_{list(omega_.shape)} dz{list(dz.shape)} weights{list(weights.shape)} sum_w = {list(sum_w.shape)}")
+    if verbose: lprint( f"wwz-1: ys{list(ys.shape)} ts{list(ts.shape)} omega{list(omega.shape)} omega_{list(omega_.shape)} dz{list(dz.shape)} weights{list(weights.shape)} sum_w = {list(sum_w.shape)}")
 
     def w_prod(xs, ys):
         return sum(weights * xs * ys, axis=-1) / sum_w
@@ -61,36 +63,36 @@ def wwz(ys: Array, ts: Array, freq: Array, tau: Array, c: float = C0) -> Tuple[A
     sin_cos = w_prod(sin_basis, cos_basis)
     sin_sin = w_prod(sin_basis, sin_basis)
     cos_cos = w_prod(cos_basis, cos_basis)
-    if verbose: lgm().log( f"wwz-2: sin_basis{list(sin_basis.shape)} one_v{list(one_v.shape)} sin_one{list(sin_one.shape)}  sin_sin{list(sin_sin.shape)} cos_cos{list(cos_cos.shape)}")
+    if verbose: lprint( f"wwz-2: sin_basis{list(sin_basis.shape)} one_v{list(one_v.shape)} sin_one{list(sin_one.shape)}  sin_sin{list(sin_sin.shape)} cos_cos{list(cos_cos.shape)}")
 
     numerator = 2 * (sin_cos - sin_one * cos_one)
     denominator = (cos_cos - cos_one ** 2) - (sin_sin - sin_one ** 2)
     time_shift = arctan2(numerator, denominator) / (2 * omega)  # Eq. (S5)
     time_shift_ = time_shift[:, :, None]  #  broadcast-to(nb,nf,nts)
-    if verbose: lgm().log(f"wwz-3:  numerator{list(numerator.shape)} denominator{list(denominator.shape)}  time_shift{list(time_shift.shape)}  ")
+    if verbose: lprint(f"wwz-3:  numerator{list(numerator.shape)} denominator{list(denominator.shape)}  time_shift{list(time_shift.shape)}  ")
 
     sin_shift = sin(omega_ * (ts - time_shift_))
     cos_shift = cos(omega_ * (ts - time_shift_))
     sin_tau_center = sin(omega * (time_shift - tau[:,:,0]))
     cos_tau_center = cos(omega * (time_shift - tau[:,:,0]))
-    if verbose: lgm().log(f"wwz-4: sin_shift{list(sin_shift.shape)} cos_shift{list(cos_shift.shape)} sin_tau_center{list(sin_tau_center.shape)} cos_tau_center{list(cos_tau_center.shape)}")
+    if verbose: lprint(f"wwz-4: sin_shift{list(sin_shift.shape)} cos_shift{list(cos_shift.shape)} sin_tau_center{list(sin_tau_center.shape)} cos_tau_center{list(cos_tau_center.shape)}")
 
     ys_cos_shift = w_prod(ys, cos_shift)
     ys_sin_shift = w_prod(ys, sin_shift)
     ys_one = w_prod(ys, one_v)
     cos_shift_one = w_prod(cos_shift, one_v)
     sin_shift_one = w_prod(sin_shift, one_v)
-    if verbose: lgm().log(f"wwz-5: ys_cos_shift{list(ys_cos_shift.shape)} cos_shift_one{list(cos_shift_one.shape)} ys_one{list(ys_one.shape)}")
+    if verbose: lprint(f"wwz-5: ys_cos_shift{list(ys_cos_shift.shape)} cos_shift_one{list(cos_shift_one.shape)} ys_one{list(ys_one.shape)}")
 
     A = 2 * (ys_cos_shift - ys_one * cos_shift_one)
     B = 2 * (ys_sin_shift - ys_one * sin_shift_one)
 
-    if verbose: lgm().log(f"wwz-6:  A{list(A.shape)} B{list(B.shape)}")
+    if verbose: lprint(f"wwz-6:  A{list(A.shape)} B{list(B.shape)}")
     a0 = ys_one
     a1 = cos_tau_center * A - sin_tau_center * B   # Eq. (S6)
     a2 = sin_tau_center * A + cos_tau_center * B   # Eq. (S7)
 
-    if verbose: lgm().log(f"wwz-7: a0{list(a0.shape)} a1{list(a1.shape)} a2{list(a2.shape)}")
+    if verbose: lprint(f"wwz-7: a0{list(a0.shape)} a1{list(a1.shape)} a2{list(a2.shape)}")
     wwp = a1**2 + a2**2
     phase = arctan2(a2, a1)
     coeff = (a0, a1, a2)
