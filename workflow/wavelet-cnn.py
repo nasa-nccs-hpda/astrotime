@@ -3,10 +3,9 @@ from typing import List, Optional, Dict, Type, Any
 from astrotime.encoders.wavelet import WaveletEncoder
 from astrotime.models.cnn_powell import SinusoidPeriodModel
 from astrotime.callbacks.printers import ShapePrinter
-from astrotime.loaders.sinusoid import SinusoidLoader
+from astrotime.loaders.wwz import WaveletLoader
 
-data_dir = "/explore/nobackup/projects/ilab/data/astro_sigproc/sinusoids/npz/"
-# data_dir = "/Users/tpmaxwel/Data/astro_sigproc/sinusoids"
+data_dir = "/explore/nobackup/projects/ilab/projects/fusion/cache/encodings/"
 seq_length = 1000
 epochs=1000
 batch_size=64
@@ -15,7 +14,7 @@ valid_dset_idx = 1
 optimizer='rmsprop'
 loss='mae'
 
-sinusoid_loader = SinusoidLoader(data_dir)
+sinusoid_loader = WaveletLoader(data_dir)
 encoder = WaveletEncoder(seq_length)
 model = SinusoidPeriodModel(seq_length)
 model.compile(optimizer=optimizer, loss=loss)
