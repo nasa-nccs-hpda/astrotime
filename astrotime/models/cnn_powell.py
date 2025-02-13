@@ -1,5 +1,6 @@
 import tensorflow as tf
 from keras import layers
+import numpy as np
 import keras
 
 class SinusoidPeriodModel(keras.Model):
@@ -46,11 +47,11 @@ class SinusoidPeriodModel(keras.Model):
 		self.dense1 = layers.Dense(64, activation='elu')
 		self.dense2 = layers.Dense(1)
 
-	def call(self, inputs):
+	def call(self, inputs: np.ndarray):
 		sinusoid = inputs
 
 		# Ensure inputs have the correct shape
-		x = tf.expand_dims(sinusoid, axis=-1)  # (batch_size, seq_length, 1)
+		x = sinusoid if sinusoid.ndim == 3 else tf.expand_dims(sinusoid, axis=-1)  # (batch_size, seq_length, channels)
 
 		x = self.conv1(x)
 		x = self.conv2(x)

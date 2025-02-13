@@ -8,21 +8,22 @@ data_dir = "/explore/nobackup/projects/ilab/projects/fusion/cache/encodings/"
 seq_length = 1000
 epochs=1000
 batch_size=64
+nfeatures=5
 train_dset_idx = 0
 valid_dset_idx = 1
 optimizer='rmsprop'
 loss='mae'
 
-sinusoid_loader = WaveletLoader(data_dir)
+sinusoid_loader = WaveletLoader(data_dir,nfeatures)
 model = SinusoidPeriodModel(seq_length)
 model.compile(optimizer=optimizer, loss=loss)
 
 tdset: Dict[ str, np.ndarray] = sinusoid_loader.get_dataset(train_dset_idx)
-train_data:   np.ndarray  = tdset['y']
+train_data:   np.ndarray  = tdset['y'].transpose(0,2,1)  # channels-last
 train_target: np.ndarray  = tdset['target']
 
 vdset = sinusoid_loader.get_dataset(valid_dset_idx)
-valid_data:   np.ndarray  = vdset['y']
+valid_data:   np.ndarray  = vdset['y'].transpose(0,2,1)  # channels-last
 valid_target: np.ndarray  = vdset['target']
 
 shape_printer = ShapePrinter(input_shapes=train_data.shape)
