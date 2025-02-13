@@ -48,11 +48,7 @@ class SinusoidPeriodModel(keras.Model):
 		self.dense2 = layers.Dense(1)
 
 	def call(self, inputs: np.ndarray):
-		sinusoid = inputs
-
-		# Ensure inputs have the correct shape
-		x = sinusoid if sinusoid.ndim == 3 else tf.expand_dims(sinusoid, axis=-1)  # (batch_size, seq_length, channels)
-
+		x = inputs
 		x = self.conv1(x)
 		x = self.conv2(x)
 		x = self.conv3(x)
