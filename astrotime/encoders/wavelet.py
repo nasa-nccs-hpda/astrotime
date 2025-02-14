@@ -33,7 +33,7 @@ class WaveletEncoder(Encoder):
 			for idx, (y,x) in enumerate(zip(dset['y'],dset['x'])):
 				x0: int = tf.random.uniform( [1], 0, self.slmax - self.series_len, dtype=tf.int32 )[0]
 				ys: tf.Tensor = tf.convert_to_tensor( y[x0:x0+self.series_len].reshape(-1,1), dtype=tf.float32 )
-				xs: tf.Tensor = tf.convert_to_tensor( x[x0:x0+self.series_len].expand_dims(0), dtype=tf.float32)
+				xs: tf.Tensor = tf.convert_to_tensor( x[x0:x0+self.series_len].reshape(-1,1), dtype=tf.float32)
 				y1.append( keras.utils.normalize( ys, axis=0, order=1).transpose() )
 				x1.append( xs )
 				if idx % self.batch_size == self.batch_size-1:
