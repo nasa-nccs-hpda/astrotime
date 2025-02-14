@@ -27,6 +27,7 @@ class WaveletEncoder(Encoder):
 
 	def encode_dset(self, dset: Dict[str,tf.Tensor]) -> tf.Tensor:
 		with (self.device):
+			t0 = time.time()
 			ys: tf.Tensor = dset['y']
 			xs: tf.Tensor = dset['x']
 			amps, phases, coeffs = [], [], ([], [], [])
@@ -52,6 +53,7 @@ class WaveletEncoder(Encoder):
 		features = [amp,phase]+coeff
 		dim = 1 if self.chan_first else 2
 		encoded_dset = tf.stack( features[:self.nfeatures], axis=dim )
+		print(f" Completed encoding in ={time.time()-t0:.2f}s")
 		return encoded_dset
 
 # result = np.array(val_Xs)

@@ -1,5 +1,6 @@
 import numpy as np
 from typing import List, Optional, Dict, Type
+import tensorflow as tf
 import os, datetime
 from functools import wraps
 from time import time
@@ -43,19 +44,16 @@ class PythonLogger:
     This is a WIP
     """
 
-    def __init__(self, name: str = "launch", console: bool = False ):
-        self.logger = logging.getLogger(name)
+    def __init__(self, console: bool = False ):
+        self.logger = tf.get_logger()
         self.logger.handlers.clear()
+        self.logger.setLevel(logging.INFO)
         formatter = logging.Formatter( "[%(asctime)s - %(name)s - %(levelname)s] %(message)s", datefmt="%H:%M:%S"  )
         if console:
             streamhandler = logging.StreamHandler()
             streamhandler.setFormatter(formatter)
             streamhandler.setLevel(logging.INFO)
             self.logger.addHandler(streamhandler)
-
-        # Not sure if this works
-        self.logger.setLevel(logging.DEBUG)
-        self.logger.propagate = False  # Prevent parent logging
 
     def file_logging(self, file_name: str = "launch.log"):
         """Log to file"""
@@ -70,6 +68,9 @@ class PythonLogger:
         filehandler.setFormatter(formatter)
         filehandler.setLevel(logging.DEBUG)
         self.logger.addHandler(filehandler)
+
+    def set_level(self, level ):
+        self.logger.setLevel(level)
 
     def log(self, message: str):
         """Log message"""
@@ -90,6 +91,10 @@ class PythonLogger:
     def error(self, message: str):
         """Log error"""
         self.logger.error(colored(message, "light_red"))
+
+    def debug(self, message: str):
+        """Log error"""
+        self.logger.debug(colored(message, "light_red"))
 
 class LogManager(object):
     _instance: "LogManager" = None
@@ -118,9 +123,9 @@ class LogManager(object):
         return os.getpid()
 
     def set_level(self, level ):
-        self._level = level
+        self._logger.set_level(level)
 
-    def init_logging(self, rank: int ):
+    def init_logging(self, rank: int, level ):
         self.rank = rank
         from .config import cfg, cid
         self.log_dir =  f"{cfg().platform.cache}/logs"
@@ -128,8 +133,9 @@ class LogManager(object):
         self._lid = "" if overwrite else f"-{os.getpid()}"
         self.log_file = f'{self.log_dir}/{cid()}{self._lid}.log'
         os.makedirs( os.path.dirname( self.log_file ), mode=0o777, exist_ok=True )
-        self._logger = PythonLogger("main")
+        self._logger = PythonLogger()
         self._logger.file_logging( self.log_file )
+        self._logger.set_level( level )
         if self.rank < 1:
             print( f"\n  --------- Opening log file:  '{self.log_file}' ---------  \n" )
 
@@ -154,14 +160,12 @@ class LogManager(object):
         sys.exit( status )
 
     def debug(self, msg ):
-        if self._level == logging.DEBUG:
-            self.log( msg )
+        self._logger.debug(msg)
 
     def exception(self,  msg ):
         error_msg = f"\n{msg}\n{traceback.format_exc()}\n"
         self._logger.error(error_msg)
         self.console( error_msg )
-
 
     def trace(self,  msg ):
         strace = "".join(traceback.format_stack())
