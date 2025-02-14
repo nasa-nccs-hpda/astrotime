@@ -125,13 +125,13 @@ class LogManager(object):
     def set_level(self, level ):
         self._logger.set_level(level)
 
-    def init_logging(self, rank: int, level ):
+    def init_logging(self, log_dir: str, rank: int, level, **kwargs ):
         self.rank = rank
         from .config import cfg, cid
-        self.log_dir =  f"{cfg().platform.cache}/logs"
-        overwrite = cfg().task.get("overwrite_log", True)
+        self.log_dir =  log_dir # f"{cfg().platform.cache}/logs"
+        overwrite = kwargs.get("overwrite_log", True)
         self._lid = "" if overwrite else f"-{os.getpid()}"
-        self.log_file = f'{self.log_dir}/{cid()}{self._lid}.log'
+        self.log_file = f'{self.log_dir}/astrotime{self._lid}.log' # f'{self.log_dir}/{cid()}{self._lid}.log'
         os.makedirs( os.path.dirname( self.log_file ), mode=0o777, exist_ok=True )
         self._logger = PythonLogger()
         self._logger.file_logging( self.log_file )
