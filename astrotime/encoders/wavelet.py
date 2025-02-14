@@ -34,7 +34,7 @@ class WaveletEncoder(Encoder):
 				x0: int = tf.random.uniform( [1], 0, self.slmax - self.series_len, dtype=tf.int32 )[0]
 				ys: tf.Tensor = tf.convert_to_tensor( y[x0:x0+self.series_len].reshape(-1,1), dtype=tf.float32 )
 				xs: tf.Tensor = tf.convert_to_tensor( x[x0:x0+self.series_len].reshape(-1,1), dtype=tf.float32)
-				y1.append( keras.utils.normalize( ys, axis=0, order=1).transpose() )
+				y1.append( tf.transpose( keras.utils.normalize( ys, axis=0, order=1) ) )
 				x1.append( xs )
 				if idx % self.batch_size == self.batch_size-1:
 					wwz_start_time = time.time()
@@ -45,7 +45,6 @@ class WaveletEncoder(Encoder):
 					phases.append( phase )
 					for coeff, c in zip(coeffs, cs): coeff.append( c )
 					wwz_end_time = time.time()
-					print(f" ----------**>> amp{shp(amp)} phase{shp(phase)} coeffs: {shp(cs[0])} {shp(cs[1])} {shp(cs[2])}, wwz-time={wwz_end_time-wwz_start_time:.2f}s")
 					y1, t1 = [], []
 		amp, phase, coeff = tf.concat(amps,axis=0), tf.concat(phases,axis=0), [ tf.concat(c,axis=0) for c in coeffs ]
 		print( f" **wavelet: amp{shp(amp)} phase{shp(phase)} coeffs: {shp(coeff[0])} {shp(coeff[1])} {shp(coeff[2])}")
