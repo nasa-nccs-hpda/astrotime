@@ -24,7 +24,7 @@ loss='mae'
 model_name = f"wwz-{nfeatures}"
 rank = 0
 
-lgm().init_logging( rank, logging.DEBUG )
+lgm().init_logging( f"{results_dir}/logging", rank, logging.DEBUG )
 device = f"/device:GPU:{rank}" if rank >= 0 else "/CPU:0"
 
 sinusoid_loader = SinusoidLoader(device,data_dir)
