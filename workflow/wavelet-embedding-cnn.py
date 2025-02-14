@@ -11,7 +11,7 @@ from tensorflow.compat.v1 import logging
 from astrotime.util.logging import lgm
 
 logger = tf.get_logger()
-data_dir = "/explore/nobackup/projects/ilab/projects/fusion/cache/encodings/"
+data_dir = "/explore/nobackup/projects/ilab/data/astro_sigproc/sinusoids/npz/"
 results_dir = "/explore/nobackup/projects/ilab/data/astro_sigproc/results"
 seq_length = 1000
 epochs=1000
