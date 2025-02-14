@@ -6,16 +6,17 @@
 		Code adapted from Pyleoclim (https://github.com/LinkedEarth/Pyleoclim_util.git)
 '''
 
-import time, numpy as np
-import  warnings
+import time, math
+import  warnings, tensorflow as tf
 from warnings import catch_warnings, warn
-from numpy import sum, pi, cos, sin, arctan2, exp, log, sqrt, dot, arange, ones
+import keras
 from typing import Any, Dict, List, Tuple, Type, Optional, Union, Hashable
 from ..util.logging import lgm, exception_handled, log_timing
-Array = np.ndarray
-C0 = 1 / (8 * np.pi ** 2)
 
-def wwz(ys: Array, ts: Array, freq: Array, tau: Array, c: float = C0) -> Tuple[Array, Array, Tuple[Array, Array, Array]]:
+pi: tf.Tensor = tf.constant(math.pi)
+C0: tf.Tensor = 1 / (8 * pi ** 2)
+
+def wwz(ys: tf.Tensor, ts: tf.Tensor, freq: tf.Tensor, tau: tf.Tensor, c: float = C0) -> Tuple[tf.Tensor, tf.Tensor, Tuple[tf.Tensor, tf.Tensor, tf.Tensor]]:
     '''
         Compute the weighted wavelet amplitude (WWA)
     ---------- Parameters:
@@ -39,24 +40,24 @@ def wwz(ys: Array, ts: Array, freq: Array, tau: Array, c: float = C0) -> Tuple[A
     lprint = print # lgm().log
     if verbose: lprint(f"wwz-0: nb={nb} nts={nts} nf={nf}")
 
-    tau = tau[:, None, None]     # broadcast-to(nb,nf,nts)
-    omega = 2 * np.pi * freq
-    omega_ = omega[None,:,None]  # broadcast-to(nb,nf,nts)
-    ts = ts[:,None,:]            # broadcast-to(nb,nf,nts)
-    if verbose: lprint( f"wwz: ys{list(ys.shape)} ts{list(ts.shape)} freq{list(freq.shape)} tau{list(tau.shape)} omega_{list(omega_.shape)} c={c}" )
+    tau: tf.Tensor   = tf.expand_dims( tf.expand_dims( tau, -1 ), -1 )
+    omega = freq * 2.0 * pi
+    omega_: tf.Tensor = tf.expand_dims( tf.expand_dims( omega, 0 ), -1 )           # broadcast-to(nb,nf,nts)
+    ts: tf.Tensor    = tf.expand_dims( tf.expand_dims( ts, 0 ), -1 )                                          # broadcast-to(nb,nf,nts)
+    if verbose: lprint( f"wwz: ys{list(ys.shape)} ts{list(ts.shape)} freq{list(freq.shape)} tau{list(tau.shape)} omega_{list(omega.shape)} c={c}" )
     dt = (ts - tau)
     dz = omega_ * dt
-    weights = exp(-c * dz ** 2)
-    sum_w = sum(weights, axis=-1)
+    weights = tf.math.exp(-c * dz ** 2)
+    sum_w = tf.reduce_sum(weights, axis=-1)
     if verbose: lprint( f"wwz-1: ys{list(ys.shape)} ts{list(ts.shape)} omega{list(omega.shape)} omega_{list(omega_.shape)} dz{list(dz.shape)} weights{list(weights.shape)} sum_w = {list(sum_w.shape)}")
 
     def w_prod(xs, ys):
-        return sum(weights * xs * ys, axis=-1) / sum_w
+        return tf.reduce_sum(weights * xs * ys, axis=-1) / sum_w
 
     theta = omega_ * ts
-    sin_basis = sin(theta)
-    cos_basis = cos(theta)
-    one_v = ones((nb,nf,nts), dtype=np.float32)
+    sin_basis = tf.math.sin(theta)
+    cos_basis = tf.math.cos(theta)
+    one_v = tf.ones( (nb,nf,nts) )
 
     sin_one = w_prod(sin_basis, one_v)
     cos_one = w_prod(cos_basis, one_v)
@@ -67,14 +68,14 @@ def wwz(ys: Array, ts: Array, freq: Array, tau: Array, c: float = C0) -> Tuple[A
 
     numerator = 2 * (sin_cos - sin_one * cos_one)
     denominator = (cos_cos - cos_one ** 2) - (sin_sin - sin_one ** 2)
-    time_shift = arctan2(numerator, denominator) / (2 * omega)  # Eq. (S5)
-    time_shift_ = time_shift[:, :, None]  #  broadcast-to(nb,nf,nts)
+    time_shift = tf.math.atan2(numerator, denominator) / (2 * omega)  # Eq. (S5)
+    time_shift_ = tf.expand_dims( time_shift, -1 )  #  broadcast-to(nb,nf,nts)
     if verbose: lprint(f"wwz-3:  numerator{list(numerator.shape)} denominator{list(denominator.shape)}  time_shift{list(time_shift.shape)}  ")
 
-    sin_shift = sin(omega_ * (ts - time_shift_))
-    cos_shift = cos(omega_ * (ts - time_shift_))
-    sin_tau_center = sin(omega * (time_shift - tau[:,:,0]))
-    cos_tau_center = cos(omega * (time_shift - tau[:,:,0]))
+    sin_shift = tf.math.sin(omega_ * (ts - time_shift_))
+    cos_shift = tf.math.cos(omega_ * (ts - time_shift_))
+    sin_tau_center = tf.math.sin(omega * (time_shift - tau[:,:,0]))
+    cos_tau_center = tf.math.cos(omega * (time_shift - tau[:,:,0]))
     if verbose: lprint(f"wwz-4: sin_shift{list(sin_shift.shape)} cos_shift{list(cos_shift.shape)} sin_tau_center{list(sin_tau_center.shape)} cos_tau_center{list(cos_tau_center.shape)}")
 
     ys_cos_shift = w_prod(ys, cos_shift)
@@ -94,6 +95,6 @@ def wwz(ys: Array, ts: Array, freq: Array, tau: Array, c: float = C0) -> Tuple[A
 
     if verbose: lprint(f"wwz-7: a0{list(a0.shape)} a1{list(a1.shape)} a2{list(a2.shape)}")
     wwp = a1**2 + a2**2
-    phase = arctan2(a2, a1)
+    phase = tf.math.atan2(a2, a1)
     coeff = (a0, a1, a2)
     return wwp, phase, coeff

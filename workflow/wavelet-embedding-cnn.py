@@ -1,0 +1,28 @@
+import numpy as np, tensorflow as tf
+from typing import List, Optional, Dict, Type, Any
+from astrotime.models.cnn_powell import SinusoidPeriodModel
+from astrotime.callbacks.printers import ShapePrinter
+from astrotime.loaders.sinusoid import SinusoidLoader
+from astrotime.encoders.wavelet import WaveletEncoder
+from astrotime.callbacks.checkpoints import CheckpointCallback
+
+data_dir = "/explore/nobackup/projects/ilab/projects/fusion/cache/encodings/"
+results_dir = "/explore/nobackup/projects/ilab/data/astro_sigproc/results"
+seq_length = 1000
+epochs=1000
+batch_size=64
+nfeatures=5
+train_dset_idx = 0
+valid_dset_idx = 1
+optimizer='rmsprop'
+loss='mae'
+model_name = f"wwz-{nfeatures}"
+device = "/device:GPU:0"
+
+sinusoid_loader = SinusoidLoader(device,data_dir)
+encoder = WaveletEncoder(device)
+tdset: Dict[ str, tf.Tensor] = sinusoid_loader.get_dataset(train_dset_idx)
+train_data:   tf.Tensor  = tdset['y']
+train_target: tf.Tensor  = tdset['target']
+
+

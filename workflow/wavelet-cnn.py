@@ -17,15 +17,15 @@ optimizer='rmsprop'
 loss='mae'
 model_name = f"wwz-{nfeatures}"
 
-sinusoid_loader = WaveletLoader(data_dir,nfeatures)
+wavelet_loader = WaveletLoader(data_dir,nfeatures)
 model = SinusoidPeriodModel(seq_length)
 model.compile(optimizer=optimizer, loss=loss)
 
-tdset: Dict[ str, np.ndarray] = sinusoid_loader.get_dataset(train_dset_idx)
+tdset: Dict[ str, np.ndarray] = wavelet_loader.get_dataset(train_dset_idx)
 train_data:   np.ndarray  = tdset['y']
 train_target: np.ndarray  = tdset['target']
 
-vdset = sinusoid_loader.get_dataset(valid_dset_idx)
+vdset = wavelet_loader.get_dataset(valid_dset_idx)
 valid_data:   np.ndarray  = vdset['y']
 valid_target: np.ndarray  = vdset['target']
 

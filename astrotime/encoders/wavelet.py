@@ -1,4 +1,4 @@
-import random, time, numpy as np
+import random, time, numpy as np, tensorflow as tf
 from sklearn.preprocessing import MinMaxScaler
 from typing import Any, Dict, List, Optional, Tuple
 from astrotime.encoders.base import Encoder
@@ -6,17 +6,11 @@ from astrotime.transforms.wwz import wwz
 from astrotime.util.math import logspace, shp
 import keras
 
-class WaveletEncoderModel(keras.Model):
-	def __init__(self):
-		super(WaveletEncoderModel, self).__init__()
-
-	def call(self, y: np.ndarray, t: np.ndarray, freq: np.ndarray, tau: np.ndarray) -> Tuple[np.ndarray,np.ndarray,Tuple[np.ndarray,np.ndarray,np.ndarray]]:
-		return wwz(y, t, freq, tau )
-
 class WaveletEncoder(Encoder):
 
-	def __init__(self, series_len: int = 1000, fbounds: Tuple[float,float] = (0.1,10.0), nfreq: int = 1000, fscale: str = "log" ):
+	def __init__(self, device: str, series_len: int = 1000, fbounds: Tuple[float,float] = (0.1,10.0), nfreq: int = 1000, fscale: str = "log" ):
 		super().__init__()
+		self.device = tf.device(device)
 		self.series_len = series_len
 		self.fbeg, self.fend = fbounds
 		self.nfreq = nfreq
@@ -26,38 +20,38 @@ class WaveletEncoder(Encoder):
 		self.nfeatures = 5
 		self.chan_first = True
 		self.batch_size = 100
-		self.wwz = WaveletEncoderModel()
-		self.wwz.compile()
 
 	def create_freq(self) -> np.ndarray:
 		fspace = logspace if (self.fscale == "log") else np.linspace
 		return fspace( self.fbeg, self.fend, self.nfreq )
 
-	def encode_dset(self, dset: Dict[str,np.ndarray]) -> np.ndarray:
-		ys, ts = dset['y'], dset['t']
-		amps, phases, coeffs = [], [], ([], [], [])
-		y1, t1, wwz_start_time, wwz_end_time = [], [], time.time(), time.time()
-		for idx, (y,t) in enumerate(zip(ys,ts)):
-			scaler = MinMaxScaler()
-			t0 = random.randrange(0, self.slmax - self.series_len )
-			y1.append( scaler.fit_transform( y[t0:t0+self.series_len].reshape(-1,1) ).transpose() )
-			t1.append( t[t0:t0+self.series_len].reshape(1,-1) )
-			if idx % self.batch_size == self.batch_size-1:
-				wwz_start_time = time.time()
-				print(f" **wavelet: encoding batch {idx // self.batch_size} of {len(ys) // self.batch_size}, load-time={wwz_start_time-wwz_end_time:.2f}s")
-				Y, T = np.concatenate(y1), np.concatenate(t1)
-				amp, phase, cs = self.wwz(Y, T, self.freq, T[:,self.series_len//2] )
-				amps.append( amp )
-				phases.append( phase )
-				for coeff, c in zip(coeffs, cs): coeff.append( c )
-				wwz_end_time = time.time()
-				print(f" ----------**>> amp{shp(amp)} phase{shp(phase)} coeffs: {shp(cs[0])} {shp(cs[1])} {shp(cs[2])}, wwz-time={wwz_end_time-wwz_start_time:.2f}s")
-				y1, t1 = [], []
-		amp, phase, coeff = np.concatenate(amps), np.concatenate(phases), [ np.concatenate(c) for c in coeffs ]
+	def encode_dset(self, dset: Dict[str,tf.Tensor]) -> tf.Tensor:
+		with (self.device):
+			ys: tf.Tensor = dset['y']
+			xs: tf.Tensor = dset['x']
+			amps, phases, coeffs = [], [], ([], [], [])
+			y1, x1, wwz_start_time, wwz_end_time = [], [], time.time(), time.time()
+			for idx, (y,x) in enumerate(zip(ys,xs)):
+				x0: int = tf.random.uniform( [1], 0, self.slmax - self.series_len, dtype=tf.int32 )[0]
+				ys: tf.Tensor = y[x0:x0+self.series_len].reshape(-1,1)
+				y1.append( keras.utils.normalize( ys, axis=0, order=1).transpose() )
+				x1.append( x[x0:x0+self.series_len].expand_dims(0) )
+				if idx % self.batch_size == self.batch_size-1:
+					wwz_start_time = time.time()
+					print(f" **wavelet: encoding batch {idx // self.batch_size} of {len(ys) // self.batch_size}, load-time={wwz_start_time-wwz_end_time:.2f}s")
+					Y, X = tf.concat(y1,axis=0), tf.concat(x1,axis=0)
+					amp, phase, cs = wwz(Y, X, self.freq, X[:,self.series_len//2] )
+					amps.append( amp )
+					phases.append( phase )
+					for coeff, c in zip(coeffs, cs): coeff.append( c )
+					wwz_end_time = time.time()
+					print(f" ----------**>> amp{shp(amp)} phase{shp(phase)} coeffs: {shp(cs[0])} {shp(cs[1])} {shp(cs[2])}, wwz-time={wwz_end_time-wwz_start_time:.2f}s")
+					y1, t1 = [], []
+		amp, phase, coeff = tf.concat(amps,axis=0), tf.concat(phases,axis=0), [ tf.concat(c,axis=0) for c in coeffs ]
 		print( f" **wavelet: amp{shp(amp)} phase{shp(phase)} coeffs: {shp(coeff[0])} {shp(coeff[1])} {shp(coeff[2])}")
 		features = [amp,phase]+coeff
 		dim = 1 if self.chan_first else 2
-		encoded_dset = np.stack( features[:self.nfeatures], axis=dim )
+		encoded_dset = tf.stack( features[:self.nfeatures], axis=dim )
 		return encoded_dset
 
 # result = np.array(val_Xs)
