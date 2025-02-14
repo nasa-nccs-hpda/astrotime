@@ -28,15 +28,14 @@ class WaveletEncoder(Encoder):
 	def encode_dset(self, dset: Dict[str,tf.Tensor]) -> tf.Tensor:
 		with (self.device):
 			t0 = time.time()
-			ys: tf.Tensor = dset['y']
-			xs: tf.Tensor = dset['x']
 			amps, phases, coeffs = [], [], ([], [], [])
 			y1, x1, wwz_start_time, wwz_end_time = [], [], time.time(), time.time()
-			for idx, (y,x) in enumerate(zip(ys,xs)):
+			for idx, (y,x) in enumerate(zip(dset['y'],dset['x'])):
 				x0: int = tf.random.uniform( [1], 0, self.slmax - self.series_len, dtype=tf.int32 )[0]
-				ys: tf.Tensor = y[x0:x0+self.series_len].reshape(-1,1)
+				ys: tf.Tensor = tf.convert_to_tensor( y[x0:x0+self.series_len].reshape(-1,1), dtype=tf.float32 )
+				xs: tf.Tensor = tf.convert_to_tensor( x[x0:x0+self.series_len].expand_dims(0), dtype=tf.float32)
 				y1.append( keras.utils.normalize( ys, axis=0, order=1).transpose() )
-				x1.append( x[x0:x0+self.series_len].expand_dims(0) )
+				x1.append( xs )
 				if idx % self.batch_size == self.batch_size-1:
 					wwz_start_time = time.time()
 					print(f" **wavelet: encoding batch {idx // self.batch_size} of {len(ys) // self.batch_size}, load-time={wwz_start_time-wwz_end_time:.2f}s")

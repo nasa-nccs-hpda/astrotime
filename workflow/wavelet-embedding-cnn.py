@@ -27,11 +27,9 @@ rank = 0
 lgm().init_logging( f"{results_dir}/logging", rank, logging.DEBUG )
 device = f"/device:GPU:{rank}" if rank >= 0 else "/CPU:0"
 
-sinusoid_loader = SinusoidLoader(device,data_dir)
+sinusoid_loader = SinusoidLoader(device)
 encoder = WaveletEncoder(device)
-tdset: Dict[ str, tf.Tensor] = sinusoid_loader.get_dataset(train_dset_idx)
-# train_data:   tf.Tensor  = tdset['y']
-# train_target: tf.Tensor  = tdset['target']
+tdset: Dict = sinusoid_loader.get_dataset(train_dset_idx)
 encoded = encoder.encode_dset(tdset)
 
 
