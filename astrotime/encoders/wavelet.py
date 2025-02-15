@@ -1,5 +1,4 @@
 import random, time, numpy as np, tensorflow as tf
-from sklearn.preprocessing import MinMaxScaler
 from typing import Any, Dict, List, Optional, Tuple
 from astrotime.encoders.base import Encoder
 from astrotime.transforms.wwz import wwz
@@ -46,35 +45,5 @@ class WaveletEncoder(Encoder):
 		features = [amp,phase]+coeff
 		dim = 1 if self.chan_first else 2
 		encoded_dset = tf.stack( features[:self.nfeatures], axis=dim )
-		print(f" Completed encoding in {(time.time()-t0)/60.0:.2f}m")
+		print(f" Completed encoding in {(time.time()-t0)/60.0:.2f}m: amp{amp.shape}({tf.reduce_mean(amp):.2f},{tf.math.reduce_std(amp):.2f}), phase{phase.shape}({tf.reduce_mean(phase):.2f},{tf.math.reduce_std(phase):.2f}), coeff{coeff[0].shape}({tf.reduce_mean(coeff[0]):.2f},{tf.math.reduce_std(coeff[0]):.2f})")
 		return self.freq, encoded_dset
-
-# result = np.array(val_Xs)
-#
-# print(f"WaveletEncoder: dset keys = {list(dset.keys())}")
-# ydata: np.ndarray = dset['y']
-# print( f"  --> ydata{ydata.shape} y{ydata[0].shape} y{ydata[100].shape} y{ydata[1000].shape}")
-# tr = self.series_len // 2
-# t0 = random.randrange(tr, self.slmax - tr)
-#
-# return y
-
-#
-#
-# def create_batch(self, xbatch: xa.Dataset, **kwargs ) -> Dict[str,torch.Tensor]:
-# 	cnn_kernel_size = cnn_series_length( self.series_length, self.kernel_size, self.stride )
-# 	kr = cnn_kernel_size // 2
-# 	y: torch.Tensor = torch.FloatTensor(xbatch['y'].values).to(self.device)
-# 	t: torch.Tensor = torch.FloatTensor(xbatch['t'].values).to(self.device)
-# 	tindx = kwargs.get('tindx', random.randrange(kr, t.shape[1] - kr))
-# 	target: torch.Tensor = torch.FloatTensor(xbatch[self.target_var].values).to(self.device)
-# 	trng = [tindx - kr, tindx + kr]
-# 	y: torch.Tensor = y[:, trng[0]:trng[1]]
-# 	t: torch.Tensor = t[:, trng[0]:trng[1]]
-# 	tau: torch.Tensor = ( t[:,kr] + t[:,kr+1] )/2
-# 	dim = 1 if self.chan_first else 2
-# 	amp, phase, coeff = wwz( y, t, self.freq, tau )
-# 	features = [amp,phase]+list(coeff)
-# 	batch: torch.Tensor = torch.stack( features[:self.nfeatures], dim=dim )
-# 	# print( f"WaveletEncoder[nf={self.nfeatures}]: y{shp(y)} t{shp(t)} amp{shp(amp)} phase{shp(phase)} coeff-0{shp(coeff[0])} batch{shp(batch)} ")
-# 	return dict( batch=batch, target=target, tau=tau )
