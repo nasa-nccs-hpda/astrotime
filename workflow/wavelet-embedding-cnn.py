@@ -10,10 +10,11 @@ from astrotime.callbacks.checkpoints import CheckpointCallback
 from tensorflow.compat.v1 import logging
 from astrotime.util.logging import lgm
 from argparse import Namespace
-from astrotime.util.env import parse_clargs
+from astrotime.util.env import parse_clargs, get_device
 
 ccustom = {}
 clargs: Namespace = parse_clargs(ccustom)
+device = get_device(clargs)
 
 data_dir = "/explore/nobackup/projects/ilab/data/astro_sigproc/sinusoids/npz/"
 results_dir = "/explore/nobackup/projects/ilab/data/astro_sigproc/results"
@@ -26,11 +27,9 @@ valid_dset_idx = 1
 optimizer='rmsprop'
 loss='mae'
 model_name = f"wwz-{nfeatures}"
-rank = 0
 log_level = logging.INFO
+lgm().init_logging( f"{results_dir}/logging", clargs.gpu, log_level )
 
-lgm().init_logging( f"{results_dir}/logging", rank, log_level )
-device = f"/device:GPU:{rank}" if rank >= 0 else "/CPU:0"
 
 sinusoid_loader = SinusoidLoader(data_dir)
 encoder = WaveletEncoder(device)

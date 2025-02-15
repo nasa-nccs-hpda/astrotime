@@ -23,7 +23,7 @@ class WaveletEncoder(Encoder):
 		fspace = logspace if (self.fscale == "log") else np.linspace
 		return tf.convert_to_tensor( fspace( self.fbeg, self.fend, self.nfreq ), dtype=tf.float32 )
 
-	def encode_dset(self, dset: Dict[str,tf.Tensor]) -> Tuple[tf.Tensor,tf.Tensor]:
+	def encode_dset(self, dset: Dict[str,np.ndarray]) -> Tuple[tf.Tensor,tf.Tensor]:
 		t0 = time.time()
 		with (self.device):
 			amps, phases, coeffs = [], [], ([], [], [])

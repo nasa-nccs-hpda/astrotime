@@ -31,3 +31,6 @@ def default_clargs( **updates ) -> Namespace:
 
 def default_cpu_clargs( **updates ):
 	return default_clargs( world_size=1, gpu=-1, **updates )
+
+def get_device(args:Namespace) -> str:
+	return f"/device:GPU:{args.gpu}" if args.gpu >= 0 else "/CPU:0"

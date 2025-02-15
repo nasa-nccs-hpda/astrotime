@@ -6,10 +6,11 @@ from astrotime.callbacks.printers import ShapePrinter
 from astrotime.loaders.sinusoid import SinusoidLoader
 from astrotime.callbacks.checkpoints import CheckpointCallback
 from argparse import Namespace
-from astrotime.util.env import parse_clargs
+from astrotime.util.env import parse_clargs, get_device
 
 ccustom = {}
 clargs: Namespace = parse_clargs(ccustom)
+device = get_device(clargs)
 
 data_dir = "/explore/nobackup/projects/ilab/data/astro_sigproc/sinusoids/npz/"
 results_dir = "/explore/nobackup/projects/ilab/data/astro_sigproc/results"
@@ -24,7 +25,7 @@ optimizer='rmsprop'
 loss='mae'
 
 sinusoid_loader = SinusoidLoader(data_dir)
-encoder = ValueEncoder(seq_length)
+encoder = ValueEncoder(device,seq_length)
 model = SinusoidPeriodModel(seq_length)
 model.compile(optimizer=optimizer, loss=loss)
 

@@ -1,4 +1,4 @@
-import random, keras, time, tensorflow as tf
+import random, keras, time, tensorflow as tf, numpy as np
 from sklearn.preprocessing import MinMaxScaler
 from typing import Any, Dict, List, Optional, Tuple
 from astrotime.encoders.base import Encoder
@@ -10,7 +10,7 @@ class ValueEncoder(Encoder):
 		self.series_len = series_len
 		self.slmax = 6000
 
-	def encode_dset(self, dset: Dict[str,tf.Tensor]) -> Tuple[tf.Tensor,tf.Tensor]:
+	def encode_dset(self, dset: Dict[str,np.ndarray]) -> Tuple[tf.Tensor,tf.Tensor]:
 		with (self.device):
 			y1, x1 = [], []
 			for idx, (y,x) in enumerate(zip(dset['y'],dset['x'])):
