@@ -32,9 +32,11 @@ class WaveletEncoder(Encoder):
 			y1, x1, wwz_start_time, wwz_end_time = [], [], time.time(), time.time()
 			for idx, (y,x) in enumerate(zip(dset['y'],dset['x'])):
 				x0: int = tf.random.uniform( [1], 0, self.slmax - self.series_len, dtype=tf.int32 )[0]
-				ys: tf.Tensor = tf.convert_to_tensor( y[x0:x0+self.series_len].reshape(-1,1), dtype=tf.float32 )
-				xs: tf.Tensor = tf.convert_to_tensor( x[x0:x0+self.series_len].reshape(-1,1), dtype=tf.float32)
-				y1.append( tf.transpose( keras.utils.normalize( ys, axis=0, order=1) ) )
+				ys: tf.Tensor = tf.convert_to_tensor( y[x0:x0+self.series_len], dtype=tf.float32 )
+				xs: tf.Tensor = tf.convert_to_tensor( x[x0:x0+self.series_len], dtype=tf.float32)
+				# tf.transpose(keras.utils.normalize(ys, axis=0, order=1)
+				print(f" **{idx}:  x{shp(xs)}, y{shp(ys)}")
+				y1.append( ys )
 				x1.append( xs )
 				if idx % self.batch_size == self.batch_size-1:
 					wwz_start_time = time.time()
