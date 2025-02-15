@@ -12,7 +12,7 @@ class ShapePrinter(keras.callbacks.Callback):
 		self.print_shapes()
 
 	def on_epoch_begin(self, epoch, logs=None):
-		if epoch == 0:
+		if epoch < 4:
 			print(f"Epoch {epoch} is starting. Printing shapes:")
 			self.print_shapes()
 
