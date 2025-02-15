@@ -18,7 +18,7 @@ class WaveletEncoder(Encoder):
 		self.freq: np.ndarray = self.create_freq()
 		self.slmax = 6000
 		self.nfeatures = 5
-		self.chan_first = True
+		self.chan_first = False
 		self.batch_size = 100
 
 	def create_freq(self) -> np.ndarray:
