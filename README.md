@@ -15,6 +15,6 @@ purpose: Template for python projects tailored to scientific applications (e.g.,
 
     >   * mamba create -n astrotime ninja python=3.10
     >   * mamba activate astrotime
-    >   * pip install tensorflow tensorboard jupyterlab==4.0.13 ipywidgets==7.8.4 jupyterlab_widgets ipykernel==6.29 ipympl ipython==8.26 xarray netCDF4
+    >   * pip install tensorflow[and-cuda] tensorboard jupyterlab==4.0.13 ipywidgets==7.8.4 jupyterlab_widgets ipykernel==6.29 ipympl ipython==8.26 xarray netCDF4
     >   * pip install hydra-core rich  scikit-learn
 

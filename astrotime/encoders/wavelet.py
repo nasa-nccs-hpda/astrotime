@@ -19,7 +19,7 @@ class WaveletEncoder(Encoder):
 		self.slmax = 6000
 		self.nfeatures = 5
 		self.chan_first = True
-		self.batch_size = 1000
+		self.batch_size = 100
 
 	def create_freq(self) -> np.ndarray:
 		fspace = logspace if (self.fscale == "log") else np.linspace
