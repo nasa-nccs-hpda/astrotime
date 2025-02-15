@@ -40,12 +40,12 @@ def wwz(ys: tf.Tensor, ts: tf.Tensor, freq: tf.Tensor, tau: tf.Tensor, c: float 
     omega = freq * 2.0 * pi
     omega_: tf.Tensor = tf.expand_dims( tf.expand_dims( omega, 0 ), -1 )           # broadcast-to(nb,nf,nts)
     ts: tf.Tensor    = tf.expand_dims( tf.expand_dims( ts, 0 ), -1 )                                          # broadcast-to(nb,nf,nts)
-    lgm().debug( f"wwz: ys{list(ys.shape)} ts{list(ts.shape)} freq{list(freq.shape)} tau{list(tau.shape)} omega_{list(omega.shape)} c={c}" )
+    lgm().debug( f"wwz(nb,nf,nts): ({nb},{nf},{nts}) ys{list(ys.shape)} ts{list(ts.shape)} freq{list(freq.shape)} tau{list(tau.shape)} omega_{list(omega.shape)} omega_{list(omega_.shape)} c={c}" )
     dt = (ts - tau)
     dz = omega_ * dt
     weights = tf.math.exp(-c * dz ** 2)
     sum_w = tf.reduce_sum(weights, axis=-1)
-    lgm().debug( f"wwz-1: ys{list(ys.shape)} ts{list(ts.shape)} omega{list(omega.shape)} omega_{list(omega_.shape)} dz{list(dz.shape)} weights{list(weights.shape)} sum_w = {list(sum_w.shape)}")
+    lgm().debug( f"wwz-1: dt{list(dt.shape)} dz{list(dz.shape)} weights{list(weights.shape)} sum_w = {list(sum_w.shape)}")
 
     def w_prod(xs, ys):
         return tf.reduce_sum(weights * xs * ys, axis=-1) / sum_w
