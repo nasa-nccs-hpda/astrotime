@@ -39,7 +39,8 @@ def wwz(ys: tf.Tensor, ts: tf.Tensor, freq: tf.Tensor, tau: tf.Tensor, c: float 
     tau: tf.Tensor   = tf.expand_dims( tf.expand_dims( tau, -1 ), -1 )
     omega = freq * 2.0 * pi
     omega_: tf.Tensor = tf.expand_dims( tf.expand_dims( omega, 0 ), -1 )           # broadcast-to(nb,nf,nts)
-    ts: tf.Tensor    = tf.expand_dims( tf.expand_dims( ts, 0 ), -1 )                                          # broadcast-to(nb,nf,nts)
+    ts: tf.Tensor    = tf.expand_dims( ts, 1 )                                     # broadcast-to(nb,nf,nts)
+    ys: tf.Tensor    = tf.expand_dims( ys, 1 )                                     # broadcast-to(nb,nf,nts)
     lgm().debug( f"wwz(nb,nf,nts): ({nb},{nf},{nts}) ys{list(ys.shape)} ts{list(ts.shape)} freq{list(freq.shape)} tau{list(tau.shape)} omega_{list(omega.shape)} omega_{list(omega_.shape)} c={c}" )
     dt = (ts - tau)
     dz = omega_ * dt
