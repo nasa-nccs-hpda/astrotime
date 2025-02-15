@@ -46,6 +46,7 @@ class WaveletEncoder(Encoder):
 					for coeff, c in zip(coeffs, cs): coeff.append( c )
 					wwz_end_time = time.time()
 					y1, x1 = [], []
+					print(f" ---> Encoded amp{shp(amp)}, phase{shp(phase)}, C{shp(cs[0])}, encode-time={wwz_end_time-wwz_start_time:.2f}s")
 		amp, phase, coeff = tf.concat(amps,axis=0), tf.concat(phases,axis=0), [ tf.concat(c,axis=0) for c in coeffs ]
 		print( f" **wavelet: amp{shp(amp)} phase{shp(phase)} coeffs: {shp(coeff[0])} {shp(coeff[1])} {shp(coeff[2])}")
 		features = [amp,phase]+coeff
