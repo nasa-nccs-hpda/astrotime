@@ -10,7 +10,6 @@ from astrotime.callbacks.checkpoints import CheckpointCallback
 from tensorflow.compat.v1 import logging
 from astrotime.util.logging import lgm
 
-logger = tf.get_logger()
 data_dir = "/explore/nobackup/projects/ilab/data/astro_sigproc/sinusoids/npz/"
 results_dir = "/explore/nobackup/projects/ilab/data/astro_sigproc/results"
 seq_length = 1000
@@ -23,8 +22,9 @@ optimizer='rmsprop'
 loss='mae'
 model_name = f"wwz-{nfeatures}"
 rank = 0
+log_level = logging.INFO
 
-lgm().init_logging( f"{results_dir}/logging", rank, logging.DEBUG )
+lgm().init_logging( f"{results_dir}/logging", rank, log_level )
 device = f"/device:GPU:{rank}" if rank >= 0 else "/CPU:0"
 
 sinusoid_loader = SinusoidLoader(data_dir)
