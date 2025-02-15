@@ -40,7 +40,7 @@ valid_target: tf.Tensor   = vdset['target']
 
 print( f" *** train_data {type(train_data)} train_target {type(train_target)} valid_data {type(valid_data)} valid_target {type(valid_target)} ")
 
-print( f" *** train_data{train_data.shape.as_list()} train_target{train_target.shape.as_list()} valid_data{valid_data.shape.as_list()} valid_target{valid_target.shape.as_list()} ")
+print( f" *** train_data{train_data.shape} train_target{train_target.shape} valid_data{valid_data.shape} valid_target{valid_target.shape} ")
 
 shape_printer = ShapePrinter(input_shapes=train_data.shape)
 checkpointer = CheckpointCallback( model_name, f"{results_dir}/checkpoints" )
