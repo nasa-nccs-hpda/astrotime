@@ -26,8 +26,8 @@ class WaveletEncoder(Encoder):
 		return fspace( self.fbeg, self.fend, self.nfreq )
 
 	def encode_dset(self, dset: Dict[str,tf.Tensor]) -> tf.Tensor:
+		t0 = time.time()
 		with (self.device):
-			t0 = time.time()
 			amps, phases, coeffs = [], [], ([], [], [])
 			y1, x1, wwz_start_time, wwz_end_time = [], [], time.time(), time.time()
 			for idx, (y,x) in enumerate(zip(dset['y'],dset['x'])):
@@ -39,20 +39,17 @@ class WaveletEncoder(Encoder):
 				if idx % self.batch_size == self.batch_size-1:
 					wwz_start_time = time.time()
 					Y, X = tf.concat(y1,axis=0), tf.concat(x1,axis=0)
-					print(f" **wavelet: encoding batch {idx // self.batch_size} of {len(dset['y']) // self.batch_size}, x{shp(X)}, y{shp(Y)}, load-time={wwz_start_time-wwz_end_time:.2f}s")
 					amp, phase, cs = wwz(Y, X, self.freq, X[:,self.series_len//2] )
 					amps.append( amp )
 					phases.append( phase )
 					for coeff, c in zip(coeffs, cs): coeff.append( c )
 					wwz_end_time = time.time()
 					y1, x1 = [], []
-					print(f" ---> Encoded amp{shp(amp)}, phase{shp(phase)}, C{shp(cs[0])}, encode-time={wwz_end_time-wwz_start_time:.2f}s")
 		amp, phase, coeff = tf.concat(amps,axis=0), tf.concat(phases,axis=0), [ tf.concat(c,axis=0) for c in coeffs ]
-		print( f" **wavelet: amp{shp(amp)} phase{shp(phase)} coeffs: {shp(coeff[0])} {shp(coeff[1])} {shp(coeff[2])}")
 		features = [amp,phase]+coeff
 		dim = 1 if self.chan_first else 2
 		encoded_dset = tf.stack( features[:self.nfeatures], axis=dim )
-		print(f" Completed encoding in ={time.time()-t0:.2f}s")
+		print(f" Completed encoding in {(time.time()-t0)/60.0:.2f}m")
 		return encoded_dset
 
 # result = np.array(val_Xs)

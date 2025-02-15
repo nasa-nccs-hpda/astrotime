@@ -29,8 +29,24 @@ device = f"/device:GPU:{rank}" if rank >= 0 else "/CPU:0"
 
 sinusoid_loader = SinusoidLoader(data_dir)
 encoder = WaveletEncoder(device)
+
 tdset: Dict = sinusoid_loader.get_dataset(train_dset_idx)
-encoded = encoder.encode_dset(tdset)
+train_data:   tf.Tensor = encoder.encode_dset(tdset)
+train_target: tf.Tensor  = tdset['target']
+
+vdset = sinusoid_loader.get_dataset(valid_dset_idx)
+valid_data:   tf.Tensor   = encoder.encode_dset(vdset)
+valid_target: tf.Tensor   = vdset['target']
+
+print( f" *** train_data{train_data.shape.as_list()} train_target{train_target.shape.as_list()} valid_data{valid_data.shape.as_list()} valid_target{valid_target.shape.as_list()} ")
+
+shape_printer = ShapePrinter(input_shapes=train_data.shape)
+checkpointer = CheckpointCallback( model_name, f"{results_dir}/checkpoints" )
+train_args: Dict[str,Any] = dict( epochs=epochs, batch_size=batch_size, shuffle=True, callbacks=[shape_printer,checkpointer], verbose=1  )
+
+spmodel = SinusoidPeriodModel(seq_length)
+spmodel.compile(optimizer=optimizer, loss=loss)
+history = spmodel.fit( train_data, train_target, validation_data=(valid_data, valid_target), **train_args )
 
 
 
