@@ -11,6 +11,7 @@ class ValueEncoder(Encoder):
 		self.slmax = 6000
 
 	def encode_dset(self, dset: Dict[str,np.ndarray]) -> Tuple[tf.Tensor,tf.Tensor]:
+		t0 = time.time()
 		with (self.device):
 			y1, x1 = [], []
 			for idx, (y,x) in enumerate(zip(dset['y'],dset['x'])):
@@ -20,4 +21,6 @@ class ValueEncoder(Encoder):
 				y1.append(tf.expand_dims(keras.utils.normalize(ys, order=1), 0))
 				x1.append(tf.expand_dims(xs, 0))
 			Y, X = tf.concat(y1, axis=0), tf.concat(x1, axis=0)
+		print(f" Completed encoding in {(time.time()-t0)/60.0:.2f}m: ")
+		print(f" --> X{X.shape} Y{Y.shape}({tf.reduce_mean(Y):.2f},{tf.math.reduce_std(Y):.2f})")
 		return X, Y
