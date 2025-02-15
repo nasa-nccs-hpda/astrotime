@@ -39,7 +39,7 @@ class WaveletEncoder(Encoder):
 				if idx % self.batch_size == self.batch_size-1:
 					wwz_start_time = time.time()
 					Y, X = tf.concat(y1,axis=0), tf.concat(x1,axis=0)
-					print(f" **wavelet: encoding batch {idx // self.batch_size} of {len(ys) // self.batch_size}, x{shp(X)}, y{shp(Y)}, load-time={wwz_start_time-wwz_end_time:.2f}s")
+					print(f" **wavelet: encoding batch {idx // self.batch_size} of {len(dset['y']) // self.batch_size}, x{shp(X)}, y{shp(Y)}, load-time={wwz_start_time-wwz_end_time:.2f}s")
 					amp, phase, cs = wwz(Y, X, self.freq, X[:,self.series_len//2] )
 					amps.append( amp )
 					phases.append( phase )
