@@ -9,23 +9,22 @@ import keras
 class WaveletEncoder(Encoder):
 
 	def __init__(self, device: str, series_len: int = 1000, fbounds: Tuple[float,float] = (0.1,10.0), nfreq: int = 1000, fscale: str = "log" ):
-		super().__init__()
-		self.device = tf.device(device)
+		super(WaveletEncoder, self).__init__( device )
 		self.series_len = series_len
 		self.fbeg, self.fend = fbounds
 		self.nfreq = nfreq
 		self.fscale = fscale
-		self.freq: np.ndarray = self.create_freq()
+		self.freq: tf.Tensor = self.create_freq()
 		self.slmax = 6000
 		self.nfeatures = 5
 		self.chan_first = False
 		self.batch_size = 100
 
-	def create_freq(self) -> np.ndarray:
+	def create_freq(self) -> tf.Tensor:
 		fspace = logspace if (self.fscale == "log") else np.linspace
-		return fspace( self.fbeg, self.fend, self.nfreq )
+		return tf.convert_to_tensor( fspace( self.fbeg, self.fend, self.nfreq ), dtype=tf.float32 )
 
-	def encode_dset(self, dset: Dict[str,tf.Tensor]) -> tf.Tensor:
+	def encode_dset(self, dset: Dict[str,tf.Tensor]) -> Tuple[tf.Tensor,tf.Tensor]:
 		t0 = time.time()
 		with (self.device):
 			amps, phases, coeffs = [], [], ([], [], [])
@@ -37,20 +36,18 @@ class WaveletEncoder(Encoder):
 				y1.append( tf.expand_dims( keras.utils.normalize(ys, order=1), 0 ) )
 				x1.append( tf.expand_dims( xs, 0 ) )
 				if idx % self.batch_size == self.batch_size-1:
-					wwz_start_time = time.time()
 					Y, X = tf.concat(y1,axis=0), tf.concat(x1,axis=0)
 					amp, phase, cs = wwz(Y, X, self.freq, X[:,self.series_len//2] )
 					amps.append( amp )
 					phases.append( phase )
 					for coeff, c in zip(coeffs, cs): coeff.append( c )
-					wwz_end_time = time.time()
 					y1, x1 = [], []
 		amp, phase, coeff = tf.concat(amps,axis=0), tf.concat(phases,axis=0), [ tf.concat(c,axis=0) for c in coeffs ]
 		features = [amp,phase]+coeff
 		dim = 1 if self.chan_first else 2
 		encoded_dset = tf.stack( features[:self.nfeatures], axis=dim )
 		print(f" Completed encoding in {(time.time()-t0)/60.0:.2f}m")
-		return encoded_dset
+		return self.freq, encoded_dset
 
 # result = np.array(val_Xs)
 #

@@ -1,10 +1,15 @@
-import numpy as np
+import tensorflow as tf
 from typing import List, Optional, Dict, Type, Any
 from astrotime.encoders.baseline import ValueEncoder
 from astrotime.models.cnn_powell import SinusoidPeriodModel
 from astrotime.callbacks.printers import ShapePrinter
 from astrotime.loaders.sinusoid import SinusoidLoader
 from astrotime.callbacks.checkpoints import CheckpointCallback
+from argparse import Namespace
+from astrotime.util.env import parse_clargs
+
+ccustom = {}
+clargs: Namespace = parse_clargs(ccustom)
 
 data_dir = "/explore/nobackup/projects/ilab/data/astro_sigproc/sinusoids/npz/"
 results_dir = "/explore/nobackup/projects/ilab/data/astro_sigproc/results"
@@ -23,16 +28,16 @@ encoder = ValueEncoder(seq_length)
 model = SinusoidPeriodModel(seq_length)
 model.compile(optimizer=optimizer, loss=loss)
 
-tdset: Dict[ str, np.ndarray] = sinusoid_loader.get_dataset(train_dset_idx)
-train_data:   np.ndarray  = encoder.encode_dset(tdset)
-train_target: np.ndarray  = tdset['target']
+tdset: Dict = sinusoid_loader.get_dataset(train_dset_idx)
+tX, tY = encoder.encode_dset(tdset)
+train_target: tf.Tensor  = tdset['target']
 
 vdset = sinusoid_loader.get_dataset(valid_dset_idx)
-valid_data:   np.ndarray  = encoder.encode_dset(vdset)
-valid_target: np.ndarray  = vdset['target']
+vX, vY   = encoder.encode_dset(vdset)
+valid_target: tf.Tensor   = vdset['target']
 
-shape_printer = ShapePrinter(input_shapes=train_data.shape)
+shape_printer = ShapePrinter(input_shapes=tY.shape)
 checkpointer = CheckpointCallback( model_name, f"{results_dir}/checkpoints" )
 train_args: Dict[str,Any] = dict( epochs=epochs, batch_size=batch_size, shuffle=True, callbacks=[shape_printer,checkpointer], verbose=1  )
 
-history = model.fit( train_data, train_target, validation_data=(valid_data, valid_target), **train_args )
+history = model.fit( tY, train_target, validation_data=(vY, valid_target), **train_args )

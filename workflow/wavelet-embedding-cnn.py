@@ -9,6 +9,11 @@ from astrotime.encoders.wavelet import WaveletEncoder
 from astrotime.callbacks.checkpoints import CheckpointCallback
 from tensorflow.compat.v1 import logging
 from astrotime.util.logging import lgm
+from argparse import Namespace
+from astrotime.util.env import parse_clargs
+
+ccustom = {}
+clargs: Namespace = parse_clargs(ccustom)
 
 data_dir = "/explore/nobackup/projects/ilab/data/astro_sigproc/sinusoids/npz/"
 results_dir = "/explore/nobackup/projects/ilab/data/astro_sigproc/results"
@@ -31,24 +36,20 @@ sinusoid_loader = SinusoidLoader(data_dir)
 encoder = WaveletEncoder(device)
 
 tdset: Dict = sinusoid_loader.get_dataset(train_dset_idx)
-train_data:   tf.Tensor = encoder.encode_dset(tdset)
+tX, tY = encoder.encode_dset(tdset)
 train_target: tf.Tensor  = tdset['target']
 
 vdset = sinusoid_loader.get_dataset(valid_dset_idx)
-valid_data:   tf.Tensor   = encoder.encode_dset(vdset)
+vX, vY   = encoder.encode_dset(vdset)
 valid_target: tf.Tensor   = vdset['target']
 
-print( f" *** train_data {type(train_data)} train_target {type(train_target)} valid_data {type(valid_data)} valid_target {type(valid_target)} ")
-
-print( f" *** train_data{train_data.shape} train_target{train_target.shape} valid_data{valid_data.shape} valid_target{valid_target.shape} ")
-
-shape_printer = ShapePrinter(input_shapes=train_data.shape)
+shape_printer = ShapePrinter(input_shapes=tY.shape)
 checkpointer = CheckpointCallback( model_name, f"{results_dir}/checkpoints" )
 train_args: Dict[str,Any] = dict( epochs=epochs, batch_size=batch_size, shuffle=True, callbacks=[shape_printer,checkpointer], verbose=1  )
 
 spmodel = SinusoidPeriodModel(seq_length)
 spmodel.compile(optimizer=optimizer, loss=loss)
-history = spmodel.fit( train_data, train_target, validation_data=(valid_data, valid_target), **train_args )
+history = spmodel.fit( tY, train_target, validation_data=(vY, valid_target), **train_args )
 
 
 

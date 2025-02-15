@@ -1,11 +1,11 @@
 from typing import Any, Dict, List, Optional
-import numpy as np
+import tensorflow as tf
 
 
 class Encoder:
 
-	def __init__(self):
-		pass
+	def __init__(self, device: str):
+		self.device = tf.device(device)
 
-	def encode_dset(self, batch_data: Dict[str,np.ndarray]) -> np.ndarray:
+	def encode_dset(self, dset: Dict[str,tf.Tensor]) -> tf.Tensor:
 		raise NotImplementedError()
