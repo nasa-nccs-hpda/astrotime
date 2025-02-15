@@ -38,6 +38,8 @@ vdset = sinusoid_loader.get_dataset(valid_dset_idx)
 valid_data:   tf.Tensor   = encoder.encode_dset(vdset)
 valid_target: tf.Tensor   = vdset['target']
 
+print( f" *** train_data {type(train_data)} train_target {type(train_target)} valid_data {type(valid_data)} valid_target {type(valid_target)} ")
+
 print( f" *** train_data{train_data.shape.as_list()} train_target{train_target.shape.as_list()} valid_data{valid_data.shape.as_list()} valid_target{valid_target.shape.as_list()} ")
 
 shape_printer = ShapePrinter(input_shapes=train_data.shape)
