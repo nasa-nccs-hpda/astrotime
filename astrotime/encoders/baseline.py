@@ -24,7 +24,5 @@ class ValueEncoder(Encoder):
 			Y, X = tf.concat(y1, axis=0), tf.concat(x1, axis=0)
 			if Y.ndim == 2: Y = tf.expand_dims(Y, axis=2)
 			print(f" Completed encoding in {(time.time()-t0)/60.0:.2f}m: ")
-			z : tf.Tensor = tf.reduce_mean(Y)
-			z.
 			print(f" --> X{X.shape}, Y{Y.shape}: (mean={tmean(Y):.5f}, std={tstd(Y):.5f})")
 			return X, Y
