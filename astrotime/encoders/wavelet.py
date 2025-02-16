@@ -42,10 +42,10 @@ class WaveletEncoder(Encoder):
 					phases.append( phase )
 					for coeff, c in zip(coeffs, cs): coeff.append( c )
 					y1, x1 = [], []
-		amp, phase, coeff = tf.concat(amps,axis=0), tf.concat(phases,axis=0), [ tf.concat(c,axis=0) for c in coeffs ]
-		features = [amp,phase]+coeff
-		dim = 1 if self.chan_first else 2
-		encoded_dset = tf.stack( features[:self.nfeatures], axis=dim )
-		print(f" Completed encoding in {(time.time()-t0)/60.0:.2f}m: amp{amp.shape}({tf.reduce_mean(amp):.2f},{tf.math.reduce_std(amp):.2f}), phase{phase.shape}({tf.reduce_mean(phase):.2f},{tf.math.reduce_std(phase):.2f}), coeff{coeff[0].shape}({tf.reduce_mean(coeff[0]):.2f},{tf.math.reduce_std(coeff[0]):.2f})")
-		print(f" --> X{self.freq.shape} Y{encoded_dset.shape}({tf.reduce_mean(encoded_dset):.2f},{tf.math.reduce_std(encoded_dset):.2f})")
-		return self.freq, encoded_dset
+			amp, phase, coeff = tf.concat(amps,axis=0), tf.concat(phases,axis=0), [ tf.concat(c,axis=0) for c in coeffs ]
+			features = [amp,phase]+coeff
+			dim = 1 if self.chan_first else 2
+			encoded_dset = tf.stack( features[:self.nfeatures], axis=dim )
+			print(f" Completed encoding in {(time.time()-t0)/60.0:.2f}m: amp{amp.shape}({tf.reduce_mean(amp):.2f},{tf.math.reduce_std(amp):.2f}), phase{phase.shape}({tf.reduce_mean(phase):.2f},{tf.math.reduce_std(phase):.2f}), coeff{coeff[0].shape}({tf.reduce_mean(coeff[0]):.2f},{tf.math.reduce_std(coeff[0]):.2f})")
+			print(f" --> X{self.freq.shape} Y{encoded_dset.shape}({tf.reduce_mean(encoded_dset):.2f},{tf.math.reduce_std(encoded_dset):.2f})")
+			return self.freq, encoded_dset
