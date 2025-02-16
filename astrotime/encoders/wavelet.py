@@ -4,11 +4,6 @@ from astrotime.encoders.base import Encoder
 from astrotime.transforms.wwz import wwz
 from astrotime.util.math import logspace, shp
 from astrotime.util.math import tmean, tstd, tmag, tnorm
-import keras
-
-def norm_concat( xs: List[tf.Tensor]) -> tf.Tensor:
-	xf = tf.concat( xs, axis=0 )
-	return xf # tnorm( xf, 1 )
 
 class WaveletEncoder(Encoder):
 
@@ -46,7 +41,7 @@ class WaveletEncoder(Encoder):
 					phases.append( phase )
 					for coeff, c in zip(coeffs, cs): coeff.append( c )
 					y1, x1 = [], []
-			amp, phase, coeff = norm_concat(amps), norm_concat(phases), [ norm_concat(c) for c in coeffs ]
+			amp, phase, coeff =  tf.concat(amps,0), tf.concat(phases,0), [ tf.concat(c,0) for c in coeffs ]
 			features = [amp,phase]+coeff
 			dim = 1 if self.chan_first else 2
 			encoded_dset = tf.stack( features[:self.nfeatures], axis=dim )
