@@ -2,8 +2,6 @@ import math, time, numpy as np
 from .param import Number, STParam, STIntParam, STFloatParam, Parameterized
 from .base import SignalPlot, bounds
 from matplotlib.lines import Line2D
-from astrotime.util.series import get_peak
-from matplotlib.collections import PathCollection
 import xarray as xa
 from typing import Any, Dict, List, Tuple, Type, Optional, Union
 from astrotime.util.logging import lgm, exception_handled, log_timing
@@ -34,7 +32,7 @@ class SignalTransformPlot(SignalPlot):
 		self.ax.title.set_text(self.name)
 		self.ax.title.set_fontsize(8)
 		self.ax.title.set_fontweight('bold')
-		self.ax.set_xlim(self.x[0], self.x[-1])
+		self.ax.set_xlim(xdata[0],xdata[-1])
 
 	@exception_handled
 	def update_peak_interp(self, xp: np.ndarray, yp: np.ndarray):
