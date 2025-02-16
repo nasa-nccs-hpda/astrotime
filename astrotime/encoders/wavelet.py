@@ -8,8 +8,7 @@ import keras
 
 def norm_concat( xs: List[tf.Tensor]) -> tf.Tensor:
 	xf = tf.concat( xs, axis=0 )
-	print( f"norm_concat: {xf.shape}")
-	return tnorm( xf, 1 )
+	return xf # tnorm( xf, 1 )
 
 class WaveletEncoder(Encoder):
 
