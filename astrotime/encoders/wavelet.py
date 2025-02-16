@@ -3,6 +3,7 @@ from typing import Any, Dict, List, Optional, Tuple
 from astrotime.encoders.base import Encoder
 from astrotime.transforms.wwz import wwz
 from astrotime.util.math import logspace, shp
+from astrotime.util.math import tmean, tstd, tmag, tnorm
 import keras
 
 class WaveletEncoder(Encoder):
@@ -32,7 +33,7 @@ class WaveletEncoder(Encoder):
 				x0: int = tf.random.uniform( [1], 0, self.slmax - self.series_len, dtype=tf.int32 )[0]
 				ys: tf.Tensor = tf.convert_to_tensor( y[x0:x0+self.series_len], dtype=tf.float32 )
 				xs: tf.Tensor = tf.convert_to_tensor( x[x0:x0+self.series_len], dtype=tf.float32)
-				y1.append( tf.expand_dims( keras.utils.normalize(ys, order=1), 0 ) )
+				y1.append( tf.expand_dims( tnorm(ys, 0), 0 ) )
 				x1.append( tf.expand_dims( xs, 0 ) )
 				if idx % self.batch_size == self.batch_size-1:
 					Y, X = tf.concat(y1,axis=0), tf.concat(x1,axis=0)
