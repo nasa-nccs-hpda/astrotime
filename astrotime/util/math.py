@@ -15,3 +15,7 @@ def tmean(x: tf.Tensor) -> float:
 def tstd(x: tf.Tensor) -> float:
 	xs: tf.Tensor = tf.math.reduce_std(x)
 	return tf.squeeze(xs).numpy()
+
+def tmag(x: tf.Tensor) -> float:
+	xm: tf.Tensor = tf.math.reduce_max( tf.math.abs(x) )
+	return tf.squeeze(xm).numpy()

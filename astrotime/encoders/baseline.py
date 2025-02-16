@@ -2,7 +2,7 @@ import random, keras, time, tensorflow as tf, numpy as np
 from sklearn.preprocessing import MinMaxScaler
 from typing import Any, Dict, List, Optional, Tuple
 from astrotime.encoders.base import Encoder
-from astrotime.util.math import tmean, tstd
+from astrotime.util.math import tmean, tstd, tmag
 
 class ValueEncoder(Encoder):
 
@@ -24,5 +24,5 @@ class ValueEncoder(Encoder):
 			Y, X = tf.concat(y1, axis=0), tf.concat(x1, axis=0)
 			if Y.ndim == 2: Y = tf.expand_dims(Y, axis=2)
 			print(f" Completed encoding in {(time.time()-t0)/60.0:.2f}m: ")
-			print(f" --> X{X.shape}, Y{Y.shape}: (mean={tmean(Y):.5f}, std={tstd(Y):.5f})")
+			print(f" --> X{X.shape}, Y{Y.shape}: (mean={tmean(Y):.5f}, std={tstd(Y):.5f}, mag={tmag(Y):.5f})")
 			return X, Y
