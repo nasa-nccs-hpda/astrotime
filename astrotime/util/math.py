@@ -19,3 +19,8 @@ def tstd(x: tf.Tensor) -> float:
 def tmag(x: tf.Tensor) -> float:
 	xm: tf.Tensor = tf.math.reduce_max( tf.math.abs(x) )
 	return tf.squeeze(xm).numpy()
+
+def tnorm(x: tf.Tensor, axis: int) -> tf.Tensor:
+	m = tf.math.reduce_mean(x, axis=axis, keepdims=True)
+	s = tf.math.reduce_std( x, axis=axis, keepdims=True)
+	return (x - m) / s
