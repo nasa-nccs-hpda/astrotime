@@ -1,4 +1,5 @@
 import numpy as np
+import tensorflow as tf
 from typing import List, Optional, Dict, Type, Any
 
 def logspace(start: float, stop: float, N: int) -> np.ndarray:
@@ -6,3 +7,11 @@ def logspace(start: float, stop: float, N: int) -> np.ndarray:
 
 def shp( x ) -> List[int]:
 	return list(x.shape)
+
+def tmean(x: tf.Tensor) -> float:
+	xm: tf.Tensor = tf.math.reduce_mean(x)
+	return tf.squeeze(xm).numpy()
+
+def tstd(x: tf.Tensor) -> float:
+	xs: tf.Tensor = tf.math.reduce_std(x)
+	return tf.squeeze(xs).numpy()
