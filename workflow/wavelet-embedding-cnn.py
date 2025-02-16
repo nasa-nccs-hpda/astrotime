@@ -28,7 +28,7 @@ optimizer='rmsprop'
 loss='mae'
 model_name = f"wwz-{nfeatures}"
 log_level = logging.INFO
-lgm().init_logging( f"{results_dir}/logging", clargs.gpu, log_level )
+lgm().init_logging( f"{results_dir}/logging", log_level )
 
 
 sinusoid_loader = SinusoidLoader(data_dir)
