@@ -27,7 +27,7 @@ class SignalTransformPlot(SignalPlot):
 	@exception_handled
 	def _setup(self):
 		pdata: np.ndarray = self.y[self.element]
-		self.plot, = self.ax.plot(self.x, pdata, label=self.transform.name, color='blue', marker="o", linewidth=1, markersize=3 )
+		self.plot, = self.ax.plot(self.x, pdata, label=self.name, color='blue', marker="o", linewidth=1, markersize=3 )
 		self.marker = self.ax.axvline(x=1.0/self.target[self.element], color='b', linestyle='-')
 		self.peak_plot = None
 		self.ax.title.set_text(self.name)
