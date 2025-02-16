@@ -26,8 +26,9 @@ class SignalTransformPlot(SignalPlot):
 
 	@exception_handled
 	def _setup(self):
-		pdata: np.ndarray = self.y[self.element]
-		self.plot, = self.ax.plot(self.x, pdata, label=self.name, color='blue', marker="o", linewidth=1, markersize=3 )
+		ydata: np.ndarray = self.y[self.element]
+		xdata: np.ndarray = self.x if self.x.ndim == 1 else self.x[self.element]
+		self.plot, = self.ax.plot(xdata, ydata, label=self.name, color='blue', marker="o", linewidth=1, markersize=3 )
 		self.marker = self.ax.axvline(x=1.0/self.target[self.element], color='b', linestyle='-')
 		self.peak_plot = None
 		self.ax.title.set_text(self.name)
@@ -49,6 +50,10 @@ class SignalTransformPlot(SignalPlot):
 		self.plot.set_ydata(pdata)
 		self.marker.set_xdata( 1.0/self.target[self.element] )
 		self.ax.set_ylim(*bounds(pdata))
+		if self.x.ndim == 2:
+			xdata: np.ndarray = self.x[self.element]
+			self.plot.set_xdata(xdata)
+			self.ax.set_xlim(*bounds(xdata))
 
 	#	self.update_markers()
 	#	self.update_annotations(self.x, pdata)
