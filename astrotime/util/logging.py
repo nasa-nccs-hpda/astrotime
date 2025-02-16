@@ -125,9 +125,7 @@ class LogManager(object):
     def set_level(self, level ):
         self._logger.set_level(level)
 
-    def init_logging(self, log_dir: str, rank: int, level, **kwargs ):
-        self.rank = rank
-        from .config import cfg, cid
+    def init_logging(self, log_dir: str, level, **kwargs ):
         self.log_dir =  log_dir # f"{cfg().platform.cache}/logs"
         overwrite = kwargs.get("overwrite_log", True)
         self._lid = "" if overwrite else f"-{os.getpid()}"
@@ -136,8 +134,6 @@ class LogManager(object):
         self._logger = PythonLogger()
         self._logger.file_logging( self.log_file )
         self._logger.set_level( level )
-        if self.rank < 1:
-            print( f"\n  --------- Opening log file:  '{self.log_file}' ---------  \n" )
 
     @property
     def ctime(self):

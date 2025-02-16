@@ -26,6 +26,7 @@ class SignalTransformPlot(SignalPlot):
 	def _setup(self):
 		ydata: np.ndarray = self.y[self.element]
 		xdata: np.ndarray = self.x if self.x.ndim == 1 else self.x[self.element]
+		print( f"PLOT: x{xdata.shape}, y{ydata.shape}")
 		self.plot, = self.ax.plot(xdata, ydata, label=self.name, color='blue', marker="o", linewidth=1, markersize=3 )
 		self.marker = self.ax.axvline(x=1.0/self.target[self.element], color='b', linestyle='-')
 		self.peak_plot = None
