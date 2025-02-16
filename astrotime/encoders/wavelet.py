@@ -7,7 +7,9 @@ from astrotime.util.math import tmean, tstd, tmag, tnorm
 import keras
 
 def norm_concat( xs: List[tf.Tensor]) -> tf.Tensor:
-	return tnorm( tf.concat( xs, axis=0), 1 )
+	xf = tf.concat( xs, axis=0 )
+	print( f"norm_concat: {xf.shape}")
+	return tnorm( xf, 1 )
 
 class WaveletEncoder(Encoder):
 
