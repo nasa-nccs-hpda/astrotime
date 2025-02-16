@@ -6,6 +6,9 @@ from astrotime.util.math import logspace, shp
 from astrotime.util.math import tmean, tstd, tmag, tnorm
 import keras
 
+def norm_concat( xs: List[tf.Tensor]) -> tf.Tensor:
+	return tnorm( tf.concat( xs, axis=0), 1 )
+
 class WaveletEncoder(Encoder):
 
 	def __init__(self, device: str, series_len: int = 1000, fbounds: Tuple[float,float] = (0.1,10.0), nfreq: int = 1000, fscale: str = "log" ):
@@ -42,7 +45,7 @@ class WaveletEncoder(Encoder):
 					phases.append( phase )
 					for coeff, c in zip(coeffs, cs): coeff.append( c )
 					y1, x1 = [], []
-			amp, phase, coeff = tf.concat(amps,axis=0), tf.concat(phases,axis=0), [ tf.concat(c,axis=0) for c in coeffs ]
+			amp, phase, coeff = norm_concat(amps), norm_concat(phases), [ norm_concat(c) for c in coeffs ]
 			features = [amp,phase]+coeff
 			dim = 1 if self.chan_first else 2
 			encoded_dset = tf.stack( features[:self.nfeatures], axis=dim )
