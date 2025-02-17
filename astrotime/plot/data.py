@@ -16,19 +16,17 @@ class SignalTransformPlot(SignalPlot):
 		self.target = target
 		self.annotations: List[str] = [a.lower() for a in annotations] if (annotations is not None) else []
 		self.ofac = kwargs.get('upsample_factor',1)
-		self.plot: Line2D = None
-		self.peak_plot: Line2D = None
-		self.marker: Line2D = None
+		self.lines: Dict[str,Line2D] = {}
 		self.add_param( STIntParam('element', (0,self.y.shape[0])  ) )
 		self.transax = None
 
 	@exception_handled
 	def _setup(self):
-		ydata: np.ndarray = self.y[self.element,:,0] if self.y.ndim == 3 else self.y[self.element]
+		ydata: np.ndarray = self.y[self.element] if self.y.ndim == 3 else self.y[self.element]
 		xdata: np.ndarray = self.x if self.x.ndim == 1 else self.x[self.element]
-		self.plot, = self.ax.plot(xdata, ydata, label=self.name, color='blue', marker="o", linewidth=1, markersize=3 )
-		self.marker = self.ax.axvline(x=1.0/self.target[self.element], color='b', linestyle='-')
-		self.peak_plot = None
+		self.lines['y0'], = self.ax.plot(xdata, ydata[:,0], label='y0', color='blue', marker="o", linewidth=1, markersize=3 )
+		self.lines['y1'], = self.ax.plot(xdata, ydata[:,1], label='y1', color='green', marker=".", linewidth=1, markersize=1)
+		self.lines['target'] = self.ax.axvline(x=1.0/self.target[self.element], color='r', linestyle='-')
 		self.ax.title.set_text(self.name)
 		self.ax.title.set_fontsize(8)
 		self.ax.title.set_fontweight('bold')
@@ -44,9 +42,11 @@ class SignalTransformPlot(SignalPlot):
 
 	@exception_handled
 	def update(self, val):
-		ydata: np.ndarray = self.y[self.element,:,0] if self.y.ndim == 3 else self.y[self.element]
-		self.plot.set_ydata(ydata)
-		self.marker.set_xdata( 1.0/self.target[self.element] )
+		ydata: np.ndarray = self.y[self.element] if self.y.ndim == 3 else self.y[self.element]
+		self.lines['y0'].set_ydata(ydata[:,0])
+		self.lines['y1'].set_ydata(ydata[:,1])
+		self.lines['target'].remove()
+		self.lines['target'] = self.ax.axvline(x=1.0/self.target[self.element], color='r', linestyle='-')
 		self.ax.set_ylim(*bounds(ydata))
 		if self.x.ndim == 2:
 			xdata: np.ndarray = self.x[self.element]
