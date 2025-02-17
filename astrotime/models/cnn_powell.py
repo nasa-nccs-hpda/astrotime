@@ -43,12 +43,6 @@ class SinusoidPeriodModel(keras.Model):
 		self.batchnorm7 = layers.BatchNormalization()
 		self.maxpool7 = layers.MaxPool1D(2)
 
-		self.conv22 = layers.Conv1D(152, kernel_size=3, activation='elu', padding='same')
-		self.conv23 = layers.Conv1D(156, kernel_size=3, activation='elu', padding='same')
-		self.conv24 = layers.Conv1D(160, kernel_size=3, activation='elu', padding='same')
-		self.batchnorm8 = layers.BatchNormalization()
-		self.maxpool8 = layers.MaxPool1D(2)
-
 		self.flatten = layers.Flatten()
 		self.dense1 = layers.Dense(64, activation='elu')
 		self.dense2 = layers.Dense(1)
@@ -90,11 +84,6 @@ class SinusoidPeriodModel(keras.Model):
 		x = self.conv21(x)
 		x = self.batchnorm7(x)
 		x = self.maxpool7(x)
-		x = self.conv22(x)
-		x = self.conv23(x)
-		x = self.conv24(x)
-		x = self.batchnorm8(x)
-		x = self.maxpool8(x)
 
 		x = self.flatten(x)
 		x = self.dense1(x)
