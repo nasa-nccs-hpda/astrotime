@@ -15,7 +15,7 @@ class Encoder:
 	def add_filters(self, filters: List[TrainingFilter] ):
 		self.filters.extend( filters )
 
-	def apply_filters(self, x: tf.Tensor, y: tf.Tensor) -> Tuple[tf.Tensor, tf.Tensor]:
+	def apply_filters(self, x: np.ndarray, y: np.ndarray, axis: int) -> Tuple[np.ndarray, np.ndarray]:
 		for f in self.filters:
-			x, y = f.apply( x, y )
+			x, y = f.apply( x, y, axis )
 		return x, y

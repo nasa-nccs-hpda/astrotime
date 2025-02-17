@@ -29,13 +29,14 @@ class WaveletEncoder(Encoder):
 			amps, phases, coeffs = [], [], ([], [], [])
 			y1, x1, wwz_start_time, wwz_end_time = [], [], time.time(), time.time()
 			for idx, (y,x) in enumerate(zip(dset['y'],dset['x'])):
+				x, y = self.apply_filters(x,y,0)
 				x0: int = tf.random.uniform( [1], 0, x.shape[0] - self.series_len, dtype=tf.int32 )[0]
 				ys: tf.Tensor = tf.convert_to_tensor( y[x0:x0+self.series_len], dtype=tf.float32 )
 				xs: tf.Tensor = tf.convert_to_tensor( x[x0:x0+self.series_len], dtype=tf.float32)
 				y1.append( tf.expand_dims( tnorm(ys, 0), 0 ) )
 				x1.append( tf.expand_dims( xs, 0 ) )
 				if idx % self.batch_size == self.batch_size-1:
-					Y, X = self.apply_filters( tf.concat(y1,axis=0), tf.concat(x1,axis=0) )
+					Y, X = tf.concat(y1,axis=0), tf.concat(x1,axis=0)
 					amp, phase, cs = wwz(Y, X, self.freq, X[:,self.series_len//2] )
 					amps.append( amp )
 					phases.append( phase )
