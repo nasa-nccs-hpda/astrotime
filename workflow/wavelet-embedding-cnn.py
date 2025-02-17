@@ -1,6 +1,6 @@
 from logging import FileHandler
 
-import numpy as np, tensorflow as tf
+import os, numpy as np, tensorflow as tf
 from typing import List, Optional, Dict, Type, Any
 from astrotime.models.cnn_powell import SinusoidPeriodModel
 from astrotime.callbacks.printers import ShapePrinter
@@ -30,7 +30,7 @@ loss='mae'
 model_name = f"wwz-{nfeatures}"
 log_level = logging.INFO
 lgm().init_logging( f"{results_dir}/logging", log_level )
-
+refresh = False
 
 sinusoid_loader = SinusoidLoader(data_dir)
 encoder = WaveletEncoder(device,series_length,nfreq)
@@ -49,6 +49,8 @@ train_args: Dict[str,Any] = dict( epochs=epochs, batch_size=batch_size, shuffle=
 
 spmodel = SinusoidPeriodModel()
 spmodel.compile(optimizer=optimizer, loss=loss)
+if not refresh and os.path.exists(checkpointer.filepath):
+	spmodel.load_weights(checkpointer.filepath)
 history = spmodel.fit( tY, train_target, validation_data=(vY, valid_target), **train_args )
 
 
