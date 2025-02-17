@@ -1,6 +1,7 @@
 import os.path
 
 import tensorflow as tf
+import keras
 from typing import List, Optional, Dict, Type, Any
 from astrotime.encoders.baseline import ValueEncoder
 from astrotime.models.cnn_powell import SinusoidPeriodModel
@@ -29,8 +30,9 @@ refresh = False
 
 sinusoid_loader = SinusoidLoader(data_dir)
 encoder = ValueEncoder(device,series_length)
-model = SinusoidPeriodModel()
+model: keras.Model = SinusoidPeriodModel()
 model.compile(optimizer=optimizer, loss=loss)
+model.build()
 
 tdset: Dict = sinusoid_loader.get_dataset(train_dset_idx)
 tX, tY = encoder.encode_dset(tdset)
@@ -45,5 +47,5 @@ checkpointer = CheckpointCallback( model_name, f"{results_dir}/checkpoints" )
 train_args: Dict[str,Any] = dict( epochs=epochs, batch_size=batch_size, shuffle=True, callbacks=[shape_printer,checkpointer], verbose=1)
 
 if refresh: print( "Refreshing model. Training from scratch.")
-else: checkpointer.load_weights(model)
+else: checkpointer.load_weights(model.build())
 history = model.fit( tY, train_target, validation_data=(vY, valid_target), **train_args )
