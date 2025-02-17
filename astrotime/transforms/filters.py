@@ -3,6 +3,7 @@ from typing import Any, Mapping, Sequence, Tuple, Union, List, Dict, Literal, Op
 from astrotime.util.logging import lgm, exception_handled, log_timing, shp
 from scipy.ndimage.filters import uniform_filter1d, gaussian_filter1d
 import time, numpy as np, xarray as xa, math
+import tensorflow as tf
 
 class TrainingFilter(object):
 
@@ -23,7 +24,7 @@ class TrainingFilter(object):
 			return self.parms[key]
 		return super(TrainingFilter, self).__getattribute__(key)
 
-	def apply(self, dset: Dict[str,np.ndarray]) -> xa.Dataset:
+	def apply(self, x: np.ndarray, y: np.ndarray) -> Tuple[np.ndarray, np.ndarray]:
 		raise NotImplemented(f"Abstract method 'apply' of base class {type(self).__name__} not implemented")
 
 class GaussianNoise(TrainingFilter):
@@ -50,24 +51,22 @@ class RandomDownsample(TrainingFilter):
 	def __init__(self, device, mparms: Dict[str, Any], **custom_parms):
 		super().__init__(device,mparms,**custom_parms)
 
-	def _downsample(self, batch: Dict[str,np.ndarray]  ):
-		mask = np.random.rand(batch['t'].shape[1]) > self.sparsity
-		for dvar in ['t','y']:
-			batch[dvar] = batch[dvar][:,mask]
+	def _downsample(self, x: np.ndarray, y: np.ndarray ) -> Tuple[np.ndarray, np.ndarray]:
+		mask = np.random.rand(x.shape[-1]) > self.sparsity
+		return x[...,mask], y[...,mask]
 
 	@exception_handled
-	def apply(self, batch: Dict[str,np.ndarray]) -> Dict[str,np.ndarray]:
-		if self.sparsity == 0.0: return batch
-		self._downsample(batch)
-		return batch
+	def apply(self, x: np.ndarray, y: np.ndarray) -> Tuple[np.ndarray, np.ndarray]:
+		if self.sparsity == 0.0: return x,y
+		return self._downsample(x,y)
 
 class PeriodicGap(TrainingFilter):
 
 	def __init__(self, device, mparms: Dict[str, Any], **custom_parms):
 		super().__init__(device,mparms,**custom_parms)
 
-	def _mask_gaps(self, batch: Dict[str,np.ndarray] ):
-		t0, tsize = time.time(), batch['t'].shape[1]
+	def _mask_gaps(self,  x: np.ndarray, y: np.ndarray) -> Tuple[np.ndarray, np.ndarray]:
+		tsize = x.shape[-1]
 		xspace= np.linspace( 0.0, 1.0,tsize )
 		gmask = np.full( tsize, True, dtype=bool )
 		p: float = self.gap_period
@@ -77,16 +76,12 @@ class PeriodicGap(TrainingFilter):
 			xp1 = min( (p+gd), 1.0 )
 			gmask[ (xspace >= xp0) & (xspace < xp1) ] = False
 			p = p + self.gap_period
-		for dvar in ['t','y']:
-			batch[dvar] = batch[dvar][:,gmask]
-		lgm().log( f" --> Computed periodic gaps ({self.gap_size},{self.gap_period}) in {time.time()-t0:.4f} sec")
-
+		return x[...,gmask], y[...,gmask]
 
 	@exception_handled
-	def apply(self, batch: Dict[str,np.ndarray]) -> Dict[str,np.ndarray]:
-		if self.gap_size == 0.0: return batch
-		self._mask_gaps(batch)
-		return batch
+	def apply(self, x: np.ndarray, y: np.ndarray) -> Tuple[np.ndarray, np.ndarray]:
+		if self.gap_size == 0.0: return (x,y)
+		return self._mask_gaps(x,y)
 
 class Smooth(TrainingFilter):
 
