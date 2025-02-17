@@ -26,6 +26,8 @@ class SignalTransformPlot(SignalPlot):
 		xdata: np.ndarray = self.x if self.x.ndim == 1 else self.x[self.element]
 		self.lines['y0'], = self.ax.plot(xdata, ydata[:,0], label='y0', color='blue', marker="o", linewidth=1, markersize=3 )
 		self.lines['y1'], = self.ax.plot(xdata, ydata[:,1], label='y1', color='green', marker=".", linewidth=1, markersize=1)
+		for ic in range(2,5):
+			self.lines[f'y{ic}'], = self.ax.plot(xdata, ydata[:,ic], label=f'y{ic}', color='yellow', marker=".", linewidth=1, markersize=1)
 		self.lines['target'] = self.ax.axvline(x=1.0/self.target[self.element], color='r', linestyle='-')
 		self.ax.title.set_text(self.name)
 		self.ax.title.set_fontsize(8)
@@ -45,6 +47,8 @@ class SignalTransformPlot(SignalPlot):
 		ydata: np.ndarray = self.y[self.element] if self.y.ndim == 3 else self.y[self.element]
 		self.lines['y0'].set_ydata(ydata[:,0])
 		self.lines['y1'].set_ydata(ydata[:,1])
+		for ic in range(2, 5):
+			self.lines[f'y{ic}'].set_ydata(ydata[:,ic])
 		self.lines['target'].remove()
 		self.lines['target'] = self.ax.axvline(x=1.0/self.target[self.element], color='r', linestyle='-')
 		self.ax.set_ylim(*bounds(ydata))
