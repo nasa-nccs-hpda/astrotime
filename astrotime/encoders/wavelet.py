@@ -30,7 +30,7 @@ class WaveletEncoder(Encoder):
 			y1, x1, wwz_start_time, wwz_end_time = [], [], time.time(), time.time()
 			for idx, (y,x) in enumerate(zip(dset['y'],dset['x'])):
 				x, y = self.apply_filters(x,y,0)
-				x0: int = tf.random.uniform( [1], 0, x.shape[0] - self.series_len, dtype=tf.int32 )[0]
+				x0: int = 0 # tf.random.uniform( [1], 0, x.shape[0] - self.series_len, dtype=tf.int32 )[0]
 				ys: tf.Tensor = tf.convert_to_tensor( y[x0:x0+self.series_len], dtype=tf.float32 )
 				xs: tf.Tensor = tf.convert_to_tensor( x[x0:x0+self.series_len], dtype=tf.float32)
 				y1.append( tf.expand_dims( tnorm(ys, 0), 0 ) )
