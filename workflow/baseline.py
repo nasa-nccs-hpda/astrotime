@@ -30,7 +30,7 @@ refresh = False
 sinusoid_loader = SinusoidLoader(data_dir)
 encoder = ValueEncoder(device,series_length)
 model = SinusoidPeriodModel()
-model.compile(optimizer=optimizer, loss=loss)
+model.compile(optimizer=optimizer, loss=loss, metrics=['accuracy'])
 
 tdset: Dict = sinusoid_loader.get_dataset(train_dset_idx)
 tX, tY = encoder.encode_dset(tdset)
@@ -42,7 +42,7 @@ valid_target: tf.Tensor   = vdset['target']
 
 shape_printer = ShapePrinter(input_shapes=tY.shape)
 checkpointer = CheckpointCallback( model_name, f"{results_dir}/checkpoints" )
-train_args: Dict[str,Any] = dict( epochs=epochs, batch_size=batch_size, shuffle=True, callbacks=[shape_printer,checkpointer], verbose=1  )
+train_args: Dict[str,Any] = dict( epochs=epochs, batch_size=batch_size, shuffle=True, callbacks=[shape_printer,checkpointer], verbose=1)
 
 if not refresh and os.path.exists(checkpointer.filepath):
 	model.load_weights(checkpointer.filepath)

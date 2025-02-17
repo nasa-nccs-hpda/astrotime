@@ -48,7 +48,7 @@ checkpointer = CheckpointCallback( model_name, f"{results_dir}/checkpoints" )
 train_args: Dict[str,Any] = dict( epochs=epochs, batch_size=batch_size, shuffle=True, callbacks=[shape_printer,checkpointer], verbose=1  )
 
 spmodel = SinusoidPeriodModel()
-spmodel.compile(optimizer=optimizer, loss=loss)
+spmodel.compile(optimizer=optimizer, loss=loss, metrics=['accuracy'])
 if not refresh and os.path.exists(checkpointer.filepath):
 	spmodel.load_weights(checkpointer.filepath)
 history = spmodel.fit( tY, train_target, validation_data=(vY, valid_target), **train_args )

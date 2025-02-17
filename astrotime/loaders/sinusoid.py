@@ -3,6 +3,7 @@ from astrotime.loaders.base import DataLoader
 from typing import List, Optional, Dict, Type
 from astrotime.util.logging import lgm, exception_handled
 from glob import glob
+from astrotime.transforms.filters import TrainingFilter
 
 class SinusoidLoader(DataLoader):
 
@@ -25,8 +26,12 @@ class ncSinusoidLoader:
 		self.current_file = 0
 		self.dataset: xa.Dataset = None
 		self.file_size = file_size
+		self.filters: List[TrainingFilter] = []
 		self.batch_size = batch_size
 		self.batches_per_file = self.file_size // self.batch_size
+
+	def add_filters(self, filters: List[TrainingFilter] ):
+		self.filters.extend( filters )
 
 	@property
 	def file_paths( self ) -> List[str]:
@@ -77,10 +82,15 @@ class ncSinusoidLoader:
 				f: xa.DataArray = self.dataset['f']
 				self.current_file = file_index
 				self._nelements = self.dataset.sizes['elem']
-				self.dataset = xa.Dataset( dict(y=y,t=t,p=p,f=f) )
+				self.dataset = self.apply_filters( xa.Dataset( dict(y=y,t=t,p=p,f=f) ) )
 				lgm().log(f"Loaded {self._nelements} sinusoids in {time.time()-t0:.3f} sec from file: {file_path}, freq range = [{f.values.min():.3f}, {f.values.max():.3f}]")
 				return True
 		return False
+
+	def apply_filters( self, dataset: xa.Dataset ) -> xa.Dataset:
+		for f in self.filters:
+			dataset = f.apply( dataset )
+		return dataset
 
 	@exception_handled
 	def get_data_element( self, batch_index: int, element_index: int ) -> xa.DataArray:
