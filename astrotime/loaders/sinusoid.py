@@ -4,9 +4,6 @@ from typing import List, Optional, Dict, Type
 from astrotime.util.logging import lgm, exception_handled
 from glob import glob
 
-# Create and compile the model
-seq_length = 1000
-
 class SinusoidLoader(DataLoader):
 
 	def __init__(self, data_dir: str):
