@@ -104,3 +104,7 @@ class ncSinusoidLoader:
 		bstart = (batch_index % self.batches_per_file) * self.batch_size
 		result = self.dataset.isel( elem=slice(bstart,bstart+self.batch_size) )
 		return result
+
+	def get_dataset(self, dset_idx: int) -> xa.Dataset:
+		self.load_file(dset_idx)
+		return self.dataset

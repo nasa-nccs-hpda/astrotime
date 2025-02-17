@@ -23,7 +23,7 @@ class TrainingFilter(object):
 			return self.parms[key]
 		return super(TrainingFilter, self).__getattribute__(key)
 
-	def apply(self, batch: xa.Dataset) -> xa.Dataset:
+	def apply(self, dset: Dict[str,np.ndarray]) -> xa.Dataset:
 		raise NotImplemented(f"Abstract method 'apply' of base class {type(self).__name__} not implemented")
 
 class GaussianNoise(TrainingFilter):
@@ -31,7 +31,7 @@ class GaussianNoise(TrainingFilter):
 	def __init__(self, device, mparms: Dict[str, Any], **custom_parms):
 		super().__init__(device,mparms,**custom_parms)
 
-	def _add_noise(self, batch: xa.Dataset):
+	def _add_noise(self, batch: Dict[str,np.ndarray]):
 		nsr = np.interp(self.noise, self.param_domain, self.logspace)
 		spower = np.mean(batch['y'] * batch['y'])
 		std = np.sqrt(spower * nsr)
@@ -40,23 +40,23 @@ class GaussianNoise(TrainingFilter):
 		batch['y'] = batch['y'] + self.current_noise
 
 	@exception_handled
-	def apply(self, batch: xa.Dataset) -> xa.Dataset:
-		if self.noise == 0.0: return batch
-		self._add_noise(batch)
-		return batch
+	def apply(self, dset: Dict[str,np.ndarray]) -> Dict[str,np.ndarray]:
+		if self.noise == 0.0: return dset
+		self._add_noise(dset)
+		return dset
 
 class RandomDownsample(TrainingFilter):
 
 	def __init__(self, device, mparms: Dict[str, Any], **custom_parms):
 		super().__init__(device,mparms,**custom_parms)
 
-	def _downsample(self, batch: xa.Dataset  ):
+	def _downsample(self, batch: Dict[str,np.ndarray]  ):
 		mask = np.random.rand(batch['t'].shape[1]) > self.sparsity
 		for dvar in ['t','y']:
 			batch[dvar] = batch[dvar][:,mask]
 
 	@exception_handled
-	def apply(self, batch: xa.Dataset) -> xa.Dataset:
+	def apply(self, batch: Dict[str,np.ndarray]) -> Dict[str,np.ndarray]:
 		if self.sparsity == 0.0: return batch
 		self._downsample(batch)
 		return batch
@@ -66,7 +66,7 @@ class PeriodicGap(TrainingFilter):
 	def __init__(self, device, mparms: Dict[str, Any], **custom_parms):
 		super().__init__(device,mparms,**custom_parms)
 
-	def _mask_gaps(self, batch: xa.Dataset ):
+	def _mask_gaps(self, batch: Dict[str,np.ndarray] ):
 		t0, tsize = time.time(), batch['t'].shape[1]
 		xspace= np.linspace( 0.0, 1.0,tsize )
 		gmask = np.full( tsize, True, dtype=bool )
@@ -83,7 +83,7 @@ class PeriodicGap(TrainingFilter):
 
 
 	@exception_handled
-	def apply(self, batch: xa.Dataset) -> xa.Dataset:
+	def apply(self, batch: Dict[str,np.ndarray]) -> Dict[str,np.ndarray]:
 		if self.gap_size == 0.0: return batch
 		self._mask_gaps(batch)
 		return batch
@@ -94,16 +94,16 @@ class Smooth(TrainingFilter):
 		super().__init__(device,mparms,**custom_parms)
 
 	@exception_handled
-	def apply(self, batch: xa.Dataset):
+	def apply(self, batch: Dict[str,np.ndarray]) -> Dict[str,np.ndarray]:
 		if self.smoothing == 0.0: return batch
-		sigma = self.smoothing * batch.shape[1] * 0.02
-		batch['y'] = self.smooth(batch['y'], sigma)
+		y: np.ndarray = batch['y']
+		sigma = self.smoothing * y.shape[1] * 0.02
+		batch['y'] = self.smooth(y, sigma)
 		return batch
 
 	@classmethod
-	def smooth(cls, x: xa.DataArray, sigma: float) ->xa.DataArray:
-		data = gaussian_filter1d(x.values, sigma=sigma, mode='wrap')
-		return x.copy(data=data)
+	def smooth(cls, x: np.ndarray, sigma: float) -> np.ndarray:
+		return gaussian_filter1d(x, sigma=sigma, mode='wrap')
 
 class Envelope(TrainingFilter):
 
@@ -111,7 +111,7 @@ class Envelope(TrainingFilter):
 		super().__init__(device,mparms,**custom_parms)
 
 	@exception_handled
-	def apply(self, batch: xa.Dataset) :
+	def apply(self, batch: Dict[str,np.ndarray]) -> Dict[str,np.ndarray]:
 		if self.envelope == 0.0: return batch
 		if self.envelope > 1.0:
 			tmax = (1 + (self.envelope-1)*(self.nperiods-1))*2*np.pi
