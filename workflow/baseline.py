@@ -44,6 +44,6 @@ shape_printer = ShapePrinter(input_shapes=tY.shape)
 checkpointer = CheckpointCallback( model_name, f"{results_dir}/checkpoints" )
 train_args: Dict[str,Any] = dict( epochs=epochs, batch_size=batch_size, shuffle=True, callbacks=[shape_printer,checkpointer], verbose=1)
 
-if not refresh and os.path.exists(checkpointer.filepath):
-	model.load_weights(checkpointer.filepath)
+if refresh: print( "Refreshing model. Training from scratch.")
+else: checkpointer.load_weights(model)
 history = model.fit( tY, train_target, validation_data=(vY, valid_target), **train_args )

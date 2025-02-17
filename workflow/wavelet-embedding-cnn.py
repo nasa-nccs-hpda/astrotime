@@ -49,8 +49,9 @@ train_args: Dict[str,Any] = dict( epochs=epochs, batch_size=batch_size, shuffle=
 
 spmodel = SinusoidPeriodModel()
 spmodel.compile(optimizer=optimizer, loss=loss, metrics=['accuracy'])
-if not refresh and os.path.exists(checkpointer.filepath):
-	spmodel.load_weights(checkpointer.filepath)
+if refresh: print( "Refreshing model. Training from scratch.")
+else: checkpointer.load_weights(spmodel)
+
 history = spmodel.fit( tY, train_target, validation_data=(vY, valid_target), **train_args )
 
 
