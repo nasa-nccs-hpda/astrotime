@@ -11,6 +11,7 @@ from tensorflow.compat.v1 import logging
 from astrotime.util.logging import lgm
 from argparse import Namespace
 from astrotime.util.env import parse_clargs, get_device
+from astrotime.transforms.filters import RandomDownsample
 
 ccustom = {}
 clargs: Namespace = parse_clargs(ccustom)
@@ -31,9 +32,11 @@ model_name = f"wwz-{nfeatures}"
 log_level = logging.INFO
 lgm().init_logging( f"{results_dir}/logging", log_level )
 refresh = False
+sparsity = 0.5
 
 sinusoid_loader = SinusoidLoader(data_dir)
 encoder = WaveletEncoder(device,series_length,nfreq)
+encoder.add_filters( [RandomDownsample(sparsity=sparsity)] )
 
 tdset: Dict = sinusoid_loader.get_dataset(train_dset_idx)
 tX, tY = encoder.encode_dset(tdset)

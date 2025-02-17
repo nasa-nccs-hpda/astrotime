@@ -26,12 +26,10 @@ class ncSinusoidLoader:
 		self.current_file = 0
 		self.dataset: xa.Dataset = None
 		self.file_size = file_size
-		self.filters: List[TrainingFilter] = []
 		self.batch_size = batch_size
 		self.batches_per_file = self.file_size // self.batch_size
 
-	def add_filters(self, filters: List[TrainingFilter] ):
-		self.filters.extend( filters )
+
 
 	@property
 	def file_paths( self ) -> List[str]:

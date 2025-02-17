@@ -9,6 +9,7 @@ from astrotime.loaders.sinusoid import SinusoidLoader
 from astrotime.callbacks.checkpoints import CheckpointCallback
 from argparse import Namespace
 from astrotime.util.env import parse_clargs, get_device
+from astrotime.transforms.filters import RandomDownsample
 
 ccustom = {}
 clargs: Namespace = parse_clargs(ccustom)
@@ -26,9 +27,11 @@ valid_dset_idx = 1
 optimizer='rmsprop'
 loss='mae'
 refresh = False
+sparsity = 0.5
 
 sinusoid_loader = SinusoidLoader(data_dir)
 encoder = ValueEncoder(device,series_length)
+encoder.add_filters( [RandomDownsample(sparsity=sparsity)] )
 model = SinusoidPeriodModel()
 model.compile(optimizer=optimizer, loss=loss)
 
