@@ -30,7 +30,7 @@ refresh = False
 sinusoid_loader = SinusoidLoader(data_dir)
 encoder = ValueEncoder(device,series_length)
 model = SinusoidPeriodModel()
-model.compile(optimizer=optimizer, loss=loss, metrics=['accuracy'])
+model.compile(optimizer=optimizer, loss=loss)
 
 tdset: Dict = sinusoid_loader.get_dataset(train_dset_idx)
 tX, tY = encoder.encode_dset(tdset)
