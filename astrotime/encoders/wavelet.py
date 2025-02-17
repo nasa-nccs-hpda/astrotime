@@ -7,7 +7,7 @@ from astrotime.util.math import tmean, tstd, tmag, tnorm
 
 class WaveletEncoder(Encoder):
 
-	def __init__(self, device: str, series_len: int = 1000, fbounds: Tuple[float,float] = (0.1,10.0), nfreq: int = 1000, fscale: str = "log" ):
+	def __init__(self, device: str, series_len: int = 2000, fbounds: Tuple[float,float] = (0.1,10.0), nfreq: int = 1000, fscale: str = "log" ):
 		super(WaveletEncoder, self).__init__( device )
 		self.series_len = series_len
 		self.fbeg, self.fend = fbounds

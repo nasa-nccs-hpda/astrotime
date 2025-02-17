@@ -18,7 +18,7 @@ device = get_device(clargs)
 
 data_dir = "/explore/nobackup/projects/ilab/data/astro_sigproc/sinusoids/npz/"
 results_dir = "/explore/nobackup/projects/ilab/data/astro_sigproc/results"
-seq_length = 1000
+series_length = 2000
 epochs=1000
 batch_size=32
 nfeatures=5
@@ -32,7 +32,7 @@ lgm().init_logging( f"{results_dir}/logging", log_level )
 
 
 sinusoid_loader = SinusoidLoader(data_dir)
-encoder = WaveletEncoder(device)
+encoder = WaveletEncoder(device,series_length)
 
 tdset: Dict = sinusoid_loader.get_dataset(train_dset_idx)
 tX, tY = encoder.encode_dset(tdset)
