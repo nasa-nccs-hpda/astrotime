@@ -7,9 +7,9 @@ import tensorflow as tf
 
 class TrainingFilter(object):
 
-	def __init__(self, mparms: Dict[str, Any], **custom_parms):
+	def __init__(self, mparms: Dict[str, Any]=None, **custom_parms):
 		super().__init__()
-		self.parms = dict( **mparms, **custom_parms )
+		self.parms = dict( **mparms, **custom_parms ) if (mparms is not None) else custom_parms
 
 	def __setattr__(self, key: str, value: Any) -> None:
 		if ('parms' in self.__dict__.keys()) and (key in self.parms.keys()):
@@ -28,7 +28,7 @@ class TrainingFilter(object):
 
 class RandomDownsample(TrainingFilter):
 
-	def __init__(self,  mparms: Dict[str, Any], **custom_parms):
+	def __init__(self,  mparms: Dict[str, Any]=None, **custom_parms):
 		super().__init__( mparms,**custom_parms)
 
 	def _downsample(self, x: np.ndarray, y: np.ndarray, axis: int ) -> Tuple[np.ndarray, np.ndarray]:
