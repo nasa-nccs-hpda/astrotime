@@ -4,9 +4,8 @@ import numpy as np
 import keras
 
 class SinusoidPeriodModel(keras.Model):
-	def __init__(self, seq_length):
+	def __init__(self):
 		super(SinusoidPeriodModel, self).__init__()
-		self.seq_length = seq_length
 		self.conv1 = layers.Conv1D(68, kernel_size=3, activation='elu', padding='same')
 		self.conv2 = layers.Conv1D(72, kernel_size=3, activation='elu', padding='same')
 		self.conv3 = layers.Conv1D(76, kernel_size=3, activation='elu', padding='same')

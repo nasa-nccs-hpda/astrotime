@@ -16,7 +16,7 @@ data_dir = "/explore/nobackup/projects/ilab/data/astro_sigproc/sinusoids/npz/"
 results_dir = "/explore/nobackup/projects/ilab/data/astro_sigproc/results"
 model_name = "baseline"
 # data_dir = "/Users/tpmaxwel/Data/astro_sigproc/sinusoids"
-seq_length = 1000
+series_length = 2000
 epochs=1000
 batch_size=64
 train_dset_idx = 0
@@ -25,8 +25,8 @@ optimizer='rmsprop'
 loss='mae'
 
 sinusoid_loader = SinusoidLoader(data_dir)
-encoder = ValueEncoder(device,seq_length)
-model = SinusoidPeriodModel(seq_length)
+encoder = ValueEncoder(device,series_length)
+model = SinusoidPeriodModel()
 model.compile(optimizer=optimizer, loss=loss)
 
 tdset: Dict = sinusoid_loader.get_dataset(train_dset_idx)

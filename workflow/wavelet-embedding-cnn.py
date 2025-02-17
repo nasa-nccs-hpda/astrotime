@@ -20,7 +20,7 @@ data_dir = "/explore/nobackup/projects/ilab/data/astro_sigproc/sinusoids/npz/"
 results_dir = "/explore/nobackup/projects/ilab/data/astro_sigproc/results"
 series_length = 2000
 epochs=1000
-batch_size=32
+batch_size=64
 nfeatures=5
 train_dset_idx = 0
 valid_dset_idx = 1
@@ -46,7 +46,7 @@ shape_printer = ShapePrinter(input_shapes=tY.shape)
 checkpointer = CheckpointCallback( model_name, f"{results_dir}/checkpoints" )
 train_args: Dict[str,Any] = dict( epochs=epochs, batch_size=batch_size, shuffle=True, callbacks=[shape_printer,checkpointer], verbose=1  )
 
-spmodel = SinusoidPeriodModel(seq_length)
+spmodel = SinusoidPeriodModel()
 spmodel.compile(optimizer=optimizer, loss=loss)
 history = spmodel.fit( tY, train_target, validation_data=(vY, valid_target), **train_args )
 
