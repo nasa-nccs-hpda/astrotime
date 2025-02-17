@@ -22,6 +22,7 @@ model_name = "baseline"
 series_length = 2000
 epochs=1000
 batch_size=32
+eval_size=10
 train_dset_idx = 0
 valid_dset_idx = 1
 optimizer='rmsprop'
@@ -32,7 +33,6 @@ sinusoid_loader = SinusoidLoader(data_dir)
 encoder = ValueEncoder(device,series_length)
 model: keras.Model = SinusoidPeriodModel()
 model.compile(optimizer=optimizer, loss=loss)
-model.build()
 
 tdset: Dict = sinusoid_loader.get_dataset(train_dset_idx)
 tX, tY = encoder.encode_dset(tdset)
@@ -46,6 +46,7 @@ shape_printer = ShapePrinter(input_shapes=tY.shape)
 checkpointer = CheckpointCallback( model_name, f"{results_dir}/checkpoints" )
 train_args: Dict[str,Any] = dict( epochs=epochs, batch_size=batch_size, shuffle=True, callbacks=[shape_printer,checkpointer], verbose=1)
 
+predictions = model.predict( tY[0:eval_size] )
 if refresh: print( "Refreshing model. Training from scratch.")
-else: checkpointer.load_weights(model.build())
+else: checkpointer.load_weights(model)
 history = model.fit( tY, train_target, validation_data=(vY, valid_target), **train_args )

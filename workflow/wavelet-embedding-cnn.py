@@ -21,6 +21,7 @@ results_dir = "/explore/nobackup/projects/ilab/data/astro_sigproc/results"
 series_length = 2000
 epochs=1000
 batch_size=32
+eval_size = 10
 nfeatures=5
 nfreq: int = 2000
 train_dset_idx = 0
@@ -49,7 +50,8 @@ train_args: Dict[str,Any] = dict( epochs=epochs, batch_size=batch_size, shuffle=
 
 spmodel = SinusoidPeriodModel()
 spmodel.compile(optimizer=optimizer, loss=loss)
-spmodel.build()
+predictions = spmodel.predict( tY[0:eval_size] )
+
 if refresh: print( "Refreshing model. Training from scratch.")
 else: checkpointer.load_weights(spmodel)
 
