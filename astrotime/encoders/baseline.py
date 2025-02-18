@@ -22,8 +22,8 @@ class ValueEncoder(Encoder):
 				x1.append( tf.expand_dims( xs, 0) )
 			Y, X = tf.concat(y1, axis=0), tf.concat(x1, axis=0)
 			if Y.ndim == 2: Y = tf.expand_dims(Y, axis=2)
-			print(f" Completed encoding in {(time.time()-t0)/60.0:.2f}m: ")
-			print(f" dset.x{shp(dset['x'])}, dset.y{shp(dset['y'])} --> X{X.shape}, Y{Y.shape}: (mean={tmean(Y):.5f}, std={tstd(Y):.5f}, mag={tmag(Y):.5f})")
+			# print(f" Completed encoding in {(time.time()-t0)/60.0:.2f}m: ")
+			# print(f" dset.x{shp(dset['x'])}, dset.y{shp(dset['y'])} --> X{X.shape}, Y{Y.shape}: (mean={tmean(Y):.5f}, std={tstd(Y):.5f}, mag={tmag(Y):.5f})")
 			return X, Y
 
 	def encode_batch(self, x: np.ndarray, y: np.ndarray ) -> Tuple[tf.Tensor,tf.Tensor]:
