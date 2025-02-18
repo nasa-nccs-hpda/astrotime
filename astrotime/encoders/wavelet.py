@@ -57,9 +57,10 @@ class WaveletEncoder(Encoder):
 			Y: tf.Tensor = tf.convert_to_tensor(y[:, x0:x0 + self.series_len], dtype=tf.float32)
 			X: tf.Tensor = tf.convert_to_tensor(x[:, x0:x0 + self.series_len], dtype=tf.float32)
 			Y = tnorm(Y, axis=1)
-			print( f"Encoding wwz batch: X{X.shape} Y{Y.shape} freq{self.freq.shape}")
+			print( f"Encoding wwz batch: x{shp(x)}, y{shp(y)} -> X{X.shape} Y{Y.shape}")
 			amp, phase, cs = wwz(Y, X, self.freq, X[:, self.series_len // 2])
 			features = [amp,phase]+list(cs)
 			dim = 1 if self.chan_first else 2
-			Y = tf.stack( features[:self.nfeatures], axis=dim )
-			return self.freq, Y
+			WWZ = tf.stack( features[:self.nfeatures], axis=dim )
+			print(f" --> f{self.freq.shape} WWZ{WWZ.shape}")
+			return self.freq, WWZ
