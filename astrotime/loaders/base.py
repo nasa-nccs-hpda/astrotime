@@ -33,21 +33,20 @@ class DataGenerator(Sequence):
 		self.loader: DataLoader = loader
 		self.encoder: Encoder = encoder
 		self.nbatches: int = loader.nbatches
-		self.n = loader.nelements
 		self.batch_size = self.loader.batch_size
 
 	def on_epoch_end(self):
 		pass
 
-	def __getitem__(self, index):
-		dset: xa.Dataset = self.loader.get_batch( self.batch_index )
+	def __getitem__(self, batch_index):
+		dset: xa.Dataset = self.loader.get_batch( batch_index )
 		X, Y = self.encoder.encode_batch( dset['t'].values, dset['y'].values )
 		target: tf.Tensor = tf.convert_to_tensor( dset['p'].values[:,None] )
 		print( f" DataPreprocessor:get_batch({self.batch_index}: x{X.shape} y{Y.shape} target{target.shape}")
 		return Y, target
 
 	def __len__(self):
-		return self.n // self.batch_size
+		return self.nbatches
 
 class DataPreprocessor:
 
