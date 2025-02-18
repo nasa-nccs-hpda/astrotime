@@ -5,9 +5,9 @@ from astrotime.util.math import tmean, tstd, tmag, tnorm, shp
 
 class ValueEncoder(Encoder):
 
-	def __init__(self, device, series_len: int):
+	def __init__(self, device, series_len: int, max_series_len: int ):
 		super(ValueEncoder, self).__init__( device, series_len )
-		self.slmax = 5000
+		self.max_series_len = max_series_len
 
 	def encode_dset(self, dset: Dict[str,np.ndarray]) -> Tuple[tf.Tensor,tf.Tensor]:
 		t0 = time.time()
@@ -15,7 +15,7 @@ class ValueEncoder(Encoder):
 			y1, x1 = [], []
 			for idx, (y,x) in enumerate(zip(dset['y'],dset['x'])):
 				x,y = self.apply_filters(x,y,0)
-				x0: int = 0 # tf.random.uniform([1], 0, self.slmax - self.series_len, dtype=tf.int32)[0]
+				x0: int = tf.random.uniform([1], 0, self.max_series_len - self.series_len, dtype=tf.int32)[0]
 				ys: tf.Tensor = tf.convert_to_tensor(y[x0:x0 + self.series_len], dtype=tf.float32)
 				xs: tf.Tensor = tf.convert_to_tensor(x[x0:x0 + self.series_len], dtype=tf.float32)
 				y1.append( tf.expand_dims( tnorm(ys,axis=0), 0) )

@@ -7,7 +7,7 @@ from astrotime.util.math import tmean, tstd, tmag, tnorm
 
 class WaveletEncoder(Encoder):
 
-	def __init__(self, device: str, series_len: int = 2000, nfreq: int = 2000, fbounds: Tuple[float,float] = (0.1,10.0), fscale: str = "log" ):
+	def __init__(self, device: str, series_len: int, nfreq: int , fbounds: Tuple[float,float], fscale, max_series_len: int ):
 		super(WaveletEncoder, self).__init__( device, series_len )
 		self.fbeg, self.fend = fbounds
 		self.nfreq = nfreq
@@ -17,6 +17,7 @@ class WaveletEncoder(Encoder):
 		self.nfeatures = 5
 		self.chan_first = False
 		self.batch_size = 100
+		self.max_series_len = max_series_len
 
 	def create_freq(self) -> tf.Tensor:
 		fspace = logspace if (self.fscale == "log") else np.linspace
@@ -29,7 +30,7 @@ class WaveletEncoder(Encoder):
 			y1, x1, wwz_start_time, wwz_end_time = [], [], time.time(), time.time()
 			for idx, (y,x) in enumerate(zip(dset['y'],dset['x'])):
 				x, y = self.apply_filters(x,y,0)
-				x0: int = 0 # tf.random.uniform( [1], 0, x.shape[0] - self.series_len, dtype=tf.int32 )[0]
+				x0: int = tf.random.uniform( [1], 0, self.max_series_len-self.series_len, dtype=tf.int32 )[0]
 				ys: tf.Tensor = tf.convert_to_tensor( y[x0:x0+self.series_len], dtype=tf.float32 )
 				xs: tf.Tensor = tf.convert_to_tensor( x[x0:x0+self.series_len], dtype=tf.float32)
 				y1.append( tf.expand_dims( tnorm(ys, 0), 0 ) )
