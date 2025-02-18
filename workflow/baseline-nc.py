@@ -9,6 +9,7 @@ from astrotime.callbacks.printers import ShapePrinter
 from astrotime.loaders.sinusoid import ncSinusoidLoader
 from astrotime.callbacks.checkpoints import CheckpointCallback
 from argparse import Namespace
+from astrotime.transforms.filters import RandomDownsample
 from astrotime.util.env import parse_clargs, get_device
 from astrotime.loaders.base import DataPreprocessor
 
@@ -26,10 +27,12 @@ epochs=1000
 eval_size=10
 optimizer='rmsprop'
 loss='mae'
-refresh = False
+refresh = True
+sparsity = 0.0
 
 sinusoid_loader = ncSinusoidLoader( dataset_root, dataset_files, file_size, batch_size )
 encoder = ValueEncoder(device,series_length)
+if sparsity > 0.0: encoder.add_filters( [RandomDownsample(sparsity=sparsity)] )
 generator = DataPreprocessor( sinusoid_loader, encoder )
 model: keras.Model = SinusoidPeriodModel()
 model.compile(optimizer=optimizer, loss=loss)
