@@ -49,6 +49,7 @@ class SinusoidPeriodModel(keras.Model):
 
 	def call(self, inputs: np.ndarray):
 		x = inputs
+		if x.ndim == 2: x = tf.expand_dims(x, axis=-1)
 		x = self.conv1(x)
 		x = self.conv2(x)
 		x = self.conv3(x)
