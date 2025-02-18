@@ -27,7 +27,6 @@ class ValueEncoder(Encoder):
 			return X, Y
 
 	def encode_batch(self, x: np.ndarray, y: np.ndarray ) -> Tuple[tf.Tensor,tf.Tensor]:
-		t0 = time.time()
 		with (self.device):
 			x,y = self.apply_filters(x,y,1)
 			x0: int = 0 # tf.random.uniform([1], 0, self.slmax - self.series_len, dtype=tf.int32)[0]

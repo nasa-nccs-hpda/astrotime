@@ -49,3 +49,16 @@ class WaveletEncoder(Encoder):
 			print(f" Completed encoding in {(time.time()-t0)/60.0:.2f}m: amp{amp.shape}({tf.reduce_mean(amp):.2f},{tf.math.reduce_std(amp):.2f}), phase{phase.shape}({tf.reduce_mean(phase):.2f},{tf.math.reduce_std(phase):.2f}), coeff{coeff[0].shape}({tf.reduce_mean(coeff[0]):.2f},{tf.math.reduce_std(coeff[0]):.2f})")
 			print(f" --> X{self.freq.shape} Y{encoded_dset.shape}({tf.reduce_mean(encoded_dset):.2f},{tf.math.reduce_std(encoded_dset):.2f})")
 			return self.freq, encoded_dset
+
+	def encode_batch(self, x: np.ndarray, y: np.ndarray) -> Tuple[tf.Tensor, tf.Tensor]:
+		with (self.device):
+			x, y = self.apply_filters(x, y, 1)
+			x0: int =  tf.random.uniform([1], 0, self.max_series_len - self.series_len, dtype=tf.int32)[0]
+			Y: tf.Tensor = tf.convert_to_tensor(y[:, x0:x0 + self.series_len], dtype=tf.float32)
+			X: tf.Tensor = tf.convert_to_tensor(x[:, x0:x0 + self.series_len], dtype=tf.float32)
+			Y = tnorm(Y, axis=1)
+			amp, phase, cs = wwz(Y, X, self.freq, X[:, self.series_len // 2])
+			features = [amp,phase]+list(cs)
+			dim = 1 if self.chan_first else 2
+			Y = tf.stack( features[:self.nfeatures], axis=dim )
+			return self.freq, Y
