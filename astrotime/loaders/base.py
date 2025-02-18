@@ -31,8 +31,8 @@ class DataPreprocessor:
 		self.batch_index: int = 0
 
 	@property
-	def shape(self) -> List[int]:
-		return [self.loader.batch_size, self.encoder.series_len]
+	def shape(self) -> Tuple[int,int]:
+		return self.loader.batch_size, self.encoder.series_len
 
 	def __call__(self)-> Tuple[tf.Tensor,tf.Tensor]:
 		dset: xa.Dataset = self.loader.get_batch( self.batch_index )
@@ -52,7 +52,7 @@ class DataPreprocessor:
 		return self.__call__()
 
 	def get_dataset(self) -> tf.data.Dataset:
-		output_sig = ( tf.TensorSpec(shape=self.shape+[1], dtype=tf.float32), tf.TensorSpec(shape=self.shape[:1]+[1], dtype=tf.float32) )
+		output_sig = ( tf.TensorSpec(shape=self.shape+(1,), dtype=tf.float32), tf.TensorSpec(shape=self.shape[:1]+(1,), dtype=tf.float32) )
 		return tf.data.Dataset.from_generator( self, output_signature=output_sig )
 
 
