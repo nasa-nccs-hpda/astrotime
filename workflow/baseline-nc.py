@@ -44,7 +44,7 @@ input_batch, target_batch = generator[0]
 
 shape_printer = ShapePrinter(input_shapes=input_batch.shape)
 checkpointer = CheckpointCallback( model_name, f"{results_dir}/checkpoints" )
-train_args: Dict[str,Any] = dict( epochs=epochs, batch_size=batch_size, shuffle=True, callbacks=[shape_printer,checkpointer], verbose=1)
+train_args: Dict[str,Any] = dict( epochs=epochs, batch_size=batch_size, shuffle=False, callbacks=[shape_printer,checkpointer], verbose=1)
 
 prediction = model.predict( input_batch )
 if refresh: print( "Refreshing model. Training from scratch.")
