@@ -54,7 +54,7 @@ class WaveletEncoder(Encoder):
 	def encode_batch(self, x: np.ndarray, y: np.ndarray) -> Tuple[tf.Tensor, tf.Tensor]:
 		with (self.device):
 			x, y = self.apply_filters(x, y, 1)
-			x0: int =  tf.random.uniform([1], 0, self.max_series_len - self.series_len, dtype=tf.int32)[0]
+			x0: int = 0 # tf.random.uniform([1], 0, self.max_series_len - self.series_len, dtype=tf.int32)[0]
 			Y: tf.Tensor = tf.convert_to_tensor(y[:, x0:x0 + self.series_len], dtype=tf.float32)
 			X: tf.Tensor = tf.convert_to_tensor(x[:, x0:x0 + self.series_len], dtype=tf.float32)
 			Y = tnorm(Y, axis=1)
