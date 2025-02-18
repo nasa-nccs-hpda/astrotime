@@ -21,6 +21,7 @@ results_dir = "/explore/nobackup/projects/ilab/data/astro_sigproc/results"
 model_name = "baseline"
 # data_dir = "/Users/tpmaxwel/Data/astro_sigproc/sinusoids"
 series_length = 2000
+max_series_length = 7000
 sparsity = 0.0
 epochs=1000
 batch_size=32
@@ -32,7 +33,7 @@ loss='mae'
 refresh = False
 
 sinusoid_loader = SinusoidLoader(data_dir)
-encoder = ValueEncoder(device,series_length)
+encoder = ValueEncoder( device, series_length, int(max_series_length*(1-sparsity)) )
 if sparsity > 0.0: encoder.add_filters( [RandomDownsample(sparsity=sparsity)] )
 model: keras.Model = SinusoidPeriodModel()
 model.compile(optimizer=optimizer, loss=loss)
