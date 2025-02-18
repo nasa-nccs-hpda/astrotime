@@ -15,10 +15,10 @@ class SinusoidLoader(DataLoader):
 		data = np.load( f"{self.data_dir}/sinusoids_{dset_idx}.npz", allow_pickle=True)
 		return dict( y=data['sinusoids'], x=data['times'], target=data['periods'] )
 
-
-class ncSinusoidLoader:
+class ncSinusoidLoader(DataLoader):
 
 	def __init__(self, dataset_root, dataset_files, file_size, batch_size):
+		super().__init__()
 		self.files: List[str] = None
 		self.dataset_root = dataset_root
 		self.dataset_files = dataset_files
@@ -26,10 +26,8 @@ class ncSinusoidLoader:
 		self.current_file = 0
 		self.dataset: xa.Dataset = None
 		self.file_size = file_size
-		self.batch_size = batch_size
-		self.batches_per_file = self.file_size // self.batch_size
-
-
+		self._batch_size = batch_size
+		self.batches_per_file = self.file_size // self._batch_size
 
 	@property
 	def file_paths( self ) -> List[str]:
@@ -47,6 +45,10 @@ class ncSinusoidLoader:
 	@property
 	def nbatches(self) -> int:
 		return self.nfiles * self.batches_per_file
+
+	@property
+	def batch_size(self) -> int:
+		return self._batch_size
 
 	@property
 	def nfiles(self) -> int:
@@ -80,15 +82,9 @@ class ncSinusoidLoader:
 				f: xa.DataArray = self.dataset['f']
 				self.current_file = file_index
 				self._nelements = self.dataset.sizes['elem']
-				self.dataset = self.apply_filters( xa.Dataset( dict(y=y,t=t,p=p,f=f) ) )
 				lgm().log(f"Loaded {self._nelements} sinusoids in {time.time()-t0:.3f} sec from file: {file_path}, freq range = [{f.values.min():.3f}, {f.values.max():.3f}]")
 				return True
 		return False
-
-	def apply_filters( self, dataset: xa.Dataset ) -> xa.Dataset:
-		for f in self.filters:
-			dataset = f.apply( dataset )
-		return dataset
 
 	@exception_handled
 	def get_data_element( self, batch_index: int, element_index: int ) -> xa.DataArray:
@@ -99,8 +95,8 @@ class ncSinusoidLoader:
 	def get_batch( self, batch_index: int ) -> xa.Dataset:
 		file_index = batch_index // self.batches_per_file
 		self.load_file(file_index)
-		bstart = (batch_index % self.batches_per_file) * self.batch_size
-		result = self.dataset.isel( elem=slice(bstart,bstart+self.batch_size) )
+		bstart = (batch_index % self.batches_per_file) * self._batch_size
+		result = self.dataset.isel( elem=slice(bstart,bstart+self._batch_size))
 		return result
 
 	def get_dataset(self, dset_idx: int) -> xa.Dataset:

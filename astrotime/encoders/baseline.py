@@ -7,8 +7,7 @@ from astrotime.util.math import tmean, tstd, tmag, tnorm
 class ValueEncoder(Encoder):
 
 	def __init__(self, device, series_len: int):
-		super(ValueEncoder, self).__init__( device )
-		self.series_len = series_len
+		super(ValueEncoder, self).__init__( device, series_len )
 		self.slmax = 5000
 
 	def encode_dset(self, dset: Dict[str,np.ndarray]) -> Tuple[tf.Tensor,tf.Tensor]:
