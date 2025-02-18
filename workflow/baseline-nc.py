@@ -35,7 +35,7 @@ log_level = logging.INFO
 lgm().init_logging( f"{results_dir}/logging", log_level )
 
 sinusoid_loader = ncSinusoidLoader( dataset_root, dataset_files, file_size, batch_size )
-encoder = ValueEncoder( device, series_length, max_series_length*(1-sparsity) )
+encoder = ValueEncoder( device, series_length, int(max_series_length*(1-sparsity)) )
 if sparsity > 0.0: encoder.add_filters( [RandomDownsample(sparsity=sparsity)] )
 generator = DataGenerator( sinusoid_loader, encoder )
 model: keras.Model = SinusoidPeriodModel()

@@ -20,13 +20,14 @@ dataset_root=  "/explore/nobackup/projects/ilab/data/astro_sigproc/sinusoids/nc"
 results_dir = "/explore/nobackup/projects/ilab/data/astro_sigproc/results"
 dataset_files=  "padded_sinusoids_*.nc"
 file_size= 1000
-batch_size= 25
+batch_size= 20
 series_length = 2000
 epochs=1000
-nfeatures=5
+nfeatures=2
 nfreq: int = 2000
 fbounds = (0.1,10.0)
 fscale = "log"
+sparsity = 0.0
 max_series_length = 6000
 optimizer='rmsprop'
 loss='mae'
@@ -34,10 +35,9 @@ model_name = f"wwz-{nfeatures}"
 log_level = logging.INFO
 lgm().init_logging( f"{results_dir}/logging", log_level )
 refresh = False
-sparsity = 0.0
 
 sinusoid_loader = ncSinusoidLoader( dataset_root, dataset_files, file_size, batch_size )
-encoder = WaveletEncoder( device, series_length, nfreq, fbounds, fscale, int(max_series_length*(1-sparsity)) )
+encoder = WaveletEncoder( device, series_length, nfreq, fbounds, fscale, nfeatures, int(max_series_length*(1-sparsity)) )
 if sparsity > 0.0:
 	encoder.add_filters( [RandomDownsample(sparsity=sparsity)] )
 generator = DataGenerator( sinusoid_loader, encoder )

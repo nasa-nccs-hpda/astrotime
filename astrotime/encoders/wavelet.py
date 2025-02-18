@@ -7,14 +7,14 @@ from astrotime.util.math import tmean, tstd, tmag, tnorm
 
 class WaveletEncoder(Encoder):
 
-	def __init__(self, device: str, series_len: int, nfreq: int , fbounds: Tuple[float,float], fscale, max_series_len: int ):
+	def __init__(self, device: str, series_len: int, nfreq: int , fbounds: Tuple[float,float], fscale: str, nfeatures: int, max_series_len: int ):
 		super(WaveletEncoder, self).__init__( device, series_len )
 		self.fbeg, self.fend = fbounds
 		self.nfreq = nfreq
 		self.fscale = fscale
 		self.freq: tf.Tensor = self.create_freq()
 		self.slmax = 6000
-		self.nfeatures = 5
+		self.nfeatures = nfeatures
 		self.chan_first = False
 		self.batch_size = 100
 		self.max_series_len = max_series_len
