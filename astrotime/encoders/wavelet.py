@@ -63,5 +63,5 @@ class WaveletEncoder(Encoder):
 			features = [amp,phase]+list(cs)
 			dim = 1 if self.chan_first else 2
 			WWZ = tf.stack( features[:self.nfeatures], axis=dim )
-			print(f" --> f{self.freq.shape} WWZ{WWZ.shape}")
+			# print(f" --> f{self.freq.shape} WWZ{WWZ.shape}")
 			return self.freq, WWZ
