@@ -1,5 +1,5 @@
 from logging import FileHandler
-
+from astrotime.transforms.filters import RandomDownsample
 import os, numpy as np, tensorflow as tf
 from typing import List, Optional, Dict, Type, Any
 from astrotime.models.cnn_powell import SinusoidPeriodModel
@@ -24,6 +24,10 @@ batch_size=32
 eval_size = 10
 nfeatures=5
 nfreq: int = 2000
+fbounds = (0.1,10.0)
+fscale = "log"
+sparsity = 0.0
+max_series_length = 6000
 train_dset_idx = 0
 valid_dset_idx = 1
 optimizer='rmsprop'
@@ -34,7 +38,9 @@ lgm().init_logging( f"{results_dir}/logging", log_level )
 refresh = False
 
 sinusoid_loader = SinusoidLoader(data_dir)
-encoder = WaveletEncoder(device,series_length,nfreq)
+encoder = WaveletEncoder(device, series_length, nfreq, fbounds, fscale, nfeatures, int(max_series_length*(1-sparsity)) )
+if sparsity > 0.0:
+	encoder.add_filters( [RandomDownsample(sparsity=sparsity)] )
 
 tdset: Dict = sinusoid_loader.get_dataset(train_dset_idx)
 tX, tY = encoder.encode_dset(tdset)

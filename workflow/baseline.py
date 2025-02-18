@@ -9,6 +9,7 @@ from astrotime.callbacks.printers import ShapePrinter
 from astrotime.loaders.sinusoid import SinusoidLoader
 from astrotime.callbacks.checkpoints import CheckpointCallback
 from argparse import Namespace
+from astrotime.transforms.filters import RandomDownsample
 from astrotime.util.env import parse_clargs, get_device
 
 ccustom = {}
@@ -20,6 +21,7 @@ results_dir = "/explore/nobackup/projects/ilab/data/astro_sigproc/results"
 model_name = "baseline"
 # data_dir = "/Users/tpmaxwel/Data/astro_sigproc/sinusoids"
 series_length = 2000
+sparsity = 0.0
 epochs=1000
 batch_size=32
 eval_size=10
@@ -31,6 +33,7 @@ refresh = False
 
 sinusoid_loader = SinusoidLoader(data_dir)
 encoder = ValueEncoder(device,series_length)
+if sparsity > 0.0: encoder.add_filters( [RandomDownsample(sparsity=sparsity)] )
 model: keras.Model = SinusoidPeriodModel()
 model.compile(optimizer=optimizer, loss=loss)
 
