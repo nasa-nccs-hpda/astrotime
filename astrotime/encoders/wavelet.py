@@ -37,6 +37,7 @@ class WaveletEncoder(Encoder):
 				x1.append( tf.expand_dims( xs, 0 ) )
 				if idx % self.batch_size == self.batch_size-1:
 					Y, X = tf.concat(y1,axis=0), tf.concat(x1,axis=0)
+					print(f"Encoding wwz batch: x{shp(x)}, y{shp(y)} -> X{X.shape} Y{Y.shape}")
 					amp, phase, cs = wwz(Y, X, self.freq, X[:,self.series_len//2] )
 					amps.append( amp )
 					phases.append( phase )
