@@ -36,8 +36,7 @@ class DataPreprocessor:
 
 	def __call__(self):
 		dset: xa.Dataset = self.loader.get_batch( self.batch_index )
-		dvars: Dict[str,np.ndarray] = dict( y=dset['y'].values[:,None], x=dset['t'].values )
-		X, Y = self.encoder.encode_dset(dvars)
+		X, Y = self.encoder.encode_batch( dset['t'].values, dset['y'].values )
 		target: tf.Tensor = tf.convert_to_tensor( dset['p'].values[:,None] )
 		return Y, target
 

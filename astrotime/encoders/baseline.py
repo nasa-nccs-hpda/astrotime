@@ -25,3 +25,16 @@ class ValueEncoder(Encoder):
 			print(f" Completed encoding in {(time.time()-t0)/60.0:.2f}m: ")
 			print(f" dset.x{shp(dset['x'])}, dset.y{shp(dset['y'])} --> X{X.shape}, Y{Y.shape}: (mean={tmean(Y):.5f}, std={tstd(Y):.5f}, mag={tmag(Y):.5f})")
 			return X, Y
+
+	def encode_batch(self, x: np.ndarray, y: np.ndarray ) -> Tuple[tf.Tensor,tf.Tensor]:
+		t0 = time.time()
+		with (self.device):
+			x,y = self.apply_filters(x,y,1)
+			x0: int = 0 # tf.random.uniform([1], 0, self.slmax - self.series_len, dtype=tf.int32)[0]
+			Y: tf.Tensor = tf.convert_to_tensor(y[:,x0:x0 + self.series_len], dtype=tf.float32)
+			X: tf.Tensor = tf.convert_to_tensor(x[:,x0:x0 + self.series_len], dtype=tf.float32)
+			Y = tnorm(Y,axis=1)
+			if Y.ndim == 2: Y = tf.expand_dims(Y, axis=2)
+			print(f" Completed encoding in {(time.time()-t0)/60.0:.2f}m: ")
+			print(f" dset.x{shp(x)}, dset.y{shp(y)} --> X{X.shape}, Y{Y.shape}: (mean={tmean(Y):.5f}, std={tstd(Y):.5f}, mag={tmag(Y):.5f})")
+			return X, Y
