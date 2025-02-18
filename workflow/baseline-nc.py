@@ -12,6 +12,8 @@ from argparse import Namespace
 from astrotime.transforms.filters import RandomDownsample
 from astrotime.util.env import parse_clargs, get_device
 from astrotime.loaders.base import DataPreprocessor
+from tensorflow.compat.v1 import logging
+from astrotime.util.logging import lgm
 
 ccustom = {}
 clargs: Namespace = parse_clargs(ccustom)
@@ -29,6 +31,8 @@ optimizer='rmsprop'
 loss='mae'
 refresh = True
 sparsity = 0.0
+log_level = logging.INFO
+lgm().init_logging( f"{results_dir}/logging", log_level )
 
 sinusoid_loader = ncSinusoidLoader( dataset_root, dataset_files, file_size, batch_size )
 encoder = ValueEncoder(device,series_length)
