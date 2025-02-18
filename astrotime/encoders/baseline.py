@@ -35,6 +35,6 @@ class ValueEncoder(Encoder):
 			X: tf.Tensor = tf.convert_to_tensor(x[:,x0:x0 + self.series_len], dtype=tf.float32)
 			Y = tnorm(Y,axis=1)
 			if Y.ndim == 2: Y = tf.expand_dims(Y, axis=2)
-			print(f" Completed encoding in {(time.time()-t0)/60.0:.2f}m: ")
-			print(f" dset.x{shp(x)}, dset.y{shp(y)} --> X{X.shape}, Y{Y.shape}: (mean={tmean(Y):.5f}, std={tstd(Y):.5f}, mag={tmag(Y):.5f})")
+			# print(f" Completed encoding in {(time.time()-t0)/60.0:.2f}m: ")
+			# print(f" dset.x{shp(x)}, dset.y{shp(y)} --> X{X.shape}, Y{Y.shape}: (mean={tmean(Y):.5f}, std={tstd(Y):.5f}, mag={tmag(Y):.5f})")
 			return X, Y
