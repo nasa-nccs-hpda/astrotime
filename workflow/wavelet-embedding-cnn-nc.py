@@ -2,7 +2,7 @@ import os, numpy as np, tensorflow as tf
 from typing import List, Optional, Dict, Type, Any
 from astrotime.models.cnn_powell import SinusoidPeriodModel
 from astrotime.callbacks.printers import ShapePrinter
-from astrotime.loaders.sinusoid import SinusoidLoader
+from astrotime.loaders.sinusoid import ncSinusoidLoader
 from astrotime.encoders.wavelet import WaveletEncoder
 from astrotime.callbacks.checkpoints import CheckpointCallback
 from astrotime.loaders.base import DataGenerator
@@ -16,11 +16,13 @@ ccustom = {}
 clargs: Namespace = parse_clargs(ccustom)
 device = get_device(clargs)
 
-data_dir = "/explore/nobackup/projects/ilab/data/astro_sigproc/sinusoids/npz/"
+dataset_root=  "/explore/nobackup/projects/ilab/data/astro_sigproc/sinusoids/nc"
 results_dir = "/explore/nobackup/projects/ilab/data/astro_sigproc/results"
+dataset_files=  "padded_sinusoids_*.nc"
+file_size= 1000
+batch_size= 50
 series_length = 2000
 epochs=1000
-batch_size=50
 nfeatures=5
 nfreq: int = 2000
 fbounds = (0.1,10.0)
@@ -34,7 +36,7 @@ lgm().init_logging( f"{results_dir}/logging", log_level )
 refresh = False
 sparsity = 0.0
 
-sinusoid_loader = SinusoidLoader(data_dir)
+sinusoid_loader = ncSinusoidLoader( dataset_root, dataset_files, file_size, batch_size )
 encoder = WaveletEncoder( device, series_length, nfreq, fbounds, fscale, int(max_series_length*(1-sparsity)) )
 if sparsity > 0.0:
 	encoder.add_filters( [RandomDownsample(sparsity=sparsity)] )
