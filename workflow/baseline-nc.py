@@ -11,7 +11,7 @@ from astrotime.callbacks.checkpoints import CheckpointCallback
 from argparse import Namespace
 from astrotime.transforms.filters import RandomDownsample
 from astrotime.util.env import parse_clargs, get_device
-from astrotime.loaders.base import DataPreprocessor
+from astrotime.loaders.base import DataGenerator
 from tensorflow.compat.v1 import logging
 from astrotime.util.logging import lgm
 
@@ -37,15 +37,16 @@ lgm().init_logging( f"{results_dir}/logging", log_level )
 sinusoid_loader = ncSinusoidLoader( dataset_root, dataset_files, file_size, batch_size )
 encoder = ValueEncoder(device,series_length)
 if sparsity > 0.0: encoder.add_filters( [RandomDownsample(sparsity=sparsity)] )
-generator = DataPreprocessor( sinusoid_loader, encoder )
+generator = DataGenerator( sinusoid_loader, encoder )
 model: keras.Model = SinusoidPeriodModel()
 model.compile(optimizer=optimizer, loss=loss)
+input_batch, target_batch = generator[0]
 
-shape_printer = ShapePrinter(input_shapes=generator.shape)
+shape_printer = ShapePrinter(input_shapes=input_batch.shape)
 checkpointer = CheckpointCallback( model_name, f"{results_dir}/checkpoints" )
 train_args: Dict[str,Any] = dict( epochs=epochs, batch_size=batch_size, shuffle=True, callbacks=[shape_printer,checkpointer], verbose=1)
 
-prediction = model.predict( generator()[0] )
+prediction = model.predict( input_batch )
 if refresh: print( "Refreshing model. Training from scratch.")
 else: checkpointer.load_weights(model)
-history = model.fit( generator.get_dataset(), **train_args )
+history = model.fit( generator, **train_args )
