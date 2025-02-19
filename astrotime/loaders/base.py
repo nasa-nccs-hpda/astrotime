@@ -2,6 +2,7 @@ import numpy as np, xarray as xa
 from typing import List, Optional, Dict, Type, Tuple
 from astrotime.encoders.base import Encoder
 import tensorflow as tf
+from astrotime.util.logging import lgm, exception_handled, log_timing
 from keras.utils import Sequence
 
 class DataLoader:
@@ -30,6 +31,7 @@ class DataLoader:
 class DataGenerator(Sequence):
 
 	def __init__(self, loader: DataLoader, encoder: Encoder):
+		Sequence.__init__(self)
 		self.loader: DataLoader = loader
 		self.encoder: Encoder = encoder
 		self.nbatches: int = loader.nbatches
@@ -38,6 +40,7 @@ class DataGenerator(Sequence):
 	def on_epoch_end(self):
 		pass
 
+	@exception_handled
 	def __getitem__(self, batch_index):
 		dset: xa.Dataset = self.loader.get_batch( batch_index )
 		X, Y = self.encoder.encode_batch( dset['t'].values, dset['y'].values )

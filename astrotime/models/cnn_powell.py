@@ -2,6 +2,7 @@ import tensorflow as tf
 from keras import layers
 import numpy as np
 import keras
+from astrotime.util.logging import lgm, exception_handled, log_timing
 
 class SinusoidPeriodModel(keras.Model):
 	def __init__(self):
@@ -47,6 +48,7 @@ class SinusoidPeriodModel(keras.Model):
 		self.dense1 = layers.Dense(64, activation='elu')
 		self.dense2 = layers.Dense(1)
 
+	@exception_handled
 	def call(self, inputs: np.ndarray):
 		x = inputs
 		if x.ndim == 2:

@@ -131,6 +131,7 @@ class LogManager(object):
         self._lid = "" if overwrite else f"-{os.getpid()}"
         self.log_file = f'{self.log_dir}/astrotime{self._lid}.log' # f'{self.log_dir}/{cid()}{self._lid}.log'
         os.makedirs( os.path.dirname( self.log_file ), mode=0o777, exist_ok=True )
+        print( f"\n     Logging to file: '{self.log_file}'    \n\n", flush=True)
         self._logger = PythonLogger()
         self._logger.file_logging( self.log_file )
         self._logger.set_level( level )
