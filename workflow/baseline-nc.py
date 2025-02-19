@@ -40,13 +40,10 @@ if sparsity > 0.0: encoder.add_filters( [RandomDownsample(sparsity=sparsity)] )
 generator = DataGenerator( sinusoid_loader, encoder )
 model: keras.Model = SinusoidPeriodModel()
 model.compile(optimizer=optimizer, loss=loss)
-input_batch, target_batch = generator[0]
 
-shape_printer = ShapePrinter(input_shapes=input_batch.shape)
 checkpointer = CheckpointCallback( model_name, f"{results_dir}/checkpoints" )
-train_args: Dict[str,Any] = dict( epochs=epochs, batch_size=batch_size, shuffle=False, callbacks=[shape_printer,checkpointer], verbose=1)
+train_args: Dict[str,Any] = dict( epochs=epochs, batch_size=batch_size, shuffle=False, callbacks=[checkpointer], verbose=1)
 
-prediction = model.predict( input_batch )
-if refresh: print( "Refreshing model. Training from scratch.")
-else: checkpointer.load_weights(model)
+#if refresh: print( "Refreshing model. Training from scratch.")
+#else: checkpointer.load_weights(model)
 history = model.fit( generator, **train_args )
