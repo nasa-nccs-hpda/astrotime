@@ -37,7 +37,6 @@ class WaveletEncoder(Encoder):
 				x1.append( tf.expand_dims( xs, 0 ) )
 				if idx % self.batch_size == self.batch_size-1:
 					Y, X = tf.concat(y1,axis=0), tf.concat(x1,axis=0)
-					# print(f"Encoding wwz batch: x{shp(x)}, y{shp(y)} -> X{X.shape} Y{Y.shape}")
 					amp, phase, cs = wwz(Y, X, self.freq, X[:,self.series_len//2] )
 					amps.append( amp )
 					phases.append( phase )
@@ -54,14 +53,12 @@ class WaveletEncoder(Encoder):
 	def encode_batch(self, x: np.ndarray, y: np.ndarray) -> Tuple[tf.Tensor, tf.Tensor]:
 		with (self.device):
 			x, y = self.apply_filters(x, y, 1)
-			x0: int = 0 # tf.random.uniform([1], 0, self.max_series_len - self.series_len, dtype=tf.int32)[0]
+			x0: int = tf.random.uniform([1], 0, self.max_series_len - self.series_len, dtype=tf.int32)[0]
 			Y: tf.Tensor = tf.convert_to_tensor(y[:, x0:x0 + self.series_len], dtype=tf.float32)
 			X: tf.Tensor = tf.convert_to_tensor(x[:, x0:x0 + self.series_len], dtype=tf.float32)
 			Y = tnorm(Y, axis=1)
-			#print( f"Encoding wwz batch: x{shp(x)}, y{shp(y)} -> X{X.shape} Y{Y.shape}")
 			amp, phase, cs = wwz(Y, X, self.freq, X[:, self.series_len // 2])
 			features = [amp,phase]+list(cs)
 			dim = 1 if self.chan_first else 2
 			WWZ = tf.stack( features[:self.nfeatures], axis=dim )
-			# print(f" --> f{self.freq.shape} WWZ{WWZ.shape}")
 			return self.freq, WWZ

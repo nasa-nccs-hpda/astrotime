@@ -5,8 +5,9 @@ import keras
 from astrotime.util.logging import lgm, exception_handled, log_timing
 
 class SinusoidPeriodModel(keras.Model):
+
 	def __init__(self):
-		super(SinusoidPeriodModel, self).__init__()
+		keras.Model.__init__(self)
 		self.conv1 = layers.Conv1D(68, kernel_size=3, activation='elu', padding='same')
 		self.conv2 = layers.Conv1D(72, kernel_size=3, activation='elu', padding='same')
 		self.conv3 = layers.Conv1D(76, kernel_size=3, activation='elu', padding='same')
@@ -52,8 +53,10 @@ class SinusoidPeriodModel(keras.Model):
 	def call(self, *args, **kwargs):
 		if len(args) >= 1:
 			x = args[0]
+			lgm().log(f" * Processing x{x.shape}")
 			if x.ndim == 2:
 				x = tf.expand_dims(x, axis=-1)
+			lgm().log( f"   ----> x{x.shape}")
 			x = self.conv1(x)
 			x = self.conv2(x)
 			x = self.conv3(x)

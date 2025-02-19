@@ -44,6 +44,6 @@ model.compile(optimizer=optimizer, loss=loss)
 checkpointer = CheckpointCallback( model_name, f"{results_dir}/checkpoints" )
 train_args: Dict[str,Any] = dict( epochs=epochs, batch_size=batch_size, shuffle=False, callbacks=[checkpointer], verbose=1)
 
-#if refresh: print( "Refreshing model. Training from scratch.")
-#else: checkpointer.load_weights(model)
+if refresh: print( "Refreshing model. Training from scratch.")
+else: checkpointer.load_weights(model)
 history = model.fit( generator, **train_args )

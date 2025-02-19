@@ -49,7 +49,6 @@ train_args: Dict[str,Any] = dict( epochs=epochs, batch_size=batch_size, shuffle=
 
 spmodel = SinusoidPeriodModel()
 spmodel.compile(optimizer=optimizer, loss=loss)
-prediction = spmodel.predict( input_batch )
 if refresh: print( "Refreshing model. Training from scratch.")
 else: checkpointer.load_weights(spmodel)
 
