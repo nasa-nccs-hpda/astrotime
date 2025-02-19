@@ -16,7 +16,7 @@ ccustom = {}
 clargs: Namespace = parse_clargs(ccustom)
 device = get_device(clargs)
 
-data_dir = "/Users/tpmaxwel/Data/astro_sigproc/sinusoids"
+data_dir = "/Users/tpmaxwel/Data/astro_sigproc/sinusoids/npz"
 results_dir = "/Users/tpmaxwel/Data/astro_sigproc/results"
 
 # data_dir = "/explore/nobackup/projects/ilab/data/astro_sigproc/sinusoids/npz/"
@@ -53,7 +53,7 @@ shape_printer = ShapePrinter(input_shapes=tY.shape)
 checkpointer = CheckpointCallback( model_name, f"{results_dir}/checkpoints" )
 train_args: Dict[str,Any] = dict( epochs=epochs, batch_size=batch_size, shuffle=True, callbacks=[shape_printer,checkpointer], verbose=1)
 
-model: keras.Model = get_model( tY.shape, optimizer=optimizer, loss=loss )
+model: keras.Model = get_model( [batch_size,series_length,1], optimizer=optimizer, loss=loss )
 if refresh: print( "Refreshing model. Training from scratch.")
 else: checkpointer.load_weights(model)
 history = model.fit( tY, train_target, validation_data=(vY, valid_target), **train_args )

@@ -53,7 +53,7 @@ shape_printer = ShapePrinter(input_shapes=tY.shape)
 checkpointer = CheckpointCallback( model_name, f"{results_dir}/checkpoints" )
 train_args: Dict[str,Any] = dict( epochs=epochs, batch_size=batch_size, shuffle=True, callbacks=[shape_printer,checkpointer], verbose=1  )
 
-spmodel: keras.Model = get_model( tX.shape, optimizer=optimizer, loss=loss )
+spmodel: keras.Model = get_model( [batch_size,series_length,1], optimizer=optimizer, loss=loss )
 
 if refresh: print( "Refreshing model. Training from scratch.")
 else: checkpointer.load_weights(spmodel)
