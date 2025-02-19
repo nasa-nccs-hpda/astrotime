@@ -1,10 +1,8 @@
-import os.path
-
 import tensorflow as tf
 import keras
 from typing import List, Optional, Dict, Type, Any
 from astrotime.encoders.baseline import ValueEncoder
-from astrotime.models.cnn_powell import SinusoidPeriodModel
+from astrotime.models.cnn_baseline import get_model
 from astrotime.callbacks.printers import ShapePrinter
 from astrotime.loaders.sinusoid import SinusoidLoader
 from astrotime.callbacks.checkpoints import CheckpointCallback
@@ -42,8 +40,6 @@ lgm().init_logging( f"{results_dir}/logging", log_level )
 sinusoid_loader = SinusoidLoader(data_dir)
 encoder = ValueEncoder( device, series_length, int(max_series_length*(1-sparsity)) )
 if sparsity > 0.0: encoder.add_filters( [RandomDownsample(sparsity=sparsity)] )
-model: keras.Model = SinusoidPeriodModel()
-model.compile(optimizer=optimizer, loss=loss)
 
 tdset: Dict = sinusoid_loader.get_dataset(train_dset_idx)
 tX, tY = encoder.encode_dset(tdset)
@@ -57,7 +53,7 @@ shape_printer = ShapePrinter(input_shapes=tY.shape)
 checkpointer = CheckpointCallback( model_name, f"{results_dir}/checkpoints" )
 train_args: Dict[str,Any] = dict( epochs=epochs, batch_size=batch_size, shuffle=True, callbacks=[shape_printer,checkpointer], verbose=1)
 
-predictions = model.predict( tY[0:eval_size] )
+model: keras.Model = get_model( tY.shape, optimizer=optimizer, loss=loss )
 if refresh: print( "Refreshing model. Training from scratch.")
 else: checkpointer.load_weights(model)
 history = model.fit( tY, train_target, validation_data=(vY, valid_target), **train_args )

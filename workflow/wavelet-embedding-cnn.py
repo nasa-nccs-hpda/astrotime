@@ -1,8 +1,7 @@
-from logging import FileHandler
 from astrotime.transforms.filters import RandomDownsample
-import os, numpy as np, tensorflow as tf
+import os, numpy as np, tensorflow as tf, keras
 from typing import List, Optional, Dict, Type, Any
-from astrotime.models.cnn_powell import SinusoidPeriodModel
+from astrotime.models.cnn_baseline import get_model
 from astrotime.callbacks.printers import ShapePrinter
 from astrotime.loaders.sinusoid import SinusoidLoader
 from astrotime.encoders.wavelet import WaveletEncoder
@@ -54,9 +53,7 @@ shape_printer = ShapePrinter(input_shapes=tY.shape)
 checkpointer = CheckpointCallback( model_name, f"{results_dir}/checkpoints" )
 train_args: Dict[str,Any] = dict( epochs=epochs, batch_size=batch_size, shuffle=True, callbacks=[shape_printer,checkpointer], verbose=1  )
 
-spmodel = SinusoidPeriodModel()
-spmodel.compile(optimizer=optimizer, loss=loss)
-predictions = spmodel.predict( tY[0:eval_size] )
+spmodel: keras.Model = get_model( tX.shape, optimizer=optimizer, loss=loss )
 
 if refresh: print( "Refreshing model. Training from scratch.")
 else: checkpointer.load_weights(spmodel)

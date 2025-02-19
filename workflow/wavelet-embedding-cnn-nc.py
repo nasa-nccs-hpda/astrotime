@@ -1,6 +1,6 @@
-import os, numpy as np, tensorflow as tf
+import os, numpy as np, tensorflow as tf, keras
 from typing import List, Optional, Dict, Type, Any
-from astrotime.models.cnn_powell import SinusoidPeriodModel
+from astrotime.models.cnn_baseline import get_model
 from astrotime.callbacks.printers import ShapePrinter
 from astrotime.loaders.sinusoid import ncSinusoidLoader
 from astrotime.encoders.wavelet import WaveletEncoder
@@ -16,8 +16,12 @@ ccustom = {}
 clargs: Namespace = parse_clargs(ccustom)
 device = get_device(clargs)
 
-dataset_root=  "/explore/nobackup/projects/ilab/data/astro_sigproc/sinusoids/nc"
-results_dir = "/explore/nobackup/projects/ilab/data/astro_sigproc/results"
+# dataset_root=  "/explore/nobackup/projects/ilab/data/astro_sigproc/sinusoids/nc"
+# results_dir = "/explore/nobackup/projects/ilab/data/astro_sigproc/results"
+
+dataset_root  = "/Users/tpmaxwel/Data/astro_sigproc/sinusoids/nc"
+results_dir   = "/Users/tpmaxwel/Data/astro_sigproc/results"
+
 dataset_files=  "padded_sinusoids_*.nc"
 file_size= 1000
 batch_size= 50
@@ -41,14 +45,13 @@ encoder = WaveletEncoder( device, series_length, nfreq, fbounds, fscale, nfeatur
 if sparsity > 0.0:
 	encoder.add_filters( [RandomDownsample(sparsity=sparsity)] )
 generator = DataGenerator( sinusoid_loader, encoder )
-input_batch, target_batch = generator[0]
+sample_input, sample_target = generator[0]
 
-shape_printer = ShapePrinter(input_shapes=input_batch.shape)
+shape_printer = ShapePrinter(input_shapes=sample_input.shape)
 checkpointer = CheckpointCallback( model_name, f"{results_dir}/checkpoints" )
 train_args: Dict[str,Any] = dict( epochs=epochs, batch_size=batch_size, shuffle=False, callbacks=[shape_printer,checkpointer], verbose=1)
 
-spmodel = SinusoidPeriodModel()
-spmodel.compile(optimizer=optimizer, loss=loss)
+spmodel: keras.Model = get_model( sample_input.shape, optimizer=optimizer, loss=loss )
 if refresh: print( "Refreshing model. Training from scratch.")
 else: checkpointer.load_weights(spmodel)
 

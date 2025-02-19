@@ -5,6 +5,7 @@ import keras
 from typing import List, Optional, Dict, Type, Any
 from astrotime.encoders.baseline import ValueEncoder
 from astrotime.models.cnn_powell import SinusoidPeriodModel
+from astrotime.models.cnn_baseline import get_model
 from astrotime.callbacks.printers import ShapePrinter
 from astrotime.loaders.sinusoid import ncSinusoidLoader
 from astrotime.callbacks.checkpoints import CheckpointCallback
@@ -43,12 +44,12 @@ sinusoid_loader = ncSinusoidLoader( dataset_root, dataset_files, file_size, batc
 encoder = ValueEncoder( device, series_length, int(max_series_length*(1-sparsity)) )
 if sparsity > 0.0: encoder.add_filters( [RandomDownsample(sparsity=sparsity)] )
 generator = DataGenerator( sinusoid_loader, encoder )
-model: keras.Model = SinusoidPeriodModel()
-model.compile(optimizer=optimizer, loss=loss)
+sample_input, sample_target = generator[0]
 
 checkpointer = CheckpointCallback( model_name, f"{results_dir}/checkpoints" )
 train_args: Dict[str,Any] = dict( epochs=epochs, batch_size=batch_size, shuffle=False, callbacks=[checkpointer], verbose=1)
 
+model: keras.Model = get_model( sample_input.shape, optimizer=optimizer, loss=loss )
 if refresh: print( "Refreshing model. Training from scratch.")
 else: checkpointer.load_weights(model)
 history = model.fit( generator, **train_args )

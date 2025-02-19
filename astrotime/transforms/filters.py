@@ -2,8 +2,9 @@
 from typing import Any, Mapping, Sequence, Tuple, Union, List, Dict, Literal, Optional
 from astrotime.util.logging import lgm, exception_handled, log_timing, shp
 from scipy.ndimage.filters import uniform_filter1d, gaussian_filter1d
-import time, numpy as np, xarray as xa, math
+import time, numpy as np, xarray as xa, math, keras
 import tensorflow as tf
+from keras import ops
 
 class TrainingFilter(object):
 
@@ -36,7 +37,7 @@ class RandomDownsample(TrainingFilter):
 		return np.compress(mask, x, axis), np.compress(mask, y, axis)
 
 	def _downsample_tf(self, x: tf.Tensor, y: tf.Tensor, axis: int) -> Tuple[tf.Tensor, tf.Tensor]:
-		mask: np.ndarray = tf.math.less( tf.random.uniform(x.shape[axis]), self.sparsity )
+		mask: np.ndarray = ops.less( keras.random.uniform( x.shape[axis]), self.sparsity )
 		return tf.boolean_mask(x,mask,axis), tf.boolean_mask(y,mask,axis)
 
 	@exception_handled
