@@ -11,15 +11,20 @@ from astrotime.callbacks.checkpoints import CheckpointCallback
 from argparse import Namespace
 from astrotime.transforms.filters import RandomDownsample
 from astrotime.util.env import parse_clargs, get_device
+from tensorflow.compat.v1 import logging
+from astrotime.util.logging import lgm
 
 ccustom = {}
 clargs: Namespace = parse_clargs(ccustom)
 device = get_device(clargs)
 
-data_dir = "/explore/nobackup/projects/ilab/data/astro_sigproc/sinusoids/npz/"
-results_dir = "/explore/nobackup/projects/ilab/data/astro_sigproc/results"
+data_dir = "/Users/tpmaxwel/Data/astro_sigproc/sinusoids"
+results_dir = "/Users/tpmaxwel/Data/astro_sigproc/results"
+
+# data_dir = "/explore/nobackup/projects/ilab/data/astro_sigproc/sinusoids/npz/"
+# results_dir = "/explore/nobackup/projects/ilab/data/astro_sigproc/results"
+
 model_name = "baseline"
-# data_dir = "/Users/tpmaxwel/Data/astro_sigproc/sinusoids"
 series_length = 2000
 max_series_length = 6000
 sparsity = 0.0
@@ -31,6 +36,8 @@ valid_dset_idx = 1
 optimizer='rmsprop'
 loss='mae'
 refresh = False
+log_level = logging.INFO
+lgm().init_logging( f"{results_dir}/logging", log_level )
 
 sinusoid_loader = SinusoidLoader(data_dir)
 encoder = ValueEncoder( device, series_length, int(max_series_length*(1-sparsity)) )
