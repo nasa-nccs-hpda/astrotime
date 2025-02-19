@@ -48,6 +48,7 @@ class PythonLogger:
         self.logger = tf.get_logger()
         self.logger.handlers.clear()
         self.logger.setLevel(logging.INFO)
+        self.filehandler = None
         formatter = logging.Formatter( "[%(asctime)s - %(name)s - %(levelname)s] %(message)s", datefmt="%H:%M:%S"  )
         if console:
             streamhandler = logging.StreamHandler()
@@ -64,10 +65,10 @@ class PythonLogger:
                 # ignore if already removed (can happen with multiple processes)
                 pass
         formatter = logging.Formatter(    "[%(asctime)s - %(name)s - %(levelname)s] %(message)s",  datefmt="%H:%M:%S" )
-        filehandler = logging.FileHandler(file_name)
-        filehandler.setFormatter(formatter)
-        filehandler.setLevel(logging.DEBUG)
-        self.logger.addHandler(filehandler)
+        self.filehandler = logging.FileHandler(file_name)
+        self.filehandler.setFormatter(formatter)
+        self.filehandler.setLevel(logging.DEBUG)
+        self.logger.addHandler(self.filehandler)
 
     def set_level(self, level ):
         self.logger.setLevel(level)
@@ -75,6 +76,7 @@ class PythonLogger:
     def log(self, message: str):
         """Log message"""
         self.logger.info(message)
+        self.filehandler.flush()
 
     def info(self, message: str):
         """Log info"""

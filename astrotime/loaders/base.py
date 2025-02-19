@@ -45,7 +45,7 @@ class DataGenerator(Sequence):
 		dset: xa.Dataset = self.loader.get_batch( batch_index )
 		X, Y = self.encoder.encode_batch( dset['t'].values, dset['y'].values )
 		target: tf.Tensor = tf.convert_to_tensor( dset['p'].values[:,None] )
-		# print( f" DataPreprocessor:get_batch({batch_index}: x{X.shape} y{Y.shape} target{target.shape}")
+		lgm().log( f" DataPreprocessor:get_batch({batch_index}: x{X.shape} y{Y.shape} target{target.shape}")
 		return Y, target
 
 	def __len__(self):
