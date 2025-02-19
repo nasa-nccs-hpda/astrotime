@@ -94,10 +94,11 @@ class ncSinusoidLoader(DataLoader):
 	@exception_handled
 	def get_batch( self, batch_index: int ) -> xa.Dataset:
 		file_index = batch_index // self.batches_per_file
+		lgm().log(f"get_batch({batch_index}: file_index={file_index}")
 		self.load_file(file_index)
 		bstart = (batch_index % self.batches_per_file) * self._batch_size
 		result = self.dataset.isel( elem=slice(bstart,bstart+self._batch_size))
-		lgm().log( f"get_batch({batch_index}: file_index={file_index}, bstart={bstart}, batch_size={self._batch_size}, batches_per_file={self.batches_per_file}, y{result['y'].shape} t{result['t'].shape} p{result['p'].shape}")
+		lgm().log( f" ---->  bstart={bstart}, batch_size={self._batch_size}, batches_per_file={self.batches_per_file}, y{result['y'].shape} t{result['t'].shape} p{result['p'].shape}")
 		return result
 
 	def get_dataset(self, dset_idx: int) -> xa.Dataset:
