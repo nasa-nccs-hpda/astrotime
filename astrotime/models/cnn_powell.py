@@ -49,7 +49,7 @@ class SinusoidPeriodModel(keras.Model):
 		self.dense2 = layers.Dense(1)
 
 	@exception_handled
-	def call(self, inputs: np.ndarray):
+	def call(self, inputs: np.ndarray, *args, **kwargs):
 		x = inputs
 		if x.ndim == 2:
 			x = tf.expand_dims(x, axis=-1)
