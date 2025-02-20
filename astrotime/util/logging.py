@@ -69,18 +69,16 @@ class LogManager(object):
     def set_level(self, level ):
         self._level = level
 
-    def init_logging(self, rank: int ):
-        self.rank = rank
+    def init_logging(self, log_dir, level):
         from astrotime.config.context import cfg, cid
-        self.log_dir =  f"{cfg().platform.cache}/logs"
-        overwrite = cfg().task.get("overwrite_log", True)
+        self._level = level
+        self.log_dir =  log_dir
+        overwrite = True # cfg().task.get("overwrite_log", True)
         self._lid = "" if overwrite else f"-{os.getpid()}"
         self.log_file = f'{self.log_dir}/{cid()}{self._lid}-{self.gpuid}.log'
         os.makedirs( os.path.dirname( self.log_file ), mode=0o777, exist_ok=True )
         self._logger = PythonLogger("main")
         self._logger.file_logging( self.log_file )
-        if self.rank < 1:
-            print( f"\n  --------- Opening log file:  '{self.log_file}' ---------  \n" )
 
     @property
     def gpuid(self):
