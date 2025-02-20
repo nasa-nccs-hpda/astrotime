@@ -6,6 +6,10 @@ defaults = dict( world_size=torch.cuda.device_count(), gpu=0, refresh_state=Fals
 CPU = -1
 Array = Union[np.ndarray,Tensor]
 
+def to_torch( x: Array, device: torch.device, **kwargs ) -> torch.Tensor:
+	if type(x) is np.ndarray: x = torch.Tensor(x, **kwargs)
+	return x.to( device )
+
 def _get_args() -> Namespace:
 	argparser = argparse.ArgumentParser(description=f'Execute workflow')
 	argparser.add_argument('-r',  '--refresh_state', action='store_true', help="Refresh workflow by deleting existing checkpoints and learning stats")
