@@ -1,14 +1,18 @@
+import logging
 import sys, argparse
 from argparse import Namespace
+from torch import cuda
+import xarray, warnings, torch, yaml
 import xarray.core.coordinates
 from omegaconf import DictConfig, OmegaConf
 from hydra.core.global_hydra import GlobalHydra
 from hydra.initialize import initialize
 from pathlib import Path
 from typing import Any, Dict, List, Tuple, Type, Optional, Union, Hashable
-from astrotime.util.logging import lgm, exception_handled, log_timing
+from fusion.base.util.logging import lgm, exception_handled, log_timing
 from datetime import date, timedelta, datetime
 from xarray.core.coordinates import DataArrayCoordinates, DatasetCoordinates
+from modulus.distributed import DistributedManager
 import hydra, traceback, os
 import numpy as np
 import pprint
@@ -17,10 +21,23 @@ pp = pprint.PrettyPrinter(indent=4)
 DataCoordinates = Union[DataArrayCoordinates,DatasetCoordinates]
 default_args = Namespace(gpu=0,world_size=1,port=0)
 
+def ddp_setup(  rank: int, args: argparse.Namespace ) -> torch.device:
+    device = torch.device('cpu')
+    gpuID = args.gpu if (args.gpu >= 0) else rank
+    if gpuID >= 0:
+        gpuID = args.gpu if (args.gpu >= 0) else rank
+        os.environ["RANK"] = str(rank)
+        os.environ["WORLD_SIZE"] = str(args.world_size)
+        os.environ["MASTER_ADDR"] = "localhost"
+        os.environ["MASTER_PORT"] = str(args.port)
+        device: torch.device = set_device(gpuID)
+        if args.world_size > 1: DistributedManager.initialize()
+    return device
+
 def cfg() -> DictConfig:
     return ConfigContext.cfg
 
-def get_device():
+def get_device() -> torch.device:
     return ConfigContext.device
 
 def config() -> Dict:
@@ -45,13 +62,15 @@ class ConfigContext(initialize):
     cname: Optional[str] = None
     defaults: Dict = {}
     configuration: Dict = {}
-    device = None
+    device: torch.device = None
+    rank: int = 0
 
-    def __init__(self, ccustom: Dict = None, device = None ):
+    def __init__(self, rank: int, ccustom: Dict = None, device: torch.device = None ):
         assert self.cfg is None, "Only one ConfigContext instance is allowed at a time"
         ConfigContext.configuration = dict(**self.defaults)
         if ccustom is not None: ConfigContext.configuration.update(ccustom)
         ConfigContext.device = device
+        ConfigContext.rank = rank
         self.training: str = self.get_config('training')
         self.platform: str = self.get_config('platform')
         self.dataset: str = self.get_config('dataset')
@@ -61,9 +80,14 @@ class ConfigContext(initialize):
         super(ConfigContext, self).__init__(version_base=None, config_path=self.config_path)
 
     @classmethod
-    def initialize(cls, cname: str, device, configuration: Dict[str,Any], ccustom: Dict[str,Any]=None ):
+    def initialize(cls, cname: str, configuration: Dict[str,Any], args: Namespace = default_args, ccustom: Dict[str,Any]=None,  rank: int = 0 ):
         cls.set_defaults(cname, **configuration)
-        return cls.activate_global(ccustom,device)
+        device: Union[str, torch.device] = ddp_setup(rank, args)
+        return cls.activate_global(ccustom,device,rank)
+
+    @property
+    def gpu(self) -> int:
+        return 0 if (self.device is None) else self.device.index
 
     @property
     def model(self):
@@ -121,7 +145,8 @@ class ConfigContext(initialize):
         cls.cfg = None
 
     @classmethod
-    def activate_global(cls, ccustom: Dict, device, rank: int = 0 ) -> 'ConfigContext':
+    def activate_global(cls, ccustom: Dict, device: Union[str,torch.device] = "cpu", rank: int = 0 ) -> 'ConfigContext':
+        if isinstance(device, str): device = torch.device(device)
         cc = ConfigContext( rank, ccustom, device )
         cc.activate()
         lgm().init_logging(rank)
@@ -251,5 +276,12 @@ def cval( data: xarray.DataArray, dim: str, cindex ) -> float:
 def get_data_indices( data: Union[xarray.DataArray,xarray.Dataset], target_coords: Dict[str,float] ) -> Dict[str,int]:
     return { dim: index_of_value( data.coords[ dim ].values, coord_value ) for dim, coord_value in target_coords.items() }
 
+def set_device( gpu_index: int ) -> torch.device:
+    device = torch.device(f'cuda:{gpu_index}' if cuda.is_available() else 'cpu')
+    if cuda.is_available():
+        cuda.set_device(device.index)
+    else:
+        assert gpu_index == 0, "Can't run on multiple GPUs: No GPUs available"
+    return device
 
 

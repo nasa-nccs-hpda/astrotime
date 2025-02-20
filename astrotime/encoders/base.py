@@ -5,7 +5,7 @@ from astrotime.transforms.filters import TrainingFilter
 class Encoder:
 
 	def __init__(self, device: str, series_len: int):
-		self.device = tf.device(device)
+		self.device = device
 		self._series_len: int = series_len
 		self.filters: List[TrainingFilter] = []
 
@@ -22,7 +22,7 @@ class Encoder:
 	def add_filters(self, filters: List[TrainingFilter] ):
 		self.filters.extend( filters )
 
-	def apply_filters(self, x: np.ndarray, y: np.ndarray, axis: int) -> Tuple[np.ndarray, np.ndarray]:
+	def apply_filters(self, x: np.ndarray, y: np.ndarray, dim: int) -> Tuple[np.ndarray, np.ndarray]:
 		for f in self.filters:
-			x, y = f.apply( x, y, axis )
+			x, y = f.apply( x, y, dim )
 		return x, y

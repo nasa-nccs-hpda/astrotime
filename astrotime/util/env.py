@@ -1,9 +1,10 @@
-import argparse, tensorflow as tf
+import argparse, torch, numpy as np
+from torch import Tensor
 from typing import Any, Dict, List, Tuple, Mapping, Union
 from argparse import Namespace
-gpus = tf.config.list_physical_devices('GPU')
-defaults = dict( world_size=len(gpus), gpu=0, refresh_state=False, port=23467 )
+defaults = dict( world_size=torch.cuda.device_count(), gpu=0, refresh_state=False, port=23467 )
 CPU = -1
+Array = Union[np.ndarray,Tensor]
 
 def _get_args() -> Namespace:
 	argparser = argparse.ArgumentParser(description=f'Execute workflow')

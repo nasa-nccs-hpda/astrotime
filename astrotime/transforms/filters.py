@@ -1,10 +1,9 @@
 
 from typing import Any, Mapping, Sequence, Tuple, Union, List, Dict, Literal, Optional
 from astrotime.util.logging import lgm, exception_handled, log_timing, shp
-from scipy.ndimage.filters import uniform_filter1d, gaussian_filter1d
-import time, numpy as np, xarray as xa, math, keras
-import tensorflow as tf
-from keras import ops
+import time, numpy as np, xarray as xa, torch
+from astrotime.util.env import Array
+from torch import Tensor
 
 class TrainingFilter(object):
 
@@ -23,28 +22,30 @@ class TrainingFilter(object):
 			return self.parms[key]
 		return super(TrainingFilter, self).__getattribute__(key)
 
-	def apply(self, x: Union[np.ndarray,tf.Tensor], y: Union[np.ndarray,tf.Tensor], axis: int) -> Tuple[Union[np.ndarray,tf.Tensor],Union[np.ndarray,tf.Tensor]]:
+	def apply(self, x: Array, y: Array, axis: int) -> Tuple[Array,Array]:
 		raise NotImplemented(f"Abstract method 'apply' of base class {type(self).__name__} not implemented")
-
 
 class RandomDownsample(TrainingFilter):
 
 	def __init__(self,  mparms: Dict[str, Any]=None, **custom_parms):
 		super().__init__( mparms,**custom_parms)
 
-	def _downsample(self, x: np.ndarray, y: np.ndarray, axis: int ) -> Tuple[np.ndarray, np.ndarray]:
-		mask = np.random.rand(x.shape[axis]) > self.sparsity
-		return np.compress(mask, x, axis), np.compress(mask, y, axis)
+	def _downsample(self, x: np.ndarray, y: np.ndarray, dim: int ) -> Tuple[np.ndarray, np.ndarray]:
+		mask = np.random.rand(x.shape[dim]) > self.sparsity
+		return np.compress(mask, x, dim), np.compress(mask, y, dim)
 
-	def _downsample_tf(self, x: tf.Tensor, y: tf.Tensor, axis: int) -> Tuple[tf.Tensor, tf.Tensor]:
-		mask: np.ndarray = ops.less( keras.random.uniform( x.shape[axis]), self.sparsity )
-		return tf.boolean_mask(x,mask,axis), tf.boolean_mask(y,mask,axis)
+	def _t_downsample(self, x: Tensor, y: Tensor, dim: int) -> Tuple[Tensor, Tensor]:
+		mask: np.ndarray = ( torch.rand(x.shape[dim]) < self.sparsity )
+		if   dim == 0: return x[mask,...], y[mask,...]
+		elif dim == 1: return x[:,mask,...], y[:,mask,...]
+		elif dim == 2: return x[:,:,mask,...], y[:,:,mask,...]
+		else: raise Exception( f"Unsupported dim: {dim}")
 
 	@exception_handled
-	def apply(self, x: Union[np.ndarray,tf.Tensor], y: Union[np.ndarray,tf.Tensor], axis: int) -> Tuple[Union[np.ndarray,tf.Tensor],Union[np.ndarray,tf.Tensor]]:
+	def apply(self, x: Array, y: Array, dim: int) -> Tuple[Array,Array]:
 		if self.sparsity == 0.0: return x,y
-		if type(x) is tf.Tensor: return self._downsample_tf(x,y,axis)
-		else:                           return self._downsample(x,y,axis)
+		if type(x) is Tensor: return self._t_downsample(x,y,dim)
+		else:                 return self._downsample(x,y,dim)
 
 
 # class GaussianNoise(TrainingFilter):

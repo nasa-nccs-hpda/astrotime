@@ -1,6 +1,7 @@
 import numpy as np
-import tensorflow as tf
 from typing import List, Optional, Dict, Type, Any
+import torch
+from torch import Tensor
 
 def logspace(start: float, stop: float, N: int) -> np.ndarray:
 	return np.pow(10.0, np.linspace(np.log10(start), np.log10(stop), N))
@@ -8,19 +9,16 @@ def logspace(start: float, stop: float, N: int) -> np.ndarray:
 def shp( x ) -> List[int]:
 	return list(x.shape)
 
-def tmean(x: tf.Tensor) -> float:
-	xm: tf.Tensor = tf.math.reduce_mean(x)
-	return tf.squeeze(xm).numpy()
+def tmean(x: Tensor) -> float:
+	return torch.mean(x).item()
 
-def tstd(x: tf.Tensor) -> float:
-	xs: tf.Tensor = tf.math.reduce_std(x)
-	return tf.squeeze(xs).numpy()
+def tstd(x: Tensor) -> float:
+	return torch.std(x).item()
 
-def tmag(x: tf.Tensor) -> float:
-	xm: tf.Tensor = tf.math.reduce_max( tf.math.abs(x) )
-	return tf.squeeze(xm).numpy()
+def tmag(x: Tensor) -> float:
+	return torch.max(x).item()
 
-def tnorm(x: tf.Tensor, axis: int) -> tf.Tensor:
-	m = tf.math.reduce_mean(x, axis=axis, keepdims=True)
-	s = tf.math.reduce_std( x, axis=axis, keepdims=True)
+def tnorm(x: Tensor, dim: int) -> Tensor:
+	m: Tensor = x.mean( dim=dim, keepdim=True)
+	s: Tensor = torch.std( x, dim=dim, keepdim=True)
 	return (x - m) / s
