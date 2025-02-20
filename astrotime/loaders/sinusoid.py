@@ -3,7 +3,7 @@ from astrotime.loaders.base import DataLoader
 from typing import List, Optional, Dict, Type
 from astrotime.util.logging import lgm, exception_handled
 from glob import glob
-from astrotime.transforms.filters import TrainingFilter
+from omegaconf import DictConfig, OmegaConf
 
 class SinusoidLoader(DataLoader):
 
@@ -17,22 +17,19 @@ class SinusoidLoader(DataLoader):
 
 class ncSinusoidLoader(DataLoader):
 
-	def __init__(self, dataset_root, dataset_files, file_size, batch_size):
+	def __init__(self, cfg: DictConfig ):
 		super().__init__()
 		self.files: List[str] = None
-		self.dataset_root = dataset_root
-		self.dataset_files = dataset_files
+		self.cfg = cfg
 		self._nelements = -1
 		self.current_file = 0
 		self.dataset: xa.Dataset = None
-		self.file_size = file_size
-		self._batch_size = batch_size
-		self.batches_per_file = self.file_size // self._batch_size
+		self.batches_per_file = self.cfg.file_size // self.cfg.batch_size
 
 	@property
 	def file_paths( self ) -> List[str]:
 		if self.files is None:
-			self.files = glob( self.dataset_files, root_dir=self.dataset_root )
+			self.files = glob( self.cfg.dataset_files, root_dir=self.cfg.dataset_root )
 			self.files.sort()
 		return self.files
 
@@ -48,7 +45,7 @@ class ncSinusoidLoader(DataLoader):
 
 	@property
 	def batch_size(self) -> int:
-		return self._batch_size
+		return self.cfg.batch_size
 
 	@property
 	def nfiles(self) -> int:
@@ -56,7 +53,7 @@ class ncSinusoidLoader(DataLoader):
 
 	def file_path( self, file_index: int ) -> Optional[str]:
 		try:
-			return f"{self.dataset_root}/{self.file_paths[file_index]}"
+			return f"{self.cfg.dataset_root}/{self.file_paths[file_index]}"
 		except IndexError:
 			return None
 
@@ -96,9 +93,9 @@ class ncSinusoidLoader(DataLoader):
 		file_index = batch_index // self.batches_per_file
 		lgm().log(f"get_batch({batch_index}: file_index={file_index}")
 		self.load_file(file_index)
-		bstart = (batch_index % self.batches_per_file) * self._batch_size
-		result = self.dataset.isel( elem=slice(bstart,bstart+self._batch_size))
-		lgm().log( f" ---->  bstart={bstart}, batch_size={self._batch_size}, batches_per_file={self.batches_per_file}, y{result['y'].shape} t{result['t'].shape} p{result['p'].shape}")
+		bstart = (batch_index % self.batches_per_file) * self.cfg.batch_size
+		result = self.dataset.isel( elem=slice(bstart,bstart+self.cfg.batch_size))
+		lgm().log( f" ---->  bstart={bstart}, batch_size={self.cfg.batch_size}, batches_per_file={self.batches_per_file}, y{result['y'].shape} t{result['t'].shape} p{result['p'].shape}")
 		return result
 
 	def get_dataset(self, dset_idx: int) -> xa.Dataset:
