@@ -3,7 +3,6 @@ from typing import List, Optional, Dict, Type, Tuple
 from astrotime.encoders.base import Encoder
 import tensorflow as tf
 from astrotime.util.logging import lgm, exception_handled, log_timing, shp
-from keras.utils import Sequence
 
 class DataLoader:
 

@@ -1,9 +1,7 @@
-import os.path
-
 import tensorflow as tf
-from typing import List, Optional, Dict, Type, Any
+from typing import Dict, Any
 from astrotime.encoders.baseline import ValueEncoder
-from astrotime.models.cnn_powell import SinusoidPeriodModel
+from models.SCRAP.cnn_powell import SinusoidPeriodModel
 from astrotime.callbacks.printers import ShapePrinter
 from astrotime.loaders.sinusoid import SinusoidLoader
 from astrotime.callbacks.checkpoints import CheckpointCallback

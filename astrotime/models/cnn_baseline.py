@@ -1,47 +1,29 @@
-import torch
 from torch import nn
+from omegaconf import DictConfig, OmegaConf
 from typing import Any, Dict, List, Optional, Tuple, Mapping
 
-def get_model( **kwargs ) -> nn.Module:
-	model_layers: List[nn.Module] = [
-		nn.Conv1d(68, kernel_size=3, activation='elu', padding='same'),
-		nn.Conv1d(72, kernel_size=3, activation='elu', padding='same'),
-		nn.Conv1d(76, kernel_size=3, activation='elu', padding='same'),
-		nn.BatchNorm1d(),
-		nn.MaxPool1d(2),
-		nn.Conv1d(80, kernel_size=3, activation='elu', padding='same'),
-		nn.Conv1d(84, kernel_size=3, activation='elu', padding='same'),
-		nn.Conv1d(88, kernel_size=3, activation='elu', padding='same'),
-		nn.BatchNorm1d(),
-		nn.MaxPool1d(2),
-		nn.Conv1d(92, kernel_size=3, activation='elu', padding='same'),
-		nn.Conv1d(96, kernel_size=3, activation='elu', padding='same'),
-		nn.Conv1d(100, kernel_size=3, activation='elu', padding='same'),
-		nn.BatchNorm1d(),
-		nn.MaxPool1d(2),
-		nn.Conv1d(104, kernel_size=3, activation='elu', padding='same'),
-		nn.Conv1d(108, kernel_size=3, activation='elu', padding='same'),
-		nn.Conv1d(112, kernel_size=3, activation='elu', padding='same'),
-		nn.BatchNorm1d(),
-		nn.MaxPool1d(2),
-		nn.Conv1d(116, kernel_size=3, activation='elu', padding='same'),
-		nn.Conv1d(120, kernel_size=3, activation='elu', padding='same'),
-		nn.Conv1d(124, kernel_size=3, activation='elu', padding='same'),
-		nn.BatchNorm1d(),
-		nn.MaxPool1d(2),
-		nn.Conv1d(128, kernel_size=3, activation='elu', padding='same'),
-		nn.Conv1d(132, kernel_size=3, activation='elu', padding='same'),
-		nn.Conv1d(136, kernel_size=3, activation='elu', padding='same'),
-		nn.BatchNorm1d(),
-		nn.MaxPool1d(2),
-		nn.Conv1d(140, kernel_size=3, activation='elu', padding='same'),
-		nn.Conv1d(144, kernel_size=3, activation='elu', padding='same'),
-		nn.Conv1d(148, kernel_size=3, activation='elu', padding='same'),
-		nn.BatchNorm1d(),
-		nn.MaxPool1d(2),
-		nn.Flatten(),
-		nn.Linear(64, activation='elu'),
-		nn.Linear(1)
-	]
-	model = nn.Sequential(model_layers)
+def add_cnn_block( model: nn.Sequential, nchannels: int, cfg: DictConfig ) -> int:
+	out_channels = in_channels = nchannels
+	for iL in range( cfg.num_cnn_layers ):
+		out_channels = in_channels + cfg.cnn_expansion_factor
+		model.append( nn.Conv1d( in_channels, out_channels, kernel_size=cfg.kernel_size, stride=cfg.stride, padding='same') )
+		model.append(nn.ELU())
+		in_channels = out_channels
+	model.append(nn.ELU())
+	model.append( nn.BatchNorm1d(out_channels) )
+	model.append( nn.MaxPool1d(cfg.pool_size) )
+	return out_channels
+
+def add_dense_block( model: nn.Sequential, in_channels:int, cfg: DictConfig ):
+	model.append( nn.Flatten() )
+	model.append( nn.Linear( in_channels, cfg.dense_channels ) )  # 64
+	model.append( nn.ELU() )
+	model.append( nn.Linear( cfg.dense_channels, cfg.out_channels ) )
+
+def get_model_from_cfg( cfg: DictConfig ) -> nn.Module:
+	model: nn.Sequential = nn.Sequential()
+	cnn_channels = cfg.cnn_channels
+	for iblock in range(cfg.num_blocks):
+		cnn_channels = add_cnn_block( model, cnn_channels, cfg )
+	add_dense_block( model, cnn_channels, cfg )
 	return model

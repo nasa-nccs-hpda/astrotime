@@ -1,8 +1,6 @@
-from logging import FileHandler
-
-import os, numpy as np, tensorflow as tf
-from typing import List, Optional, Dict, Type, Any
-from astrotime.models.cnn_powell import SinusoidPeriodModel
+import tensorflow as tf
+from typing import Dict, Any
+from models.SCRAP.cnn_powell import SinusoidPeriodModel
 from astrotime.callbacks.printers import ShapePrinter
 from astrotime.loaders.sinusoid import SinusoidLoader
 from astrotime.encoders.wavelet import WaveletEncoder

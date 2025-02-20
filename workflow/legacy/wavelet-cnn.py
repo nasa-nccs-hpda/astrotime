@@ -1,6 +1,6 @@
 import numpy as np
-from typing import List, Optional, Dict, Type, Any
-from astrotime.models.cnn_powell import SinusoidPeriodModel
+from typing import Dict, Any
+from models.SCRAP.cnn_powell import SinusoidPeriodModel
 from astrotime.callbacks.printers import ShapePrinter
 from astrotime.loaders.wwz import WaveletLoader
 from astrotime.callbacks.checkpoints import CheckpointCallback

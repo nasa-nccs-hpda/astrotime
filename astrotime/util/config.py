@@ -5,6 +5,7 @@ from omegaconf import DictConfig, OmegaConf
 from hydra.core.global_hydra import GlobalHydra
 from hydra.initialize import initialize
 from pathlib import Path
+from enum import Enum
 from typing import Any, Dict, List, Tuple, Type, Optional, Union, Hashable
 from datetime import date, timedelta, datetime
 from xarray.core.coordinates import DataArrayCoordinates, DatasetCoordinates
@@ -15,6 +16,12 @@ import pprint
 pp = pprint.PrettyPrinter(indent=4)
 DataCoordinates = Union[DataArrayCoordinates,DatasetCoordinates]
 default_args = Namespace(gpu=0,world_size=1,port=0)
+
+class TSet(Enum):
+	Train = 'train'
+	Validation = 'valid'
+	Test = 'test'
+	Upsample = 'upsample'
 
 def cfg() -> DictConfig:
     return ConfigContext.cfg
