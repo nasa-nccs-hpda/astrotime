@@ -1,11 +1,12 @@
 from typing import Any, Dict, List, Optional, Tuple, Mapping
-import tensorflow as tf, numpy as np
+import numpy as np
+from torch import Tensor, device
 from astrotime.transforms.filters import TrainingFilter
 
 class Encoder:
 
-	def __init__(self, device: str, series_len: int):
-		self.device = device
+	def __init__(self, device: device, series_len: int):
+		self.device: device = device
 		self._series_len: int = series_len
 		self.filters: List[TrainingFilter] = []
 
@@ -13,10 +14,10 @@ class Encoder:
 	def series_len(self):
 		return self._series_len
 
-	def encode_dset(self, dset: Mapping[str,np.ndarray]) -> tf.Tensor:
+	def encode_dset(self, dset: Mapping[str,np.ndarray]) -> Tensor:
 		raise NotImplementedError()
 
-	def encode_batch(self, x: np.ndarray, y: np.ndarray) -> Tuple[tf.Tensor, tf.Tensor]:
+	def encode_batch(self, x: np.ndarray, y: np.ndarray) -> Tuple[Tensor, Tensor]:
 		raise NotImplementedError()
 
 	def add_filters(self, filters: List[TrainingFilter] ):

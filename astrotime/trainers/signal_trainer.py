@@ -4,9 +4,11 @@ from omegaconf import DictConfig
 from .checkpoints import CheckpointManager
 from .accumulators import ResultsAccumulator, LossAccumulator
 from astrotime.encoders.base import Encoder
-import xarray, math, random
+import xarray as xa, math, random
+from astrotime.util.math import logspace, shp
 from astrotime.loaders.base import DataLoader
 from astrotime.config.context import cfg
+from astrotime.util.logging import lgm, exception_handled
 import time, torch, numpy as np
 from torch import nn, optim, Tensor
 from argparse import Namespace
@@ -21,44 +23,32 @@ def tocpu( c, idx=0 ):
 
 class SignalTrainer(object):
 
-    def __init__(self, loader: DataLoader, encoder: Encoder, args: Namespace, cfg: DictConfig):
+    def __init__(self, loader: DataLoader, encoder: Encoder, model: torch.Module, cfg: DictConfig, args: Namespace = None):
         self.loader: DataLoader = loader
         self.encoder: Encoder = encoder
-        self.nbatches: int = loader.nbatches
-        self.batch_size = self.loader.batch_size
+        self.cfg: DictConfig = cfg
         self.args = args
-        self.cfg = cfg
         self.loss_function: nn.Module = nn.L1Loss()
-        self._checkpoint_manager: CheckpointManager = None
         self.results_accum: ResultsAccumulator = ResultsAccumulator()
-        self.model.initialize( self.get_batch() )
+        self.model: nn.Module = model
         self.optimizer: optim.Optimizer = self.get_optimizer()
+        self._checkpoint_manager = CheckpointManager( model, self.optimizer )
         self.start_batch: int = 0
         self.start_epoch: int = 0
         self.epoch_loss: float = 0.0
         self.epoch0: int = 0
-        self.train_state: Optional[Dict[str,Any]] = None
+        self.nepochs = self.cfg.nepochs
         self._losses: Dict[TSet, LossAccumulator] = {}
-
-    def __setattr__(self, key: str, value: Any) -> None:
-        if ('parms' in self.__dict__.keys()) and (key in self.parms.keys()):
-            self.parms[key] = value
-        else:
-            super(SignalTrainer, self).__setattr__(key, value)
-
-    def __getattr__(self, key: str) -> Any:
-        if 'parms' in self.__dict__.keys() and (key in self.parms.keys()):
-            return self.parms[key]
-        return super(SignalTrainer, self).__getattribute__(key)
+        self.train_state = None
 
     def get_optimizer(self) -> optim.Optimizer:
-         if   self.optim == "rms":  return optim.RMSprop(self.model.parameters(), lr=cfg().training.lr)
-         elif self.optim == "adam": return optim.Adam(self.model.parameters(), lr=cfg().training.lr)
-         else: raise RuntimeError( f"Unknown optimizer: {self.optim}")
+         if   self.cfg.optim == "rms":  return optim.RMSprop( self.model.parameters(), lr=self.cfg.lr )
+         elif self.cfg.optim == "adam": return optim.Adam(    self.model.parameters(), lr=self.cfg.lr )
+         else: raise RuntimeError( f"Unknown optimizer: {self.cfg.optim}")
 
     @property
     def device(self) -> torch.device:
-        return self.model.device
+        return self.encoder.device
 
     def accumulate_losses(self, tset: TSet, epoch: int, mdata: Dict) -> Dict[str, float]:
         losses: LossAccumulator = self.get_losses(TSet.Train)
@@ -73,7 +63,6 @@ class SignalTrainer(object):
         return self._losses.setdefault(tset, LossAccumulator())
 
     def initialize_checkpointing(self):
-        self._checkpoint_manager = CheckpointManager(self.model, self.optimizer )
         if self.args.refresh_state:
             self._checkpoint_manager.clear_checkpoints()
             print(" *** No checkpoint loaded: training from scratch *** ")
@@ -92,28 +81,28 @@ class SignalTrainer(object):
         losses: LossAccumulator = self.get_losses(TSet.Train)
         losses.register_loss('result', loss)
 
-    def get_batch(self, batch_index: int = 0 ) -> Dict[str,torch.Tensor]:
-        batch_data: xarray.Dataset = self.signal.get_batch(batch_index)
-        batch_tensors = self.preprocessor.create_batch(batch_data)
-        return batch_tensors
+    def get_batch(self, batch_index) -> Tuple[torch.Tensor,torch.Tensor]:
+        dset: xa.Dataset = self.loader.get_batch(batch_index)
+        x, y = dset['t'].values, dset['y'].values
+        lgm().log(f" DataPreprocessor:get_batch({batch_index}: x{shp(x)} y{shp(y)}")
+        X, Y = self.encoder.encode_batch(x, y)
+        target: Tensor = torch.from_numpy(dset['p'].values[:, None]).to(self.device)
+        lgm().log(f"  ENCODED --->  y{Y.shape} target{target.shape}")
+        return Y, target
 
-#    @torch.compile
-    def train(self,**kwargs):
-        nbatches: int = round(self.signal.nbatches * cfg().training.val_split)
-        print(f"SignalTrainer: {nbatches} train_batches, {self.nepochs} epochs, nelements = {nbatches*self.model.batch_size}")
+    @torch.compile
+    def train(self):
+        print(f"SignalTrainer: {self.loader.nbatches} train_batches, {self.nepochs} epochs, nelements = {self.loader.nelements}")
         self.initialize_checkpointing()
         losses,  log_interval = [], 100
         for epoch in range(self.start_epoch,self.nepochs):
             self.model.train()
             tset = TSet.Train
             batch0 = self.start_batch if (epoch == self.start_epoch) else 0
-            train_batchs = range(batch0, nbatches)
+            train_batchs = range(batch0, self.loader.nbatches)
             for ibatch in train_batchs:
-                batch_data: xarray.Dataset = self.signal.get_batch(ibatch)
-                batch_tensors = self.preprocessor.create_batch(batch_data)
-                batch: Tensor = batch_tensors.pop("batch").to(self.device)
-                target: Tensor = batch_tensors.pop("target").to(self.device)
-                result = self.model( batch, **batch_tensors )
+                batch, target = self.get_batch(ibatch)
+                result: Tensor = self.model( batch )
                 loss: Tensor = self.loss_function( result.squeeze(), target.squeeze() )
                 self.update_weights(loss)
                 losses.append(loss.item())
