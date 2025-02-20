@@ -1,0 +1,7 @@
+source: sinusoid
+
+dataset_root:  "/explore/nobackup/projects/ilab/data/astro_sigproc/sinusoids/nc"
+dataset_files:  "padded_sinusoids_*.nc"
+element: 0
+file_size: 1000
+

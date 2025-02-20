@@ -1,13 +1,14 @@
 import numpy as np
+import torch
 from typing import List, Optional, Dict, Type
-import tensorflow as tf
 import os, datetime
+from .logger import PythonLogger
 from functools import wraps
 from time import time
 from datetime import datetime
-from termcolor import colored
-import time, logging, sys, traceback
-Array =  np.ndarray
+from .env import CPU
+import threading, time, logging, sys, traceback
+Array = torch.Tensor | np.ndarray
 
 def lgm() -> "LogManager":
     return LogManager.instance()
@@ -15,7 +16,7 @@ def lgm() -> "LogManager":
 def shp(x): return list(x.shape)
 
 def hasNaN(x: Array) -> bool:
-    return np.isnan(x).any() if type(x) is np.ndarray else np.isnan(x).any()
+    return np.isnan(x).any() if type(x) is np.ndarray else torch.isnan(x).any()
 
 def exception_handled(func):
     def wrapper( *args, **kwargs ):
@@ -38,65 +39,6 @@ def log_timing(f):
         except:
             lgm().exception( f" Error in {f}:" )
     return wrap
-
-class PythonLogger:
-    """Simple console logger for DL training
-    This is a WIP
-    """
-
-    def __init__(self, console: bool = False ):
-        self.logger = tf.get_logger()
-        self.logger.handlers.clear()
-        self.logger.setLevel(logging.INFO)
-        self.filehandler = None
-        formatter = logging.Formatter( "[%(asctime)s - %(name)s - %(levelname)s] %(message)s", datefmt="%H:%M:%S"  )
-        if console:
-            streamhandler = logging.StreamHandler()
-            streamhandler.setFormatter(formatter)
-            streamhandler.setLevel(logging.INFO)
-            self.logger.addHandler(streamhandler)
-
-    def file_logging(self, file_name: str = "launch.log"):
-        """Log to file"""
-        if os.path.exists(file_name):
-            try:
-                os.remove(file_name)
-            except FileNotFoundError:
-                # ignore if already removed (can happen with multiple processes)
-                pass
-        formatter = logging.Formatter(    "[%(asctime)s - %(name)s - %(levelname)s] %(message)s",  datefmt="%H:%M:%S" )
-        self.filehandler = logging.FileHandler(file_name)
-        self.filehandler.setFormatter(formatter)
-        self.filehandler.setLevel(logging.DEBUG)
-        self.logger.addHandler(self.filehandler)
-
-    def set_level(self, level ):
-        self.logger.setLevel(level)
-
-    def log(self, message: str):
-        """Log message"""
-        self.logger.info(message)
-        self.filehandler.flush()
-
-    def info(self, message: str):
-        """Log info"""
-        self.logger.info(colored(message, "light_blue"))
-
-    def success(self, message: str):
-        """Log success"""
-        self.logger.info(colored(message, "light_green"))
-
-    def warning(self, message: str):
-        """Log warning"""
-        self.logger.warning(colored(message, "light_yellow"))
-
-    def error(self, message: str):
-        """Log error"""
-        self.logger.error(colored(message, "light_red"))
-
-    def debug(self, message: str):
-        """Log error"""
-        self.logger.debug(colored(message, "light_red"))
 
 class LogManager(object):
     _instance: "LogManager" = None
@@ -125,25 +67,31 @@ class LogManager(object):
         return os.getpid()
 
     def set_level(self, level ):
-        self._logger.set_level(level)
+        self._level = level
 
-    def init_logging(self, log_dir: str, level, **kwargs ):
-        self.log_dir =  log_dir # f"{cfg().platform.cache}/logs"
-        overwrite = kwargs.get("overwrite_log", True)
+    def init_logging(self, rank: int ):
+        self.rank = rank
+        from astrotime.config.context import cfg, cid
+        self.log_dir =  f"{cfg().platform.cache}/logs"
+        overwrite = cfg().task.get("overwrite_log", True)
         self._lid = "" if overwrite else f"-{os.getpid()}"
-        self.log_file = f'{self.log_dir}/astrotime{self._lid}.log' # f'{self.log_dir}/{cid()}{self._lid}.log'
+        self.log_file = f'{self.log_dir}/{cid()}{self._lid}-{self.gpuid}.log'
         os.makedirs( os.path.dirname( self.log_file ), mode=0o777, exist_ok=True )
-        print( f"\n     Logging to file: '{self.log_file}'    \n\n", flush=True)
-        self._logger = PythonLogger()
+        self._logger = PythonLogger("main")
         self._logger.file_logging( self.log_file )
-        self._logger.set_level( level )
+        if self.rank < 1:
+            print( f"\n  --------- Opening log file:  '{self.log_file}' ---------  \n" )
+
+    @property
+    def gpuid(self):
+        return "CPU" if self.rank == CPU else f"GPU-{self.rank}"
 
     @property
     def ctime(self):
         return datetime.now().strftime("%H:%M:%S")
 
     def console(self, msg: str, end="\n"):
-        print( msg, flush=True, end=end)
+        print( f"{self.gpuid} " + msg, flush=True, end=end)
 
     def log( self,  msg, display=False, end="\n" ):
         if self.rank < 1:
@@ -159,12 +107,14 @@ class LogManager(object):
         sys.exit( status )
 
     def debug(self, msg ):
-        self._logger.debug(msg)
+        if self._level == logging.DEBUG:
+            self.log( msg )
 
     def exception(self,  msg ):
         error_msg = f"\n{msg}\n{traceback.format_exc()}\n"
         self._logger.error(error_msg)
         self.console( error_msg )
+
 
     def trace(self,  msg ):
         strace = "".join(traceback.format_stack())

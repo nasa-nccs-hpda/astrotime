@@ -1,14 +1,19 @@
 from typing import Any, Dict, List, Optional, Tuple, Mapping
 import numpy as np
+from omegaconf import DictConfig
 from torch import Tensor, device
 from astrotime.transforms.filters import TrainingFilter
+from astrotime.transforms.filters import RandomDownsample
 
 class Encoder:
 
-	def __init__(self, device: device, series_len: int):
+	def __init__(self, device: device, series_len: int, cfg: DictConfig ):
 		self.device: device = device
+		self.cfg = cfg
 		self._series_len: int = series_len
 		self.filters: List[TrainingFilter] = []
+		if cfg.sparsity > 0.0:
+			self.add_filter( RandomDownsample(sparsity=cfg.sparsity) )
 
 	@property
 	def series_len(self):
@@ -20,8 +25,8 @@ class Encoder:
 	def encode_batch(self, x: np.ndarray, y: np.ndarray) -> Tuple[Tensor, Tensor]:
 		raise NotImplementedError()
 
-	def add_filters(self, filters: List[TrainingFilter] ):
-		self.filters.extend( filters )
+	def add_filter(self, tfilter: TrainingFilter ):
+		self.filters.append( tfilter )
 
 	def apply_filters(self, x: np.ndarray, y: np.ndarray, dim: int) -> Tuple[np.ndarray, np.ndarray]:
 		for f in self.filters:

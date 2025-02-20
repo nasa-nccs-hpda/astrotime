@@ -1,4 +1,5 @@
 import argparse, torch, numpy as np
+from argparse import Action
 from torch import Tensor
 from typing import Any, Dict, List, Tuple, Mapping, Union
 from argparse import Namespace
@@ -10,22 +11,27 @@ def to_torch( x: Array, device: torch.device, **kwargs ) -> torch.Tensor:
 	if type(x) is np.ndarray: x = torch.Tensor(x, **kwargs)
 	return x.to( device )
 
-def _get_args() -> Namespace:
+class ConfigAction(Action):
+	def __init__(self, option_strings, configuration: Dict[str,str],  *args, **kwargs):
+		self._configuration = configuration
+		super(ConfigAction, self).__init__(option_strings=option_strings, *args, **kwargs)
+
+	def __call__(self, parser, namespace, values, option_string=None):
+		print( f" ConfigAction: values={values}, dest={self.dest}, configuration={self._configuration}")
+		setattr(namespace, self.dest, values)
+
+def _get_args(configuration: Dict[str,str]) -> Namespace:
 	argparser = argparse.ArgumentParser(description=f'Execute workflow')
 	argparser.add_argument('-r',  '--refresh_state', action='store_true', help="Refresh workflow by deleting existing checkpoints and learning stats")
-	argparser.add_argument('-ws', '--world_size', nargs='?', default=defaults['world_size'], type=int, help="Number of gpus to use in training")
-	argparser.add_argument('-p',  '--port', nargs='?', default=defaults['port'], type=int, help="Port to use in DDP")
 	argparser.add_argument('-gpu', '--gpu', nargs='?', default=defaults['gpu'], type=int, help="GPU ID to use")
 	argparser.add_argument('-cpu', '--cpu', action='store_true', help="Run on CPU")
+	for cid, cvalue in configuration.items():
+		argparser.add_argument( '-'+cid, '--'+cid, help=f"Reset {cid} configuration",  action=ConfigAction, configuration=configuration )
 	return argparser.parse_args()
 
-def parse_clargs(ccustom: Dict[str,Any]) -> Namespace:
-	args:Namespace = _get_args()
-	if args.cpu:
-		args.gpu = CPU
-		args.world_size = 0
-	elif args.gpu >= 0:
-		args.world_size = 1
+def parse_clargs( configuration: Dict[str,str] ) -> Namespace:
+	args:Namespace = _get_args(configuration)
+	if args.cpu: args.gpu = CPU
 	print( f" Running program with args: {args}")
 	return args
 

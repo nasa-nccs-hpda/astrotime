@@ -1,0 +1,7 @@
+name: ???
+dataset_root:      "/explore/nobackup/projects/ilab/data/fusion"
+process_root:      "/explore/nobackup/projects/ilab/projects/fusion"
+model_root: "${.process_root}/models/"
+results:    "${.process_root}/results"
+cache:      "${.process_root}/cache"
+processed:  '${.process_root}/processed'

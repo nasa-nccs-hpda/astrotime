@@ -1,18 +1,16 @@
-import logging
 import sys, argparse
 from argparse import Namespace
 from torch import cuda
-import xarray, warnings, torch, yaml
+import torch, yaml
 import xarray.core.coordinates
 from omegaconf import DictConfig, OmegaConf
 from hydra.core.global_hydra import GlobalHydra
 from hydra.initialize import initialize
 from pathlib import Path
 from typing import Any, Dict, List, Tuple, Type, Optional, Union, Hashable
-from fusion.base.util.logging import lgm, exception_handled, log_timing
+from astrotime.util.logging import lgm, exception_handled, log_timing
 from datetime import date, timedelta, datetime
 from xarray.core.coordinates import DataArrayCoordinates, DatasetCoordinates
-from modulus.distributed import DistributedManager
 import hydra, traceback, os
 import numpy as np
 import pprint
@@ -20,19 +18,6 @@ import pprint
 pp = pprint.PrettyPrinter(indent=4)
 DataCoordinates = Union[DataArrayCoordinates,DatasetCoordinates]
 default_args = Namespace(gpu=0,world_size=1,port=0)
-
-def ddp_setup(  rank: int, args: argparse.Namespace ) -> torch.device:
-    device = torch.device('cpu')
-    gpuID = args.gpu if (args.gpu >= 0) else rank
-    if gpuID >= 0:
-        gpuID = args.gpu if (args.gpu >= 0) else rank
-        os.environ["RANK"] = str(rank)
-        os.environ["WORLD_SIZE"] = str(args.world_size)
-        os.environ["MASTER_ADDR"] = "localhost"
-        os.environ["MASTER_PORT"] = str(args.port)
-        device: torch.device = set_device(gpuID)
-        if args.world_size > 1: DistributedManager.initialize()
-    return device
 
 def cfg() -> DictConfig:
     return ConfigContext.cfg
@@ -65,25 +50,17 @@ class ConfigContext(initialize):
     device: torch.device = None
     rank: int = 0
 
-    def __init__(self, rank: int, ccustom: Dict = None, device: torch.device = None ):
+    def __init__(self, ccustom: Dict = None ):
         assert self.cfg is None, "Only one ConfigContext instance is allowed at a time"
         ConfigContext.configuration = dict(**self.defaults)
         if ccustom is not None: ConfigContext.configuration.update(ccustom)
-        ConfigContext.device = device
-        ConfigContext.rank = rank
-        self.training: str = self.get_config('training')
-        self.platform: str = self.get_config('platform')
-        self.dataset: str = self.get_config('dataset')
-        self.task: str = self.get_config('task')
-        self.transform: str = self.get_config('transform')
         self.config_path: str = self.get_config('config_path', "../../config")
         super(ConfigContext, self).__init__(version_base=None, config_path=self.config_path)
 
     @classmethod
-    def initialize(cls, cname: str, configuration: Dict[str,Any], args: Namespace = default_args, ccustom: Dict[str,Any]=None,  rank: int = 0 ):
+    def initialize(cls, cname: str, configuration: Dict[str,Any], ccustom: Dict ):
         cls.set_defaults(cname, **configuration)
-        device: Union[str, torch.device] = ddp_setup(rank, args)
-        return cls.activate_global(ccustom,device,rank)
+        return cls.activate_global(ccustom)
 
     @property
     def gpu(self) -> int:
@@ -107,18 +84,6 @@ class ConfigContext(initialize):
         print( f" save config: keys = {list(cfg_content.keys())}" )
         OmegaConf.save( DictConfig(cfg_content), self.cfg_cache_file )
         return self.cfg_cache_file
-
-    # def init_lightning(self, cli: LightningCLI ):
-    #     os.makedirs(self.cfg.task.log_dir, exist_ok=True)
-    #     os.makedirs(cli.trainer.default_root_dir, exist_ok=True)
-    #     normalization = cli.datamodule.output_transforms
-    #     mean_norm, std_norm = normalization.mean, normalization.std
-    #     mean_denorm, std_denorm = -mean_norm / std_norm, 1 / std_norm
-    #     cli.model.set_denormalization(mean_denorm, std_denorm)
-    #     cli.model.set_lat_lon(*cli.datamodule.get_lat_lon())
-    #     cli.model.set_pred_range(cli.datamodule.hparams.predict_range)
-    #     cli.model.set_val_clim(cli.datamodule.val_clim)
-    #     cli.model.set_test_clim(cli.datamodule.test_clim)
 
     @classmethod
     def get_config( cls, name: str, default: Any = None ):
@@ -145,31 +110,21 @@ class ConfigContext(initialize):
         cls.cfg = None
 
     @classmethod
-    def activate_global(cls, ccustom: Dict, device: Union[str,torch.device] = "cpu", rank: int = 0 ) -> 'ConfigContext':
-        if isinstance(device, str): device = torch.device(device)
-        cc = ConfigContext( rank, ccustom, device )
+    def activate_global(cls, ccustom: Dict ) -> 'ConfigContext':
+        cc = ConfigContext( ccustom )
         cc.activate()
-        lgm().init_logging(rank)
+        lgm().init_logging()
         return cc
 
     def activate(self):
         assert ConfigContext.cfg is None, "Context already activated"
-        cfg = ConfigContext.cfg = self.load()
-        print( f" ___________ Config context ___________ {self.model}")
-        ConfigContext.cid =  '-'.join( [self.cname, self.dataset, self.model, self.task, self.transform,  self.training] )
-        if self.rank == 0: print( f"Activating {self.cname}: '{self.cfg_file}', keys = {list(self.cfg.keys())}")
-        cfg.training.name = self.defaults['training']
-        cfg.platform.name = self.defaults['platform']
-        cfg.task.task = self.defaults['task']
-        cfg.task.dataset = self.defaults['dataset']
-        cfg.task.training_version = self.cid
+        ConfigContext.cfg = self.load()
 
     def load(self) -> DictConfig:
         assert self.cfg is None, "Another Config context has already been activateed"
         if not GlobalHydra().is_initialized():
             hydra.initialize(version_base=None, config_path=self.config_path)
         cfg = hydra.compose(config_name=self.cname, overrides=[f"{ov[0]}={ov[1]}" for ov in self.configuration.items()])
-        #OmegaConf.resolve(cfg)
         return cfg
 
     def __enter__(self, *args: Any, **kwargs: Any):
