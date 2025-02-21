@@ -14,7 +14,7 @@ from astrotime.util.logging import lgm
 
 C0 = 1 / (8 * math.pi ** 2)
 
-def wwz(ys: Tensor, ts: Tensor, freq: Tensor, tau: Tensor, c: float = C0) -> Tuple[Tensor, Tensor, Tuple[Tensor, Tensor, Tensor]]:
+def wwz(ys: Tensor, ts: Tensor, freq: Tensor, tau: Tensor, device: torch.device, c: float = C0) -> Tuple[Tensor, Tensor, Tuple[Tensor, Tensor, Tensor]]:
     '''
         Compute the weighted wavelet amplitude (WWA)
     ---------- Parameters:
@@ -54,7 +54,7 @@ def wwz(ys: Tensor, ts: Tensor, freq: Tensor, tau: Tensor, c: float = C0) -> Tup
     theta: Tensor = omega_ * ts
     sin_basis: Tensor = torch.sin(theta)
     cos_basis: Tensor = torch.cos(theta)
-    one_v: Tensor  = torch.ones( (nb,nf,nts) )
+    one_v: Tensor  = torch.ones( (nb,nf,nts) ).to(device)
 
     sin_one: Tensor  = w_prod(sin_basis, one_v)
     cos_one: Tensor  = w_prod(cos_basis, one_v)

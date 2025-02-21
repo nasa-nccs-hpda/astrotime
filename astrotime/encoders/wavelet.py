@@ -34,7 +34,7 @@ class WaveletEncoder(Encoder):
 			x1.append(torch.unsqueeze(xs, dim=0))
 			if idx % concat_size == concat_size-1:
 				Y, X = torch.concatenate(y1,dim=0), torch.concatenate(x1,dim=0)
-				amp, phase, cs = wwz(Y, X, self.freq, X[:,self.series_length//2] )
+				amp, phase, cs = wwz(Y, X, self.freq, X[:,self.series_length//2], self.device )
 				amps.append( amp )
 				phases.append( phase )
 				for coeff, c in zip(coeffs, cs): coeff.append( c )
