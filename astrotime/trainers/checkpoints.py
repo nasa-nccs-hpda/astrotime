@@ -1,6 +1,5 @@
 import torch, time, traceback, pickle, shutil
 from typing import Any, Dict, List, Optional
-from astrotime.config.context import cfg
 from astrotime.util.logging import lgm
 from torch.optim.optimizer import Optimizer
 from astrotime.util.config import TSet

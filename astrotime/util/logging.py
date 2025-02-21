@@ -6,7 +6,6 @@ from .logger import PythonLogger
 from functools import wraps
 from time import time
 from datetime import datetime
-from .env import CPU
 from omegaconf import DictConfig, OmegaConf
 import threading, time, logging, sys, traceback
 Array = torch.Tensor | np.ndarray

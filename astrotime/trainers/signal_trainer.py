@@ -7,7 +7,6 @@ from astrotime.encoders.base import Encoder
 import xarray as xa, math, random
 from astrotime.util.math import logspace, shp
 from astrotime.loaders.base import DataLoader
-from astrotime.config.context import cfg
 from astrotime.util.logging import lgm, exception_handled
 import time, torch, numpy as np
 from torch import nn, optim, Tensor

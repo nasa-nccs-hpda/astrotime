@@ -4,8 +4,6 @@ from omegaconf import DictConfig, OmegaConf
 import xarray as xa, numpy as np
 from torch import nn
 from astrotime.loaders.sinusoid import ncSinusoidLoader
-import logging
-from astrotime.util.logging import lgm, exception_handled, log_timing
 from astrotime.encoders.wavelet import WaveletEncoder
 from astrotime.trainers.signal_trainer import SignalTrainer
 from astrotime.models.cnn_baseline import get_model_from_cfg

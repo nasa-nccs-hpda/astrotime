@@ -1,10 +1,8 @@
 import logging, torch, math, csv
 from astrotime.util.logging import lgm, exception_handled, log_timing
 from io import TextIOWrapper
-from astrotime.config.context import ConfigContext, cfg
 import os, time, yaml, numpy as np
 from collections import deque
-from astrotime.config.context import cfg
 from typing import Any, Dict, List, Tuple, Type, Optional, Union, Sequence, Mapping, Callable
 from omegaconf import DictConfig
 from astrotime.util.config import TSet
