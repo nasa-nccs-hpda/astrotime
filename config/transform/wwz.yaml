@@ -1,4 +1,4 @@
-series_length: 2000
+series_length: 2048
 nfeatures: 2
 nfreq: 2000
 freq_start: 0.1
