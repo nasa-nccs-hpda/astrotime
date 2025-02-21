@@ -1,5 +1,5 @@
-cnn_channels: 68
-dense_channels: 65
+cnn_channels: 64
+dense_channels: 64
 out_channels: 1
 num_cnn_layers: 3
 num_blocks: 7
