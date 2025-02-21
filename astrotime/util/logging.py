@@ -73,6 +73,7 @@ class LogManager(object):
         os.makedirs( os.path.dirname( self.log_file ), mode=0o777, exist_ok=True )
         self._logger = PythonLogger("main")
         self._logger.file_logging( self.log_file )
+        print( f"\n     **** Logging to file: {self.log_file} ****   \n")
 
     @property
     def ctime(self):
