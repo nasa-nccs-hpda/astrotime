@@ -43,7 +43,7 @@ class SignalTrainer(object):
         print( f" Model data sizes: input{list(input_tensor.shape)}")
         for m in self.model.children():
             output = m(output)
-            print(f" ** Layer-{type(m)}: output{list(output.shape)}")
+            print(f" ** Layer-{m.__class__.__name__}: output{list(output.shape)}")
 
     def get_optimizer(self) -> optim.Optimizer:
          if   self.cfg.optim == "rms":  return optim.RMSprop( self.model.parameters(), lr=self.cfg.lr )
