@@ -1,5 +1,4 @@
-#project_root:      "/explore/nobackup/projects/ilab/data/astro_sigproc/"
-project_root:      "/explore/nobackup/projects/ilab/projects/astrotime"
+project_root:      "/explore/nobackup/projects/ilab/data/astrotime"
 model_root: "${.project_root}/models/"
 results:    "${.project_root}/results"
 cache:      "${.project_root}/cache"
