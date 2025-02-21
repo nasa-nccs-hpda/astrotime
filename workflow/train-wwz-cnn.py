@@ -9,7 +9,7 @@ from astrotime.trainers.signal_trainer import SignalTrainer
 from astrotime.models.cnn_baseline import get_model_from_cfg
 from astrotime.config.context import astrotime_initialize
 
-@hydra.main(version_base=None, config_path="../config", config_name="sinusoid_period")
+@hydra.main(version_base=None, config_path="../config", config_name="sinusoid_period.wwz")
 def my_app(cfg: DictConfig) -> None:
 	device: torch.device = astrotime_initialize(cfg)
 
