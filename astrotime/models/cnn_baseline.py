@@ -1,4 +1,5 @@
 from torch import nn
+import torch
 from omegaconf import DictConfig, OmegaConf
 from typing import Any, Dict, List, Optional, Tuple, Mapping
 
@@ -21,11 +22,11 @@ def add_dense_block( model: nn.Sequential, in_channels:int, cfg: DictConfig ):
 	model.append( nn.ELU() )
 	model.append( nn.Linear( cfg.dense_channels, cfg.out_channels ) )
 
-def get_model_from_cfg( cfg: DictConfig, num_input_features: int ) -> nn.Module:
+def get_model_from_cfg( cfg: DictConfig, device: torch.device, num_input_features: int ) -> nn.Module:
 	model: nn.Sequential = nn.Sequential()
 	cnn_channels = cfg.cnn_channels
 	for iblock in range(cfg.num_blocks):
 		cnn_channels = add_cnn_block( model, cnn_channels, num_input_features, cfg )
 		num_input_features = -1
 	add_dense_block( model, cnn_channels, cfg )
-	return model
+	return model.to(device)
