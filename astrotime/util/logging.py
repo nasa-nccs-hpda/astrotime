@@ -7,6 +7,7 @@ from functools import wraps
 from time import time
 from datetime import datetime
 from .env import CPU
+from omegaconf import DictConfig, OmegaConf
 import threading, time, logging, sys, traceback
 Array = torch.Tensor | np.ndarray
 
@@ -50,7 +51,7 @@ class LogManager(object):
         self._logger: PythonLogger = None
         self.log_dir = None
         self.log_file  = None
-        self.rank = 0
+        self.cfg: DictConfig = 0
 
     @classmethod
     def instance(cls) -> "LogManager":
@@ -69,13 +70,12 @@ class LogManager(object):
     def set_level(self, level ):
         self._level = level
 
-    def init_logging(self, log_dir, level):
-        from astrotime.config.context import cfg, cid
+    def init_logging(self, cfg: DictConfig,  level):
+        self.cfg = cfg
         self._level = level
-        self.log_dir =  log_dir
-        overwrite = True # cfg().task.get("overwrite_log", True)
-        self._lid = "" if overwrite else f"-{os.getpid()}"
-        self.log_file = f'{self.log_dir}/{cid()}{self._lid}-{self.gpuid}.log'
+        self.log_dir =  cfg.logs_path
+        self._lid = "" if cfg.overwrite_log else f"-{os.getpid()}"
+        self.log_file = f'{self.log_dir}/{cfg.version}{self._lid}.log'
         os.makedirs( os.path.dirname( self.log_file ), mode=0o777, exist_ok=True )
         self._logger = PythonLogger("main")
         self._logger.file_logging( self.log_file )

@@ -4,3 +4,5 @@ lr: 0.01
 nepochs: 1000
 refresh_state: True
 results_path: "${platform.results}"
+logs_path: "${platform.logs}"
+overwrite_log: True

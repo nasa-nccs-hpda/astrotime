@@ -14,7 +14,7 @@ from astrotime.models.cnn_baseline import get_model_from_cfg
 def my_app(cfg: DictConfig) -> None:
 	print( cfg )
 	log_level = logging.INFO
-	lgm().init_logging( cfg.platform.logs, log_level )
+	lgm().init_logging( cfg.train, log_level )
 	device: torch.device = torch.device(f"cuda:{cfg.platform.gpu}" if (torch.cuda.is_available() and (cfg.platform.gpu >= 0)) else "cpu")
 
 	sinusoid_loader = ncSinusoidLoader( cfg.data )
