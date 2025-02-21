@@ -6,7 +6,7 @@ import xarray as xa, numpy as np
 from astrotime.loaders.sinusoid import ncSinusoidLoader
 import logging
 from astrotime.util.logging import lgm, exception_handled, log_timing
-# from astrotime.encoders.wavelet import WaveletEncoder
+from astrotime.encoders.wavelet import WaveletEncoder
 # from astrotime.trainers.signal_trainer import SignalTrainer
 # from astrotime.models.cnn_baseline import get_model_from_cfg
 
@@ -21,8 +21,11 @@ def my_app(cfg: DictConfig) -> None:
 
 	batch: xa.Dataset = sinusoid_loader.get_batch(0)
 	print(f"Loaded BATCH: {list(batch.data_vars.keys())}")
+	encoder = WaveletEncoder( device, cfg.transform )
+	x, y = batch['t'].values, batch['y'].values
+	X, Y = encoder.encode_batch(x, y)
+	print(f"Encoded BATCH: {X.shape}, {Y.shape}")
 
-	# encoder = WaveletEncoder( device, series_length, nfreq, fbounds, fscale, nfeatures, int(max_series_length*(1-sparsity)) )
 	#
 	# model: nn.Module = get_model_from_cfg( cc.cfg.model )
 	# trainer = SignalTrainer( signal, encoder, model, clargs, cc.cfg.training )

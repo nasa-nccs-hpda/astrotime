@@ -25,14 +25,9 @@ results_dir   = "/Users/tpmaxwel/Data/astro_sigproc/results"
 dataset_files=  "padded_sinusoids_*.nc"
 file_size= 1000
 batch_size= 50
-series_length = 2000
+
 epochs=1000
-nfeatures=2
-nfreq: int = 2000
-fbounds = (0.1,10.0)
-fscale = "log"
-sparsity = 0.0
-max_series_length = 6200
+
 optimizer='rmsprop'
 loss='mae'
 model_name = f"wwz-{nfeatures}"
@@ -41,6 +36,15 @@ lgm().init_logging( f"{results_dir}/logging", log_level )
 refresh = False
 
 sinusoid_loader = ncSinusoidLoader( dataset_root, dataset_files, file_size, batch_size )
+
+series_length = 2000
+nfeatures=2
+nfreq: int = 2000
+fbounds = (0.1,10.0)
+fscale = "log"
+sparsity = 0.0
+max_series_length = 6200
+
 encoder = WaveletEncoder( device, series_length, nfreq, fbounds, fscale, nfeatures, int(max_series_length*(1-sparsity)) )
 if sparsity > 0.0:
 	encoder.add_filters( [RandomDownsample(sparsity=sparsity)] )

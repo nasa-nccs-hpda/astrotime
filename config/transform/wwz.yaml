@@ -1,0 +1,8 @@
+series_length: 2000
+nfeatures: 2
+nfreq: 2000
+freq_start: 0.1
+freq_end: 10.0
+fscale: "log"
+sparsity: 0.0
+max_series_length: 6200

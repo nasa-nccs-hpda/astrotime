@@ -7,7 +7,7 @@
 '''
 
 import time, numpy as np
-import torch, cuda, warnings
+import torch, warnings
 from warnings import catch_warnings, warn
 from numpy import sum, pi, cos, sin, arctan2, exp, log, sqrt, dot, arange
 from typing import Any, Dict, List, Tuple, Type, Optional, Union, Hashable
@@ -42,6 +42,7 @@ def wwz(ys_: Array, ts_: Array, freq_: Array, tau_: Array, c: float = C0, rank: 
 
     omega: torch.Tensor = 2 * np.pi * freq
     omega_ = omega[None,:,None].expand(nt,nf,nts)
+    print( f"Transform ts{list(ts.shape)} freq{list(freq.shape)} tau{list(tau.shape)} omega{list(omega.shape)} nt={nt} nf={nf} nts={nts}")
     ts = ts[None,None,:].expand(nt,nf,nts)
     tau = tau[:,None,None].expand(nt,nf,nts)
     if verbose: lgm().log( f"wwz: ys{list(ys.shape)} ts{list(ts.shape)} freq{list(freq.shape)} tau{list(tau.shape)} omega_{list(omega_.shape)} c={c}" )

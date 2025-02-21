@@ -7,16 +7,16 @@ from astrotime.transforms.filters import RandomDownsample
 
 class Encoder:
 
-	def __init__(self, device: device, series_len: int, cfg: DictConfig ):
+	def __init__(self, device: device, series_length: int, cfg: DictConfig ):
 		self.device: device = device
 		self.cfg = cfg
-		self._series_len: int = series_len
+		self._series_len: int = series_length
 		self.filters: List[TrainingFilter] = []
 		if cfg.sparsity > 0.0:
 			self.add_filter( RandomDownsample(sparsity=cfg.sparsity) )
 
 	@property
-	def series_len(self):
+	def series_length(self):
 		return self._series_len
 
 	def encode_dset(self, dset: Mapping[str,np.ndarray]) -> Tensor:
