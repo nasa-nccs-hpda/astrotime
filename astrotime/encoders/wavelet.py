@@ -53,7 +53,7 @@ class WaveletEncoder(Encoder):
 		Y: Tensor = torch.FloatTensor(y[:, x0:x0 + self.series_length] ).to(self.device)
 		X: Tensor = torch.FloatTensor(x[:, x0:x0 + self.series_length] ).to(self.device)
 		Y = tnorm(Y, dim=1)
-		amp, phase, cs = wwz(Y, X, self.freq, X[:, self.series_length // 2])
+		amp, phase, cs = wwz(Y, X, self.freq, X[:, self.series_length // 2], self.device)
 		features = [amp,phase]+list(cs)
 		dim = 1 if self.chan_first else 2
 		WWZ = torch.stack( features[:self.cfg.nfeatures], dim=dim )
