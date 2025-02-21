@@ -48,14 +48,13 @@ class WaveletEncoder(Encoder):
 		return self.freq, encoded_dset
 
 	def encode_batch(self, x: np.ndarray, y: np.ndarray) -> Tuple[Tensor, Tensor]:
-		with (self.device):
-			x, y = self.apply_filters(x, y, 1)
-			x0: int = random.randint(0, self.cfg.max_series_length - self.series_length)
-			Y: Tensor = torch.FloatTensor(y[:, x0:x0 + self.series_length] ).to(self.device)
-			X: Tensor = torch.FloatTensor(x[:, x0:x0 + self.series_length] ).to(self.device)
-			Y = tnorm(Y, dim=1)
-			amp, phase, cs = wwz(Y, X, self.freq, X[:, self.series_length // 2])
-			features = [amp,phase]+list(cs)
-			dim = 1 if self.chan_first else 2
-			WWZ = torch.stack( features[:self.cfg.nfeatures], dim=dim )
-			return self.freq, WWZ
+		x, y = self.apply_filters(x, y, 1)
+		x0: int = random.randint(0, self.cfg.max_series_length - self.series_length)
+		Y: Tensor = torch.FloatTensor(y[:, x0:x0 + self.series_length] ).to(self.device)
+		X: Tensor = torch.FloatTensor(x[:, x0:x0 + self.series_length] ).to(self.device)
+		Y = tnorm(Y, dim=1)
+		amp, phase, cs = wwz(Y, X, self.freq, X[:, self.series_length // 2])
+		features = [amp,phase]+list(cs)
+		dim = 1 if self.chan_first else 2
+		WWZ = torch.stack( features[:self.cfg.nfeatures], dim=dim )
+		return self.freq, WWZ

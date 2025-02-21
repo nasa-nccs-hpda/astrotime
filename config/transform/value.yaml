@@ -1,0 +1,4 @@
+series_length: 2000
+nfeatures: 1
+sparsity: 0.0
+max_series_length: 6200
