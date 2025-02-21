@@ -1,0 +1,10 @@
+cnn_channels: 68
+dense_channels: 65
+out_channels: 1
+num_cnn_layers: 3
+num_blocks: 7
+pool_size: 2
+stride: 1
+kernel_size: 3
+cnn_expansion_factor: 4
+

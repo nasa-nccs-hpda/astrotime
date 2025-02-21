@@ -4,31 +4,31 @@ from astrotime.config.context import cfg
 from astrotime.util.logging import lgm
 from torch.optim.optimizer import Optimizer
 from astrotime.util.config import TSet
+from omegaconf import DictConfig
 from torch import nn
 import os
 
 
 class CheckpointManager(object):
 
-	def __init__(self, model: nn.Module, optimizer: Optimizer, rank: int = 0 ):
+	def __init__(self, model: nn.Module, optimizer: Optimizer, cfg: DictConfig ):
 		self._cpaths: Dict[str,str] = {}
 		self.model: nn.Module = model
-		self.rank = rank
+		self.cfg = cfg
 		self.optimizer = optimizer
 
 	def save_checkpoint(self, tset: TSet, acc_losses: Dict[str,float], mdata: Dict  ) -> str:
-		if self.rank ==  0:
-			t0 = time.time()
-			train_mdata = dict( **acc_losses, **mdata )
-			checkpoint = dict(  model_state_dict=self.model.state_dict(), optimizer_state_dict=self.optimizer.state_dict(), **train_mdata )
-			cpath = self.checkpoint_path(tset)
-			if os.path.isfile(cpath):
-				shutil.copyfile( cpath, self.checkpoint_path(tset,backup=True) )
-			torch.save( checkpoint, cpath )
-			print( acc_losses )
-			slosses = {  k: f'{v:.3f}' for k,v in acc_losses.items() if v is not None}
-			print(f" *** SAVE {tset.name} checkpoint to {cpath}, dt={time.time()-t0:.4f} sec, losses={slosses}" )
-			return cpath
+		t0 = time.time()
+		train_mdata = dict( **acc_losses, **mdata )
+		checkpoint = dict(  model_state_dict=self.model.state_dict(), optimizer_state_dict=self.optimizer.state_dict(), **train_mdata )
+		cpath = self.checkpoint_path(tset)
+		if os.path.isfile(cpath):
+			shutil.copyfile( cpath, self.checkpoint_path(tset,backup=True) )
+		torch.save( checkpoint, cpath )
+		print( acc_losses )
+		slosses = {  k: f'{v:.3f}' for k,v in acc_losses.items() if v is not None}
+		print(f" *** SAVE {tset.name} checkpoint to {cpath}, dt={time.time()-t0:.4f} sec, losses={slosses}" )
+		return cpath
 
 	def _load_state(self, tset: TSet ) -> Dict[str,Any]:
 		# sdevice = f'cuda:{cfg().training.gpu}' if torch.cuda.is_available() else 'cpu'
@@ -65,10 +65,9 @@ class CheckpointManager(object):
 			except FileNotFoundError: pass
 
 
-	@classmethod
-	def checkpoint_path( cls, tset: TSet, ext: str = "pt", backup=False ) -> str:
+	def checkpoint_path( self, tset: TSet, ext: str = "pt", backup=False ) -> str:
 		vtset: TSet = TSet.Validation if (tset == TSet.Test) else tset
-		cpath = f"{cfg().platform.results}/checkpoints/{cfg().task.training_version}.{vtset.value}"
+		cpath = f"{self.cfg.results_path}/checkpoints/{self.cfg.version}.{vtset.value}"
 		if backup: cpath = f"{cpath}.backup"
 		os.makedirs(os.path.dirname(cpath), 0o777, exist_ok=True)
 		return cpath + '.' + ext

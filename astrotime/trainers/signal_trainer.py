@@ -23,16 +23,15 @@ def tocpu( c, idx=0 ):
 
 class SignalTrainer(object):
 
-    def __init__(self, loader: DataLoader, encoder: Encoder, model: torch.Module, cfg: DictConfig, args: Namespace = None):
+    def __init__(self, loader: DataLoader, encoder: Encoder, model: nn.Module, cfg: DictConfig ):
         self.loader: DataLoader = loader
         self.encoder: Encoder = encoder
         self.cfg: DictConfig = cfg
-        self.args = args
         self.loss_function: nn.Module = nn.L1Loss()
         self.results_accum: ResultsAccumulator = ResultsAccumulator()
         self.model: nn.Module = model
         self.optimizer: optim.Optimizer = self.get_optimizer()
-        self._checkpoint_manager = CheckpointManager( model, self.optimizer )
+        self._checkpoint_manager = CheckpointManager( model, self.optimizer, cfg )
         self.start_batch: int = 0
         self.start_epoch: int = 0
         self.epoch_loss: float = 0.0
@@ -63,7 +62,7 @@ class SignalTrainer(object):
         return self._losses.setdefault(tset, LossAccumulator())
 
     def initialize_checkpointing(self):
-        if self.args.refresh_state:
+        if self.cfg.refresh_state:
             self._checkpoint_manager.clear_checkpoints()
             print(" *** No checkpoint loaded: training from scratch *** ")
         else:

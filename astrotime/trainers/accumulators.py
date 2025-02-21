@@ -147,10 +147,6 @@ class ResultsAccumulator(object):
 
 	def __init__(self, **kwargs):
 		self.results: List[ResultRecord] = []
-		self.dataset = cfg().dataset
-		self.task = cfg().task
-		self.model = cfg().model
-		self.save_dir = kwargs.get( 'save_dir', cfg().platform.processed )
 		self._writer: Optional[ResultFileWriter] = None
 		self._reader: Optional[ResultFileReader] = None
 
@@ -235,13 +231,6 @@ class ResultsAccumulator(object):
 			y[tset] = np.array(list(result_data.values()))
 
 		return x, y
-
-	def rprint(self):
-		print( f"\n\n---------------------------- {self.task.task} Results --------------------------------------")
-		print(f" * dataset: {self.dataset.source}")
-		print(f" * model: {self.model.model}")
-		for result in self.results:
-			print(str(result))
 
 class LossAccumulator:
 

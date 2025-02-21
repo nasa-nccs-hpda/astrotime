@@ -17,6 +17,7 @@ class WaveletEncoder(Encoder):
 
 	def create_freq(self) -> Tensor:
 		fspace = logspace if (self.cfg.fscale == "log") else np.linspace
+		print( f"create_freq: fbounds = {self.cfg.freq_start} {self.cfg.freq_end}")
 		return torch.FloatTensor( fspace( self.cfg.freq_start, self.cfg.freq_end, self.cfg.nfreq ) ).to(self.device)
 
 	def encode_dset(self, dset: Dict[str,np.ndarray], **kwargs) -> Tuple[Tensor,Tensor]:
