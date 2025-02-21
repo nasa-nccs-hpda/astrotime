@@ -9,13 +9,11 @@ from astrotime.util.logging import lgm, exception_handled, log_timing
 from astrotime.encoders.wavelet import WaveletEncoder
 from astrotime.trainers.signal_trainer import SignalTrainer
 from astrotime.models.cnn_baseline import get_model_from_cfg
+from astrotime.config.context import astrotime_initialize
 
 @hydra.main(version_base=None, config_path="../config", config_name="sinusoid_period")
 def my_app(cfg: DictConfig) -> None:
-	print( cfg )
-	log_level = logging.INFO
-	lgm().init_logging( cfg.train, log_level )
-	device: torch.device = torch.device(f"cuda:{cfg.platform.gpu}" if (torch.cuda.is_available() and (cfg.platform.gpu >= 0)) else "cpu")
+	device: torch.device = astrotime_initialize(cfg)
 
 	sinusoid_loader = ncSinusoidLoader( cfg.data )
 	encoder = WaveletEncoder( device, cfg.transform )

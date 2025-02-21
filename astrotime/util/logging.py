@@ -49,9 +49,7 @@ class LogManager(object):
         self._lid = None
         self._level = logging.INFO
         self._logger: PythonLogger = None
-        self.log_dir = None
         self.log_file  = None
-        self.cfg: DictConfig = 0
 
     @classmethod
     def instance(cls) -> "LogManager":
@@ -70,30 +68,22 @@ class LogManager(object):
     def set_level(self, level ):
         self._level = level
 
-    def init_logging(self, cfg: DictConfig,  level):
-        self.cfg = cfg
-        self._level = level
-        self.log_dir =  cfg.logs_path
-        self._lid = "" if cfg.overwrite_log else f"-{os.getpid()}"
-        self.log_file = f'{self.log_dir}/{cfg.version}{self._lid}.log'
+    def init_logging(self, log_dir: str, version: str, overwrite_log):
+        self._lid = "" if overwrite_log else f"-{os.getpid()}"
+        self.log_file = f'{log_dir}/{version}{self._lid}.log'
         os.makedirs( os.path.dirname( self.log_file ), mode=0o777, exist_ok=True )
         self._logger = PythonLogger("main")
         self._logger.file_logging( self.log_file )
-
-    @property
-    def gpuid(self):
-        return "CPU" if self.rank == CPU else f"GPU-{self.rank}"
 
     @property
     def ctime(self):
         return datetime.now().strftime("%H:%M:%S")
 
     def console(self, msg: str, end="\n"):
-        print( f"{self.gpuid} " + msg, flush=True, end=end)
+        print( msg, flush=True, end=end)
 
     def log( self,  msg, display=False, end="\n" ):
-        if self.rank < 1:
-            self.info(msg,display,end)
+        self.info(msg,display,end)
 
     def info( self,  msg, display=False, end="\n" ):
         self._logger.log(msg)
