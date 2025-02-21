@@ -30,6 +30,7 @@ class ncSinusoidLoader(DataLoader):
 	def file_paths( self ) -> List[str]:
 		if self.files is None:
 			self.files = glob( self.cfg.dataset_files, root_dir=self.cfg.dataset_root )
+			print( f"file_paths: dataset_root={self.cfg.dataset_root}, dataset_files={self.cfg.dataset_files}, nfiles={len(self.files)}")
 			self.files.sort()
 		return self.files
 
