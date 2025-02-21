@@ -13,7 +13,7 @@ class WaveletEncoder(Encoder):
 	def __init__(self, device: device, cfg: DictConfig ):
 		super(WaveletEncoder, self).__init__( device, cfg )
 		self.freq: Tensor = self.create_freq()
-		self.chan_first = False
+		self.chan_first = True
 
 	def create_freq(self) -> Tensor:
 		fspace = logspace if (self.cfg.fscale == "log") else np.linspace

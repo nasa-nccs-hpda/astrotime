@@ -10,7 +10,7 @@ class ValueEncoder(Encoder):
 
 	def __init__(self, device: device, cfg: DictConfig ):
 		super(ValueEncoder, self).__init__( device, cfg )
-		self.chan_first = False
+		self.chan_first = True
 
 	def encode_dset(self, dset: Dict[str,np.ndarray]) -> Tuple[Tensor,Tensor]:
 		with (self.device):
@@ -34,4 +34,5 @@ class ValueEncoder(Encoder):
 			X: Tensor = torch.FloatTensor(x[:,x0:x0 + self.series_length]).to(self.device)
 			Y = tnorm(Y,dim=1)
 			if Y.ndim == 2: Y = torch.unsqueeze(Y, dim=2)
+			if self.chan_first: Y = Y.transpose(1,2)
 			return X, Y
