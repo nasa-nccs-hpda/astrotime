@@ -10,7 +10,6 @@ from astrotime.loaders.base import DataLoader
 from astrotime.util.logging import lgm, exception_handled
 import time, torch, numpy as np
 from torch import nn, optim, Tensor
-from argparse import Namespace
 
 def tocpu( c, idx=0 ):
     if isinstance( c, Tensor ):
@@ -88,7 +87,6 @@ class SignalTrainer(object):
         lgm().log(f"  ENCODED --->  y{Y.shape} target{target.shape}")
         return Y, target
 
-    @torch.compile
     def train(self):
         print(f"SignalTrainer: {self.loader.nbatches} train_batches, {self.nepochs} epochs, nelements = {self.loader.nelements}")
         self.initialize_checkpointing()
