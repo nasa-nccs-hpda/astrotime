@@ -5,6 +5,8 @@ import torch
 
 @exception_handled
 def astrotime_initialize(config: DictConfig, **kwargs):
+    import torch._dynamo
+    torch._dynamo.config.suppress_errors = True
     OmegaConf.resolve(config)
     lgm().init_logging( config.platform.logs,  config.train.version, config.train.overwrite_log )
     lgm().set_level( kwargs.get('log_level',logging.INFO) )
