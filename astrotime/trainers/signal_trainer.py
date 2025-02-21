@@ -38,6 +38,13 @@ class SignalTrainer(object):
         self._losses: Dict[TSet, LossAccumulator] = {}
         self.train_state = None
 
+    def print_sizes(self, input_tensor: Tensor ):
+        output = input_tensor
+        print( f" Model data sizes: input{list(input_tensor.shape)}")
+        for m in self.model.children():
+            output = m(output)
+            print(f" ** Layer-{type(m)}: output{list(output.shape)}")
+
     def get_optimizer(self) -> optim.Optimizer:
          if   self.cfg.optim == "rms":  return optim.RMSprop( self.model.parameters(), lr=self.cfg.lr )
          elif self.cfg.optim == "adam": return optim.Adam(    self.model.parameters(), lr=self.cfg.lr )
@@ -98,6 +105,7 @@ class SignalTrainer(object):
             train_batchs = range(batch0, self.loader.nbatches)
             for ibatch in train_batchs:
                 batch, target = self.get_batch(ibatch)
+                self.print_sizes( batch )
                 result: Tensor = self.model( batch )
                 loss: Tensor = self.loss_function( result.squeeze(), target.squeeze() )
                 self.update_weights(loss)
