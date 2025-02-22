@@ -1,5 +1,6 @@
 from torch import nn
 import torch, math
+from astrotime.util.math import is_power_of_two
 from omegaconf import DictConfig, OmegaConf
 from astrotime.encoders.base import Encoder
 from typing import Any, Dict, List, Optional, Tuple, Mapping
@@ -24,6 +25,7 @@ def add_dense_block( model: nn.Sequential, in_channels:int, cfg: DictConfig ):
 	model.append( nn.Linear( cfg.dense_channels, cfg.out_channels ) )
 
 def get_model_from_cfg( cfg: DictConfig, encoder: Encoder, device: torch.device ) -> nn.Module:
+	assert is_power_of_two(encoder.series_length), f"Series length ({encoder.series_length}) should be a power of 2"
 	model: nn.Sequential = nn.Sequential()
 	cnn_channels = cfg.cnn_channels
 	num_input_features = encoder.nfeatures

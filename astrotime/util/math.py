@@ -3,6 +3,10 @@ from typing import List, Optional, Dict, Type, Any
 import torch
 from torch import Tensor
 
+def is_power_of_two(n: int) -> bool:
+	if n <= 0: return False
+	return (n & (n - 1)) == 0
+
 def logspace(start: float, stop: float, N: int) -> np.ndarray:
 	return np.pow(10.0, np.linspace(np.log10(start), np.log10(stop), N))
 
