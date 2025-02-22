@@ -100,6 +100,7 @@ class PythonLogger:
     def debug(self, message: str):
         """Log error"""
         self.logger.debug(colored(message, "light_red"))
+        self.filehandler.flush()
 
 class LogManager(object):
     _instance: "LogManager" = None
@@ -152,8 +153,7 @@ class LogManager(object):
         print( msg, flush=True, end=end)
 
     def log( self,  msg, display=False, end="\n" ):
-        if self.rank < 1:
-            self.info(msg,display,end)
+        self.info(msg,display,end)
 
     def info( self,  msg, display=False, end="\n" ):
         self._logger.log(msg)
