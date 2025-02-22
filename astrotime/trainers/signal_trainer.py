@@ -84,11 +84,11 @@ class SignalTrainer(object):
 
     def get_batch(self, batch_index) -> Tuple[torch.Tensor,torch.Tensor]:
         dset: xa.Dataset = self.loader.get_batch(batch_index)
-        x, y = dset['t'].values, dset['y'].values
+        x, y, t0 = dset['t'].values, dset['y'].values, time.time()
         lgm().debug(f" DataPreprocessor:get_batch({batch_index}: x{shp(x)} y{shp(y)}")
         X, Y = self.encoder.encode_batch(x, y)
         target: Tensor = torch.from_numpy(dset['p'].values[:, None]).to(self.device)
-        lgm().debug(f"  ENCODED --->  y{list(Y.shape)} target{list(target.shape)}")
+        lgm().log(f"  ENCODED --->  y{list(Y.shape)} target{list(target.shape)}, dt={time.time()-t0:.3f}s")
         if lgm().is_debugging: self.log_sizes(Y)
         return Y, target
 

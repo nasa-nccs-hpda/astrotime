@@ -39,9 +39,9 @@ def wwz(ys: Tensor, ts: Tensor, freq: Tensor, tau: Tensor, device: torch.device,
 
     tau: Tensor   = tau[:,None,None]
     omega = freq * 2.0 * math.pi
-    omega_: Tensor =  omega[None,:,None]         # broadcast-to(nb,nf,nts)
-    ts: Tensor    = ts[:,None,:]                               # broadcast-to(nb,nf,nts)
-    ys: Tensor    = ys[:,None,:]                                      # broadcast-to(nb,nf,nts)
+    omega_: Tensor = omega[None,:,None]          # broadcast-to(nb,nf,nts)
+    ts: Tensor     = ts[:,None,:]                # broadcast-to(nb,nf,nts)
+    ys: Tensor     = ys[:,None,:]                # broadcast-to(nb,nf,nts)
     lgm().debug( f"wwz(nb,nf,nts): ({nb},{nf},{nts}) ys{list(ys.shape)} ts{list(ts.shape)} freq{list(freq.shape)} tau{list(tau.shape)} omega{list(omega.shape)} omega_{list(omega_.shape)} c={c}" )
     dt: Tensor = (ts - tau)
     dz: Tensor = omega_ * dt
