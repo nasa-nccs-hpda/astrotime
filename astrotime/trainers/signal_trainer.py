@@ -2,7 +2,7 @@ from typing import Any, Dict, List, Tuple, Type, Optional, Union
 from astrotime.util.config import TSet
 from omegaconf import DictConfig
 from .checkpoints import CheckpointManager
-from .accumulators import ResultsAccumulator, LossAccumulator
+from .accumulators import LossAccumulator
 from astrotime.encoders.base import Encoder
 import xarray as xa, math, random
 from astrotime.util.math import logspace, shp
@@ -26,7 +26,6 @@ class SignalTrainer(object):
         self.encoder: Encoder = encoder
         self.cfg: DictConfig = cfg
         self.loss_function: nn.Module = nn.L1Loss()
-        self.results_accum: ResultsAccumulator = ResultsAccumulator()
         self.model: nn.Module = model
         self.optimizer: optim.Optimizer = self.get_optimizer()
         self._checkpoint_manager = CheckpointManager( model, self.optimizer, cfg )
@@ -58,8 +57,6 @@ class SignalTrainer(object):
         losses: LossAccumulator = self.get_losses(TSet.Train)
         acc_losses: Dict[str, float] = losses.accumulate_losses()
         if len(acc_losses) > 0:
-            print(f"accumulate_losses: {acc_losses}")
-            self.results_accum.record_losses(tset, epoch, acc_losses)
             self._checkpoint_manager.save_checkpoint(tset, acc_losses, mdata)
         return acc_losses
 
