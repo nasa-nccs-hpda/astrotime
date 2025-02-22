@@ -1,0 +1,7 @@
+version: sinusoids_baseline_cnn_1.0
+optim: rms
+lr: 0.001
+nepochs: 1000
+refresh_state: False
+results_path: "${platform.results}/results"
+overwrite_log: True

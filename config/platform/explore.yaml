@@ -1,7 +1,4 @@
 project_root:      "/explore/nobackup/projects/ilab/data/astrotime"
-model_root: "${.project_root}/models/"
-results:    "${.project_root}/results"
 cache:      "${.project_root}/cache"
 logs:      "${.project_root}/logs"
-processed:  '${.project_root}/processed'
 gpu: 0
