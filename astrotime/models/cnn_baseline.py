@@ -26,8 +26,10 @@ def add_dense_block( model: nn.Sequential, in_channels:int, cfg: DictConfig ):
 def get_model_from_cfg( cfg: DictConfig, encoder: Encoder, device: torch.device ) -> nn.Module:
 	model: nn.Sequential = nn.Sequential()
 	cnn_channels = cfg.cnn_channels
+	num_input_features = encoder.nfeatures
 	for iblock in range(cfg.num_blocks):
-		cnn_channels = add_cnn_block( model, cnn_channels, encoder.nfeatures, cfg )
+		cnn_channels = add_cnn_block( model, cnn_channels, num_input_features, cfg )
+		num_input_features = -1
 	reduced_series_len = encoder.series_length // int( math.pow(cfg.pool_size, cfg.num_blocks) )
 	add_dense_block( model, cnn_channels*reduced_series_len, cfg )
 	return model.to(device)
