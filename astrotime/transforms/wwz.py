@@ -35,6 +35,7 @@ def wwz(ys: Tensor, ts: Tensor, freq: Tensor, tau: Tensor, device: torch.device,
     nf: int  = freq.shape[0]
     if tau is None: tau = 0.5 *(ts[:,nts/2] + ts[:,nts/2+1])
     lgm().debug(f"wwz-0: nb={nb} nts={nts} nf={nf}")
+    lgm().debug(f" --> devices: ys = {ys.device} ts = {ts.device} freq = {freq.device} tau = {tau.device}")
 
     tau: Tensor   = tau[:,None,None]
     omega = freq * 2.0 * math.pi
@@ -47,6 +48,7 @@ def wwz(ys: Tensor, ts: Tensor, freq: Tensor, tau: Tensor, device: torch.device,
     weights: Tensor= torch.exp(-c * dz ** 2)
     sum_w: Tensor = torch.sum(weights, dim=-1)
     lgm().debug( f"wwz-1: dt{list(dt.shape)} dz{list(dz.shape)} weights{list(weights.shape)} sum_w = {list(sum_w.shape)}")
+    lgm().debug(f" --> devices: dt = {dt.device} dz = {dz.device} weights = {weights.device} sum_w = {sum_w.device}")
 
     def w_prod(xs: Tensor, ys: Tensor) ->  Tensor:
         return torch.sum(weights * xs * ys, dim=-1) / sum_w
@@ -68,6 +70,7 @@ def wwz(ys: Tensor, ts: Tensor, freq: Tensor, tau: Tensor, device: torch.device,
     time_shift: Tensor  = torch.atan2(numerator, denominator) / (2 * omega)  # Eq. (S5)
     time_shift_: Tensor  = time_shift[:,:,None]  #  broadcast-to(nb,nf,nts)
     lgm().debug(f"wwz-3:  numerator{list(numerator.shape)} denominator{list(denominator.shape)}  time_shift{list(time_shift.shape)} time_shift_{list(time_shift_.shape)}  ")
+    lgm().debug(f" --> devices: numerator = {numerator.device} denominator = {denominator.device} time_shift = {time_shift.device} time_shift_ = {time_shift_.device}")
 
     sin_shift: Tensor = torch.sin(omega_ * (ts - time_shift_))
     cos_shift: Tensor = torch.cos(omega_ * (ts - time_shift_))
