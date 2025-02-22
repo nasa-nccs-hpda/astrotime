@@ -96,6 +96,7 @@ class SignalTrainer(object):
         print(f"SignalTrainer: {self.loader.nbatches} train_batches, {self.nepochs} epochs, nelements = {self.loader.nelements}, device={self.encoder.device}")
         self.initialize_checkpointing()
         losses,  log_interval = [], 100
+        t0 = time.time()
         for epoch in range(self.start_epoch,self.nepochs):
             self.model.train()
             tset = TSet.Train
@@ -108,9 +109,9 @@ class SignalTrainer(object):
                 self.update_weights(loss)
                 losses.append(loss.item())
                 if (ibatch % log_interval == 0) or ((ibatch < 10) and (epoch==0)):
-                    aloss = np.array(losses)
-                    print(f"E-{epoch} B-{ibatch} loss={aloss.mean():.3f} ({aloss.min():.3f} -> {aloss.max():.3f})")
-                    losses = []
+                    t1, aloss = time.time(), np.array(losses)
+                    print(f"E-{epoch} B-{ibatch} loss={aloss.mean():.3f} ({aloss.min():.3f} -> {aloss.max():.3f}), dt={t1-t0:.3f}s")
+                    t0, losses = t1, []
 
             mdata = dict()
             acc_losses = self.accumulate_losses(tset, epoch, mdata )
