@@ -74,7 +74,7 @@ class PythonLogger:
         self.logger.setLevel(level)
 
     def get_level(self):
-        self.logger.getLevel()
+        return self.logger.level
 
     def log(self, message: str):
         """Log message"""
