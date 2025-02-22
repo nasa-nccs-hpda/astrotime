@@ -4,4 +4,4 @@ lr: 0.001
 nepochs: 1000
 refresh_state: False
 overwrite_log: True
-results_path:    "${platform.results}/results"
+results_path:    "${platform.project_root}/results"
