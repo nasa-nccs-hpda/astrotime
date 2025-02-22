@@ -67,6 +67,10 @@ class LogManager(object):
     def set_level(self, level ):
         self._level = level
 
+    @property
+    def is_debugging(self):
+        return self._level == logging.DEBUG
+
     def init_logging(self, log_dir: str, version: str, overwrite_log):
         self._lid = "" if overwrite_log else f"-{os.getpid()}"
         self.log_file = f'{log_dir}/{version}{self._lid}.log'

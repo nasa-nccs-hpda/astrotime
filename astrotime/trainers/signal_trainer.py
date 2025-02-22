@@ -38,12 +38,12 @@ class SignalTrainer(object):
         self._losses: Dict[TSet, LossAccumulator] = {}
         self.train_state = None
 
-    def print_sizes(self, input_tensor: Tensor ):
+    def log_sizes(self, input_tensor: Tensor):
         output = input_tensor
-        print( f" Model data sizes: input{list(input_tensor.shape)}")
+        lgm().log( f" Model data sizes: input{list(input_tensor.shape)}")
         for m in self.model.children():
             output = m(output)
-            print(f" ** Layer-{m.__class__.__name__}: output{list(output.shape)}")
+            lgm().log(f" ** Layer-{m.__class__.__name__}: output{list(output.shape)}")
 
     def get_optimizer(self) -> optim.Optimizer:
          if   self.cfg.optim == "rms":  return optim.RMSprop( self.model.parameters(), lr=self.cfg.lr )
@@ -88,10 +88,11 @@ class SignalTrainer(object):
     def get_batch(self, batch_index) -> Tuple[torch.Tensor,torch.Tensor]:
         dset: xa.Dataset = self.loader.get_batch(batch_index)
         x, y = dset['t'].values, dset['y'].values
-        lgm().log(f" DataPreprocessor:get_batch({batch_index}: x{shp(x)} y{shp(y)}")
+        lgm().debug(f" DataPreprocessor:get_batch({batch_index}: x{shp(x)} y{shp(y)}")
         X, Y = self.encoder.encode_batch(x, y)
         target: Tensor = torch.from_numpy(dset['p'].values[:, None]).to(self.device)
-        lgm().log(f"  ENCODED --->  y{Y.shape} target{target.shape}")
+        lgm().debug(f"  ENCODED --->  y{list(Y.shape)} target{list(target.shape)}")
+        if lgm().is_debugging: self.log_sizes(Y)
         return Y, target
 
     def train(self):
