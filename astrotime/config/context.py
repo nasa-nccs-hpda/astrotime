@@ -3,7 +3,6 @@ from astrotime.util.logging import lgm, exception_handled
 import logging
 import torch
 
-@exception_handled
 def astrotime_initialize(config: DictConfig, **kwargs):
     OmegaConf.resolve(config)
     lgm().init_logging( config.platform.logs,  config.train.version, config.train.overwrite_log )
