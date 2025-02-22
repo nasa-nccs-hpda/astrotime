@@ -73,6 +73,9 @@ class PythonLogger:
     def set_level(self, level ):
         self.logger.setLevel(level)
 
+    def get_level(self):
+        self.logger.getLevel()
+
     def log(self, message: str):
         """Log message"""
         self.logger.info(message)
@@ -126,6 +129,9 @@ class LogManager(object):
 
     def set_level(self, level ):
         self._logger.set_level(level)
+
+    def get_level(self ):
+        return self._logger.get_level()
 
     def init_logging(self, log_dir: str, level, **kwargs ):
         self.log_dir =  log_dir # f"{cfg().platform.cache}/logs"
