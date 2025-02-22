@@ -1,7 +1,6 @@
-import os, glob, hydra, torch
+import os, glob, hydra, torch, logging
 from omegaconf import DictConfig, OmegaConf
-# from typing import Any, Dict, List, Tuple, Type, Optional, Union, Hashable
-import xarray as xa, numpy as np
+from typing import Any, Dict, List, Tuple, Type, Optional, Union, Hashable
 from torch import nn
 from astrotime.loaders.sinusoid import ncSinusoidLoader
 from astrotime.encoders.wavelet import WaveletEncoder
@@ -11,7 +10,7 @@ from astrotime.config.context import astrotime_initialize
 
 @hydra.main(version_base=None, config_path="../config", config_name="sinusoid_period.wwz")
 def my_app(cfg: DictConfig) -> None:
-	device: torch.device = astrotime_initialize(cfg)
+	device: torch.device = astrotime_initialize( cfg, log_level=logging.DEBUG )
 
 	sinusoid_loader = ncSinusoidLoader( cfg.data )
 	encoder = WaveletEncoder( device, cfg.transform )
