@@ -66,7 +66,7 @@ def wwz(ys: Tensor, ts: Tensor, freq: Tensor, tau: Tensor, device: torch.device,
     numerator: Tensor  = 2 * (sin_cos - sin_one * cos_one)
     denominator: Tensor  = (cos_cos - cos_one ** 2) - (sin_sin - sin_one ** 2)
     time_shift: Tensor  = torch.atan2(numerator, denominator) / (2 * omega)  # Eq. (S5)
-    time_shift_: Tensor  = time_shift[:,None]  #  broadcast-to(nb,nf,nts)
+    time_shift_: Tensor  = time_shift[:,:,None]  #  broadcast-to(nb,nf,nts)
     lgm().debug(f"wwz-3:  numerator{list(numerator.shape)} denominator{list(denominator.shape)}  time_shift{list(time_shift.shape)} time_shift_{list(time_shift_.shape)}  ")
 
     sin_shift: Tensor = torch.sin(omega_ * (ts - time_shift_))
