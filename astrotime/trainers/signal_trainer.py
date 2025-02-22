@@ -105,7 +105,6 @@ class SignalTrainer(object):
             train_batchs = range(batch0, self.loader.nbatches)
             for ibatch in train_batchs:
                 batch, target = self.get_batch(ibatch)
-                self.print_sizes( batch )
                 result: Tensor = self.model( batch )
                 loss: Tensor = self.loss_function( result.squeeze(), target.squeeze() )
                 self.update_weights(loss)
