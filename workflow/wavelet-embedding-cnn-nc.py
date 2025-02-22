@@ -36,7 +36,7 @@ max_series_length = 6200
 optimizer='rmsprop'
 loss='mae'
 model_name = f"wwz-{nfeatures}"
-log_level = logging.INFO
+log_level = logging.DEBUG
 lgm().init_logging( f"{results_dir}/logging", log_level )
 refresh = False
 
