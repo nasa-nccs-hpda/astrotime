@@ -35,12 +35,6 @@ class ncSinusoidLoader(DataLoader):
 		return self.files
 
 	@property
-	def nelements(self) -> int:
-		if self._nelements == -1:
-			self.load_file( self.current_file )
-		return self._nelements
-
-	@property
 	def nbatches(self) -> int:
 		return self.nfiles * self.batches_per_file
 
