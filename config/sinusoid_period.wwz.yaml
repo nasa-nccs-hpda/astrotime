@@ -1,6 +1,6 @@
 defaults:
   - platform: "explore"
-  - train: "signal1"
+  - train: "wwz_cnn"
   - transform: "wwz"
   - data: "sinusoids.nc"
   - model: "baseline_cnn"
