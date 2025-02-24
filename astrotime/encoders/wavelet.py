@@ -131,4 +131,5 @@ class WaveletEmbeddingLayer(torch.nn.Module):
 		wwp: Tensor = a1 ** 2 + a2 ** 2
 		phase: Tensor = torch.atan2(a2, a1)
 		coeff: Tuple[Tensor, Tensor, Tensor] = (a0, a1, a2)
+		lgm().log(f"WaveletEmbeddingLayer: wwp{wwp.shape}({torch.mean(wwp):.2f},{torch.std(wwp):.2f}), phase{phase.shape}({torch.mean(phase):.2f},{torch.std(phase):.2f}), coeff{coeff[0].shape}({torch.mean(coeff[0]):.2f},{torch.std(coeff[0]):.2f})")
 		return wwp, phase, coeff
