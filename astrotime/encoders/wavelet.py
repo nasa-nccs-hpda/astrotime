@@ -67,22 +67,22 @@ class WaveletEncoderLayer(torch.nn.Module):
 		self.requires_grad_(False)
 		self.device = device
 		self.cfg = cfg
-		self.nts = cfg.series_length
-		self.nf = cfg.nfreq
-		self.nb = cfg.batch_size
+		self.series_length = cfg.series_length
+		self.nfreq = cfg.nfreq
+		self.batch_size = cfg.batch_size
 		self.nfeatures = cfg.nfeatures
 		self.C = 1 / (8 * math.pi ** 2)
 		fspace = logspace if (self.cfg.fscale == "log") else np.linspace
 		self.freq = torch.FloatTensor( fspace( self.cfg.freq_start, self.cfg.freq_end, self.cfg.nfreq ) ).to(self.device)
-		self.ones: Tensor = torch.ones( self.nb, self.nf, self.nts, device=self.device)
+		self.ones: Tensor = torch.ones( self.batch_size, self.nfreq, self.series_length, device=self.device)
 
 	def forward(self, ys: torch.Tensor, ts: torch.Tensor ):
-		tau = 0.5 * (ts[:, self.nts / 2] + ts[:, self.nts / 2 + 1])
+		tau = 0.5 * (ts[:, self.series_length / 2] + ts[:, self.series_length / 2 + 1])
 		tau: Tensor = tau[:, None, None]
 		omega = self.freq * 2.0 * math.pi
-		omega_: Tensor = omega[None, :, None]  # broadcast-to(self.nb,self.nf,self.nts)
-		ts: Tensor = ts[:, None, :]  # broadcast-to(self.nb,self.nf,self.nts)
-		ys: Tensor = ys[:, None, :]  # broadcast-to(self.nb,self.nf,self.nts)
+		omega_: Tensor = omega[None, :, None]  # broadcast-to(self.batch_size,self.nfreq,self.series_length)
+		ts: Tensor = ts[:, None, :]  # broadcast-to(self.batch_size,self.nfreq,self.series_length)
+		ys: Tensor = ys[:, None, :]  # broadcast-to(self.batch_size,self.nfreq,self.series_length)
 		dt: Tensor = (ts - tau)
 		dz: Tensor = omega_ * dt
 		weights: Tensor = torch.exp(-self.C * dz ** 2)
@@ -104,7 +104,7 @@ class WaveletEncoderLayer(torch.nn.Module):
 		numerator: Tensor = 2 * (sin_cos - sin_one * cos_one)
 		denominator: Tensor = (cos_cos - cos_one ** 2) - (sin_sin - sin_one ** 2)
 		time_shift: Tensor = torch.atan2(numerator, denominator) / (2 * omega)  # Eq. (S5)
-		time_shift_: Tensor = time_shift[:, :, None]  # broadcast-to(self.nb,self.nf,self.nts)
+		time_shift_: Tensor = time_shift[:, :, None]  # broadcast-to(self.batch_size,self.nfreq,self.series_length)
 
 		sin_shift: Tensor = torch.sin(omega_ * (ts - time_shift_))
 		cos_shift: Tensor = torch.cos(omega_ * (ts - time_shift_))
