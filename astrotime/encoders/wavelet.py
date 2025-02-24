@@ -79,9 +79,11 @@ class WaveletEmbeddingLayer(torch.nn.Module):
 		lgm().log(f"WaveletEmbeddingLayer: series_length={self.series_length} batch_size={self.batch_size} nfreq={self.nfreq} ")
 
 	def forward(self, input: torch.Tensor ):
+		lgm().log(f"WaveletEmbeddingLayer shapes:")
 		ys: torch.Tensor = input[:, 1:, :]
 		ts: torch.Tensor = input[:, 0, :]
 		tau = 0.5 * (ts[:, self.series_length // 2] + ts[:, self.series_length // 2 + 1])
+		lgm().log(f" wwp{list(ys.shape)} wwp{list(ts.shape)} wwp{list(tau.shape)}")
 		tau: Tensor = tau[:, None, None]
 		omega = self.freq * 2.0 * math.pi
 		omega_: Tensor = omega[None, :, None]  # broadcast-to(self.batch_size,self.nfreq,self.series_length)
@@ -120,6 +122,7 @@ class WaveletEmbeddingLayer(torch.nn.Module):
 		ys_one: Tensor = w_prod(ys, self.ones)
 		cos_shift_one: Tensor = w_prod(cos_shift, self.ones)
 		sin_shift_one: Tensor = w_prod(sin_shift, self.ones)
+		lgm().log(f"WaveletEmbeddingLayer: wwp{list(sin_shift_one.shape)}")
 
 		A: Tensor = 2 * (ys_cos_shift - ys_one * cos_shift_one)
 		B: Tensor = 2 * (ys_sin_shift - ys_one * sin_shift_one)
@@ -131,5 +134,5 @@ class WaveletEmbeddingLayer(torch.nn.Module):
 		wwp: Tensor = a1 ** 2 + a2 ** 2
 		phase: Tensor = torch.atan2(a2, a1)
 		coeff: Tuple[Tensor, Tensor, Tensor] = (a0, a1, a2)
-		lgm().log(f"WaveletEmbeddingLayer: wwp{wwp.shape}({torch.mean(wwp):.2f},{torch.std(wwp):.2f}), phase{phase.shape}({torch.mean(phase):.2f},{torch.std(phase):.2f}), coeff{coeff[0].shape}({torch.mean(coeff[0]):.2f},{torch.std(coeff[0]):.2f})")
+		lgm().log(f"WaveletEmbeddingLayer: wwp{list(wwp.shape)}({torch.mean(wwp):.2f},{torch.std(wwp):.2f}), phase{list(phase.shape)}({torch.mean(phase):.2f},{torch.std(phase):.2f})")
 		return wwp, phase, coeff
