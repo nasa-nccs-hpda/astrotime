@@ -1,7 +1,7 @@
 import os.path
 
 import tensorflow as tf
-import keras
+import keras, time
 from typing import List, Optional, Dict, Type, Any
 from astrotime.encoders.baseline import ValueEncoder
 from astrotime.models.cnn_powell import SinusoidPeriodModel
@@ -38,6 +38,7 @@ loss='mae'
 refresh = False
 log_level = logging.INFO
 lgm().init_logging( f"{results_dir}/logging", log_level )
+t0 = time.time()
 
 sinusoid_loader = SinusoidLoader(data_dir)
 encoder = ValueEncoder( device, series_length, int(max_series_length*(1-sparsity)) )
@@ -60,4 +61,6 @@ train_args: Dict[str,Any] = dict( epochs=epochs, batch_size=batch_size, shuffle=
 predictions = model.predict( tY[0:eval_size] )
 if refresh: print( "Refreshing model. Training from scratch.")
 else: checkpointer.load_weights(model)
+
+print( f"Loading took {time.time()-t0:.2f} seconds." )
 history = model.fit( tY, train_target, validation_data=(vY, valid_target), **train_args )

@@ -1,6 +1,6 @@
 from logging import FileHandler
 from astrotime.transforms.filters import RandomDownsample
-import os, numpy as np, tensorflow as tf
+import os, time, numpy as np, tensorflow as tf
 from typing import List, Optional, Dict, Type, Any
 from astrotime.models.cnn_powell import SinusoidPeriodModel
 from astrotime.callbacks.printers import ShapePrinter
@@ -40,6 +40,7 @@ model_name = f"wwz-{nfeatures}"
 log_level = logging.INFO
 lgm().init_logging( f"{results_dir}/logging", log_level )
 refresh = False
+t0 = time.time()
 
 sinusoid_loader = SinusoidLoader(data_dir)
 encoder = WaveletEncoder(device, series_length, nfreq, fbounds, fscale, nfeatures, int(max_series_length*(1-sparsity)) )
@@ -65,6 +66,7 @@ predictions = spmodel.predict( tY[0:eval_size] )
 if refresh: print( "Refreshing model. Training from scratch.")
 else: checkpointer.load_weights(spmodel)
 
+print( f"Loading took {time.time()-t0:.2f} seconds." )
 history = spmodel.fit( tY, train_target, validation_data=(vY, valid_target), **train_args )
 
 
