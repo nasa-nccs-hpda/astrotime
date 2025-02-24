@@ -16,7 +16,7 @@ ccustom = {}
 clargs: Namespace = parse_clargs(ccustom)
 device = get_device(clargs)
 
-data_dir=  "/explore/nobackup/projects/ilab/data/astrotime/sinusoids/nc"
+data_dir = "/explore/nobackup/projects/ilab/data/astrotime/sinusoids/npz/"
 results_dir = "/explore/nobackup/projects/ilab/data/astrotime/results"
 
 #data_dir = "/Users/tpmaxwel/Data/astro_sigproc/sinusoids/npz"
