@@ -63,5 +63,5 @@ class WaveletEncoder(Encoder):
 			features = [amp,phase]+list(cs)
 			dim = 1 if self.chan_first else 2
 			WWZ = tf.stack( features[:self.nfeatures], axis=dim )
-			lgm().log( f" Completed encoding in {(time.time()-t0):.2f}s: freq{list(self.freq)} WWZ{list(WWZ.shape)}")
+			lgm().log( f" Completed encoding in {(time.time()-t0):.2f}s: freq{list(self.freq.shape)} WWZ{list(WWZ.shape)}")
 			return self.freq, WWZ
