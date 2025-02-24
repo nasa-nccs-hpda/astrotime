@@ -105,6 +105,7 @@ class SignalTrainer(object):
                 batch0 = self.start_batch if (epoch == self.start_epoch) else 0
                 train_batchs = range(batch0, self.loader.nbatches)
                 for ibatch in train_batchs:
+                    t0 = time.time()
                     input, target = self.get_batch(ibatch)
                     self.global_time = time.time()
                     lgm().log( f"TRAIN BATCH-{ibatch}: input={shp(input)}, target={shp(target)}")
@@ -114,7 +115,7 @@ class SignalTrainer(object):
                     losses.append(loss.item())
                     if (ibatch % log_interval == 0) or ((ibatch < 10) and (epoch==0)):
                         aloss = np.array(losses)
-                        print(f"E-{epoch} B-{ibatch} loss={aloss.mean():.3f} ({aloss.min():.3f} -> {aloss.max():.3f})")
+                        print(f"E-{epoch} B-{ibatch} loss={aloss.mean():.3f} ({aloss.min():.3f} -> {aloss.max():.3f}), dt={time.time()-t0:.4f} sec")
                         # self.log_layer_stats()
                         losses = []
 
