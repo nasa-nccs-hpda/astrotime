@@ -116,6 +116,7 @@ class WaveletEmbeddingLayer(torch.nn.Module):
 		cos_shift: Tensor = torch.cos(omega_ * (ts - time_shift_))
 		sin_tau_center: Tensor = torch.sin(omega * (time_shift - tau[:, :, 0]))
 		cos_tau_center: Tensor = torch.cos(omega * (time_shift - tau[:, :, 0]))
+		lgm().log(f" --> cos_tau_center{list(cos_tau_center.shape)} sin_tau_center{list(sin_tau_center.shape)}")
 
 		ys_cos_shift: Tensor = w_prod(ys, cos_shift)
 		ys_sin_shift: Tensor = w_prod(ys, sin_shift)
@@ -126,6 +127,7 @@ class WaveletEmbeddingLayer(torch.nn.Module):
 
 		A: Tensor = 2 * (ys_cos_shift - ys_one * cos_shift_one)
 		B: Tensor = 2 * (ys_sin_shift - ys_one * sin_shift_one)
+		lgm().log(f" --> A{list(A.shape)} B{list(B.shape)} ys_one{list(ys_one.shape)} ")
 
 		a0: Tensor = ys_one
 		a1: Tensor = cos_tau_center * A - sin_tau_center * B  # Eq. (S6)
