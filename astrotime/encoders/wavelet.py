@@ -70,6 +70,7 @@ class WaveletEncoderLayer(torch.nn.Module):
 		self.nts = cfg.series_length
 		self.nf = cfg.nfreq
 		self.nb = cfg.batch_size
+		self.nfeatures = cfg.nfeatures
 		self.C = 1 / (8 * math.pi ** 2)
 		fspace = logspace if (self.cfg.fscale == "log") else np.linspace
 		self.freq = torch.FloatTensor( fspace( self.cfg.freq_start, self.cfg.freq_end, self.cfg.nfreq ) ).to(self.device)
@@ -93,7 +94,6 @@ class WaveletEncoderLayer(torch.nn.Module):
 		theta: Tensor = omega_ * ts
 		sin_basis: Tensor = torch.sin(theta)
 		cos_basis: Tensor = torch.cos(theta)
-
 
 		sin_one: Tensor = w_prod(sin_basis, self.ones)
 		cos_one: Tensor = w_prod(cos_basis, self.ones)
