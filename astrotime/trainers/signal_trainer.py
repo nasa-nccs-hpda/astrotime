@@ -21,12 +21,13 @@ def tocpu( c, idx=0 ):
 
 class SignalTrainer(object):
 
-    def __init__(self, cfg: DictConfig, loader: DataLoader, model: nn.Module, device: torch.device ):
+    def __init__(self, cfg: DictConfig, loader: DataLoader, encoder: Encoder, model: nn.Module, device: torch.device ):
         self.device = device
         self.loader: DataLoader = loader
         self.cfg: DictConfig = cfg
         self.loss_function: nn.Module = nn.L1Loss()
         self.model: nn.Module = model
+        self.encoder: Encoder = encoder
         self.optimizer: optim.Optimizer = self.get_optimizer()
         self._checkpoint_manager = CheckpointManager( model, self.optimizer, cfg )
         self.start_batch: int = 0
@@ -87,8 +88,7 @@ class SignalTrainer(object):
     def get_batch(self, batch_index) -> Tuple[torch.Tensor,torch.Tensor]:
         dset: xa.Dataset = self.loader.get_batch(batch_index)
         target: Tensor = torch.from_numpy(dset['p'].values[:, None]).to(self.device)
-        y: Tensor = torch.from_numpy(dset['y'].values[:, None]).to(self.device)
-        t: Tensor = torch.from_numpy(dset['t'].values).to(self.device)
+        t, y = self.encoder.encode_batch( dset['t'].values, dset['y'].values )
         input: Tensor = torch.concat((t[:, None, :], y), dim=1)
         return input, target
 

@@ -60,7 +60,7 @@ class WaveletEncoder(Encoder):
 		return self.freq, WWZ
 
 
-class WaveletEncoderLayer(torch.nn.Module):
+class WaveletEmbeddingLayer(torch.nn.Module):
 
 	def __init__(self, cfg, device: device):
 		torch.nn.Module.__init__(self)
