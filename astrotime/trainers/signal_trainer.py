@@ -21,9 +21,8 @@ def tocpu( c, idx=0 ):
 
 class SignalTrainer(object):
 
-    def __init__(self, loader: DataLoader, encoder: Encoder, model: nn.Module, cfg: DictConfig ):
+    def __init__(self, loader: DataLoader, model: nn.Module, cfg: DictConfig ):
         self.loader: DataLoader = loader
-        self.encoder: Encoder = encoder
         self.cfg: DictConfig = cfg
         self.loss_function: nn.Module = nn.L1Loss()
         self.model: nn.Module = model
@@ -51,7 +50,7 @@ class SignalTrainer(object):
 
     @property
     def device(self) -> torch.device:
-        return self.encoder.device
+        return self.model.device
 
     def accumulate_losses(self, tset: TSet, epoch: int, mdata: Dict) -> Dict[str, float]:
         losses: LossAccumulator = self.get_losses(TSet.Train)
@@ -82,13 +81,12 @@ class SignalTrainer(object):
         losses: LossAccumulator = self.get_losses(TSet.Train)
         losses.register_loss('result', loss)
 
-    def get_batch(self, batch_index) -> Tuple[torch.Tensor,torch.Tensor]:
+    def get_batch(self, batch_index) -> Tuple[torch.Tensor,torch.Tensor,torch.Tensor]:
         dset: xa.Dataset = self.loader.get_batch(batch_index)
-        x, y, t0 = dset['t'].values, dset['y'].values, time.time()
-        X, Y = self.encoder.encode_batch(x, y)
         target: Tensor = torch.from_numpy(dset['p'].values[:, None]).to(self.device)
-        # if lgm().is_debugging: self.log_sizes(Y)
-        return Y, target
+        y: Tensor = torch.from_numpy(dset['y'].values[:, None]).to(self.device)
+        t: Tensor = torch.from_numpy(dset['t'].values).to(self.device)
+        return y, t, target
 
     def train(self):
         print(f"SignalTrainer: {self.loader.nbatches} train_batches, {self.nepochs} epochs, nelements = {self.loader.nelements}, device={self.encoder.device}")
@@ -101,9 +99,9 @@ class SignalTrainer(object):
                 train_batchs = range(batch0, self.loader.nbatches)
                 for ibatch in train_batchs:
                     t0 = time.time()
-                    batch, target = self.get_batch(ibatch)
+                    y, t, target = self.get_batch(ibatch)
                     t1 = time.time()
-                    result: Tensor = self.model( batch )
+                    result: Tensor = self.model( y, t )
                     loss: Tensor = self.loss_function( result.squeeze(), target.squeeze() )
                     self.update_weights(loss)
                     losses.append(loss.item())

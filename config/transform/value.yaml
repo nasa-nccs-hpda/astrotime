@@ -2,3 +2,4 @@ series_length: 2048
 nfeatures: 1
 sparsity: 0.0
 max_series_length: 6200
+batch_size: ${platform.data}/batch_size

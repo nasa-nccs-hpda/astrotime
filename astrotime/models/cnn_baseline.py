@@ -24,9 +24,8 @@ def add_dense_block( model: nn.Sequential, in_channels:int, cfg: DictConfig ):
 	model.append( nn.ELU() )
 	model.append( nn.Linear( cfg.dense_channels, cfg.out_channels ) )
 
-def get_model_from_cfg( cfg: DictConfig, encoder: Encoder, device: torch.device ) -> nn.Module:
-	# assert is_power_of_two(encoder.series_length), f"Series length ({encoder.series_length}) should be a power of 2"
-	model: nn.Sequential = nn.Sequential()
+def get_model_from_cfg( cfg: DictConfig, encoder: nn.Module, device: torch.device ) -> nn.Module:
+	model: nn.Sequential = nn.Sequential( encoder )
 	cnn_channels = cfg.cnn_channels
 	num_input_features = encoder.nfeatures
 	for iblock in range(cfg.num_blocks):
