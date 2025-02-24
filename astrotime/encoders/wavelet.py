@@ -123,11 +123,11 @@ class WaveletEmbeddingLayer(torch.nn.Module):
 		ys_one: Tensor = w_prod(ys, self.ones)
 		cos_shift_one: Tensor = w_prod(cos_shift, self.ones)
 		sin_shift_one: Tensor = w_prod(sin_shift, self.ones)
-		lgm().log(f" --> sin_shift_one{list(sin_shift_one.shape)}")
+		lgm().log(f" --> sin_shift_one{list(sin_shift_one.shape)} cos_shift_one{list(cos_shift_one.shape)} ys_one{list(ys_one.shape)}")
 
 		A: Tensor = 2 * (ys_cos_shift - ys_one * cos_shift_one)
 		B: Tensor = 2 * (ys_sin_shift - ys_one * sin_shift_one)
-		lgm().log(f" --> A{list(A.shape)} B{list(B.shape)} ys_one{list(ys_one.shape)} ")
+		lgm().log(f" --> A{list(A.shape)} B{list(B.shape)} ")
 
 		a0: Tensor = ys_one
 		a1: Tensor = cos_tau_center * A - sin_tau_center * B  # Eq. (S6)
