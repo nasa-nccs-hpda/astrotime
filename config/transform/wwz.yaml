@@ -1,6 +1,6 @@
-series_length: 2048
+series_length: 1024 # 2048
 nfeatures: 2
-nfreq: 2048
+nfreq: 1024 # 2048
 freq_start: 0.1
 freq_end: 10.0
 fscale: "log"
