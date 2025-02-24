@@ -85,11 +85,9 @@ class SignalTrainer(object):
     def get_batch(self, batch_index) -> Tuple[torch.Tensor,torch.Tensor]:
         dset: xa.Dataset = self.loader.get_batch(batch_index)
         x, y, t0 = dset['t'].values, dset['y'].values, time.time()
-        lgm().debug(f" DataPreprocessor:get_batch({batch_index}: x{shp(x)} y{shp(y)}")
         X, Y = self.encoder.encode_batch(x, y)
         target: Tensor = torch.from_numpy(dset['p'].values[:, None]).to(self.device)
-        lgm().log(f"  ENCODED --->  y{list(Y.shape)} target{list(target.shape)}, dt={time.time()-t0:.4f}s")
-        if lgm().is_debugging: self.log_sizes(Y)
+        # if lgm().is_debugging: self.log_sizes(Y)
         return Y, target
 
     def train(self):
@@ -102,16 +100,17 @@ class SignalTrainer(object):
                 batch0 = self.start_batch if (epoch == self.start_epoch) else 0
                 train_batchs = range(batch0, self.loader.nbatches)
                 for ibatch in train_batchs:
-                    batch, target = self.get_batch(ibatch)
                     t0 = time.time()
+                    batch, target = self.get_batch(ibatch)
+                    t1 = time.time()
                     result: Tensor = self.model( batch )
                     loss: Tensor = self.loss_function( result.squeeze(), target.squeeze() )
                     self.update_weights(loss)
                     losses.append(loss.item())
                     lgm().log(f"E-{epoch} B-{ibatch}  process-time={time.time() - t0:.4f}s")
                     if (ibatch % log_interval == 0) or ((ibatch < 10) and (epoch==0)):
-                        t1, aloss = time.time(), np.array(losses)
-                        print(f"E-{epoch} B-{ibatch} loss={aloss.mean():.3f} ({aloss.min():.3f} -> {aloss.max():.3f}), dt={t1-t0:.3f}s")
+                        aloss = np.array(losses)
+                        print(f"E-{epoch} B-{ibatch} loss={aloss.mean():.3f} ({aloss.min():.3f} -> {aloss.max():.3f}), tinmes: encode={t1-t0:.3f}s network={time.time()-t1:.3f}s")
                         t0, losses = t1, []
 
                 mdata = dict()
