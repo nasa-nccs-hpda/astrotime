@@ -84,12 +84,13 @@ class SignalTrainer(object):
         losses: LossAccumulator = self.get_losses(TSet.Train)
         losses.register_loss('result', loss)
 
-    def get_batch(self, batch_index) -> Tuple[torch.Tensor,torch.Tensor,torch.Tensor]:
+    def get_batch(self, batch_index) -> Tuple[torch.Tensor,torch.Tensor]:
         dset: xa.Dataset = self.loader.get_batch(batch_index)
         target: Tensor = torch.from_numpy(dset['p'].values[:, None]).to(self.device)
         y: Tensor = torch.from_numpy(dset['y'].values[:, None]).to(self.device)
         t: Tensor = torch.from_numpy(dset['t'].values).to(self.device)
-        return y, t, target
+        input: Tensor = torch.concat((t[:, None, :], y), dim=1)
+        return input, target
 
     def train(self):
         print(f"SignalTrainer: {self.loader.nbatches} train_batches, {self.nepochs} epochs, nelements = {self.loader.nelements}, device={self.device}")
@@ -101,10 +102,8 @@ class SignalTrainer(object):
                 batch0 = self.start_batch if (epoch == self.start_epoch) else 0
                 train_batchs = range(batch0, self.loader.nbatches)
                 for ibatch in train_batchs:
-                    y, t, target = self.get_batch(ibatch)
+                    input, target = self.get_batch(ibatch)
                     self.global_time = time.time()
-                    print( f" train: y{shp(y)} t{shp(t)} target{shp(target)}")
-                    input: Tensor = torch.concat((t[:,None,:],y), axis=1)
                     result: Tensor = self.model( input )
                     loss: Tensor = self.loss_function( result.squeeze(), target.squeeze() )
                     self.update_weights(loss)
