@@ -96,25 +96,24 @@ class SignalTrainer(object):
         print(f"SignalTrainer: {self.loader.nbatches} train_batches, {self.nepochs} epochs, nelements = {self.loader.nelements}, device={self.encoder.device}")
         self.initialize_checkpointing()
         losses,  log_interval = [], 100
-        t0 = time.time()
-        for epoch in range(self.start_epoch,self.nepochs):
-            self.model.train()
-            tset = TSet.Train
-            batch0 = self.start_batch if (epoch == self.start_epoch) else 0
-            train_batchs = range(batch0, self.loader.nbatches)
-            for ibatch in train_batchs:
-                batch, target = self.get_batch(ibatch)
-                t0 = time.time()
-                result: Tensor = self.model( batch )
-                loss: Tensor = self.loss_function( result.squeeze(), target.squeeze() )
-                self.update_weights(loss)
-                losses.append(loss.item())
-                print(f"E-{epoch} B-{ibatch}  process-time={time.time() - t0:.4f}s")
-                if (ibatch % log_interval == 0) or ((ibatch < 10) and (epoch==0)):
-                    t1, aloss = time.time(), np.array(losses)
-                    print(f"E-{epoch} B-{ibatch} loss={aloss.mean():.3f} ({aloss.min():.3f} -> {aloss.max():.3f}), dt={t1-t0:.3f}s")
-                    t0, losses = t1, []
+        with self.device:
+            for epoch in range(self.start_epoch,self.nepochs):
+                self.model.train()
+                batch0 = self.start_batch if (epoch == self.start_epoch) else 0
+                train_batchs = range(batch0, self.loader.nbatches)
+                for ibatch in train_batchs:
+                    batch, target = self.get_batch(ibatch)
+                    t0 = time.time()
+                    result: Tensor = self.model( batch )
+                    loss: Tensor = self.loss_function( result.squeeze(), target.squeeze() )
+                    self.update_weights(loss)
+                    losses.append(loss.item())
+                    lgm().log(f"E-{epoch} B-{ibatch}  process-time={time.time() - t0:.4f}s")
+                    if (ibatch % log_interval == 0) or ((ibatch < 10) and (epoch==0)):
+                        t1, aloss = time.time(), np.array(losses)
+                        print(f"E-{epoch} B-{ibatch} loss={aloss.mean():.3f} ({aloss.min():.3f} -> {aloss.max():.3f}), dt={t1-t0:.3f}s")
+                        t0, losses = t1, []
 
-            mdata = dict()
-            acc_losses = self.accumulate_losses(tset, epoch, mdata )
-            print(f"E-{epoch} acc_losses: {acc_losses}")
+                mdata = dict()
+                acc_losses = self.accumulate_losses(TSet.Train, epoch, mdata )
+                print(f"E-{epoch} acc_losses: {acc_losses}")

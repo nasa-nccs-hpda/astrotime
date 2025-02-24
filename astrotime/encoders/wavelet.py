@@ -58,3 +58,70 @@ class WaveletEncoder(Encoder):
 		dim = 1 if self.chan_first else 2
 		WWZ = torch.stack( features[:self.cfg.nfeatures], dim=dim )
 		return self.freq, WWZ
+
+#
+# class WaveletEncoderModel(torch.nn.Module):
+#
+# 	def __init__(self, cfg):
+# 		super(WaveletEncoderModel, self).__init__()
+# 		self.cfg = cfg
+# 		fspace = logspace if (self.cfg.fscale == "log") else np.linspace
+# 		self.freq = torch.FloatTensor( fspace( self.cfg.freq_start, self.cfg.freq_end, self.cfg.nfreq ) ).to(self.device)
+#
+# 	def forward(self, ys, ts ):
+# 		nb: int = ts.shape[0]
+# 		nts: int = ts.shape[1]
+# 		nf: int = self.freq.shape[0]
+# 		if tau is None: tau = 0.5 * (ts[:, nts / 2] + ts[:, nts / 2 + 1])
+#
+# 		tau: Tensor = tau[:, None, None]
+# 		omega = freq * 2.0 * math.pi
+# 		omega_: Tensor = omega[None, :, None]  # broadcast-to(nb,nf,nts)
+# 		ts: Tensor = ts[:, None, :]  # broadcast-to(nb,nf,nts)
+# 		ys: Tensor = ys[:, None, :]  # broadcast-to(nb,nf,nts)
+# 		dt: Tensor = (ts - tau)
+# 		dz: Tensor = omega_ * dt
+# 		weights: Tensor = torch.exp(-c * dz ** 2)
+# 		sum_w: Tensor = torch.sum(weights, dim=-1)
+#
+# 		def w_prod(xs: Tensor, ys: Tensor) -> Tensor:
+# 			return torch.sum(weights * xs * ys, dim=-1) / sum_w
+#
+# 		theta: Tensor = omega_ * ts
+# 		sin_basis: Tensor = torch.sin(theta)
+# 		cos_basis: Tensor = torch.cos(theta)
+# 		one_v: Tensor = torch.ones((nb, nf, nts), device=device)
+#
+# 		sin_one: Tensor = w_prod(sin_basis, one_v)
+# 		cos_one: Tensor = w_prod(cos_basis, one_v)
+# 		sin_cos: Tensor = w_prod(sin_basis, cos_basis)
+# 		sin_sin: Tensor = w_prod(sin_basis, sin_basis)
+# 		cos_cos: Tensor = w_prod(cos_basis, cos_basis)
+#
+# 		numerator: Tensor = 2 * (sin_cos - sin_one * cos_one)
+# 		denominator: Tensor = (cos_cos - cos_one ** 2) - (sin_sin - sin_one ** 2)
+# 		time_shift: Tensor = torch.atan2(numerator, denominator) / (2 * omega)  # Eq. (S5)
+# 		time_shift_: Tensor = time_shift[:, :, None]  # broadcast-to(nb,nf,nts)
+#
+# 		sin_shift: Tensor = torch.sin(omega_ * (ts - time_shift_))
+# 		cos_shift: Tensor = torch.cos(omega_ * (ts - time_shift_))
+# 		sin_tau_center: Tensor = torch.sin(omega * (time_shift - tau[:, :, 0]))
+# 		cos_tau_center: Tensor = torch.cos(omega * (time_shift - tau[:, :, 0]))
+#
+# 		ys_cos_shift: Tensor = w_prod(ys, cos_shift)
+# 		ys_sin_shift: Tensor = w_prod(ys, sin_shift)
+# 		ys_one: Tensor = w_prod(ys, one_v)
+# 		cos_shift_one: Tensor = w_prod(cos_shift, one_v)
+# 		sin_shift_one: Tensor = w_prod(sin_shift, one_v)
+#
+# 		A: Tensor = 2 * (ys_cos_shift - ys_one * cos_shift_one)
+# 		B: Tensor = 2 * (ys_sin_shift - ys_one * sin_shift_one)
+#
+# 		a0: Tensor = ys_one
+# 		a1: Tensor = cos_tau_center * A - sin_tau_center * B  # Eq. (S6)
+# 		a2: Tensor = sin_tau_center * A + cos_tau_center * B  # Eq. (S7)
+#
+# 		wwp: Tensor = a1 ** 2 + a2 ** 2
+# 		phase: Tensor = torch.atan2(a2, a1)
+# 		coeff: Tuple[Tensor, Tensor, Tensor] = (a0, a1, a2)
+# 		return wwp, phase, coeff
