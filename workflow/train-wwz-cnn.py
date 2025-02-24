@@ -16,7 +16,7 @@ def my_app(cfg: DictConfig) -> None:
 	encoder = WaveletEncoderLayer( cfg.transform, device )
 	model: nn.Module = get_model_from_cfg( cfg.model, encoder, device )
 
-	trainer = SignalTrainer( sinusoid_loader, model, cfg.train )
+	trainer = SignalTrainer( cfg.train, sinusoid_loader, model, device )
 	trainer.train()
 
 if __name__ == "__main__":

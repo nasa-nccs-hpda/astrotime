@@ -21,7 +21,8 @@ def tocpu( c, idx=0 ):
 
 class SignalTrainer(object):
 
-    def __init__(self, loader: DataLoader, model: nn.Module, cfg: DictConfig ):
+    def __init__(self, cfg: DictConfig, loader: DataLoader, model: nn.Module, device: torch.device ):
+        self.device = device
         self.loader: DataLoader = loader
         self.cfg: DictConfig = cfg
         self.loss_function: nn.Module = nn.L1Loss()
@@ -53,10 +54,6 @@ class SignalTrainer(object):
          if   self.cfg.optim == "rms":  return optim.RMSprop( self.model.parameters(), lr=self.cfg.lr )
          elif self.cfg.optim == "adam": return optim.Adam(    self.model.parameters(), lr=self.cfg.lr )
          else: raise RuntimeError( f"Unknown optimizer: {self.cfg.optim}")
-
-    @property
-    def device(self) -> torch.device:
-        return self.model.device
 
     def accumulate_losses(self, tset: TSet, epoch: int, mdata: Dict) -> Dict[str, float]:
         losses: LossAccumulator = self.get_losses(TSet.Train)
