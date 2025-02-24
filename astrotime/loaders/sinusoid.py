@@ -94,7 +94,7 @@ class ncSinusoidLoader(DataLoader):
 		bstart = (batch_index % self.batches_per_file) * self.cfg.batch_size
 		result = self.dataset.isel( elem=slice(bstart,bstart+self.cfg.batch_size))
 		lgm().log( f" ----> BATCH-{file_index}.{batch_index}: bstart={bstart}, batch_size={self.cfg.batch_size}, batches_per_file={self.batches_per_file}, y{result['y'].shape} t{result['t'].shape} p{result['p'].shape}, dt={time.time()-t0:.4f} sec")
-		return self.dataset
+		return result
 
 	def get_dataset(self, dset_idx: int) -> xa.Dataset:
 		self.load_file(dset_idx)
