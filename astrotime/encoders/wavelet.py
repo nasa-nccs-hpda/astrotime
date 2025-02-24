@@ -79,11 +79,11 @@ class WaveletEmbeddingLayer(torch.nn.Module):
 		lgm().log(f"WaveletEmbeddingLayer: series_length={self.series_length} batch_size={self.batch_size} nfreq={self.nfreq} ")
 
 	def forward(self, input: torch.Tensor ):
-		lgm().log(f"WaveletEmbeddingLayer shapes:")
+		#lgm().log(f"WaveletEmbeddingLayer shapes:")
 		ys: torch.Tensor = input[:, 1:, :]
 		ts: torch.Tensor = input[:, 0, :]
 		tau = 0.5 * (ts[:, self.series_length // 2] + ts[:, self.series_length // 2 + 1])
-		lgm().log(f" ys{list(ys.shape)} ts{list(ts.shape)} tau{list(tau.shape)}")
+		#lgm().log(f" ys{list(ys.shape)} ts{list(ts.shape)} tau{list(tau.shape)}")
 		tau: Tensor = tau[:, None, None]
 		omega = self.freq * 2.0 * math.pi
 		omega_: Tensor = omega[None, :, None]  # broadcast-to(self.batch_size,self.nfreq,self.series_length)
@@ -115,28 +115,28 @@ class WaveletEmbeddingLayer(torch.nn.Module):
 		cos_shift: Tensor = torch.cos(omega_ * (ts - time_shift_))
 		sin_tau_center: Tensor = torch.sin(omega * (time_shift - tau[:, :, 0]))
 		cos_tau_center: Tensor = torch.cos(omega * (time_shift - tau[:, :, 0]))
-		lgm().log(f" --> cos_tau_center{list(cos_tau_center.shape)} sin_tau_center{list(sin_tau_center.shape)}")
+		#lgm().log(f" --> cos_tau_center{list(cos_tau_center.shape)} sin_tau_center{list(sin_tau_center.shape)}")
 
 		ys_cos_shift: Tensor = w_prod(ys, cos_shift)
 		ys_sin_shift: Tensor = w_prod(ys, sin_shift)
 		ys_one: Tensor = w_prod(ys, self.ones)
-		lgm().log(f" --> ys_one{list(ys_one.shape)} ys{list(ys.shape)} ones{list(self.ones.shape)}")
+		#lgm().log(f" --> ys_one{list(ys_one.shape)} ys{list(ys.shape)} ones{list(self.ones.shape)}")
 
 		cos_shift_one: Tensor = w_prod(cos_shift, self.ones)
 		sin_shift_one: Tensor = w_prod(sin_shift, self.ones)
-		lgm().log(f" --> sin_shift_one{list(sin_shift_one.shape)} cos_shift_one{list(cos_shift_one.shape)}")
+		#lgm().log(f" --> sin_shift_one{list(sin_shift_one.shape)} cos_shift_one{list(cos_shift_one.shape)}")
 
 		A: Tensor = 2 * (ys_cos_shift - ys_one * cos_shift_one)
 		B: Tensor = 2 * (ys_sin_shift - ys_one * sin_shift_one)
-		lgm().log(f" --> A{list(A.shape)} B{list(B.shape)} ")
+		#lgm().log(f" --> A{list(A.shape)} B{list(B.shape)} ")
 
 		a0: Tensor = ys_one
 		a1: Tensor = cos_tau_center * A - sin_tau_center * B  # Eq. (S6)
 		a2: Tensor = sin_tau_center * A + cos_tau_center * B  # Eq. (S7)
-		lgm().log(f" --> a0{list(a0.shape)} a1{list(a1.shape)} a2{list(a2.shape)}")
+		#lgm().log(f" --> a0{list(a0.shape)} a1{list(a1.shape)} a2{list(a2.shape)}")
 
 		wwp: Tensor = a1 ** 2 + a2 ** 2
 		phase: Tensor = torch.atan2(a2, a1)
-		coeff: Tuple[Tensor, Tensor, Tensor] = (a0, a1, a2)
-		lgm().log(f"WaveletEmbeddingLayer: wwp{list(wwp.shape)}({torch.mean(wwp):.2f},{torch.std(wwp):.2f}), phase{list(phase.shape)}({torch.mean(phase):.2f},{torch.std(phase):.2f})")
+		#coeff: Tuple[Tensor, Tensor, Tensor] = (a0, a1, a2)
+		#lgm().log(f"WaveletEmbeddingLayer: wwp{list(wwp.shape)}({torch.mean(wwp):.2f},{torch.std(wwp):.2f}), phase{list(phase.shape)}({torch.mean(phase):.2f},{torch.std(phase):.2f})")
 		return torch.concat( (wwp[:, None, :] , phase[:, None, :]), dim=1)

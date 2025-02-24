@@ -39,8 +39,11 @@ class SignalTrainer(object):
         self.train_state = None
         self.global_time = None
         self.exec_stats = []
-        for module in model.modules():
-            module.register_forward_hook(self.store_time)
+        for module in model.modules(): self.add_callbacks(module)
+
+    def add_callbacks(self, module):
+        pass
+        #module.register_forward_hook(self.store_time)
 
     def store_time(self, module, input, output ):
         self.exec_stats.append( (module.__class__.__name__, time.time()-self.global_time) )
@@ -112,7 +115,7 @@ class SignalTrainer(object):
                     if (ibatch % log_interval == 0) or ((ibatch < 10) and (epoch==0)):
                         aloss = np.array(losses)
                         print(f"E-{epoch} B-{ibatch} loss={aloss.mean():.3f} ({aloss.min():.3f} -> {aloss.max():.3f})")
-                        self.log_layer_stats()
+                        # self.log_layer_stats()
                         losses = []
 
                 mdata = dict()
