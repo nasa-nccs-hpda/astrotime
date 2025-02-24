@@ -79,7 +79,7 @@ class WaveletEncoderLayer(torch.nn.Module):
 	def forward(self, input: torch.Tensor ):
 		ys: torch.Tensor = input[:, 1:, :]
 		ts: torch.Tensor = input[:, 0, :]
-		tau = 0.5 * (ts[:, self.series_length / 2] + ts[:, self.series_length / 2 + 1])
+		tau = 0.5 * (ts[:, self.series_length // 2] + ts[:, self.series_length // 2 + 1])
 		tau: Tensor = tau[:, None, None]
 		omega = self.freq * 2.0 * math.pi
 		omega_: Tensor = omega[None, :, None]  # broadcast-to(self.batch_size,self.nfreq,self.series_length)
