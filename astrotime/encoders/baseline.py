@@ -36,5 +36,5 @@ class ValueEncoder(Encoder):
 			Y = tnorm(Y,dim=1)
 			if Y.ndim == 2: Y = torch.unsqueeze(Y, dim=2)
 			if self.chan_first: Y = Y.transpose(1,2)
-			lgm().log( f" ENCODED BATCH:T{X.shape} Y{Y.shape}")
+			lgm().log( f" ENCODED BATCH: x{list(x.shape)} y{list(y.shape)} -> T{list(X.shape)} Y{list(Y.shape)}")
 			return X, Y
