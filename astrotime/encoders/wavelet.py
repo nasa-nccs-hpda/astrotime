@@ -63,7 +63,8 @@ class WaveletEncoder(Encoder):
 class WaveletEncoderLayer(torch.nn.Module):
 
 	def __init__(self, cfg, device: device):
-		torch.nn.Module.__init__(self,requires_grad=False)
+		torch.nn.Module.__init__(self)
+		self.requires_grad_(False)
 		self.device = device
 		self.cfg = cfg
 		self.nts = cfg.series_length
