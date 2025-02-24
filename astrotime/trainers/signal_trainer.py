@@ -35,13 +35,19 @@ class SignalTrainer(object):
         self.nepochs = self.cfg.nepochs
         self._losses: Dict[TSet, LossAccumulator] = {}
         self.train_state = None
+        self.global_time = None
+        self.exec_stats = []
+        for module in model.modules():
+            module.register_forward_hook(self.store_time)
 
-    def log_sizes(self, input_tensor: Tensor):
-        output = input_tensor
-        lgm().log( f" Model data sizes: input{list(input_tensor.shape)}")
-        for m in self.model.children():
-            output = m(output)
-            lgm().log(f" ** Layer-{m.__class__.__name__}: output{list(output.shape)}")
+    def store_time(self, module, input, output ):
+        self.exec_stats.append( (module.__class__.__name__, time.time()-self.global_time, shp(input), shp(output) ) )
+        self.global_time = time.time()
+
+    def log_layer_stats(self):
+        lgm().log( f" Model layer stats:")
+        for stats in  self.exec_stats:
+            lgm().log(f"{stats[0]}: input{stats[2]} -> output{stats[3]}, dt={stats[1]}s")
 
     def get_optimizer(self) -> optim.Optimizer:
          if   self.cfg.optim == "rms":  return optim.RMSprop( self.model.parameters(), lr=self.cfg.lr )
@@ -98,18 +104,17 @@ class SignalTrainer(object):
                 batch0 = self.start_batch if (epoch == self.start_epoch) else 0
                 train_batchs = range(batch0, self.loader.nbatches)
                 for ibatch in train_batchs:
-                    t0 = time.time()
                     y, t, target = self.get_batch(ibatch)
-                    t1 = time.time()
+                    self.global_time = time.time()
                     result: Tensor = self.model( y, t )
                     loss: Tensor = self.loss_function( result.squeeze(), target.squeeze() )
                     self.update_weights(loss)
                     losses.append(loss.item())
-                    lgm().log(f"E-{epoch} B-{ibatch}  process-time={time.time() - t0:.4f}s")
                     if (ibatch % log_interval == 0) or ((ibatch < 10) and (epoch==0)):
                         aloss = np.array(losses)
-                        print(f"E-{epoch} B-{ibatch} loss={aloss.mean():.3f} ({aloss.min():.3f} -> {aloss.max():.3f}), tinmes: encode={t1-t0:.3f}s network={time.time()-t1:.3f}s")
-                        t0, losses = t1, []
+                        print(f"E-{epoch} B-{ibatch} loss={aloss.mean():.3f} ({aloss.min():.3f} -> {aloss.max():.3f})")
+                        self.log_layer_stats()
+                        losses = []
 
                 mdata = dict()
                 acc_losses = self.accumulate_losses(TSet.Train, epoch, mdata )
