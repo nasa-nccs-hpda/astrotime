@@ -76,7 +76,9 @@ class WaveletEncoderLayer(torch.nn.Module):
 		self.freq = torch.FloatTensor( fspace( self.cfg.freq_start, self.cfg.freq_end, self.cfg.nfreq ) ).to(self.device)
 		self.ones: Tensor = torch.ones( self.batch_size, self.nfreq, self.series_length, device=self.device)
 
-	def forward(self, ys: torch.Tensor, ts: torch.Tensor ):
+	def forward(self, input: torch.Tensor ):
+		ys: torch.Tensor = input[:, 1:, :]
+		ts: torch.Tensor = input[:, 0, :]
 		tau = 0.5 * (ts[:, self.series_length / 2] + ts[:, self.series_length / 2 + 1])
 		tau: Tensor = tau[:, None, None]
 		omega = self.freq * 2.0 * math.pi
