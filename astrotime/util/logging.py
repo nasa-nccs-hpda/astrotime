@@ -138,7 +138,7 @@ class LogManager(object):
         self.log_dir =  log_dir # f"{cfg().platform.cache}/logs"
         overwrite = kwargs.get("overwrite_log", True)
         self._lid = "" if overwrite else f"-{os.getpid()}"
-        self.log_file = f'{self.log_dir}/astrotime{self._lid}.log' # f'{self.log_dir}/{cid()}{self._lid}.log'
+        self.log_file = f'{self.log_dir}/astrotime{self._lid}--tf.log'
         os.makedirs( os.path.dirname( self.log_file ), mode=0o777, exist_ok=True )
         print( f"\n     Logging to file: '{self.log_file}'    \n\n", flush=True)
         self._logger = PythonLogger()

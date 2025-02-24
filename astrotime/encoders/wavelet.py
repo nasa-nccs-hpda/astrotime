@@ -1,5 +1,6 @@
 import random, time, numpy as np, tensorflow as tf
 from typing import Any, Dict, List, Optional, Tuple
+from astrotime.util.logging import lgm, exception_handled, log_timing
 from astrotime.encoders.base import Encoder
 from astrotime.transforms.wwz import wwz
 from astrotime.util.math import logspace, shp
@@ -52,6 +53,7 @@ class WaveletEncoder(Encoder):
 
 	def encode_batch(self, x: np.ndarray, y: np.ndarray) -> Tuple[tf.Tensor, tf.Tensor]:
 		with (self.device):
+			t0 = time.time()
 			x, y = self.apply_filters(x, y, 1)
 			x0: int = tf.random.uniform([1], 0, self.max_series_len - self.series_len, dtype=tf.int32)[0]
 			Y: tf.Tensor = tf.convert_to_tensor(y[:, x0:x0 + self.series_len], dtype=tf.float32)
@@ -61,4 +63,5 @@ class WaveletEncoder(Encoder):
 			features = [amp,phase]+list(cs)
 			dim = 1 if self.chan_first else 2
 			WWZ = tf.stack( features[:self.nfeatures], axis=dim )
+			lgm().log( f" Completed encoding in {(time.time()-t0):.2f}s: freq{list(self.freq)} WWZ{list(WWZ.shape)}")
 			return self.freq, WWZ

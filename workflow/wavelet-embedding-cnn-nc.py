@@ -24,11 +24,11 @@ results_dir = "/explore/nobackup/projects/ilab/data/astrotime/results"
 
 dataset_files=  "padded_sinusoids_*.nc"
 file_size= 1000
-batch_size= 50
-series_length = 2000
+batch_size= 10
+series_length = 1536
 epochs=1000
 nfeatures=2
-nfreq: int = 2000
+nfreq: int = 1536
 fbounds = (0.1,10.0)
 fscale = "log"
 sparsity = 0.0
