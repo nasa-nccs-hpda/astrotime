@@ -95,7 +95,7 @@ class SignalTrainer(object):
         return y, t, target
 
     def train(self):
-        print(f"SignalTrainer: {self.loader.nbatches} train_batches, {self.nepochs} epochs, nelements = {self.loader.nelements}, device={self.encoder.device}")
+        print(f"SignalTrainer: {self.loader.nbatches} train_batches, {self.nepochs} epochs, nelements = {self.loader.nelements}, device={self.device}")
         self.initialize_checkpointing()
         losses,  log_interval = [], 100
         with self.device:
