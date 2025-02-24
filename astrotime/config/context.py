@@ -4,6 +4,8 @@ import logging
 import torch
 
 def astrotime_initialize(config: DictConfig, **kwargs):
+    torch.backends.cuda.matmul.allow_tf32 = True
+    torch.backends.cudnn.allow_tf32 = True
     OmegaConf.resolve(config)
     lgm().init_logging( config.platform.logs,  config.train.version, config.train.overwrite_log )
     lgm().set_level( kwargs.get('log_level',logging.INFO) )
