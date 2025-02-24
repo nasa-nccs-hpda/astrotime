@@ -43,7 +43,7 @@ class SignalTrainer(object):
             module.register_forward_hook(self.store_time)
 
     def store_time(self, module, input, output ):
-        self.exec_stats.append( (module.__class__.__name__, time.time()-self.global_time, shp(input), shp(output) ) )
+        self.exec_stats.append( (module.__class__.__name__, time.time()-self.global_time, shp(input), shp(output[0]) ) )
         self.global_time = time.time()
 
     def log_layer_stats(self):
