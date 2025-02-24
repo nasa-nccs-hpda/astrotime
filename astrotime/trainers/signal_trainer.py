@@ -104,6 +104,7 @@ class SignalTrainer(object):
                 for ibatch in train_batchs:
                     input, target = self.get_batch(ibatch)
                     self.global_time = time.time()
+                    lgm().log( f"TRAIN BATCH-{ibatch}: input={shp(input)}, target={shp(target)}")
                     result: Tensor = self.model( input )
                     loss: Tensor = self.loss_function( result.squeeze(), target.squeeze() )
                     self.update_weights(loss)
