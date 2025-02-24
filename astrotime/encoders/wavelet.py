@@ -7,6 +7,7 @@ from astrotime.encoders.base import Encoder
 from astrotime.transforms.wwz import wwz
 from astrotime.util.math import logspace, shp
 from astrotime.util.math import tmean, tstd, tmag, tnorm
+from astrotime.util.logging import lgm, exception_handled, log_timing
 
 class WaveletEncoder(Encoder):
 
@@ -75,6 +76,7 @@ class WaveletEmbeddingLayer(torch.nn.Module):
 		fspace = logspace if (self.cfg.fscale == "log") else np.linspace
 		self.freq = torch.FloatTensor( fspace( self.cfg.freq_start, self.cfg.freq_end, self.cfg.nfreq ) ).to(self.device)
 		self.ones: Tensor = torch.ones( self.batch_size, self.nfreq, self.series_length, device=self.device)
+		lgm().log(f"WaveletEmbeddingLayer: series_length={self.series_length} batch_size={self.batch_size} nfreq={self.nfreq} ")
 
 	def forward(self, input: torch.Tensor ):
 		ys: torch.Tensor = input[:, 1:, :]

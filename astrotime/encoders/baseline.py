@@ -4,6 +4,7 @@ from astrotime.encoders.base import Encoder
 from torch import Tensor, device
 from omegaconf import DictConfig, OmegaConf
 from astrotime.util.math import tmean, tstd, tmag, tnorm, shp
+from astrotime.util.logging import lgm, exception_handled
 
 
 class ValueEncoder(Encoder):
@@ -35,4 +36,5 @@ class ValueEncoder(Encoder):
 			Y = tnorm(Y,dim=1)
 			if Y.ndim == 2: Y = torch.unsqueeze(Y, dim=2)
 			if self.chan_first: Y = Y.transpose(1,2)
+			lgm().log( f" ENCODED BATCH:T{X.shape} Y{Y.shape}")
 			return X, Y
