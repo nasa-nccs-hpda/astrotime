@@ -5,6 +5,8 @@ from astrotime.util.config import TSet
 from omegaconf import DictConfig
 from torch import nn
 import os
+import logging
+log = logging.getLogger(__name__)
 
 
 class CheckpointManager(object):
