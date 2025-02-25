@@ -1,5 +1,6 @@
 from omegaconf import DictConfig, OmegaConf
 import logging
+from hydra.core.hydra_config import HydraConfig
 log = logging.getLogger(__name__)
 import torch
 
@@ -8,4 +9,5 @@ def astrotime_initialize(config: DictConfig, **kwargs):
     torch.backends.cudnn.allow_tf32 = True
     OmegaConf.resolve(config)
     device: torch.device = torch.device(f"cuda:{config.platform.gpu}" if (torch.cuda.is_available() and (config.platform.gpu >= 0)) else "cpu")
+    # print(f" Hydra Output directory  : {HydraConfig.get().runtime.output_dir}")
     return device
