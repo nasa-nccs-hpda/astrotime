@@ -1,7 +1,7 @@
 import time, numpy as np, xarray as xa
 from astrotime.loaders.base import DataLoader
 from typing import List, Optional, Dict, Type, Union, Tuple
-from util.logging import exception_handled
+from astrotime.util.logging import exception_handled
 from glob import glob
 from omegaconf import DictConfig, OmegaConf
 import logging

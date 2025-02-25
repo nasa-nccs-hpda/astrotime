@@ -1,5 +1,5 @@
 import torch, csv
-from util.logging import exception_handled
+from astrotime.util.logging import exception_handled
 from io import TextIOWrapper
 import os, time, numpy as np
 from collections import deque

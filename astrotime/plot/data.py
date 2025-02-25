@@ -3,7 +3,7 @@ from .param import STIntParam
 from .base import SignalPlot, bounds
 from matplotlib.lines import Line2D
 from typing import Dict, List
-from util.logging import exception_handled
+from astrotime.util.logging import exception_handled
 
 class SignalTransformPlot(SignalPlot):
 

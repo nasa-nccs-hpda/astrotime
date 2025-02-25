@@ -4,7 +4,7 @@ from matplotlib.text import Annotation
 from matplotlib.axes import Axes
 from matplotlib.ticker import NullLocator
 from typing import Any, Dict, List, Tuple, Type, Optional, Union
-from util.logging import exception_handled, log_timing
+from astrotime.util.logging import exception_handled, log_timing
 from .param import Number, Parameter, STParam, STFloatParam, STFloatValuesParam, Parameterized
 import logging
 log = logging.getLogger(__name__)
