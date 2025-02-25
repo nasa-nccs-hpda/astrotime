@@ -9,8 +9,8 @@ from astrotime.util.logging import lgm, exception_handled
 
 class ValueEncoder(Encoder):
 
-	def __init__(self, device: device, cfg: DictConfig ):
-		super(ValueEncoder, self).__init__( device, cfg )
+	def __init__(self, cfg: DictConfig, device: device ):
+		super(ValueEncoder, self).__init__( cfg, device )
 		self.chan_first = True
 
 	def encode_dset(self, dset: Dict[str,np.ndarray]) -> Tuple[Tensor,Tensor]:
@@ -38,3 +38,17 @@ class ValueEncoder(Encoder):
 			if self.chan_first: Y = Y.transpose(1,2)
 			lgm().log( f" ENCODED BATCH: x{list(x.shape)} y{list(y.shape)} -> T{list(X.shape)} Y{list(Y.shape)}")
 			return X, Y
+
+
+class ValueEmbeddingLayer(torch.nn.Module):
+
+	def __init__(self, cfg, device: device):
+		torch.nn.Module.__init__(self)
+		self.requires_grad_(False)
+		self.device = device
+		self.cfg = cfg
+
+	def forward(self, input: torch.Tensor ):
+		ys: torch.Tensor = input[:, 1:, :]
+		ts: torch.Tensor = input[:, 0, :]
+		return ys

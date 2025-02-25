@@ -21,8 +21,8 @@ def tocpu( c, idx=0 ):
 
 class SignalTrainer(object):
 
-    def __init__(self, cfg: DictConfig, loader: DataLoader, encoder: Encoder, model: nn.Module, device: torch.device ):
-        self.device = device
+    def __init__(self, cfg: DictConfig, loader: DataLoader, encoder: Encoder, model: nn.Module ):
+        self.device = encoder.device
         self.loader: DataLoader = loader
         self.cfg: DictConfig = cfg
         self.loss_function: nn.Module = nn.L1Loss()

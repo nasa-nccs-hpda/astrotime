@@ -7,7 +7,7 @@ from astrotime.transforms.filters import RandomDownsample
 
 class Encoder:
 
-	def __init__(self, device: device, cfg: DictConfig ):
+	def __init__(self, cfg: DictConfig, device: device  ):
 		self.device: device = device
 		self.cfg = cfg
 		self.filters: List[TrainingFilter] = []

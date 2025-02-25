@@ -1,5 +1,7 @@
 from torch import nn
 import torch, math
+from torch.ao.nn.qat import Embedding
+
 from astrotime.util.math import is_power_of_two
 from omegaconf import DictConfig, OmegaConf
 from collections import OrderedDict
@@ -24,8 +26,8 @@ def add_dense_block( model: nn.Sequential, in_channels:int, cfg: DictConfig ):
 	model.append( nn.ELU() )
 	model.append( nn.Linear( cfg.dense_channels, cfg.out_channels ) )
 
-def get_model_from_cfg( cfg: DictConfig, device: torch.device, **kwargs  ) -> nn.Module:
-	model: nn.Sequential = nn.Sequential( kwargs.get('embedding',OrderedDict()) )
+def get_model_from_cfg( cfg: DictConfig, device: torch.device, embedding_layer: torch.nn.Module  ) -> nn.Module:
+	model: nn.Sequential = nn.Sequential( embedding_layer )
 	cnn_channels = cfg.cnn_channels
 	num_input_features = cfg.nfeatures
 	for iblock in range(cfg.num_blocks):
