@@ -43,12 +43,12 @@ class CheckpointManager(object):
 		if cp_exists:
 			try:
 				train_state = self._load_state( tset )
-				log.info(f"Loaded model checkpoint from {cppath}, update_model = {update_model}", display=True)
+				log.info(f"Loaded model checkpoint from {cppath}, update_model = {update_model}", )
 				if update_model:
 					self.model.load_state_dict( train_state.pop('model_state_dict') )
 					self.optimizer.load_state_dict( train_state.pop('optimizer_state_dict') )
 			except Exception as e:
-				log.info(f"Unable to load model from {cppath}: {e}", display=True)
+				log.info(f"Unable to load model from {cppath}: {e}", )
 				traceback.print_exc()
 				return None
 		else:
