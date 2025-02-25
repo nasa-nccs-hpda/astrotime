@@ -18,6 +18,10 @@ class DataLoader:
 		raise NotImplementedError(f"The class '{self.__class__.__name__}' does not implement the 'nbatches' property")
 
 	@property
+	def nbatches_validation(self) -> int:
+		raise NotImplementedError(f"The class '{self.__class__.__name__}' does not implement the 'nbatches' property")
+
+	@property
 	def batch_size(self) -> int:
 		raise NotImplementedError(f"The class '{self.__class__.__name__}' does not implement the 'batch_size' property")
 

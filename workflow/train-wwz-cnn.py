@@ -16,7 +16,7 @@ def my_app(cfg: DictConfig) -> None:
 	encoder = ValueEncoder( device, cfg.transform)
 	sinusoid_loader = ncSinusoidLoader( cfg.data )
 	embedding = WaveletEmbeddingLayer( cfg.transform, device)
-	model: nn.Module = get_model_from_cfg( cfg.model, embedding, device )
+	model: nn.Module = get_model_from_cfg( cfg.model, device, embedding=embedding )
 
 	trainer = SignalTrainer( cfg.train, sinusoid_loader, encoder, model, device )
 	trainer.train()

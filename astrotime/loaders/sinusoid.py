@@ -42,12 +42,20 @@ class ncSinusoidLoader(DataLoader):
 		return self.nfiles * self.batches_per_file
 
 	@property
+	def nbatches_validation(self) -> int:
+		return self.nfiles_validation * self.batches_per_file
+
+	@property
 	def batch_size(self) -> int:
 		return self.cfg.batch_size
 
 	@property
 	def nfiles(self) -> int:
-		return len(self.file_paths)
+		return  len(self.file_paths) - self.nfiles_validation
+
+	@property
+	def nfiles_validation(self) -> int:
+		return int( len(self.file_paths) * self.cfg.validation_fraction )
 
 	def file_path( self, file_index: int ) -> Optional[str]:
 		try:

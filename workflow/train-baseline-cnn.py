@@ -15,9 +15,9 @@ def my_app(cfg: DictConfig) -> None:
 
 	sinusoid_loader = ncSinusoidLoader( cfg.data )
 	encoder = ValueEncoder( device, cfg.transform )
-	model: nn.Module = get_model_from_cfg( cfg.model, encoder, device )
+	model: nn.Module = get_model_from_cfg( cfg.model, device )
 
-	trainer = SignalTrainer( sinusoid_loader, encoder, model, cfg.train )
+	trainer = SignalTrainer( cfg.train, sinusoid_loader, encoder, model, device )
 	trainer.train()
 
 if __name__ == "__main__":

@@ -59,7 +59,7 @@ class SignalTrainer(object):
          elif self.cfg.optim == "adam": return optim.Adam(    self.model.parameters(), lr=self.cfg.lr )
          else: raise RuntimeError( f"Unknown optimizer: {self.cfg.optim}")
 
-    def accumulate_losses(self, tset: TSet, epoch: int, mdata: Dict) -> Dict[str, float]:
+    def accumulate_losses(self, tset: TSet, mdata: Dict) -> Dict[str, float]:
         losses: LossAccumulator = self.get_losses(TSet.Train)
         acc_losses: Dict[str, float] = losses.accumulate_losses()
         if len(acc_losses) > 0:
@@ -96,15 +96,14 @@ class SignalTrainer(object):
         return input, target
 
     def train(self):
-        print(f"SignalTrainer: {self.loader.nbatches} train_batches, {self.nepochs} epochs, nelements = {self.loader.nelements}, device={self.device}")
+        print(f"SignalTrainer: {self.loader.nbatches} train batches, {self.loader.nbatches_validation} validation batches, {self.nepochs} epochs, nelements = {self.loader.nelements}, device={self.device}")
         self.initialize_checkpointing()
-        losses,  log_interval = [], 100
         with self.device:
             for epoch in range(self.start_epoch,self.nepochs):
-                self.model.train()
+                self.model.train(True)
+                losses, log_interval = [], 200
                 batch0 = self.start_batch if (epoch == self.start_epoch) else 0
-                train_batchs = range(batch0, self.loader.nbatches)
-                for ibatch in train_batchs:
+                for ibatch in range(batch0, self.loader.nbatches):
                     t0 = time.time()
                     input, target = self.get_batch(ibatch)
                     self.global_time = time.time()
@@ -113,12 +112,19 @@ class SignalTrainer(object):
                     loss: Tensor = self.loss_function( result.squeeze(), target.squeeze() )
                     self.update_weights(loss)
                     losses.append(loss.item())
-                    if (ibatch % log_interval == 0) or ((ibatch < 10) and (epoch==0)):
+                    if (ibatch % log_interval == 0) or ((ibatch < 5) and (epoch==0)):
                         aloss = np.array(losses)
                         print(f"E-{epoch} B-{ibatch} loss={aloss.mean():.3f} ({aloss.min():.3f} -> {aloss.max():.3f}), dt={time.time()-t0:.4f} sec")
                         # self.log_layer_stats()
                         losses = []
 
-                mdata = dict()
-                acc_losses = self.accumulate_losses(TSet.Train, epoch, mdata )
-                print(f"E-{epoch} acc_losses: {acc_losses}")
+                self.model.train(False)
+                losses, mdata = [], {}
+                acc_losses = self.accumulate_losses(TSet.Train, mdata)
+                for ibatch in range(0, self.loader.nbatches_validation):
+                    input, target = self.get_batch( self.loader.nbatches + ibatch )
+                    result: Tensor = self.model( input )
+                    loss: Tensor = self.loss_function( result.squeeze(), target.squeeze() )
+                    losses.append(loss.item())
+
+                print( f"E-{epoch} acc_losses: {acc_losses},  validation loss={np.array(losses).mean():.3f}" )
