@@ -1,6 +1,7 @@
 import numpy as np, xarray as xa
 from typing import List, Optional, Dict, Type, Tuple
-from astrotime.util.logging import lgm, exception_handled, log_timing, shp
+import logging
+log = logging.getLogger(__name__)
 
 class DataLoader:
 

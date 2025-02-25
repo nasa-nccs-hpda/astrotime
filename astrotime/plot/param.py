@@ -1,7 +1,7 @@
-import math, numpy as np
-from matplotlib.widgets import Slider, RadioButtons, Widget
-from typing import Any, Dict, List, Tuple, Type, Optional, Union, Callable
-from astrotime.util.logging import lgm, exception_handled, log_timing
+import numpy as np
+from matplotlib.widgets import Slider, RadioButtons
+from typing import Dict, List, Tuple, Type, Callable
+
 Number = float | int
 Parameter = Number | str
 
@@ -37,7 +37,7 @@ class Parameterized(object):
 
 	def share_param(self, param: STParam):
 		if param.name in self._sparms:
-			lgm().log( f" {type(self).__name__}: Sharing parameter '{param.name}' ({hex(id(param))}) with {len(self.children)} children")
+			log.info( f" {type(self).__name__}: Sharing parameter '{param.name}' ({hex(id(param))}) with {len(self.children)} children")
 			self.add_param( param )
 			for child in self.children:
 				child.share_param( param )

@@ -1,7 +1,8 @@
 import numpy as np
 from typing import Any, Dict, List, Tuple, Type, Optional, Union
 from scipy.interpolate import CubicSpline, PchipInterpolator
-from .logging import lgm, exception_handled, log_timing
+import logging
+log = logging.getLogger(__name__)
 
 def series_interpolation(x: np.ndarray, y: np.ndarray, num_points: int, **kwargs ) -> Tuple[np.ndarray, np.ndarray]:
 	"""
@@ -24,7 +25,7 @@ def series_interpolation(x: np.ndarray, y: np.ndarray, num_points: int, **kwargs
 	if x.size != y.size:
 		raise ValueError("Input arrays x and y must have the same length.")
 
-	lgm().log( f"series_interpolation: {x.shape} {y.shape}")
+	log.info( f"series_interpolation: {x.shape} {y.shape}")
 	itype: str = kwargs.get( 'type', 'monotone' )
 	x_interp = np.linspace(x.min(), x.max(), num_points)
 	interp_function = CubicSpline(x, y) if (itype == 'spline') else PchipInterpolator(x, y)

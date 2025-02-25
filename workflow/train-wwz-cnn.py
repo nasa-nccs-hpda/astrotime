@@ -11,7 +11,7 @@ from astrotime.config.context import astrotime_initialize
 
 @hydra.main(version_base=None, config_path="../config", config_name="sinusoid_period.wwz")
 def my_app(cfg: DictConfig) -> None:
-	device: torch.device = astrotime_initialize( cfg ) #, log_level=logging.DEBUG )
+	device: torch.device = astrotime_initialize( cfg )
 	encoder = ValueEncoder( cfg.transform, device )
 	sinusoid_loader = ncSinusoidLoader( cfg.data )
 	embedding = WaveletEmbeddingLayer( cfg.transform, device)

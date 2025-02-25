@@ -1,6 +1,5 @@
-import torch, time, traceback, pickle, shutil
-from typing import Any, Dict, List, Optional
-from astrotime.util.logging import lgm
+import torch, time, traceback, shutil
+from typing import Any, Dict, Optional
 from torch.optim.optimizer import Optimizer
 from astrotime.util.config import TSet
 from omegaconf import DictConfig
@@ -42,17 +41,17 @@ class CheckpointManager(object):
 		if cp_exists:
 			try:
 				train_state = self._load_state( tset )
-				lgm().log(f"Loaded model checkpoint from {cppath}, update_model = {update_model}", display=True)
+				log.info(f"Loaded model checkpoint from {cppath}, update_model = {update_model}", display=True)
 				if update_model:
 					self.model.load_state_dict( train_state.pop('model_state_dict') )
 					self.optimizer.load_state_dict( train_state.pop('optimizer_state_dict') )
 			except Exception as e:
-				lgm().log(f"Unable to load model from {cppath}: {e}", display=True)
+				log.info(f"Unable to load model from {cppath}: {e}", display=True)
 				traceback.print_exc()
 				return None
 		else:
-			lgm().log( f"No checkpoint file found at '{cppath}': starting from scratch.")
-		lgm().log( f" ------ Saving checkpoints to '{cppath}' ------ " )
+			log.info( f"No checkpoint file found at '{cppath}': starting from scratch.")
+		log.info( f" ------ Saving checkpoints to '{cppath}' ------ " )
 		return train_state
 
 	def clear_checkpoints( self ):
@@ -60,7 +59,7 @@ class CheckpointManager(object):
 			cppath = self.checkpoint_path(tset)
 			try:
 				os.remove(cppath)
-				lgm().log(f" >> Clearing state: {cppath}")
+				log.info(f" >> Clearing state: {cppath}")
 			except FileNotFoundError: pass
 
 

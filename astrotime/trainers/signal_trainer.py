@@ -1,15 +1,16 @@
-from typing import Any, Dict, List, Tuple, Type, Optional, Union
+from typing import Dict, Tuple
 from astrotime.util.config import TSet
 from omegaconf import DictConfig
 from .checkpoints import CheckpointManager
 from .accumulators import LossAccumulator
 from astrotime.encoders.base import Encoder
-import xarray as xa, math, random
-from astrotime.util.math import logspace, shp
+import xarray as xa
+from astrotime.util.math import shp
 from astrotime.loaders.base import DataLoader
-from astrotime.util.logging import lgm, exception_handled
 import time, torch, numpy as np
 from torch import nn, optim, Tensor
+import logging
+log = logging.getLogger(__name__)
 
 def tocpu( c, idx=0 ):
     if isinstance( c, Tensor ):
@@ -50,9 +51,9 @@ class SignalTrainer(object):
         self.global_time = time.time()
 
     def log_layer_stats(self):
-        lgm().log( f" Model layer stats:")
+        log.info( f" Model layer stats:")
         for stats in  self.exec_stats:
-            lgm().log(f"{stats[0]}: dt={stats[1]}s")
+            log.info(f"{stats[0]}: dt={stats[1]}s")
 
     def get_optimizer(self) -> optim.Optimizer:
          if   self.cfg.optim == "rms":  return optim.RMSprop( self.model.parameters(), lr=self.cfg.lr )
@@ -117,7 +118,7 @@ class SignalTrainer(object):
                     t0 = time.time()
                     input, target = self.get_batch(ibatch)
                     self.global_time = time.time()
-                    lgm().log( f"TRAIN BATCH-{ibatch}: input={shp(input)}, target={shp(target)}")
+                    log.info( f"TRAIN BATCH-{ibatch}: input={shp(input)}, target={shp(target)}")
                     result: Tensor = self.model( input )
                     loss: Tensor = self.loss_function( result.squeeze(), target.squeeze() )
                     self.update_weights(loss)

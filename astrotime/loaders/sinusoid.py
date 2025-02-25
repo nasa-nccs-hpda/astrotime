@@ -1,12 +1,11 @@
 import time, numpy as np, xarray as xa
 from astrotime.loaders.base import DataLoader
 from typing import List, Optional, Dict, Type, Union, Tuple
-from astrotime.util.logging import lgm, exception_handled
+from util.logging import exception_handled
 from glob import glob
 from omegaconf import DictConfig, OmegaConf
-from astrotime.encoders.base import Encoder
-from torch import Tensor, device
-import torch
+import logging
+log = logging.getLogger(__name__)
 
 class SinusoidLoader(DataLoader):
 
@@ -85,7 +84,7 @@ class ncSinusoidLoader(DataLoader):
 				f: xa.DataArray = self.dataset['f']
 				self.current_file = file_index
 				self._nelements = self.dataset.sizes['elem']
-				lgm().log(f"Loaded {self._nelements} sinusoids in {time.time()-t0:.3f} sec from file: {file_path}, freq range = [{f.values.min():.3f}, {f.values.max():.3f}]")
+				log.info(f"Loaded {self._nelements} sinusoids in {time.time()-t0:.3f} sec from file: {file_path}, freq range = [{f.values.min():.3f}, {f.values.max():.3f}]")
 				return True
 		return False
 
@@ -101,7 +100,7 @@ class ncSinusoidLoader(DataLoader):
 		self.load_file(file_index)
 		bstart = (batch_index % self.batches_per_file) * self.cfg.batch_size
 		result = self.dataset.isel( elem=slice(bstart,bstart+self.cfg.batch_size))
-		lgm().log( f" ----> BATCH-{file_index}.{batch_index}: bstart={bstart}, batch_size={self.cfg.batch_size}, batches_per_file={self.batches_per_file}, y{result['y'].shape} t{result['t'].shape} p{result['p'].shape}, dt={time.time()-t0:.4f} sec")
+		log.info( f" ----> BATCH-{file_index}.{batch_index}: bstart={bstart}, batch_size={self.cfg.batch_size}, batches_per_file={self.batches_per_file}, y{result['y'].shape} t{result['t'].shape} p{result['p'].shape}, dt={time.time()-t0:.4f} sec")
 		return result
 
 	def get_dataset(self, dset_idx: int) -> xa.Dataset:

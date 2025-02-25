@@ -1,9 +1,11 @@
 
 from typing import Any, Mapping, Sequence, Tuple, Union, List, Dict, Literal, Optional
-from astrotime.util.logging import lgm, exception_handled, log_timing, shp
+from util.logging import exception_handled, log_timing, shp
 import time, numpy as np, xarray as xa, torch
 from astrotime.util.env import Array
 from torch import Tensor
+import logging
+log = logging.getLogger(__name__)
 
 class TrainingFilter(object):
 
@@ -57,7 +59,7 @@ class RandomDownsample(TrainingFilter):
 # 		nsr = np.interp(self.noise, self.param_domain, self.logspace)
 # 		spower = np.mean(y*y)
 # 		std = np.sqrt(spower * nsr)
-# 		lgm().log(f"Add noise: noise={self.noise:.3f}, nsr={nsr:.3f}, spower={spower:.3f}, std={std:.3f}")
+# 		log.info(f"Add noise: noise={self.noise:.3f}, nsr={nsr:.3f}, spower={spower:.3f}, std={std:.3f}")
 # 		self.current_noise = np.random.normal(0.0, std, size=y.shape[1])
 # 		y = y + self.current_noise
 # 		return x, y

@@ -4,8 +4,10 @@ from matplotlib.text import Annotation
 from matplotlib.axes import Axes
 from matplotlib.ticker import NullLocator
 from typing import Any, Dict, List, Tuple, Type, Optional, Union
-from astrotime.util.logging import lgm, exception_handled, log_timing
+from util.logging import exception_handled, log_timing
 from .param import Number, Parameter, STParam, STFloatParam, STFloatValuesParam, Parameterized
+import logging
+log = logging.getLogger(__name__)
 
 def bounds( y: np.ndarray ) -> Tuple[float,float]:
 	ymin, ymax = y.min(), y.max()
@@ -80,7 +82,7 @@ class SignalPlotFigure(object):
 		for aid, sp in enumerate(self.sparms.values()):
 			sax = plt.axes((0.1, 0.03*aid, 0.55, 0.03))
 			sp.widget(sax, self.callbacks)
-		lgm().log(f"SignalPlotFigure._setup complete")
+		log.info(f"SignalPlotFigure._setup complete")
 
 	@exception_handled
 	def update(self, val: Any = None, **kwargs):
@@ -89,4 +91,4 @@ class SignalPlotFigure(object):
 	@exception_handled
 	def show(self):
 		plt.show()
-		lgm().log(f"SignalPlotFigure.show complete")
+		log.info(f"SignalPlotFigure.show complete")

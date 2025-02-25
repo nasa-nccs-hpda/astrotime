@@ -1,10 +1,9 @@
-import math, time, numpy as np
-from .param import Number, STParam, STIntParam, STFloatParam, Parameterized
+import numpy as np
+from .param import STIntParam
 from .base import SignalPlot, bounds
 from matplotlib.lines import Line2D
-import xarray as xa
-from typing import Any, Dict, List, Tuple, Type, Optional, Union
-from astrotime.util.logging import lgm, exception_handled, log_timing
+from typing import Dict, List
+from util.logging import exception_handled
 
 class SignalTransformPlot(SignalPlot):
 
@@ -36,7 +35,7 @@ class SignalTransformPlot(SignalPlot):
 
 	@exception_handled
 	def update_peak_interp(self, xp: np.ndarray, yp: np.ndarray):
-		lgm().log(f"\n ** update_peak_interp: xp{list(xp.shape)} ({xp.mean():.3f}), yp{list(yp.shape)} ({yp.mean():.3f}) " )
+		log.info(f"\n ** update_peak_interp: xp{list(xp.shape)} ({xp.mean():.3f}), yp{list(yp.shape)} ({yp.mean():.3f}) " )
 		if self.peak_plot is not None:
 			try: self.peak_plot.remove()
 			except: pass
@@ -67,4 +66,4 @@ class SignalTransformPlot(SignalPlot):
 	# 		if self.ofac > 1: self.update_peak_interp( xp, yp )
 	# 		error = abs(xp[mindx] - self.transform.signal.freq)
 	# 		self.display_text( f"Error: {error:.5f}" )
-	# 		lgm().log( f" ** UPDATE ANNOTATIONS in time={time.time()-t0:.4f} sec")
+	# 		log.info( f" ** UPDATE ANNOTATIONS in time={time.time()-t0:.4f} sec")

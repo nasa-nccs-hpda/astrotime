@@ -4,5 +4,6 @@ defaults:
   - transform: "wwz"
   - data: "sinusoids.nc"
   - model: "baseline_cnn"
+  - override hydra/job_logging: custom
   - _self_
 
