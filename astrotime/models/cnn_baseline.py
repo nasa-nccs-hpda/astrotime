@@ -2,7 +2,7 @@ from torch import nn
 import torch, math
 from astrotime.util.math import is_power_of_two
 from omegaconf import DictConfig, OmegaConf
-from astrotime.encoders.base import Encoder
+from collections import OrderedDict
 from typing import Any, Dict, List, Optional, Tuple, Mapping
 
 def add_cnn_block( model: nn.Sequential, nchannels: int, num_input_features: int, cfg: DictConfig ) -> int:
@@ -25,7 +25,7 @@ def add_dense_block( model: nn.Sequential, in_channels:int, cfg: DictConfig ):
 	model.append( nn.Linear( cfg.dense_channels, cfg.out_channels ) )
 
 def get_model_from_cfg( cfg: DictConfig, device: torch.device, **kwargs  ) -> nn.Module:
-	model: nn.Sequential = nn.Sequential( **kwargs.get('embedding',{}) )
+	model: nn.Sequential = nn.Sequential( kwargs.get('embedding',OrderedDict()) )
 	cnn_channels = cfg.cnn_channels
 	num_input_features = cfg.nfeatures
 	for iblock in range(cfg.num_blocks):
