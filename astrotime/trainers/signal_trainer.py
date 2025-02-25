@@ -95,6 +95,16 @@ class SignalTrainer(object):
         input: Tensor = torch.concat((t[:, None, :], y), dim=1)
         return input, target
 
+    def exec_validation(self):
+        self.model.train(False)
+        losses = []
+        for ibatch in range(0, self.loader.nbatches_validation):
+            input, target = self.get_batch(self.loader.nbatches + ibatch)
+            result: Tensor = self.model(input)
+            loss: Tensor = self.loss_function(result.squeeze(), target.squeeze())
+            losses.append(loss.item())
+        return np.array(losses)
+
     def train(self):
         print(f"SignalTrainer: {self.loader.nbatches} train batches, {self.loader.nbatches_validation} validation batches, {self.nepochs} epochs, nelements = {self.loader.nelements}, device={self.device}")
         self.initialize_checkpointing()
@@ -115,16 +125,13 @@ class SignalTrainer(object):
                     if (ibatch % log_interval == 0) or ((ibatch < 5) and (epoch==0)):
                         aloss = np.array(losses)
                         print(f"E-{epoch} B-{ibatch} loss={aloss.mean():.3f} ({aloss.min():.3f} -> {aloss.max():.3f}), dt={time.time()-t0:.4f} sec")
-                        # self.log_layer_stats()
                         losses = []
 
-                self.model.train(False)
-                losses, mdata = [], {}
-                acc_losses = self.accumulate_losses(TSet.Train, mdata)
-                for ibatch in range(0, self.loader.nbatches_validation):
-                    input, target = self.get_batch( self.loader.nbatches + ibatch )
-                    result: Tensor = self.model( input )
-                    loss: Tensor = self.loss_function( result.squeeze(), target.squeeze() )
-                    losses.append(loss.item())
+                acc_losses = self.accumulate_losses(TSet.Train, {})
+                vloss: np.ndarray = self.exec_validation()
+                print(f"E-{epoch} acc_losses: {acc_losses},  validation loss={vloss.mean():.3f} ({vloss.min():.3f} -> {vloss.max():.3f})")
 
-                print( f"E-{epoch} acc_losses: {acc_losses},  validation loss={np.array(losses).mean():.3f}" )
+
+
+
+
