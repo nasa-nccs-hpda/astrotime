@@ -2,8 +2,8 @@ import time, argparse, traceback, numpy as np
 from typing import Any, Dict, List, Tuple, Type, Optional, Union
 import xarray as xa
 
-# rootdir = "/explore/nobackup/projects/ilab/data/astro_sigproc/sinusoids/"
-rootdir = "/Users/tpmaxwel/Data/astro_sigproc/sinusoids"
+rootdir = "/explore/nobackup/projects/ilab/data/astrotime/sinusoids/"
+# rootdir = "/Users/tpmaxwel/Data/astro_sigproc/sinusoids"
 
 fstart = 0
 nfiles = 2
