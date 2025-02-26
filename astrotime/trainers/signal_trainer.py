@@ -73,7 +73,7 @@ class SignalTrainer(object):
     def initialize_checkpointing(self):
         if self.cfg.refresh_state:
             self._checkpoint_manager.clear_checkpoints()
-            print(" *** No checkpoint loaded: training from scratch *** ")
+            print("\n *** No checkpoint loaded: training from scratch *** \n")
         else:
             self.train_state = self._checkpoint_manager.load_checkpoint(TSet.Train, update_model=True)
             self.epoch0      = tocpu(self.train_state.get('epoch', 0))
@@ -81,6 +81,7 @@ class SignalTrainer(object):
             self.epoch_loss  = tocpu(self.train_state.get('loss', float('inf')))
             self.start_epoch = int(self.epoch0)
             self.nepochs += self.start_epoch
+            print(f"\n Loading checkpoint from {self._checkpoint_manager.checkpoint_path(TSet.Train)}: epoch={self.start_epoch}, batch={self.start_batch}, loss={self.epoch_loss:.3f} \n")
 
     def update_weights(self, loss: Tensor):
         self.optimizer.zero_grad()
