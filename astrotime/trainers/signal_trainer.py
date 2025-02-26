@@ -36,7 +36,6 @@ class SignalTrainer(object):
         self.epoch_loss: float = 0.0
         self.epoch0: int = 0
         self.nepochs = self.cfg.nepochs
-        self._losses: Dict[TSet, LossAccumulator] = {}
         self.train_state = None
         self.global_time = None
         self.exec_stats = []
@@ -60,35 +59,22 @@ class SignalTrainer(object):
          elif self.cfg.optim == "adam": return optim.Adam(    self.model.parameters(), lr=self.cfg.lr )
          else: raise RuntimeError( f"Unknown optimizer: {self.cfg.optim}")
 
-    def accumulate_losses(self, tset: TSet, mdata: Dict) -> Dict[str, float]:
-        losses: LossAccumulator = self.get_losses(TSet.Train)
-        acc_losses: Dict[str, float] = losses.accumulate_losses()
-        if len(acc_losses) > 0:
-            self._checkpoint_manager.save_checkpoint(tset, acc_losses, mdata)
-        return acc_losses
-
-    def get_losses(self, tset: TSet) -> LossAccumulator:
-        return self._losses.setdefault(tset, LossAccumulator())
-
     def initialize_checkpointing(self):
         if self.cfg.refresh_state:
             self._checkpoint_manager.clear_checkpoints()
             print("\n *** No checkpoint loaded: training from scratch *** \n")
         else:
-            self.train_state = self._checkpoint_manager.load_checkpoint(TSet.Train, update_model=True)
-            self.epoch0      = tocpu(self.train_state.get('epoch', 0))
-            self.start_batch = tocpu(self.train_state.get('batch', 0))
-            self.epoch_loss  = tocpu(self.train_state.get('loss', float('inf')))
+            self.train_state = self._checkpoint_manager.load_checkpoint( TSet.Train, update_model=True )
+            self.epoch0      = self.train_state.get('epoch', 0)
+            self.start_batch = self.train_state.get('batch', 0)
             self.start_epoch = int(self.epoch0)
-            self.nepochs += self.start_epoch
-            print(f"\n Loading checkpoint from {self._checkpoint_manager.checkpoint_path(TSet.Train)}: epoch={self.start_epoch}, batch={self.start_batch}, loss={self.epoch_loss:.3f} \n")
+            self.nepochs    += self.start_epoch
+            print(f"\n Loading checkpoint from {self._checkpoint_manager.checkpoint_path(TSet.Train)}: epoch={self.start_epoch}, batch={self.start_batch}\n")
 
     def update_weights(self, loss: Tensor):
         self.optimizer.zero_grad()
         loss.backward()
         self.optimizer.step()
-        losses: LossAccumulator = self.get_losses(TSet.Train)
-        losses.register_loss('result', loss)
 
     def get_batch(self, batch_index) -> Tuple[torch.Tensor,torch.Tensor]:
         dset: xa.Dataset = self.loader.get_batch(batch_index)
@@ -129,9 +115,9 @@ class SignalTrainer(object):
                         print(f"E-{epoch} B-{ibatch} loss={aloss.mean():.3f} ({aloss.min():.3f} -> {aloss.max():.3f}), dt={time.time()-t0:.4f} sec")
                         losses = []
 
-                acc_losses = self.accumulate_losses(TSet.Train, {})
+                self._checkpoint_manager.save_checkpoint( TSet.Train, epoch, 0 )
                 vloss: np.ndarray = self.exec_validation()
-                print(f"E-{epoch} acc_losses: {acc_losses},  validation loss={vloss.mean():.3f} ({vloss.min():.3f} -> {vloss.max():.3f})")
+                print(f"E-{epoch} validation loss={vloss.mean():.3f} ({vloss.min():.3f} -> {vloss.max():.3f})")
 
 
 

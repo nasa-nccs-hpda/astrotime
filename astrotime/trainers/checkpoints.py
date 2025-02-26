@@ -17,23 +17,17 @@ class CheckpointManager(object):
 		self.cfg = cfg
 		self.optimizer = optimizer
 
-	def save_checkpoint(self, tset: TSet, acc_losses: Dict[str,float], mdata: Dict  ) -> str:
-		t0 = time.time()
-		train_mdata = dict( **acc_losses, **mdata )
-		checkpoint = dict(  model_state_dict=self.model.state_dict(), optimizer_state_dict=self.optimizer.state_dict(), **train_mdata )
+	def save_checkpoint(self, tset: TSet, epoch: int, batch: int  ) -> str:
+		checkpoint = dict(  model_state_dict=self.model.state_dict(), optimizer_state_dict=self.optimizer.state_dict(), epoch=epoch, batch=batch )
 		cpath = self.checkpoint_path(tset)
 		if os.path.isfile(cpath):
 			shutil.copyfile( cpath, self.checkpoint_path(tset,backup=True) )
 		torch.save( checkpoint, cpath )
-		print( acc_losses )
-		slosses = {  k: f'{v:.3f}' for k,v in acc_losses.items() if v is not None}
-		print(f" *** SAVE {tset.name} checkpoint to {cpath}, dt={time.time()-t0:.4f} sec, losses={slosses}" )
 		return cpath
 
 	def _load_state(self, tset: TSet ) -> Dict[str,Any]:
-		# sdevice = f'cuda:{cfg().training.gpu}' if torch.cuda.is_available() else 'cpu'
 		cpath = self.checkpoint_path(tset)
-		checkpoint = torch.load( cpath, map_location='cpu' ) # torch.device(sdevice) )
+		checkpoint = torch.load( cpath, map_location='cpu' )
 		return checkpoint
 
 	def load_checkpoint( self, tset: TSet = TSet.Train, **kwargs ) -> Optional[Dict[str,Any]]:
