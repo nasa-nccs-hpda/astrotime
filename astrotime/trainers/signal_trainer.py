@@ -90,7 +90,7 @@ class SignalTrainer(object):
             result: Tensor = self.model(input)
             loss: Tensor = self.loss_function(result.squeeze(), target.squeeze())
             losses.append(loss.item())
-        return np.array(losses)
+        return np.concatenate(losses,0)
 
     def train(self):
         print(f"SignalTrainer: {self.loader.nbatches} train batches, {self.loader.nbatches_validation} validation batches, {self.nepochs} epochs, nelements = {self.loader.nelements}, device={self.device}")
@@ -117,6 +117,7 @@ class SignalTrainer(object):
                 self._checkpoint_manager.save_checkpoint( TSet.Train, epoch, 0 )
                 vloss: np.ndarray = self.exec_validation()
                 print(f"E-{epoch} validation loss={vloss.mean():.3f} ({vloss.min():.3f} -> {vloss.max():.3f})")
+
 
 
 
