@@ -15,6 +15,7 @@ class SignalDataPlot(SignalPlot):
 		self.y = y
 		self.target = target
 		self.annotations: List[str] = [a.lower() for a in annotations] if (annotations is not None) else []
+		self.colors = ['blue', 'green'] + [ 'yellow' ] * 16
 		self.ofac = kwargs.get('upsample_factor',1)
 		self.lines: Dict[str,Line2D] = {}
 		self.add_param( STIntParam('element', (0,self.y.shape[0])  ) )
@@ -22,12 +23,13 @@ class SignalDataPlot(SignalPlot):
 
 	@exception_handled
 	def _setup(self):
-		ydata: np.ndarray = self.y[self.element] if self.y.ndim == 3 else self.y[self.element]
+		ydata: np.ndarray = self.y[self.element]
 		xdata: np.ndarray = self.x if self.x.ndim == 1 else self.x[self.element]
-		self.lines['y0'], = self.ax.plot(xdata, ydata[:,0], label='y0', color='blue', marker="o", linewidth=1, markersize=3 )
-		self.lines['y1'], = self.ax.plot(xdata, ydata[:,1], label='y1', color='green', marker=".", linewidth=1, markersize=1)
-		for ic in range(2,5):
-			self.lines[f'y{ic}'], = self.ax.plot(xdata, ydata[:,ic], label=f'y{ic}', color='yellow', marker=".", linewidth=1, markersize=1)
+		if ydata.ndim == 1:
+			self.lines['y'], = self.ax.plot(xdata, ydata, label='y', color='blue', marker="o", linewidth=1, markersize=3)
+		else:
+			for ic in range(0,ydata.ndim):
+				self.lines[f'y{ic}'], = self.ax.plot(xdata, ydata[:,ic], label=f'y{ic}', color=self.colors[ic], marker=".", linewidth=1, markersize=1)
 		if self.target is not None:
 			self.lines['target'] = self.ax.axvline(x=1.0/self.target[self.element], color='r', linestyle='-')
 		self.ax.title.set_text(self.name)
@@ -45,11 +47,12 @@ class SignalDataPlot(SignalPlot):
 
 	@exception_handled
 	def update(self, val):
-		ydata: np.ndarray = self.y[self.element] if self.y.ndim == 3 else self.y[self.element]
-		self.lines['y0'].set_ydata(ydata[:,0])
-		self.lines['y1'].set_ydata(ydata[:,1])
-		for ic in range(2, 5):
-			self.lines[f'y{ic}'].set_ydata(ydata[:,ic])
+		ydata: np.ndarray = self.y[self.element]
+		if ydata.ndim == 1:
+			self.lines['y'].set_ydata(ydata)
+		else:
+			for ic in range(0,ydata.ndim):
+				self.lines[f'y{ic}'].set_ydata(ydata[:,ic])
 		if self.target is not None:
 			self.lines['target'].remove()
 			self.lines['target'] = self.ax.axvline(x=1.0/self.target[self.element], color='r', linestyle='-')
