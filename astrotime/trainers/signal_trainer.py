@@ -82,7 +82,7 @@ class SignalTrainer(object):
         input: Tensor = torch.concat((t[:, None, :], y), dim=1)
         return input, target
 
-    def exec_validation(self, verbose = False):
+    def exec_validation(self, threshold = None):
         self.model.train(False)
         losses = []
         print( f"Exec validation: {self.loader.nbatches_validation} batches")
@@ -90,7 +90,7 @@ class SignalTrainer(object):
             input, target = self.get_batch(self.loader.nbatches + ibatch)
             result: Tensor = self.model(input)
             loss: float = self.loss_function(result.squeeze(), target.squeeze()).item()
-            if verbose and (loss > 0.1):
+            if (threshold is not None) and (loss > threshold):
                 print(f" B-{ibatch} loss = {loss:.3f}")
             losses.append(loss)
         return np.array(losses)

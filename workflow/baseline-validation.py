@@ -19,7 +19,7 @@ def my_app(cfg: DictConfig) -> None:
 
 	trainer = SignalTrainer( cfg.train, sinusoid_loader, encoder, model )
 	trainer.initialize_checkpointing()
-	losses: np.ndarray = trainer.exec_validation( True )
+	losses: np.ndarray = trainer.exec_validation( threshold=1.0 )
 	print( f"Validation Loss{list(losses.shape)}: mean={losses.mean():.3f} ({losses.min():.3f} -> {losses.max():.3f})")
 
 if __name__ == "__main__":
