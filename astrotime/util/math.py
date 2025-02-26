@@ -2,6 +2,7 @@ import numpy as np
 from typing import List, Optional, Dict, Type, Any
 import torch
 from torch import Tensor
+Array = torch.Tensor | np.ndarray
 
 def is_power_of_two(n: int) -> bool:
 	if n <= 0: return False
@@ -31,3 +32,9 @@ def npnorm(x: np.ndarray, dim: int) -> np.ndarray:
 	m: np.ndarray = x.mean( axis=dim, keepdims=True)
 	s: np.ndarray = x.std( axis=dim, keepdims=True)
 	return (x - m) / s
+
+def hasNaN(x: Array) -> bool:
+	return np.isnan(x).any() if type(x) is np.ndarray else torch.isnan(x).any()
+
+def nan_mask(x: np.ndarray, axis=0) -> np.ndarray:
+	return ~np.any( np.isnan(x), axis=axis )

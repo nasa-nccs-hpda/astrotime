@@ -9,9 +9,6 @@ log = logging.getLogger("astrotime")
 
 def shp(x): return list(x.shape)
 
-def hasNaN(x: Array) -> bool:
-    return np.isnan(x).any() if type(x) is np.ndarray else torch.isnan(x).any()
-
 def exception_handled(func):
     def wrapper( *args, **kwargs ):
         try:
