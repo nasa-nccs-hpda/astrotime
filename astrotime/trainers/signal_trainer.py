@@ -85,10 +85,12 @@ class SignalTrainer(object):
     def exec_validation(self):
         self.model.train(False)
         losses = []
+        print( f"Exec validation: {self.loader.nbatches_validation} batches")
         for ibatch in range(0, self.loader.nbatches_validation):
             input, target = self.get_batch(self.loader.nbatches + ibatch)
             result: Tensor = self.model(input)
             loss: Tensor = self.loss_function(result.squeeze(), target.squeeze())
+            print(f" B-{ibatch} loss{list(loss.shape)}=> {loss.mean():.3f} ({loss.min():.3f} -> {loss.max():.3f})")
             losses.append(loss.item())
         return np.concatenate(losses,0)
 
