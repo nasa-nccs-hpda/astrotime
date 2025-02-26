@@ -18,7 +18,7 @@ def exception_handled(func):
             return func( *args, **kwargs )
         except:
             log.error( f" Error in {func}:" )
-            traceback.print_exc()
+            log.error( traceback.format_exc(100) )
     return wrapper
 
 def log_timing(f):
@@ -32,4 +32,5 @@ def log_timing(f):
             return result
         except:
             log.error( f" Error in {f}:" )
+            log.error(traceback.format_exc(100))
     return wrap
