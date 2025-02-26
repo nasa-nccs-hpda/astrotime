@@ -89,11 +89,6 @@ class ncSinusoidLoader(DataLoader):
 		return False
 
 	@exception_handled
-	def get_data_element( self, batch_index: int, element_index: int ) -> xa.DataArray:
-		self.load_file(batch_index)
-		return self.get_elem( self.dataset, element_index )
-
-	@exception_handled
 	def get_batch( self, batch_index: int ) -> xa.Dataset:
 		t0 = time.time()
 		file_index = batch_index // self.batches_per_file
