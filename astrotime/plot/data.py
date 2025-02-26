@@ -1,13 +1,14 @@
-import numpy as np
+import logging, numpy as np
 from .param import STIntParam
 from .base import SignalPlot, bounds
 from matplotlib.lines import Line2D
 from typing import Dict, List
 from astrotime.util.logging import exception_handled
+log = logging.getLogger(__name__)
 
-class SignalTransformPlot(SignalPlot):
+class SignalDataPlot(SignalPlot):
 
-	def __init__(self, name: str, x: np.ndarray, y: np.ndarray, target: np.ndarray, annotations: List[str] = None, **kwargs):
+	def __init__(self, name: str, x: np.ndarray, y: np.ndarray, target: np.ndarray = None, annotations: List[str] = None, **kwargs):
 		SignalPlot.__init__(self, **kwargs)
 		self.name = name
 		self.x = x
@@ -27,7 +28,8 @@ class SignalTransformPlot(SignalPlot):
 		self.lines['y1'], = self.ax.plot(xdata, ydata[:,1], label='y1', color='green', marker=".", linewidth=1, markersize=1)
 		for ic in range(2,5):
 			self.lines[f'y{ic}'], = self.ax.plot(xdata, ydata[:,ic], label=f'y{ic}', color='yellow', marker=".", linewidth=1, markersize=1)
-		self.lines['target'] = self.ax.axvline(x=1.0/self.target[self.element], color='r', linestyle='-')
+		if self.target is not None:
+			self.lines['target'] = self.ax.axvline(x=1.0/self.target[self.element], color='r', linestyle='-')
 		self.ax.title.set_text(self.name)
 		self.ax.title.set_fontsize(8)
 		self.ax.title.set_fontweight('bold')
@@ -48,8 +50,9 @@ class SignalTransformPlot(SignalPlot):
 		self.lines['y1'].set_ydata(ydata[:,1])
 		for ic in range(2, 5):
 			self.lines[f'y{ic}'].set_ydata(ydata[:,ic])
-		self.lines['target'].remove()
-		self.lines['target'] = self.ax.axvline(x=1.0/self.target[self.element], color='r', linestyle='-')
+		if self.target is not None:
+			self.lines['target'].remove()
+			self.lines['target'] = self.ax.axvline(x=1.0/self.target[self.element], color='r', linestyle='-')
 		self.ax.set_ylim(*bounds(ydata))
 		if self.x.ndim == 2:
 			xdata: np.ndarray = self.x[self.element]
