@@ -26,3 +26,8 @@ def tnorm(x: Tensor, dim: int) -> Tensor:
 	m: Tensor = x.mean( dim=dim, keepdim=True)
 	s: Tensor = torch.std( x, dim=dim, keepdim=True)
 	return (x - m) / s
+
+def npnorm(x: np.ndarray, dim: int) -> np.ndarray:
+	m: np.ndarray = x.mean( axis=dim, keepdims=True)
+	s: np.ndarray = x.std( axis=dim, keepdims=True)
+	return (x - m) / s
