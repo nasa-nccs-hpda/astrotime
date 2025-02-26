@@ -79,7 +79,8 @@ class SignalTrainer(object):
     def get_batch(self, batch_index) -> Tuple[torch.Tensor,torch.Tensor]:
         dset: xa.Dataset = self.loader.get_batch(batch_index)
         target: Tensor = torch.from_numpy(dset['p'].values[:, None]).to(self.device)
-        t, y = self.encoder.encode_batch( dset['t'].values, dset['y'].values )
+        max_series_len = dset['slen'].values.min()
+        t, y = self.encoder.encode_batch( dset['t'].values[:,:max_series_len], dset['y'].values[:,:max_series_len] )
         input: Tensor = torch.concat((t[:, None, :], y), dim=1)
         return input, target
 

@@ -25,10 +25,11 @@ class WaveletEncoder(Encoder):
 		t0 = time.time()
 		concat_size = kwargs.get('concat_size',100)
 		amps, phases, coeffs = [], [], ([], [], [])
+		max_series_length = dset['slen'].min()
 		y1, x1, wwz_start_time, wwz_end_time = [], [], time.time(), time.time()
 		for idx, (y,x) in enumerate(zip(dset['y'],dset['x'])):
 			x, y = self.apply_filters(x,y,dim=0)
-			x0: int = random.randint(0, self.cfg.max_series_length - self.series_length)
+			x0: int = random.randint(0, max_series_length - self.series_length)
 			ys: Tensor = torch.FloatTensor( y[x0:x0 + self.series_length] ).to(self.device)
 			xs: Tensor = torch.FloatTensor( x[x0:x0 + self.series_length] ).to(self.device)
 			y1.append(torch.unsqueeze(tnorm(ys, dim=0), dim=0))
@@ -50,7 +51,7 @@ class WaveletEncoder(Encoder):
 
 	def encode_batch(self, x: np.ndarray, y: np.ndarray) -> Tuple[Tensor, Tensor]:
 		x, y = self.apply_filters(x, y, 1)
-		x0: int = random.randint(0, self.cfg.max_series_length - self.series_length)
+		x0: int = random.randint(0,  x.shape[1]-self.series_length )
 		Y: Tensor = torch.FloatTensor(y[:, x0:x0 + self.series_length] ).to(self.device)
 		X: Tensor = torch.FloatTensor(x[:, x0:x0 + self.series_length] ).to(self.device)
 		Y = tnorm(Y, dim=1)
