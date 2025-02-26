@@ -2,7 +2,6 @@ from typing import Dict, Tuple
 from astrotime.util.config import TSet
 from omegaconf import DictConfig
 from .checkpoints import CheckpointManager
-from .accumulators import LossAccumulator
 from astrotime.encoders.base import Encoder
 import xarray as xa
 from astrotime.util.math import shp
@@ -79,8 +78,7 @@ class SignalTrainer(object):
     def get_batch(self, batch_index) -> Tuple[torch.Tensor,torch.Tensor]:
         dset: xa.Dataset = self.loader.get_batch(batch_index)
         target: Tensor = torch.from_numpy(dset['p'].values[:, None]).to(self.device)
-        max_series_len = dset['slen'].values.min()
-        t, y = self.encoder.encode_batch( dset['t'].values[:,:max_series_len], dset['y'].values[:,:max_series_len] )
+        t, y = self.encoder.encode_batch( dset['t'].values, dset['y'].values )
         input: Tensor = torch.concat((t[:, None, :], y), dim=1)
         return input, target
 
