@@ -17,10 +17,9 @@ class ValueEncoder(Encoder):
 	def encode_dset(self, dset: Dict[str,np.ndarray]) -> Tuple[Tensor,Tensor]:
 		with (self.device):
 			y1, x1 = [], []
-			max_series_length = dset['slen'].min()
 			for idx, (y,x) in enumerate(zip(dset['y'],dset['x'])):
 				x,y = self.apply_filters(x,y,dim=0)
-				x0: int = random.randint(0, max_series_length - self.cfg.series_length)
+				x0: int = random.randint(0, y.shape[0] - self.cfg.series_length)
 				ys: Tensor = torch.FloatTensor( y[x0:x0 + self.cfg.series_length] ).to(self.device)
 				xs: Tensor = torch.FloatTensor( x[x0:x0 + self.cfg.series_length] ).to(self.device)
 				y1.append( torch.unsqueeze( tnorm(ys, dim=0), dim=0) )

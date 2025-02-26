@@ -25,7 +25,6 @@ class WaveletEncoder(Encoder):
 		t0 = time.time()
 		concat_size = kwargs.get('concat_size',100)
 		amps, phases, coeffs = [], [], ([], [], [])
-		max_series_length = dset['slen'].min()
 		y1, x1, wwz_start_time, wwz_end_time = [], [], time.time(), time.time()
 		for idx, (y,x) in enumerate(zip(dset['y'],dset['x'])):
 			x, y = self.apply_filters(x,y,dim=0)
