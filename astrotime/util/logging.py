@@ -5,7 +5,7 @@ from time import time
 import threading, time, sys, traceback
 Array = torch.Tensor | np.ndarray
 import logging
-log = logging.getLogger(__name__)
+log = logging.getLogger("astrotime")
 
 def shp(x): return list(x.shape)
 

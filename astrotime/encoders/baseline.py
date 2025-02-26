@@ -5,7 +5,7 @@ from torch import Tensor, device
 from omegaconf import DictConfig, OmegaConf
 from astrotime.util.math import tmean, tstd, tmag, tnorm, shp
 import logging
-log = logging.getLogger(__name__)
+log = logging.getLogger("astrotime")
 
 
 class ValueEncoder(Encoder):

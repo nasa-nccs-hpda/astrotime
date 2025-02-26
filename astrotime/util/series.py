@@ -2,7 +2,7 @@ import numpy as np
 from typing import Any, Dict, List, Tuple, Type, Optional, Union
 from scipy.interpolate import CubicSpline, PchipInterpolator
 import logging
-log = logging.getLogger(__name__)
+log = logging.getLogger("astrotime")
 
 def series_interpolation(x: np.ndarray, y: np.ndarray, num_points: int, **kwargs ) -> Tuple[np.ndarray, np.ndarray]:
 	"""

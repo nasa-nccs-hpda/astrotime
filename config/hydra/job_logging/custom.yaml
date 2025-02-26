@@ -6,7 +6,7 @@ handlers:
   file:
     class: logging.FileHandler
     formatter: simple
-    filename: ${platform.project_root}/logs/${train.version}.csv
+    filename: ${platform.project_root}/logs/astrotime.${train.version}.csv
 root:
   handlers: [file]
 

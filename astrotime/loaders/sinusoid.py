@@ -5,7 +5,7 @@ from astrotime.util.logging import exception_handled
 from glob import glob
 from omegaconf import DictConfig, OmegaConf
 import logging
-log = logging.getLogger(__name__)
+log = logging.getLogger("astrotime")
 
 class SinusoidLoader(DataLoader):
 

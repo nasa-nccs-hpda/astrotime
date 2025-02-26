@@ -1,7 +1,7 @@
 import numpy as np, xarray as xa
 from typing import List, Optional, Dict, Type, Tuple
 import logging
-log = logging.getLogger(__name__)
+log = logging.getLogger("astrotime")
 
 class DataLoader:
 

@@ -13,7 +13,7 @@ from numpy import sum, pi, cos, sin, arctan2, exp, log, sqrt, dot, arange
 from typing import Any, Dict, List, Tuple, Type, Optional, Union, Hashable
 from astrotime.util.env import Array, to_torch
 import logging
-log = logging.getLogger(__name__)
+log = logging.getLogger("astrotime")
 C0 = 1 / (8 * np.pi ** 2)
 
 def wwz(ys_: Array, ts_: Array, freq_: Array, tau_: Array, c: float = C0, rank: int=0) -> Tuple[Array, Array, Tuple[Array, Array, Array]]:

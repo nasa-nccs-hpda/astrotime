@@ -7,7 +7,7 @@ from astrotime.encoders.base import Encoder
 from astrotime.transforms.wwz import wwz
 from astrotime.util.math import logspace, tnorm
 import logging
-log = logging.getLogger(__name__)
+log = logging.getLogger("astrotime")
 
 class WaveletEncoder(Encoder):
 

@@ -4,7 +4,7 @@ from .base import SignalPlot, bounds
 from matplotlib.lines import Line2D
 from typing import Dict, List
 from astrotime.util.logging import exception_handled
-log = logging.getLogger(__name__)
+log = logging.getLogger("astrotime")
 
 class SignalDataPlot(SignalPlot):
 

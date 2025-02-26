@@ -10,7 +10,7 @@ from astrotime.loaders.base import DataLoader
 import time, torch, numpy as np
 from torch import nn, optim, Tensor
 import logging
-log = logging.getLogger(__name__)
+log = logging.getLogger("astrotime")
 
 def tocpu( c, idx=0 ):
     if isinstance( c, Tensor ):

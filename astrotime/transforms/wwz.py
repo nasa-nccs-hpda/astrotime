@@ -11,7 +11,7 @@ import  warnings, torch
 from torch import Tensor
 from typing import Any, Dict, List, Tuple, Type, Optional, Union, Hashable
 import logging
-log = logging.getLogger(__name__)
+log = logging.getLogger("astrotime")
 
 C0 = 1 / (8 * math.pi ** 2)
 

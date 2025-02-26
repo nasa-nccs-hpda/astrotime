@@ -1,7 +1,7 @@
 from omegaconf import DictConfig, OmegaConf
 import logging
 from hydra.core.hydra_config import HydraConfig
-log = logging.getLogger(__name__)
+log = logging.getLogger("astrotime")
 import torch
 
 def astrotime_initialize(config: DictConfig, **kwargs):

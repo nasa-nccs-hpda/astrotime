@@ -6,7 +6,7 @@ from omegaconf import DictConfig
 from torch import nn
 import os
 import logging
-log = logging.getLogger(__name__)
+log = logging.getLogger("astrotime")
 
 
 class CheckpointManager(object):
