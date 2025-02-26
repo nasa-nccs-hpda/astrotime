@@ -90,7 +90,8 @@ class SignalTrainer(object):
             input, target = self.get_batch(self.loader.nbatches + ibatch)
             result: Tensor = self.model(input)
             loss: float = self.loss_function(result.squeeze(), target.squeeze()).item()
-            if verbose: print(f" B-{ibatch} loss = {loss:.3f}")
+            if verbose and (loss > 0.1):
+                print(f" B-{ibatch} loss = {loss:.3f}")
             losses.append(loss)
         return np.array(losses)
 
