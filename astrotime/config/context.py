@@ -10,5 +10,5 @@ def astrotime_initialize(config: DictConfig, **kwargs):
     OmegaConf.resolve(config)
     device: torch.device = torch.device(f"cuda:{config.platform.gpu}" if (torch.cuda.is_available() and (config.platform.gpu >= 0)) else "cpu")
     # print(f" Hydra Output directory  : {HydraConfig.get().runtime.output_dir}")
-    print( f"\n Logging to {config.platform.project_root}/logs/{config.train.version}.csv \n")
+    print( f"\n Logging to {config.platform.project_root}/logs/astrotime.{config.train.version}.csv \n")
     return device
