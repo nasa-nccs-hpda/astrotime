@@ -118,8 +118,6 @@ class SignalTrainer(object):
                         losses = []
 
                 self._checkpoint_manager.save_checkpoint( TSet.Train, epoch, 0 )
-                vloss: np.ndarray = self.exec_validation()
-                print(f"E-{epoch} validation loss={vloss.mean():.3f} ({vloss.min():.3f} -> {vloss.max():.3f})")
 
 
 
