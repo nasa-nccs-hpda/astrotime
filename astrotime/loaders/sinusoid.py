@@ -84,6 +84,7 @@ class ncSinusoidLoader(DataLoader):
 				f: xa.DataArray = self.dataset['f']
 				self.current_file = file_index
 				self._nelements = self.dataset.sizes['elem']
+				self.dataset = xa.Dataset( dict( y=y, t=t, p=p, f=f ) )
 				log.info(f"Loaded {self._nelements} sinusoids in {time.time()-t0:.3f} sec from file: {file_path}, freq range = [{f.values.min():.3f}, {f.values.max():.3f}]")
 				return True
 		return False
