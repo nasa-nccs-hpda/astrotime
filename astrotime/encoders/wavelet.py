@@ -27,7 +27,8 @@ class WaveletEncoder(Encoder):
 		amps, phases, coeffs = [], [], ([], [], [])
 		y1, x1, wwz_start_time, wwz_end_time = [], [], time.time(), time.time()
 		for idx, (y,x) in enumerate(zip(dset['y'],dset['x'])):
-			x,y = x[~np.isnan(x)],y[~np.isnan(x)]
+			nanmask = ~np.isnan(y)
+			x,y = x[nanmask],y[nanmask]
 			x, y = self.apply_filters(x,y,dim=0)
 			x0: int = random.randint(0,  x.shape[0]-self.series_length )
 			ys: Tensor = torch.FloatTensor( y[x0:x0 + self.series_length] ).to(self.device)
