@@ -2,6 +2,7 @@ import time, numpy as np, xarray as xa
 from astrotime.loaders.base import DataLoader
 from typing import List, Optional, Dict, Type, Union, Tuple
 from astrotime.util.logging import exception_handled
+from astrotime.util.config import TSet
 from glob import glob
 from omegaconf import DictConfig, OmegaConf
 import logging
@@ -27,6 +28,7 @@ class ncSinusoidLoader(DataLoader):
 		self.current_file = 0
 		self.dataset: xa.Dataset = None
 		self.batches_per_file = self.cfg.file_size // self.cfg.batch_size
+		self.n_training_files = self.cfg.get('n_training_files', None)
 
 	@property
 	def file_paths( self ) -> List[str]:
@@ -37,12 +39,14 @@ class ncSinusoidLoader(DataLoader):
 		return self.files
 
 	@property
-	def nbatches(self) -> int:
+	def nbatches_total(self) -> int:
 		return self.nfiles * self.batches_per_file
 
-	@property
-	def nbatches_validation(self) -> int:
-		return self.nfiles_validation * self.batches_per_file
+	def nbatches(self, tset: TSet) -> int:
+		nbval: int = int(self.nbatches_total * self.cfg.validation_fraction)
+		if   tset == TSet.Validation:  return nbval
+		elif tset == TSet.Train:       return self.nbatches_total - nbval
+		else: raise Exception( f"Invalid TSet: {tset}")
 
 	@property
 	def batch_size(self) -> int:
@@ -50,11 +54,8 @@ class ncSinusoidLoader(DataLoader):
 
 	@property
 	def nfiles(self) -> int:
-		return  len(self.file_paths) - self.nfiles_validation
-
-	@property
-	def nfiles_validation(self) -> int:
-		return int( len(self.file_paths) * self.cfg.validation_fraction )
+		if self.n_training_files is None: self.n_training_files = len(self.file_paths)
+		return  self.n_training_files
 
 	def file_path( self, file_index: int ) -> Optional[str]:
 		try:
@@ -90,8 +91,10 @@ class ncSinusoidLoader(DataLoader):
 		return False
 
 	@exception_handled
-	def get_batch( self, batch_index: int ) -> xa.Dataset:
+	def get_batch( self, tset: TSet, batch_index: int ) -> xa.Dataset:
 		t0 = time.time()
+		if tset == TSet.Validation:
+			batch_index = batch_index + self.nbatches(TSet.Train)
 		file_index = batch_index // self.batches_per_file
 		self.load_file(file_index)
 		bstart = (batch_index % self.batches_per_file) * self.cfg.batch_size

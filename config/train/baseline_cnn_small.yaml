@@ -1,7 +1,8 @@
-version: sinusoids_baseline_cnn_1.0
+version: sinusoids_baseline_cnn_small
 optim: rms
 lr: 0.001
 nepochs: 1000
 refresh_state: False
 results_path: "${platform.project_root}/results"
 overwrite_log: True
+n_training_files: 1

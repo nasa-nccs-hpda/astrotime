@@ -1,0 +1,15 @@
+defaults:
+  - platform: "explore"
+  - train: "baseline_cnn_small"
+  - transform: "value"
+  - data: "sinusoids.nc"
+  - model: "baseline_cnn"
+  - _self_
+  - override hydra/hydra_logging: disabled
+  - override hydra/job_logging: disabled
+
+hydra:
+  output_subdir: null
+  run:
+    dir: .
+

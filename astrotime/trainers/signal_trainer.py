@@ -4,6 +4,7 @@ from omegaconf import DictConfig
 from .checkpoints import CheckpointManager
 from astrotime.encoders.base import Encoder
 import xarray as xa
+from astrotime.util.config import TSet
 from astrotime.util.math import shp
 from astrotime.loaders.base import DataLoader
 import time, torch, numpy as np
@@ -75,8 +76,8 @@ class SignalTrainer(object):
         loss.backward()
         self.optimizer.step()
 
-    def get_batch(self, batch_index) -> Tuple[torch.Tensor,torch.Tensor]:
-        dset: xa.Dataset = self.loader.get_batch(batch_index)
+    def get_batch(self, tset: TSet, batch_index) -> Tuple[torch.Tensor,torch.Tensor]:
+        dset: xa.Dataset = self.loader.get_batch(tset,batch_index)
         target: Tensor = torch.from_numpy(dset['p'].values[:, None]).to(self.device)
         t, y = self.encoder.encode_batch( dset['t'].values, dset['y'].values )
         input: Tensor = torch.concat((t[:, None, :], y), dim=1)
@@ -84,10 +85,10 @@ class SignalTrainer(object):
 
     def exec_validation(self, threshold = None):
         self.model.train(False)
-        losses = []
-        print( f"Exec validation: {self.loader.nbatches_validation} batches")
-        for ibatch in range(0, self.loader.nbatches_validation):
-            input, target = self.get_batch(self.loader.nbatches + ibatch)
+        losses, nb = [], self.loader.nbatches(TSet.Validation)
+        print( f"Exec validation: {nb} batches")
+        for ibatch in range(0, nb):
+            input, target = self.get_batch(TSet.Validation, ibatch)
             result: Tensor = self.model(input)
             loss: float = self.loss_function(result.squeeze(), target.squeeze()).item()
             if (threshold is not None) and (loss > threshold):
@@ -96,16 +97,17 @@ class SignalTrainer(object):
         return np.array(losses)
 
     def train(self):
-        print(f"SignalTrainer: {self.loader.nbatches} train batches, {self.loader.nbatches_validation} validation batches, {self.nepochs} epochs, nelements = {self.loader.nelements}, device={self.device}")
+        nb = self.loader.nbatches(TSet.Train)
+        print(f"SignalTrainer: {nb} batches, {self.nepochs} epochs, nelements = {self.loader.nelements(TSet.Train)}, device={self.device}")
         self.initialize_checkpointing()
         with self.device:
             for epoch in range(self.start_epoch,self.nepochs):
                 self.model.train(True)
                 losses, log_interval = [], 200
                 batch0 = self.start_batch if (epoch == self.start_epoch) else 0
-                for ibatch in range(batch0, self.loader.nbatches):
+                for ibatch in range(batch0,nb):
                     t0 = time.time()
-                    input, target = self.get_batch(ibatch)
+                    input, target = self.get_batch(TSet.Train,ibatch)
                     self.global_time = time.time()
                     log.info( f"TRAIN BATCH-{ibatch}: input={shp(input)}, target={shp(target)}")
                     result: Tensor = self.model( input )

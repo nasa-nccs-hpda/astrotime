@@ -18,10 +18,8 @@ DataCoordinates = Union[DataArrayCoordinates,DatasetCoordinates]
 default_args = Namespace(gpu=0,world_size=1,port=0)
 
 class TSet(Enum):
-	Train = 'train'
-	Validation = 'valid'
-	Test = 'test'
-	Upsample = 'upsample'
+    Train = 'train'
+    Validation = 'valid'
 
 def cfg() -> DictConfig:
     return ConfigContext.cfg
@@ -138,15 +136,15 @@ class ConfigContext(initialize):
         return cfg
 
     def __enter__(self, *args: Any, **kwargs: Any):
-       super(ConfigContext, self).__enter__(*args, **kwargs)
-       self.activate()
-       return self
+        super(ConfigContext, self).__enter__(*args, **kwargs)
+        self.activate()
+        return self
 
     def __exit__(self, exc_type: Any, exc_val: Any, exc_tb: Any):
-       super(ConfigContext, self).__exit__(exc_type, exc_val, exc_tb)
-       self.deactivate()
-       if exc_type is not None:
-           traceback.print_exception( exc_type, value=exc_val, tb=exc_tb)
+        super(ConfigContext, self).__exit__(exc_type, exc_val, exc_tb)
+        self.deactivate()
+        if exc_type is not None:
+            traceback.print_exception( exc_type, value=exc_val, tb=exc_tb)
 
 def cfg2meta(csection: str, meta: object, on_missing: str = "ignore"):
     csections = csection.split(".")
