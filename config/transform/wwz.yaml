@@ -5,5 +5,4 @@ freq_start: 0.1
 freq_end: 10.0
 fscale: "log"
 sparsity: 0.0
-max_series_length: 6200
 batch_size: ${data.batch_size}
