@@ -64,12 +64,12 @@ class SignalTrainer(object):
             self._checkpoint_manager.clear_checkpoints()
             print("\n *** No checkpoint loaded: training from scratch *** \n")
         else:
-            self.train_state = self._checkpoint_manager.load_checkpoint( TSet.Train, update_model=True )
+            self.train_state = self._checkpoint_manager.load_checkpoint( update_model=True )
             self.epoch0      = self.train_state.get('epoch', 0)
             self.start_batch = self.train_state.get('batch', 0)
             self.start_epoch = int(self.epoch0)
             self.nepochs    += self.start_epoch
-            print(f"\n Loading checkpoint from {self._checkpoint_manager.checkpoint_path(TSet.Train)}: epoch={self.start_epoch}, batch={self.start_batch}\n")
+            print(f"\n Loading checkpoint from {self._checkpoint_manager.checkpoint_path()}: epoch={self.start_epoch}, batch={self.start_batch}\n")
 
     def update_weights(self, loss: Tensor):
         self.optimizer.zero_grad()
@@ -119,7 +119,7 @@ class SignalTrainer(object):
                         print(f"E-{epoch} B-{ibatch} loss={aloss.mean():.3f} ({aloss.min():.3f} -> {aloss.max():.3f}), dt={time.time()-t0:.4f} sec")
                         losses = []
 
-                self._checkpoint_manager.save_checkpoint( TSet.Train, epoch, 0 )
+                self._checkpoint_manager.save_checkpoint( epoch, 0 )
 
 
 
