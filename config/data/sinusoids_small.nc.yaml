@@ -4,6 +4,6 @@ dataset_files:  "padded_sinusoids_*.nc"
 file_size: 1000
 batch_size: 10
 validation_fraction: 0.1
-n_training_files: 1
+n_training_files: 10
 
 
