@@ -1,4 +1,3 @@
-version: sinusoids_wwz_cnn_1.0
 optim: rms
 lr: 0.001
 nepochs: 1000

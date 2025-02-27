@@ -30,7 +30,7 @@ class SignalTrainer(object):
         self.model: nn.Module = model
         self.encoder: Encoder = encoder
         self.optimizer: optim.Optimizer = self.get_optimizer()
-        self._checkpoint_manager = CheckpointManager( model, self.optimizer, cfg )
+        self._checkpoint_manager = None
         self.start_batch: int = 0
         self.start_epoch: int = 0
         self.epoch_loss: float = 0.0
@@ -59,7 +59,8 @@ class SignalTrainer(object):
          elif self.cfg.optim == "adam": return optim.Adam(    self.model.parameters(), lr=self.cfg.lr )
          else: raise RuntimeError( f"Unknown optimizer: {self.cfg.optim}")
 
-    def initialize_checkpointing(self):
+    def initialize_checkpointing(self, version: str):
+        self._checkpoint_manager = CheckpointManager( version, self.model, self.optimizer, self.cfg )
         if self.cfg.refresh_state:
             self._checkpoint_manager.clear_checkpoints()
             print("\n *** No checkpoint loaded: training from scratch *** \n")
@@ -99,7 +100,6 @@ class SignalTrainer(object):
     def train(self):
         nb = self.loader.nbatches(TSet.Train)
         print(f"SignalTrainer: {nb} batches, {self.nepochs} epochs, nelements = {self.loader.nelements(TSet.Train)}, device={self.device}")
-        self.initialize_checkpointing()
         with self.device:
             for epoch in range(self.start_epoch,self.nepochs):
                 self.model.train(True)

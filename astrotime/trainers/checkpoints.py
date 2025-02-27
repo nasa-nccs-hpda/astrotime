@@ -11,8 +11,9 @@ log = logging.getLogger("astrotime")
 
 class CheckpointManager(object):
 
-	def __init__(self, model: nn.Module, optimizer: Optimizer, cfg: DictConfig ):
+	def __init__(self, version: str, model: nn.Module, optimizer: Optimizer, cfg: DictConfig ):
 		self._cpaths: Dict[str,str] = {}
+		self.version = version
 		self.model: nn.Module = model
 		self.cfg = cfg
 		self.optimizer = optimizer
@@ -59,7 +60,7 @@ class CheckpointManager(object):
 
 
 	def checkpoint_path( self, ext: str = "pt", backup=False ) -> str:
-		cpath = f"{self.cfg.results_path}/checkpoints/{self.cfg.version}"
+		cpath = f"{self.cfg.results_path}/checkpoints/{self.version}"
 		if backup: cpath = f"{cpath}.backup"
 		os.makedirs(os.path.dirname(cpath), 0o777, exist_ok=True)
 		return cpath + '.' + ext
