@@ -3,10 +3,10 @@ from typing import Any, Dict, List, Optional, Tuple
 from astrotime.encoders.base import Encoder
 from torch import Tensor, device
 from omegaconf import DictConfig, OmegaConf
+from .embedding import EmbeddingLayer
 from astrotime.util.math import tmean, tstd, tmag, tnorm, shp
 import logging
 log = logging.getLogger("astrotime")
-
 
 class ValueEncoder(Encoder):
 
@@ -43,15 +43,11 @@ class ValueEncoder(Encoder):
 			return X, Y
 
 
-class ValueEmbeddingLayer(torch.nn.Module):
+class ValueEmbeddingLayer(EmbeddingLayer):
 
 	def __init__(self, cfg, device: device):
-		torch.nn.Module.__init__(self)
-		self.requires_grad_(False)
-		self.device = device
-		self.cfg = cfg
+		EmbeddingLayer.__init__(self,cfg,device)
 
-	def forward(self, input: torch.Tensor ):
-		ys: torch.Tensor = input[:, 1:, :]
-		ts: torch.Tensor = input[:, 0, :]
+	def embed(self, ts: torch.Tensor, ys: torch.Tensor ) -> Tensor:
+		log.debug(f" ys{list(ys.shape)} ts{list(ts.shape)}")
 		return ys

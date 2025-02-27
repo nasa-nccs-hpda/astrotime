@@ -12,7 +12,7 @@ version = "sinusoid_period.baseline_small"
 
 @hydra.main(version_base=None, config_path="../config", config_name=version)
 def my_app(cfg: DictConfig) -> None:
-	device: torch.device = astrotime_initialize(cfg,version)
+	device: torch.device = astrotime_initialize( cfg, version )
 	sinusoid_loader = ncSinusoidLoader( cfg.data )
 	encoder = ValueEncoder( cfg.transform, device )
 	embedding = ValueEmbeddingLayer( cfg.transform, device)
