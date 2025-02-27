@@ -32,8 +32,7 @@ class PolyCoeffEncoder(Encoder):
 
 	def encode_batch(self, xb: np.ndarray, yb: np.ndarray ) -> Tuple[Tensor,Tensor]:
 		with (self.device):
-			x, y = xb[~np.isnan(xb)], yb[~np.isnan(yb)]
-			x,y = self.apply_filters(x,y, dim=1)
+			x,y = self.apply_filters(xb,yb, dim=1)
 			x0: int = random.randint(0,  x.shape[1]-self.series_length )
 			y: np.ndarray =  npnorm( y[:,x0:x0 + self.series_length], dim=0)
 			x: np.ndarray =  x[:,x0:x0 + self.series_length]
