@@ -4,7 +4,7 @@ out_channels: 1
 nfeatures: ${transform.nfeatures}
 series_length: ${transform.series_length}
 num_cnn_layers: 3
-num_blocks: 7
+num_blocks: 8
 pool_size: 2
 stride: 1
 kernel_size: 3
