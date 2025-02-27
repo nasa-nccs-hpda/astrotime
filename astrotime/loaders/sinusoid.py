@@ -22,21 +22,21 @@ class ncSinusoidLoader(DataLoader):
 
 	def __init__(self, cfg: DictConfig ):
 		super().__init__()
-		self.files: List[str] = None
+		self._files: List[str] = None
 		self.cfg = cfg
 		self._nelements = -1
 		self.current_file = 0
 		self.dataset: xa.Dataset = None
-		self.batches_per_file = self.cfg.file_size // self.cfg.batch_size
 		self.n_training_files = self.cfg.get('n_training_files', None)
+		self.batches_per_file = self.cfg.file_size // self.cfg.batch_size
+
 
 	@property
 	def file_paths( self ) -> List[str]:
-		if self.files is None:
-			self.files = glob( self.cfg.dataset_files, root_dir=self.cfg.dataset_root )
-			print( f"file_paths: dataset_root={self.cfg.dataset_root}, dataset_files={self.cfg.dataset_files}, nfiles={len(self.files)}")
-			self.files.sort()
-		return self.files
+		if self._files is None:
+			self._files = glob( self.cfg.dataset_files, root_dir=self.cfg.dataset_root )
+			self._files.sort()
+		return self._files
 
 	@property
 	def nbatches_total(self) -> int:
@@ -44,6 +44,7 @@ class ncSinusoidLoader(DataLoader):
 
 	def nbatches(self, tset: TSet) -> int:
 		nbval: int = int(self.nbatches_total * self.cfg.validation_fraction)
+		print(f"ncSinusoidLoader: dataset_root={self.cfg.dataset_root}, dataset_files={self.cfg.dataset_files}, nfiles={self.nfiles} ({len(self.file_paths)} total), batches={self.nbatches_total}")
 		if   tset == TSet.Validation:  return nbval
 		elif tset == TSet.Train:       return self.nbatches_total - nbval
 		else: raise Exception( f"Invalid TSet: {tset}")
