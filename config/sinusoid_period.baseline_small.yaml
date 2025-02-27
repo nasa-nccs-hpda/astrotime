@@ -1,8 +1,8 @@
 defaults:
   - platform: "explore"
-  - train: "baseline_cnn_small"
+  - train: "baseline_cnn"
   - transform: "value"
-  - data: "sinusoids.nc"
+  - data: "sinusoids_small.nc"
   - model: "baseline_cnn"
   - _self_
   - override hydra/hydra_logging: disabled
