@@ -38,7 +38,7 @@ class Expansion(Encoder):
 			X = torch.FloatTensor( result[0] ).to(self.device)
 			Y = torch.FloatTensor( result[1] ).to(self.device)
 			if self.chan_first: Y = Y.transpose(1,2)
-			self.log.info( f" ENCODED BATCH: x{list(xb.shape)} y{list(yb.shape)} -> X{list(X.shape)} Y{list(Y.shape)}")
+			self.log.info( f" * ENCODED BATCH: x{list(xb.shape)} y{list(yb.shape)} -> X{list(X.shape)} Y{list(Y.shape)}")
 			return X, Y
 
 	def _apply_expansion(self, xy: np.ndarray ) -> np.ndarray:

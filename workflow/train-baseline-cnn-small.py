@@ -15,7 +15,7 @@ def my_app(cfg: DictConfig) -> None:
 	device: torch.device = astrotime_initialize( cfg, version )
 	sinusoid_loader = ncSinusoidLoader( cfg.data )
 	encoder = ValueEncoder( cfg.transform, device )
-	embedding = ValueEmbeddingLayer( cfg.transform, device)
+	embedding = ValueEmbeddingLayer( cfg.transform, device )
 	model: nn.Module = get_model_from_cfg( cfg.model, device, embedding )
 
 	trainer = SignalTrainer( cfg.train, sinusoid_loader, encoder, model )

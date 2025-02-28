@@ -87,12 +87,15 @@ class SignalTrainer(object):
         losses, nb = [], self.loader.nbatches(TSet.Validation)
         print(f"      Exec validation: {nb} batches, nelements = {self.loader.nelements(TSet.Validation)}, device={self.device}\n")
         for ibatch in range(0, nb):
-            input, target = self.get_batch(TSet.Validation, ibatch)
-            result: Tensor = self.model(input)
-            loss: float = self.loss_function(result.squeeze(), target.squeeze()).item()
-            if (threshold is not None) and (loss > threshold):
-                print(f" B-{ibatch} loss = {loss:.3f}")
-            losses.append(loss)
+            batch_input, batch_target = self.get_batch(TSet.Validation, ibatch)
+            for ielem in range(batch_input.shape[0]):
+                elem_input, elem_target = batch_input[ielem:ielem+1], batch_target[ielem:ielem+1]
+                result: Tensor = self.model(elem_input)
+                fr, ft = result.squeeze().item(), elem_target.squeeze().item()
+                loss: float = abs( fr - ft )
+                if (threshold is not None) and (loss > threshold):
+                    print(f" B-{ibatch}:{ielem} loss = {loss:.3f}, fr={fr:.3f}, ft={ft:.3f}, target_range=({batch_target.min().elem():.3f},{batch_target.max().elem():.3f})")
+                losses.append(loss)
         return np.array(losses)
 
     def train(self):

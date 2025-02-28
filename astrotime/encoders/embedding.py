@@ -17,8 +17,8 @@ class EmbeddingLayer(torch.nn.Module):
 
 	def forward(self, input: torch.Tensor ):
 		self.log.debug(f"WaveletEmbeddingLayer shapes:")
-		ys: torch.Tensor = input[:, 1:, :]
 		xs: torch.Tensor = input[:, 0, :]
+		ys: torch.Tensor = input[:, 1:, :]
 		return self.embed(xs,ys)
 
 	def embed(self, xs: Tensor, ys: Tensor ) -> Tensor:

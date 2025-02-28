@@ -29,18 +29,17 @@ class ValueEncoder(Encoder):
 			if Y.ndim == 2: Y = torch.unsqueeze(Y, dim=2)
 			return X, Y
 
-	def encode_batch(self, x: np.ndarray, y: np.ndarray ) -> Tuple[Tensor,Tensor]:
+	def encode_batch(self, x0: np.ndarray, y0: np.ndarray ) -> Tuple[Tensor,Tensor]:
 		with (self.device):
-			x,y = self.apply_filters(x,y, dim=1)
+			x,y = self.apply_filters(x0,y0, dim=1)
 			i0: int = random.randint(0,  x.shape[1]-self.series_length )
 			Y: Tensor = torch.FloatTensor(y[:,i0:i0 + self.series_length]).to(self.device)
 			X: Tensor = torch.FloatTensor(x[:,i0:i0 + self.series_length]).to(self.device)
 			Y = tnorm(Y,dim=1)
 			if Y.ndim == 2: Y = torch.unsqueeze(Y, dim=2)
 			if self.chan_first: Y = Y.transpose(1,2)
-			self.log.info( f" ENCODED BATCH: x{list(x.shape)} y{list(y.shape)} -> T{list(X.shape)} Y{list(Y.shape)}")
+			self.log.info( f" ** ENCODED BATCH: x{list(x0.shape)} y{list(y0.shape)} -> T{list(X.shape)} Y{list(Y.shape)}")
 			return X, Y
-
 
 class ValueEmbeddingLayer(EmbeddingLayer):
 
