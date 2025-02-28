@@ -1,2 +1,3 @@
 project_root:  "/explore/nobackup/projects/ilab/data/astrotime"
 gpu: 0
+log_level: "info"
