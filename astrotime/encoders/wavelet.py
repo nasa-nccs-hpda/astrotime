@@ -40,11 +40,13 @@ class WaveletEmbeddingLayer(EmbeddingLayer):
 		sin_cos: Tensor = w_prod(sin_basis, cos_basis)
 		sin_sin: Tensor = w_prod(sin_basis, sin_basis)
 		cos_cos: Tensor = w_prod(cos_basis, cos_basis)
+		self.log.debug(f" --> sin_one{list(sin_one.shape)} cos_one{list(cos_one.shape)} sin_cos{list(sin_cos.shape)} sin_sin{list(sin_sin.shape)}")
 
 		numerator: Tensor = 2 * (sin_cos - sin_one * cos_one)
 		denominator: Tensor = (cos_cos - cos_one ** 2) - (sin_sin - sin_one ** 2)
 		time_shift: Tensor = torch.atan2(numerator, denominator) / (2 * omega)  # Eq. (S5)
 		time_shift_: Tensor = time_shift[:, :, None]  # broadcast-to(self.batch_size,self.nfreq,self.series_length)
+		self.log.debug(f" --> omega{list(omega.shape)} time_shift{list(time_shift.shape)} tau{list(tau.shape)}")
 
 		sin_shift: Tensor = torch.sin(omega_ * (ts - time_shift_))
 		cos_shift: Tensor = torch.cos(omega_ * (ts - time_shift_))
