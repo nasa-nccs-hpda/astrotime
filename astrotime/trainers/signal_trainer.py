@@ -90,10 +90,10 @@ class SignalTrainer(object):
             batch_input, batch_target = self.get_batch(TSet.Validation, ibatch)
             for ielem in range(batch_input.shape[0]):
                 elem_input, elem_target = batch_input[ielem:ielem+1], batch_target[ielem:ielem+1]
+                #print(f" >>>> batch_input:  {batch_input.shape} -> {elem_input.shape}")
+                #print(f" >>>> batch_target: {batch_target.shape} -> {elem_target.shape}")
                 result: Tensor = self.model(elem_input)
-                print(f" >>>> batch_input:  {batch_input.shape} -> {elem_input.shape}")
-                print(f" >>>> batch_target: {batch_target.shape} -> {elem_target.shape}")
-                print(f" >>>> result:       {result.shape}")
+                #print(f" >>>> result:       {result.shape}")
                 fr, ft = result.squeeze().item(), elem_target.squeeze().item()
                 loss: float = abs( fr - ft )
                 if (threshold is not None) and (loss > threshold):
