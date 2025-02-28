@@ -11,7 +11,7 @@ class Expansion(Encoder):
 	def __init__(self, cfg: DictConfig, device: device ):
 		super(Expansion, self).__init__( cfg, device )
 		self.chan_first = True
-		self.xstep: np.ndarray = None
+		self.xstride: np.ndarray = None
 
 	def encode_dset(self, dset: Dict[str,np.ndarray]) -> Tuple[Tensor,Tensor]:
 		with (self.device):
@@ -29,9 +29,9 @@ class Expansion(Encoder):
 			Y = torch.FloatTensor( np.concatenate( y1, axis=0 ) ).to(self.device)
 			return X, Y
 
-	def get_xstep(self, x: np.ndarray ) -> np.ndarray:
-		npt: float = len(x) / self.cfg.stride
-		return (x[:,1] - x[:,0]) / npt
+	def get_xstride(self, x: np.ndarray ) -> np.ndarray:
+		nstrides: float = x.shape[1] / self.cfg.stride
+		return (x[:,1] - x[:,0]) / nstrides
 
 	def encode_batch(self, xb: np.ndarray, yb: np.ndarray ) -> Tuple[Tensor,Tensor]:
 		with (self.device):
@@ -39,7 +39,7 @@ class Expansion(Encoder):
 			x0: int = random.randint(0,  x.shape[1]-self.series_length )
 			y: np.ndarray =  npnorm( y[:,x0:x0 + self.series_length], dim=0)
 			x: np.ndarray =  x[:,x0:x0 + self.series_length]
-			self.xstep = self.get_xstep(x)
+			self.xstride = self.get_xstride(x)
 			result = np.apply_along_axis( self._apply_expansion, axis=-1, arr=np.concatenate( [x,y], axis=0 ) )
 			X = torch.FloatTensor( result[0] ).to(self.device)
 			Y = torch.FloatTensor( result[1] ).to(self.device)

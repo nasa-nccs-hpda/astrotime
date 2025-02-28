@@ -17,9 +17,12 @@ class PolyExpansion(Expansion):
 		self.xstep = None
 
 	def get_expansion_coeff(self, x: np.ndarray, y: np.ndarray ) -> Tuple[np.ndarray,np.ndarray]:
+		nstrides: float = x.size / self.cfg.stride
+		xstride = (x[1] - x[0]) / nstrides
+		dr = xstride
 		coeffs, xs = [], []
-		for ipt in range(1,npts):
-			x0 = xrng[0] + ipt*self.xstep
+		for ipt in range(1,int(nstrides)):
+			x0 = x[0] + ipt*self.xstep
 			domain = [x0-dr,x0+dr]
 			mask = np.abs(x-x0) < dr
 			poly: Polynomial = Polynomial.fit( x[mask], y[mask], self.degree, domain )
