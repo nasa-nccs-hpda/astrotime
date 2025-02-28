@@ -69,7 +69,7 @@ class SignalTrainer(object):
             self.start_batch = self.train_state.get('batch', 0)
             self.start_epoch = int(self.epoch0)
             self.nepochs    += self.start_epoch
-            print(f"\n Loading checkpoint from {self._checkpoint_manager.checkpoint_path()}: epoch={self.start_epoch}, batch={self.start_batch}\n")
+            print(f"\n      Loading checkpoint from {self._checkpoint_manager.checkpoint_path()}: epoch={self.start_epoch}, batch={self.start_batch}\n")
 
     def update_weights(self, loss: Tensor):
         self.optimizer.zero_grad()
@@ -86,7 +86,7 @@ class SignalTrainer(object):
     def exec_validation(self, threshold = None):
         self.model.train(False)
         losses, nb = [], self.loader.nbatches(TSet.Validation)
-        print(f"Exec validation: {nb} batches, nelements = {self.loader.nelements(TSet.Validation)}, device={self.device}")
+        print(f"      Exec validation: {nb} batches, nelements = {self.loader.nelements(TSet.Validation)}, device={self.device}\n")
         for ibatch in range(0, nb):
             input, target = self.get_batch(TSet.Validation, ibatch)
             result: Tensor = self.model(input)

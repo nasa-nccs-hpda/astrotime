@@ -10,6 +10,6 @@ def astrotime_initialize(config: DictConfig, version: str, **kwargs):
     device: torch.device = torch.device(f"cuda:{config.platform.gpu}" if (torch.cuda.is_available() and (config.platform.gpu >= 0)) else "cpu")
     log_file = f"{config.platform.project_root}/logs/astrotime.{version}.log"
     logging.basicConfig( filename=log_file, encoding='utf-8', level=logging.INFO )
-    print( f"\n Logging to {log_file} \n")
+    print( f"\n      Logging to {log_file}")
     logger.info("INIT")
     return device
