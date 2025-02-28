@@ -88,6 +88,7 @@ class SignalTrainer(object):
         print(f"      Exec validation: {nb} batches, nelements = {self.loader.nelements(TSet.Validation)}, device={self.device}\n")
         for ibatch in range(0, nb):
             batch_input, batch_target = self.get_batch(TSet.Validation, ibatch)
+            batch_losses = []
             for ielem in range(batch_input.shape[0]):
                 elem_input, elem_target = batch_input[ielem:ielem+1], batch_target[ielem:ielem+1]
                 #print(f" >>>> batch_input:  {batch_input.shape} -> {elem_input.shape}")
@@ -99,7 +100,10 @@ class SignalTrainer(object):
                 if (threshold is not None) and (loss > threshold):
                     print(f" B-{ibatch}:{ielem} loss = {loss:.2f}, fr={fr:.2f}, ft={ft:.2f}, target_range=({batch_target.min().item():.2f}, {batch_target.max().item():.2f}), "
                           f"input{list(fi.shape)}: stats=({fi.min().item():.2f},{fi.max().item():.2f},{fi.mean().item():.2f},{fi.std().item():.2f})")
-                losses.append(loss)
+                else:
+                    batch_losses.append(loss)
+            print( f"                  B-{ibatch}: loss = {np.array(batch_losses).mean():.2f}")
+            losses.extend(batch_losses)
         return np.array(losses)
 
     def train(self):
