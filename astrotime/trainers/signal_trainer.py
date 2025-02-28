@@ -94,11 +94,11 @@ class SignalTrainer(object):
                 #print(f" >>>> batch_target: {batch_target.shape} -> {elem_target.shape}")
                 result: Tensor = self.model(elem_input)
                 #print(f" >>>> result:       {result.shape}")
-                fr, ft = result.squeeze().item(), elem_target.squeeze().item()
+                fr, ft, fi = result.squeeze().item(), elem_target.squeeze().item(), elem_input[0,1]
                 loss: float = abs( fr - ft )
                 if (threshold is not None) and (loss > threshold):
                     print(f" B-{ibatch}:{ielem} loss = {loss:.3f}, fr={fr:.3f}, ft={ft:.3f}, target_range=({batch_target.min().item():.3f},{batch_target.max().item():.3f}), "
-                          f"istats[{elem_input.shape}]=({elem_input.min().item():.3f},{elem_input.max().item():.3f},{elem_input.mean().item():.3f},{elem_input.std().item():.3f})")
+                          f"istats{list(fi.shape)}=({fi.min().item():.3f},{fi.max().item():.3f},{fi.mean().item():.3f},{fi.std().item():.3f})")
                 losses.append(loss)
         return np.array(losses)
 

@@ -47,5 +47,5 @@ class ValueEmbeddingLayer(EmbeddingLayer):
 		EmbeddingLayer.__init__(self,cfg,device)
 
 	def embed(self, ts: torch.Tensor, ys: torch.Tensor ) -> Tensor:
-		self.log.debug(f" ys{list(ys.shape)} ts{list(ts.shape)}")
+		self.log.info(f"     MODEL INPUT: ys{list(ys.shape)}: ({ys.min().item():.2f}, {ys.max().item():.2f}, {ys.mean().item():.2f}, {ys.std().item():.2f}) ")
 		return ys
