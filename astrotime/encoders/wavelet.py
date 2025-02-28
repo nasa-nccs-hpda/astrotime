@@ -12,11 +12,13 @@ class WaveletEmbeddingLayer(EmbeddingLayer):
 		self.C = 1 / (8 * math.pi ** 2)
 		fspace = logspace if (self.cfg.fscale == "log") else np.linspace
 		self.freq = torch.FloatTensor( fspace( self.cfg.freq_start, self.cfg.freq_end, self.cfg.nfreq ) ).to(self.device)
-		self.ones: Tensor = torch.ones( self.batch_size, self.nfreq, self.series_length, device=self.device)
+		self.ones: Tensor = None
 		self.log.info(f"WaveletEmbeddingLayer: nfreq={self.nfreq} ")
 
 	def embed(self, ts: torch.Tensor, ys: torch.Tensor ) -> Tensor:
 		self.log.debug(f"WaveletEmbeddingLayer shapes:")
+		if self.ones is None:
+			self.ones: Tensor = torch.ones( ys.shape[0], self.nfreq, self.series_length, device=self.device)
 		tau = 0.5 * (ts[:, self.series_length // 2] + ts[:, self.series_length // 2 + 1])
 		self.log.debug(f" ys{list(ys.shape)} ts{list(ts.shape)} tau{list(tau.shape)}")
 		tau: Tensor = tau[:, None, None]
