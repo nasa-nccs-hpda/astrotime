@@ -97,7 +97,8 @@ class SignalTrainer(object):
                 fr, ft = result.squeeze().item(), elem_target.squeeze().item()
                 loss: float = abs( fr - ft )
                 if (threshold is not None) and (loss > threshold):
-                    print(f" B-{ibatch}:{ielem} loss = {loss:.3f}, fr={fr:.3f}, ft={ft:.3f}, target_range=({batch_target.min().item():.3f},{batch_target.max().item():.3f})")
+                    print(f" B-{ibatch}:{ielem} loss = {loss:.3f}, fr={fr:.3f}, ft={ft:.3f}, target_range=({batch_target.min().item():.3f},{batch_target.max().item():.3f}), "
+                          f"istats=({elem_input.std().min():.3f},{elem_input.std().max():.3f},{elem_input.mean().item():.3f},{elem_input.std().item():.3f})")
                 losses.append(loss)
         return np.array(losses)
 
