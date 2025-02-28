@@ -6,7 +6,6 @@ from astrotime.util.series import TSet
 from glob import glob
 from omegaconf import DictConfig, OmegaConf
 import logging
-log = logging.getLogger("astrotime")
 
 class SinusoidLoader(DataLoader):
 
@@ -28,6 +27,7 @@ class ncSinusoidLoader(DataLoader):
 		self.current_file = 0
 		self.dataset: xa.Dataset = None
 		self.batches_per_file = self.cfg.file_size // self.cfg.batch_size
+		self.log = logging.getLogger()
 
 
 	@property
@@ -84,7 +84,7 @@ class ncSinusoidLoader(DataLoader):
 				self.current_file = file_index
 				self._nelements = self.dataset.sizes['elem']
 				self.dataset = xa.Dataset( dict( y=y, t=t, p=p, f=f ) )
-				log.info(f"Loaded {self._nelements} sinusoids in {time.time()-t0:.3f} sec from file: {file_path}, freq range = [{f.values.min():.3f}, {f.values.max():.3f}]")
+				self.log.info(f"Loaded {self._nelements} sinusoids in {time.time()-t0:.3f} sec from file: {file_path}, freq range = [{f.values.min():.3f}, {f.values.max():.3f}]")
 				return True
 		return False
 
@@ -97,7 +97,7 @@ class ncSinusoidLoader(DataLoader):
 		self.load_file(file_index)
 		bstart = (batch_index % self.batches_per_file) * self.cfg.batch_size
 		result = self.dataset.isel( elem=slice(bstart,bstart+self.cfg.batch_size))
-		log.info( f" ----> BATCH-{file_index}.{batch_index}: bstart={bstart}, batch_size={self.cfg.batch_size}, batches_per_file={self.batches_per_file}, y{result['y'].shape} t{result['t'].shape} p{result['p'].shape}, dt={time.time()-t0:.4f} sec")
+		self.log.info( f" ----> BATCH-{file_index}.{batch_index}: bstart={bstart}, batch_size={self.cfg.batch_size}, batches_per_file={self.batches_per_file}, y{result['y'].shape} t{result['t'].shape} p{result['p'].shape}, dt={time.time()-t0:.4f} sec")
 		return result
 
 	def get_dataset(self, dset_idx: int) -> xa.Dataset:

@@ -1,3 +1,4 @@
 project_root:      "/Users/tpmaxwel/Data/astrotime"
 gpu: -1
+log_level: "info"
 

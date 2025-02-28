@@ -3,7 +3,7 @@ import logging, os, sys
 from logging import Logger
 import torch
 
-def astrotime_initialize(config: DictConfig, version: str, **kwargs):
+def astrotime_initialize(config: DictConfig, version: str):
     torch.backends.cuda.matmul.allow_tf32 = True
     torch.backends.cudnn.allow_tf32 = True
     OmegaConf.resolve(config)
