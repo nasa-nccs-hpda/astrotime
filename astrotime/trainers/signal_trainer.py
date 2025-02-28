@@ -86,7 +86,7 @@ class SignalTrainer(object):
     def exec_validation(self, threshold = None):
         self.model.train(False)
         losses, nb = [], self.loader.nbatches(TSet.Validation)
-        print( f"Exec validation: {nb} batches")
+        print(f"Exec validation: {nb} batches, nelements = {self.loader.nelements(TSet.Validation)}, device={self.device}")
         for ibatch in range(0, nb):
             input, target = self.get_batch(TSet.Validation, ibatch)
             result: Tensor = self.model(input)

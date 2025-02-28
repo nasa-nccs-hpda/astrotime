@@ -43,7 +43,6 @@ class ncSinusoidLoader(DataLoader):
 
 	def nbatches(self, tset: TSet) -> int:
 		nbval: int = int(self.nbatches_total * self.cfg.validation_fraction)
-		print(f"ncSinusoidLoader: dataset_root={self.cfg.dataset_root}, dataset_files={self.cfg.dataset_files}, nfiles={self.nfiles} ({len(self.file_paths)} total), batches={self.nbatches_total}")
 		if   tset == TSet.Validation:  return nbval
 		elif tset == TSet.Train:       return self.nbatches_total - nbval
 		else: raise Exception( f"Invalid TSet: {tset}")
