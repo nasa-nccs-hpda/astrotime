@@ -14,7 +14,15 @@ class PolyExpansion(Expansion):
 	def __init__(self, cfg: DictConfig, device: device):
 		super(Expansion, self).__init__(cfg, device)
 		self.degree = cfg.degree
+		self.xstep = None
 
-	def get_expansion_coeff(self, x: np.ndarray, y: np.ndarray ) -> np.ndarray:
-		poly: Polynomial = Polynomial.fit(x1,y1,self.degree,domain)
-		return poly.coef
+	def get_expansion_coeff(self, x: np.ndarray, y: np.ndarray ) -> Tuple[np.ndarray,np.ndarray]:
+		coeffs, xs = [], []
+		for ipt in range(1,npts):
+			x0 = xrng[0] + ipt*self.xstep
+			domain = [x0-dr,x0+dr]
+			mask = np.abs(x-x0) < dr
+			poly: Polynomial = Polynomial.fit( x[mask], y[mask], self.degree, domain )
+			coeffs.append( poly.coef )
+			xs.append( x0 )
+		return np.concatenate(xs), np.concatenate(coeffs)

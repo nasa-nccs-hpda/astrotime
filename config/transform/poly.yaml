@@ -1,0 +1,5 @@
+series_length: 1536
+nfeatures: 1
+sparsity: 0.0
+batch_size: ${data.batch_size}
+stride: 4
