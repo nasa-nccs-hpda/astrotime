@@ -1,5 +1,5 @@
 from typing import List, Tuple, Mapping
-import numpy as np
+import logging, numpy as np
 from omegaconf import DictConfig
 from torch import Tensor, device
 from astrotime.trainers.filters import TrainingFilter
@@ -11,6 +11,7 @@ class Encoder:
 		self.device: device = device
 		self.cfg = cfg
 		self.filters: List[TrainingFilter] = []
+		self.log = logging.getLogger()
 		if cfg.sparsity > 0.0:
 			self.add_filter( RandomDownsample(sparsity=cfg.sparsity) )
 

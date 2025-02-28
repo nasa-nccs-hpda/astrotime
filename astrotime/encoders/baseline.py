@@ -5,8 +5,7 @@ from torch import Tensor, device
 from omegaconf import DictConfig, OmegaConf
 from .embedding import EmbeddingLayer
 from astrotime.util.math import tmean, tstd, tmag, tnorm, shp
-import logging
-log = logging.getLogger("astrotime")
+
 
 class ValueEncoder(Encoder):
 
@@ -39,7 +38,7 @@ class ValueEncoder(Encoder):
 			Y = tnorm(Y,dim=1)
 			if Y.ndim == 2: Y = torch.unsqueeze(Y, dim=2)
 			if self.chan_first: Y = Y.transpose(1,2)
-			log.info( f" ENCODED BATCH: x{list(x.shape)} y{list(y.shape)} -> T{list(X.shape)} Y{list(Y.shape)}")
+			self.log.info( f" ENCODED BATCH: x{list(x.shape)} y{list(y.shape)} -> T{list(X.shape)} Y{list(Y.shape)}")
 			return X, Y
 
 
@@ -49,5 +48,5 @@ class ValueEmbeddingLayer(EmbeddingLayer):
 		EmbeddingLayer.__init__(self,cfg,device)
 
 	def embed(self, ts: torch.Tensor, ys: torch.Tensor ) -> Tensor:
-		log.debug(f" ys{list(ys.shape)} ts{list(ts.shape)}")
+		self.log.debug(f" ys{list(ys.shape)} ts{list(ts.shape)}")
 		return ys

@@ -5,11 +5,9 @@ from astrotime.encoders.base import Encoder
 import xarray as xa
 from astrotime.util.math import shp
 from astrotime.loaders.base import DataLoader
-import time, torch, numpy as np
+import time, torch, logging, numpy as np
 from torch import nn, optim, Tensor
 from astrotime.util.series import TSet
-import logging
-log = logging.getLogger("astrotime")
 
 def tocpu( c, idx=0 ):
     if isinstance( c, Tensor ):
@@ -29,6 +27,7 @@ class SignalTrainer(object):
         self.model: nn.Module = model
         self.encoder: Encoder = encoder
         self.optimizer: optim.Optimizer = self.get_optimizer()
+        self.log = logging.getLogger()
         self._checkpoint_manager = None
         self.start_batch: int = 0
         self.start_epoch: int = 0
@@ -49,9 +48,9 @@ class SignalTrainer(object):
         self.global_time = time.time()
 
     def log_layer_stats(self):
-        log.info( f" Model layer stats:")
+        self.log.info( f" Model layer stats:")
         for stats in  self.exec_stats:
-            log.info(f"{stats[0]}: dt={stats[1]}s")
+            self.log.info(f"{stats[0]}: dt={stats[1]}s")
 
     def get_optimizer(self) -> optim.Optimizer:
          if   self.cfg.optim == "rms":  return optim.RMSprop( self.model.parameters(), lr=self.cfg.lr )
@@ -108,7 +107,7 @@ class SignalTrainer(object):
                     t0 = time.time()
                     input, target = self.get_batch(TSet.Train,ibatch)
                     self.global_time = time.time()
-                    log.info( f"TRAIN BATCH-{ibatch}: input={shp(input)}, target={shp(target)}")
+                    self.log.info( f"TRAIN BATCH-{ibatch}: input={shp(input)}, target={shp(target)}")
                     result: Tensor = self.model( input )
                     loss: Tensor = self.loss_function( result.squeeze(), target.squeeze() )
                     self.update_weights(loss)

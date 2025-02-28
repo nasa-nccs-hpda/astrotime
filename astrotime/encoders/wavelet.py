@@ -3,8 +3,6 @@ import torch, math
 from torch import Tensor, device
 from .embedding import EmbeddingLayer
 from astrotime.util.math import logspace, tnorm
-import logging
-log = logging.getLogger("astrotime")
 
 class WaveletEmbeddingLayer(EmbeddingLayer):
 
@@ -15,12 +13,12 @@ class WaveletEmbeddingLayer(EmbeddingLayer):
 		fspace = logspace if (self.cfg.fscale == "log") else np.linspace
 		self.freq = torch.FloatTensor( fspace( self.cfg.freq_start, self.cfg.freq_end, self.cfg.nfreq ) ).to(self.device)
 		self.ones: Tensor = torch.ones( self.batch_size, self.nfreq, self.series_length, device=self.device)
-		log.info(f"WaveletEmbeddingLayer: nfreq={self.nfreq} ")
+		self.log.info(f"WaveletEmbeddingLayer: nfreq={self.nfreq} ")
 
 	def embed(self, ts: torch.Tensor, ys: torch.Tensor ) -> Tensor:
-		log.debug(f"WaveletEmbeddingLayer shapes:")
+		self.log.debug(f"WaveletEmbeddingLayer shapes:")
 		tau = 0.5 * (ts[:, self.series_length // 2] + ts[:, self.series_length // 2 + 1])
-		log.debug(f" ys{list(ys.shape)} ts{list(ts.shape)} tau{list(tau.shape)}")
+		self.log.debug(f" ys{list(ys.shape)} ts{list(ts.shape)} tau{list(tau.shape)}")
 		tau: Tensor = tau[:, None, None]
 		omega = self.freq * 2.0 * math.pi
 		omega_: Tensor = omega[None, :, None]  # broadcast-to(self.batch_size,self.nfreq,self.series_length)
@@ -52,27 +50,27 @@ class WaveletEmbeddingLayer(EmbeddingLayer):
 		cos_shift: Tensor = torch.cos(omega_ * (ts - time_shift_))
 		sin_tau_center: Tensor = torch.sin(omega * (time_shift - tau[:, :, 0]))
 		cos_tau_center: Tensor = torch.cos(omega * (time_shift - tau[:, :, 0]))
-		log.debug(f" --> cos_tau_center{list(cos_tau_center.shape)} sin_tau_center{list(sin_tau_center.shape)}")
+		self.log.debug(f" --> cos_tau_center{list(cos_tau_center.shape)} sin_tau_center{list(sin_tau_center.shape)}")
 
 		ys_cos_shift: Tensor = w_prod(ys, cos_shift)
 		ys_sin_shift: Tensor = w_prod(ys, sin_shift)
 		ys_one: Tensor = w_prod(ys, self.ones)
-		log.debug(f" --> ys_one{list(ys_one.shape)} ys{list(ys.shape)} ones{list(self.ones.shape)}")
+		self.log.debug(f" --> ys_one{list(ys_one.shape)} ys{list(ys.shape)} ones{list(self.ones.shape)}")
 
 		cos_shift_one: Tensor = w_prod(cos_shift, self.ones)
 		sin_shift_one: Tensor = w_prod(sin_shift, self.ones)
-		log.debug(f" --> sin_shift_one{list(sin_shift_one.shape)} cos_shift_one{list(cos_shift_one.shape)}")
+		self.log.debug(f" --> sin_shift_one{list(sin_shift_one.shape)} cos_shift_one{list(cos_shift_one.shape)}")
 
 		A: Tensor = 2 * (ys_cos_shift - ys_one * cos_shift_one)
 		B: Tensor = 2 * (ys_sin_shift - ys_one * sin_shift_one)
-		log.debug(f" --> A{list(A.shape)} B{list(B.shape)} ")
+		self.log.debug(f" --> A{list(A.shape)} B{list(B.shape)} ")
 
 		a0: Tensor = ys_one
 		a1: Tensor = cos_tau_center * A - sin_tau_center * B  # Eq. (S6)
 		a2: Tensor = sin_tau_center * A + cos_tau_center * B  # Eq. (S7)
-		log.debug(f" --> a0{list(a0.shape)} a1{list(a1.shape)} a2{list(a2.shape)}")
+		self.log.debug(f" --> a0{list(a0.shape)} a1{list(a1.shape)} a2{list(a2.shape)}")
 
 		wwp: Tensor = a1 ** 2 + a2 ** 2
 		phase: Tensor = torch.atan2(a2, a1)
-		log.debug(f"WaveletEmbeddingLayer: wwp{list(wwp.shape)}({torch.mean(wwp):.2f},{torch.std(wwp):.2f}), phase{list(phase.shape)}({torch.mean(phase):.2f},{torch.std(phase):.2f})")
+		self.log.debug(f"WaveletEmbeddingLayer: wwp{list(wwp.shape)}({torch.mean(wwp):.2f},{torch.std(wwp):.2f}), phase{list(phase.shape)}({torch.mean(phase):.2f},{torch.std(phase):.2f})")
 		return torch.concat( (wwp[:, None, :] , phase[:, None, :]), dim=1)
