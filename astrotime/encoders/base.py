@@ -2,8 +2,8 @@ from typing import List, Tuple, Mapping
 import numpy as np
 from omegaconf import DictConfig
 from torch import Tensor, device
-from trainers.filters import TrainingFilter
-from trainers.filters import RandomDownsample
+from astrotime.trainers.filters import TrainingFilter
+from astrotime.trainers.filters import RandomDownsample
 
 class Encoder:
 
