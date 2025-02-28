@@ -2,7 +2,7 @@ import time, numpy as np, xarray as xa
 from astrotime.loaders.base import DataLoader
 from typing import List, Optional, Dict, Type, Union, Tuple
 from astrotime.util.logging import exception_handled
-from astrotime.util.config import TSet
+from astrotime.util.series import TSet
 from glob import glob
 from omegaconf import DictConfig, OmegaConf
 import logging
@@ -27,7 +27,6 @@ class ncSinusoidLoader(DataLoader):
 		self._nelements = -1
 		self.current_file = 0
 		self.dataset: xa.Dataset = None
-		self.n_training_files = self.cfg.get('n_training_files', None)
 		self.batches_per_file = self.cfg.file_size // self.cfg.batch_size
 
 
@@ -40,7 +39,7 @@ class ncSinusoidLoader(DataLoader):
 
 	@property
 	def nbatches_total(self) -> int:
-		return self.nfiles * self.batches_per_file
+		return int( self.nfiles * self.batches_per_file * self.cfg.dset_reduction )
 
 	def nbatches(self, tset: TSet) -> int:
 		nbval: int = int(self.nbatches_total * self.cfg.validation_fraction)
@@ -55,8 +54,7 @@ class ncSinusoidLoader(DataLoader):
 
 	@property
 	def nfiles(self) -> int:
-		if self.n_training_files is None: self.n_training_files = len(self.file_paths)
-		return  self.n_training_files
+		return  len(self.file_paths)
 
 	def file_path( self, file_index: int ) -> Optional[str]:
 		try:

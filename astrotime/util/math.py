@@ -2,7 +2,7 @@ import numpy as np
 from typing import List, Optional, Dict, Type, Any
 import torch
 from torch import Tensor
-Array = torch.Tensor | np.ndarray
+Array = Tensor | np.ndarray
 
 def is_power_of_two(n: int) -> bool:
 	if n <= 0: return False

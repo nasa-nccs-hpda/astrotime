@@ -1,9 +1,9 @@
-from typing import Any, Dict, List, Optional, Tuple, Mapping
+from typing import List, Tuple, Mapping
 import numpy as np
 from omegaconf import DictConfig
 from torch import Tensor, device
-from astrotime.transforms.filters import TrainingFilter
-from astrotime.transforms.filters import RandomDownsample
+from trainers.filters import TrainingFilter
+from trainers.filters import RandomDownsample
 
 class Encoder:
 

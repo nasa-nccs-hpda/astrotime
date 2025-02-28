@@ -2,7 +2,12 @@ import numpy as np
 from typing import Any, Dict, List, Tuple, Type, Optional, Union
 from scipy.interpolate import CubicSpline, PchipInterpolator
 import logging
+from enum import Enum
 log = logging.getLogger("astrotime")
+
+class TSet(Enum):
+	Train = 'train'
+	Validation = 'valid'
 
 def series_interpolation(x: np.ndarray, y: np.ndarray, num_points: int, **kwargs ) -> Tuple[np.ndarray, np.ndarray]:
 	"""

@@ -1,14 +1,13 @@
 from typing import Dict, Tuple
-from astrotime.util.config import TSet
 from omegaconf import DictConfig
 from .checkpoints import CheckpointManager
 from astrotime.encoders.base import Encoder
 import xarray as xa
-from astrotime.util.config import TSet
 from astrotime.util.math import shp
 from astrotime.loaders.base import DataLoader
 import time, torch, numpy as np
 from torch import nn, optim, Tensor
+from astrotime.util.series import TSet
 import logging
 log = logging.getLogger("astrotime")
 

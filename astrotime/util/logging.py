@@ -2,7 +2,7 @@ import numpy as np
 import torch
 from functools import wraps
 from time import time
-import threading, time, sys, traceback
+import time, traceback
 Array = torch.Tensor | np.ndarray
 import logging
 log = logging.getLogger("astrotime")

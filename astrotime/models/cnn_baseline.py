@@ -1,10 +1,6 @@
 from torch import nn
 import torch, math
-from torch.ao.nn.qat import Embedding
-
-from astrotime.util.math import is_power_of_two
 from omegaconf import DictConfig, OmegaConf
-from collections import OrderedDict
 from typing import Any, Dict, List, Optional, Tuple, Mapping
 
 def add_cnn_block( model: nn.Sequential, nchannels: int, num_input_features: int, cfg: DictConfig ) -> int:

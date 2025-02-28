@@ -1,5 +1,5 @@
 import numpy as np, xarray as xa
-from astrotime.util.config import TSet
+from astrotime.util.series import TSet
 from typing import List, Optional, Dict, Type, Tuple
 import logging
 log = logging.getLogger("astrotime")

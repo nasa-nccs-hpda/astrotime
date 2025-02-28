@@ -1,7 +1,7 @@
 import torch, time, traceback, shutil
 from typing import Any, Dict, Optional
 from torch.optim.optimizer import Optimizer
-from astrotime.util.config import TSet
+from astrotime.util.series import TSet
 from omegaconf import DictConfig
 from torch import nn
 import os

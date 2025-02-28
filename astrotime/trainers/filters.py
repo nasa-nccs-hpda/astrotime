@@ -1,8 +1,7 @@
-
 from typing import Any, Mapping, Sequence, Tuple, Union, List, Dict, Literal, Optional
 from astrotime.util.logging import exception_handled, log_timing, shp
 import time, numpy as np, xarray as xa, torch
-from astrotime.util.env import Array
+from astrotime.util.math import Array
 from torch import Tensor
 import logging
 log = logging.getLogger("astrotime")
