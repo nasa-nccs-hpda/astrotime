@@ -3,3 +3,4 @@ nfeatures: 1
 sparsity: 0.0
 batch_size: ${data.batch_size}
 stride: 4
+domain_scale: 1.0
