@@ -43,8 +43,8 @@ class Expansion(Encoder):
 			y: np.ndarray =  npnorm( y[:,x0:x0 + self.series_length], dim=0)
 			x: np.ndarray =  x[:,x0:x0 + self.series_length]
 			self.init_xstride(x)
-			xy = np.concatenate( [x,y], axis=0 )
-			print(f"encode_batch input: x{shp(x)} y{shp(y)} xy{shp(xy)} xstride={self._xstride} nstrides={self.nstrides} trange={self._trange}")
+			xy = np.stack( [x,y], axis=0 )
+			print(f"encode_batch input: x{shp(x)} y{shp(y)} xy{shp(xy)} xstride={self._xstride:.4f} nstrides={self.nstrides} trange={self._trange:.4f}")
 			result = np.apply_along_axis( self._apply_expansion, axis=-1, arr=xy )
 			X = torch.FloatTensor( result[0] ).to(self.device)
 			Y = torch.FloatTensor( result[1] ).to(self.device)
@@ -55,7 +55,7 @@ class Expansion(Encoder):
 	def _apply_expansion(self, xy: np.ndarray ) -> np.ndarray:
 		print( f"_apply_expansion input: xy{shp(xy)}")
 		X,Y = self.get_expansion_coeff( xy[0], xy[1] )
-		return np.concatenate([X, Y], axis=0)
+		return np.stack([X, Y], axis=0)
 
 	def get_expansion_coeff(self, x: np.ndarray, y: np.ndarray ) -> Tuple[np.ndarray,np.ndarray]:
 		raise NotImplementedError("Expansion.get_expansion_coeff() not implemented")
