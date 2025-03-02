@@ -11,9 +11,10 @@ class Expansion(Encoder):
 	def __init__(self, cfg: DictConfig, device: device ):
 		super(Expansion, self).__init__( cfg, device )
 		self.chan_first = True
-		self.nstrides: float = self.cfg.series_length / self.cfg.stride
-		self._xstride: np.ndarray = None
-		self._trange = None
+		self.nstrides: float = self.cfg.nstrides
+		self.stride = self.cfg.series_length // self.nstrides
+		self._xstride: float = None
+		self._trange: float = None
 
 	def encode_dset(self, dset: Dict[str,np.ndarray]) -> Tuple[Tensor,Tensor]:
 		with (self.device):
