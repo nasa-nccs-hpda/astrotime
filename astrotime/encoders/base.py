@@ -16,10 +16,6 @@ class Encoder:
 			self.add_filter( RandomDownsample(sparsity=cfg.sparsity) )
 
 	@property
-	def nfeatures(self):
-		return self.cfg.nfeatures
-
-	@property
 	def series_length(self):
 		return self.cfg.series_length
 
