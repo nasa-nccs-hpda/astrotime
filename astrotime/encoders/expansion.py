@@ -61,9 +61,5 @@ class Expansion(Encoder):
 		print(f"_apply_expansion output: Z{shp(Y)}")
 		return Y
 
-	@property
-	def nfeatures(self) -> int:
-		raise NotImplementedError("Expansion.nfeatures() not implemented")
-
 	def get_expansion_coeff(self, x: np.ndarray, y: np.ndarray ) -> Tuple[np.ndarray,np.ndarray]:
 		raise NotImplementedError("Expansion.get_expansion_coeff() not implemented")
