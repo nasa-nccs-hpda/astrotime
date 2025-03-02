@@ -13,6 +13,7 @@ class Expansion(Encoder):
 		self.chan_first = True
 		self.nstrides: float = self.cfg.series_length / self.cfg.stride
 		self._xstride: np.ndarray = None
+		self._trange = None
 
 	def encode_dset(self, dset: Dict[str,np.ndarray]) -> Tuple[Tensor,Tensor]:
 		with (self.device):
@@ -32,7 +33,8 @@ class Expansion(Encoder):
 
 	def init_xstride(self, x: np.ndarray ):
 		if self._xstride is None:
-			self._xstride =  (x[:,1] - x[:,0]).mean() / self.nstrides
+			self._trange = (x[:,1] - x[:,0]).mean()
+			self._xstride =  self._trange / self.nstrides
 
 	def encode_batch(self, xb: np.ndarray, yb: np.ndarray ) -> Tuple[Tensor,Tensor]:
 		with (self.device):
@@ -41,8 +43,9 @@ class Expansion(Encoder):
 			y: np.ndarray =  npnorm( y[:,x0:x0 + self.series_length], dim=0)
 			x: np.ndarray =  x[:,x0:x0 + self.series_length]
 			self.init_xstride(x)
-			print(f"encode_batch input: x{shp(x)} y{shp(y)} self._xstride={self._xstride} series_length={self.series_length}")
-			result = np.apply_along_axis( self._apply_expansion, axis=-1, arr=np.concatenate( [x,y], axis=0 ) )
+			xy = np.concatenate( [x,y], axis=0 )
+			print(f"encode_batch input: x{shp(x)} y{shp(y)} xy{shp(xy)} xstride={self._xstride} nstrides={self.nstrides} trange={self._trange}")
+			result = np.apply_along_axis( self._apply_expansion, axis=-1, arr=xy )
 			X = torch.FloatTensor( result[0] ).to(self.device)
 			Y = torch.FloatTensor( result[1] ).to(self.device)
 			if self.chan_first: Y = Y.transpose(1,2)
