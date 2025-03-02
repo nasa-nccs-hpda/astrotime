@@ -4,4 +4,4 @@ nepochs: 1000
 refresh_state: False
 overwrite_log: True
 results_path: "${platform.project_root}/results"
-weight_decay: 0.001
+weight_decay: 0.0001
