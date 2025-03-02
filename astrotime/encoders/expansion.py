@@ -48,20 +48,18 @@ class Expansion(Encoder):
 			print(f"encode_batch input: x{shp(x)} y{shp(y)} xy{shp(xy)} xstride={self._xstride:.4f} nstrides={self.nstrides} trange={self._trange:.4f}")
 			result = np.apply_along_axis( self._apply_expansion, axis=1, arr=xy )
 			print(f"apply_along_axis output: result{shp(result)}")
-			X = torch.FloatTensor( result[0] ).to(self.device)
-			Y = torch.FloatTensor( result[1] ).to(self.device)
-			if self.chan_first: Y = Y.transpose(1,2)
-			self.log.info( f" * ENCODED BATCH: x{list(xb.shape)} y{list(yb.shape)} -> X{list(X.shape)} Y{list(Y.shape)}")
-			return X, Y
+			Y = torch.FloatTensor( result ).to(self.device)
+			# if self.chan_first: Y = Y.transpose(1,2)
+			self.log.info( f" * ENCODED BATCH: x{list(xb.shape)} y{list(yb.shape)} -> Y{list(Y.shape)}")
+			return Y
 
 	def _apply_expansion(self, xy: np.ndarray ) -> np.ndarray:
 		print( f"_apply_expansion input: xy{shp(xy)}")
 		s = xy.shape[0]//2
 		x,y = xy[:s], xy[s:]
-		X,Y = self.get_expansion_coeff( x, y )
-		Z = np.stack([X, Y], axis=0)
-		print(f"_apply_expansion output: Z{shp(Z)}")
-		return Z
+		Y = self.get_expansion_coeff( x, y )
+		print(f"_apply_expansion output: Z{shp(Y)}")
+		return Y
 
 	def get_expansion_coeff(self, x: np.ndarray, y: np.ndarray ) -> Tuple[np.ndarray,np.ndarray]:
 		raise NotImplementedError("Expansion.get_expansion_coeff() not implemented")
