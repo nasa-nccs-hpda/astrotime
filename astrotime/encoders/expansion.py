@@ -12,7 +12,7 @@ class Expansion(Encoder):
 		super(Expansion, self).__init__( cfg, device )
 		self.chan_first = True
 		self.nstrides: float = self.cfg.series_length / self.cfg.stride
-		self.xstride: np.ndarray = None
+		self._xstride: np.ndarray = None
 
 	def encode_dset(self, dset: Dict[str,np.ndarray]) -> Tuple[Tensor,Tensor]:
 		with (self.device):
@@ -31,8 +31,8 @@ class Expansion(Encoder):
 			return X, Y
 
 	def init_xstride(self, x: np.ndarray ):
-		if self.xstride is None:
-			self.xstride =  (x[:,1] - x[:,0]).mean() / self.nstrides
+		if self._xstride is None:
+			self._xstride =  (x[:,1] - x[:,0]).mean() / self.nstrides
 
 	def encode_batch(self, xb: np.ndarray, yb: np.ndarray ) -> Tuple[Tensor,Tensor]:
 		with (self.device):

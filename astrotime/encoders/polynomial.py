@@ -12,14 +12,14 @@ log = logging.getLogger("astrotime")
 class PolyExpansion(Expansion):
 
 	def __init__(self, cfg: DictConfig, device: device):
-		super(Expansion, self).__init__(cfg, device)
+		super(PolyExpansion, self).__init__(cfg, device)
 		self.degree = cfg.degree
 
 	def get_expansion_coeff(self, x: np.ndarray, y: np.ndarray ) -> Tuple[np.ndarray,np.ndarray]:
 		coeffs, xs = [], []
-		dr = self.xstride*self.cfg.domain_scale/2
+		dr = self._xstride*self.cfg.domain_scale/2
 		for ipt in range(1,int(self.nstrides)):
-			x0 = x[0] + ipt*self.xstride
+			x0 = x[0] + ipt*self._xstride
 			domain = [x0-dr,x0+dr]
 			mask = np.abs(x-x0) < dr
 			poly: Polynomial = Polynomial.fit( x[mask], y[mask], self.degree, domain )
