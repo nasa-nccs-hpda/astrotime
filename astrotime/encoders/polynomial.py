@@ -4,6 +4,7 @@ from typing import Any, Dict, List, Optional, Tuple
 from torch import Tensor, device
 from omegaconf import DictConfig, OmegaConf
 from numpy.polynomial.polynomial import Polynomial
+from astrotime.util.math import shp
 import logging
 log = logging.getLogger("astrotime")
 
@@ -24,4 +25,6 @@ class PolyExpansion(Expansion):
 			poly: Polynomial = Polynomial.fit( x[mask], y[mask], self.degree, domain )
 			coeffs.append( poly.coef )
 			xs.append( x0 )
-		return np.array(xs), np.concatenate(coeffs)
+		X,C = np.array(xs), np.concatenate(coeffs)
+		print( f"PolyExpansion: X{shp(X)} C{shp(C)}")
+		return X,C
