@@ -41,6 +41,7 @@ class Expansion(Encoder):
 			y: np.ndarray =  npnorm( y[:,x0:x0 + self.series_length], dim=0)
 			x: np.ndarray =  x[:,x0:x0 + self.series_length]
 			self.init_xstride(x)
+			print(f"encode_batch input: x{shp(x)} y{shp(y)} self._xstride={self._xstride} series_length={self.series_length}")
 			result = np.apply_along_axis( self._apply_expansion, axis=-1, arr=np.concatenate( [x,y], axis=0 ) )
 			X = torch.FloatTensor( result[0] ).to(self.device)
 			Y = torch.FloatTensor( result[1] ).to(self.device)
@@ -49,6 +50,7 @@ class Expansion(Encoder):
 			return X, Y
 
 	def _apply_expansion(self, xy: np.ndarray ) -> np.ndarray:
+		print( f"_apply_expansion input: xy{shp(xy)}")
 		X,Y = self.get_expansion_coeff( xy[0], xy[1] )
 		return np.concatenate([X, Y], axis=0)
 
