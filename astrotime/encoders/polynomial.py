@@ -14,7 +14,10 @@ class PolyExpansion(Expansion):
 	def __init__(self, cfg: DictConfig, device: device):
 		super(PolyExpansion, self).__init__(cfg, device)
 		self.degree = cfg.degree
-		self.nfeatures = self.degree + 1
+
+	@property
+	def nfeatures(self):
+		return self.degree + 1
 
 	def get_expansion_coeff(self, x: np.ndarray, y: np.ndarray ) -> np.ndarray:
 		print( f"PolyExpansion input: x{shp(x)} y{shp(y)}, x: ({x[0]:.4f},{x[-1]:.4f}): dx={(x[-1]-x[0])/x.shape[0]:.4f}")
