@@ -1,7 +1,7 @@
-optim: adam
-lr: 0.001
+optim: rms
+lr: 2e-3
 nepochs: 1000
 refresh_state: False
 overwrite_log: True
 results_path: "${platform.project_root}/results"
-weight_decay: 0.0001
+weight_decay: 1e-5
