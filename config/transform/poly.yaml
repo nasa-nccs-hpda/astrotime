@@ -3,5 +3,5 @@ nfeatures: 4
 sparsity: 0.0
 batch_size: ${data.batch_size}
 nstrides: 16
-domain_scale: 1.0
+domain_scale: 0.75
 degree: 3

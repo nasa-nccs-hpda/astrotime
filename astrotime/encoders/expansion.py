@@ -34,7 +34,7 @@ class Expansion(Encoder):
 
 	def init_xstride(self, x: np.ndarray ):
 		if self._xstride is None:
-			self._trange = (x[:,1] - x[:,0]).mean()
+			self._trange = (x[:,-1] - x[:,0]).mean()
 			self._xstride =  self._trange / self.nstrides
 
 	def encode_batch(self, xb: np.ndarray, yb: np.ndarray ) -> Tuple[Tensor,Tensor]:
