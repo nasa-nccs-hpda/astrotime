@@ -46,10 +46,10 @@ class Expansion(Encoder):
 			self.init_xstride(x)
 			xy = np.concat( [x,y], axis=1 )
 			print(f"encode_batch input: x{shp(x)} y{shp(y)} xy{shp(xy)} xstride={self._xstride:.4f} nstrides={self.nstrides} trange={self._trange:.4f}")
-			nX,nY = np.apply_along_axis( self._apply_expansion, axis=1, arr=xy )
-			Y = torch.FloatTensor( nY.reshape(nY.shape[0],-1,self.nfeatures) ).to(self.device)
-			X = torch.FloatTensor(nX).to(self.device)
-			print(f"apply_along_axis result: nY{shp(nY)}, Y{shp(Y)} nX{shp(nX)}, X{shp(X)}")
+			Xn,Yn = np.apply_along_axis( self._apply_expansion, axis=1, arr=xy )
+			Y = torch.FloatTensor( Yn.reshape(Yn.shape[0],-1,self.nfeatures) ).to(self.device)
+			X = torch.FloatTensor(Xn).to(self.device)
+			print(f"apply_along_axis result: nY{shp(Yn)}, Y{shp(Y)} nX{shp(Xn)}, X{shp(X)}")
 			if self.chan_first: Y = Y.transpose(1,2)
 			self.log.info( f" * ENCODED BATCH: x{list(xb.shape)} y{list(yb.shape)} -> X{list(X.shape)} Y{list(Y.shape)}")
 			return X,Y
@@ -59,7 +59,7 @@ class Expansion(Encoder):
 		s = xy.shape[0]//2
 		x,y = xy[:s], xy[s:]
 		X,Y = self.get_expansion_coeff( x, y )
-		print(f"_apply_expansion output: Z{shp(Y)}")
+		print(f"_apply_expansion output: X{shp(X)} Y{shp(Y)}")
 		return X,Y
 
 	def get_expansion_coeff(self, x: np.ndarray, y: np.ndarray ) -> Tuple[np.ndarray,np.ndarray]:
