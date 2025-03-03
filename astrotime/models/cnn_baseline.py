@@ -7,6 +7,7 @@ from typing import Any, Dict, List, Optional, Tuple, Mapping
 def add_cnn_block( model: nn.Sequential, nchannels: int, num_input_features: int, cfg: DictConfig ) -> int:
 	in_channels = num_input_features if (num_input_features > 0) else nchannels
 	out_channels = nchannels
+	print( f"CNN: add_cnn_block: nchannels={nchannels}, num_input_features={num_input_features}")
 	for iL in range( cfg.num_cnn_layers ):
 		out_channels = out_channels + cfg.cnn_expansion_factor
 		model.append( nn.Conv1d( in_channels, out_channels, kernel_size=cfg.kernel_size, stride=cfg.stride, padding='same') )
@@ -18,6 +19,7 @@ def add_cnn_block( model: nn.Sequential, nchannels: int, num_input_features: int
 	return out_channels
 
 def add_dense_block( model: nn.Sequential, in_channels:int, cfg: DictConfig ):
+	print(f"CNN: add_dense_block: in_channels={in_channels}")
 	model.append( nn.Flatten() )
 	model.append( nn.Linear( in_channels, cfg.dense_channels ) )  # 64
 	model.append( nn.ELU() )
