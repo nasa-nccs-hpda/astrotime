@@ -60,7 +60,7 @@ class Expansion(Encoder):
 		x,y = xy[:s], xy[s:]
 		X,Y = self.get_expansion_coeff( x, y )
 		Z = np.concatenate( [ X[:,None], Y.reshape(X.shape[0],-1) ], axis=1 )
-		print(f"_apply_expansion output: X{shp(X)} Y{shp(Y)}")
+		print(f"_apply_expansion output: X{shp(X)} Y{shp(Y)} Z{shp(Z)}")
 		return Z
 
 	def get_expansion_coeff(self, x: np.ndarray, y: np.ndarray ) -> Tuple[np.ndarray,np.ndarray]:
