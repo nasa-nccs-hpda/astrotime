@@ -23,8 +23,8 @@ class PolyExpansion(Expansion):
 		print( f"PolyExpansion input: x{shp(x)} y{shp(y)}, x: ({x[0]:.4f},{x[-1]:.4f}): dx={(x[-1]-x[0])/x.shape[0]:.4f}")
 		coeffs, xs = [], []
 		dr = self._xstride*self.cfg.domain_scale/2
-		for ipt in range(1,int(self.nstrides)):
-			x0 = x[0] + ipt*self._xstride
+		for ipt in range(0,int(self.nstrides)):
+			x0 = x[0] + (ipt+0.5)*self._xstride
 			domain = [x0-dr,x0+dr]
 			mask = np.abs(x-x0) < dr
 			poly: Polynomial = Polynomial.fit( x[mask], y[mask], self.degree, domain )

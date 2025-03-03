@@ -17,6 +17,10 @@ class Expansion(Encoder):
 		self._xstride: float = None
 		self._trange: float = None
 
+	@property
+	def series_length(self):
+		return self.nstrides
+
 	# def encode_dset(self, dset: Dict[str,np.ndarray]) -> Tuple[Tensor,Tensor]:
 	# 	with (self.device):
 	# 		y1, x1 = [], []
