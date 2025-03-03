@@ -13,6 +13,10 @@ class ValueEncoder(Encoder):
 		super(ValueEncoder, self).__init__( cfg, device )
 		self.chan_first = True
 
+	@property
+	def nfeatures(self) -> int:
+		return 1
+
 	def encode_dset(self, dset: Dict[str,np.ndarray]) -> Tuple[Tensor,Tensor]:
 		with (self.device):
 			y1, x1 = [], []
