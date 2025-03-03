@@ -27,7 +27,7 @@ class PolyExpansion(Expansion):
 			x0 = x[0] + (ipt+0.5)*self._xstride
 			domain = [x0-dr,x0+dr]
 			mask = np.abs(x-x0) < dr
-			print(f" ** x-mask{shp(x[mask])}, y-mask{shp(y[mask])}, x0={x0:.4f}, dr={dr:.4f}")
+			#print(f" ** x-mask{shp(x[mask])}, y-mask{shp(y[mask])}, x0={x0:.4f}, dr={dr:.4f}")
 			poly: Polynomial = Polynomial.fit( x[mask], y[mask], self.degree, domain )
 			coeffs.append( poly.coef )
 
