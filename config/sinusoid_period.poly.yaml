@@ -3,7 +3,7 @@ defaults:
   - train: "poly_cnn"
   - transform: "poly"
   - data: "sinusoids.nc"
-  - model: "baseline_cnn"
+  - model: "poly_cnn"
   - _self_
   - override hydra/hydra_logging: disabled
   - override hydra/job_logging: disabled

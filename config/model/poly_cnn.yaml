@@ -1,0 +1,11 @@
+cnn_channels: 64                                # Number of channels in first CNN layer
+dense_channels: 64                              # Number of channels in dense layer
+out_channels: 1                                 # Number of network output channels
+series_length: ${transform.series_length}       # Length of network input series
+num_cnn_layers: 3                               # Number of CNN layers in a CNN block
+num_blocks: 5                                   # Number of CNN blocks in the network
+pool_size: 2                                    # Max pool size for every block
+stride: 1                                       # Stride value for every CNN layer
+kernel_size: 3                                  # Kernel size for every CNN layer
+cnn_expansion_factor: 4                         # Increase in the number of channels from one CNN layer to the next
+
