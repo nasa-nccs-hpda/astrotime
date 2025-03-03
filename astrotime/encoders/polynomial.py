@@ -20,7 +20,7 @@ class PolyExpansion(Expansion):
 		return self.degree + 1
 
 	def get_expansion_coeff(self, x: np.ndarray, y: np.ndarray ) -> Tuple[np.ndarray,np.ndarray]:
-		print( f"PolyExpansion input: x{shp(x)} y{shp(y)}, x: ({x[0]:.4f},{x[-1]:.4f}): dx={(x[-1]-x[0])/x.shape[0]:.4f}")
+		# print( f"PolyExpansion input: x{shp(x)} y{shp(y)}, x: ({x[0]:.4f},{x[-1]:.4f}): dx={(x[-1]-x[0])/x.shape[0]:.4f}")
 		coeffs, xs = [], []
 		dr = self._xstride*self.cfg.domain_scale/2
 		for ipt in range(0,int(self.output_series_length)):
