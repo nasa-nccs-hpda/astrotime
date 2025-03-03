@@ -50,23 +50,23 @@ class Expansion(Encoder):
 			x: np.ndarray =  x[:,x0:x0 + self.input_series_length]
 			self.init_xstride(x)
 			xy = np.concat( [x,y], axis=1 )
-			print(f"encode_batch input: x{shp(x)} y{shp(y)} xy{shp(xy)} xstride={self._xstride:.4f} output_series_length={self.output_series_length} trange={self._trange:.4f}")
+			#print(f"encode_batch input: x{shp(x)} y{shp(y)} xy{shp(xy)} xstride={self._xstride:.4f} output_series_length={self.output_series_length} trange={self._trange:.4f}")
 			Z = np.apply_along_axis( self._apply_expansion, axis=1, arr=xy )
 			Y = torch.FloatTensor( Z[:,:,1:] ).to(self.device)
 			X = torch.FloatTensor( Z[:,:,0]  ).to(self.device)
-			print(f"apply_along_axis result: X{shp(X)} Y{shp(Y)} ")
+			#print(f"apply_along_axis result: X{shp(X)} Y{shp(Y)} ")
 			Y = normalize(Y,p=1,dim=2)
 			if self.chan_first: Y = Y.transpose(1,2)
 			self.log.info( f" * ENCODED BATCH: x{list(xb.shape)} y{list(yb.shape)} -> X{list(X.shape)} Y{list(Y.shape)}")
 			return X, Y
 
 	def _apply_expansion(self, xy: np.ndarray ) -> np.ndarray:
-		print( f"_apply_expansion input: xy{shp(xy)}")
+		#print( f"_apply_expansion input: xy{shp(xy)}")
 		s = xy.shape[0]//2
 		x,y = xy[:s], xy[s:]
 		X,Y = self.get_expansion_coeff( x, y )
 		Z = np.concatenate( [ X[:,None], Y.reshape(X.shape[0],-1) ], axis=1 )
-		print(f"_apply_expansion output: X{shp(X)} Y{shp(Y)} Z{shp(Z)}")
+		#print(f"_apply_expansion output: X{shp(X)} Y{shp(Y)} Z{shp(Z)}")
 		return Z
 
 	def get_expansion_coeff(self, x: np.ndarray, y: np.ndarray ) -> Tuple[np.ndarray,np.ndarray]:

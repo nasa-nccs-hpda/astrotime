@@ -33,5 +33,5 @@ class PolyExpansion(Expansion):
 
 			xs.append( x0 )
 		X,C = np.array(xs), np.concatenate(coeffs)
-		print( f"PolyExpansion output: X{shp(X)} C{shp(C)}")
+		#print( f"PolyExpansion output: X{shp(X)} C{shp(C)}")
 		return X, C
