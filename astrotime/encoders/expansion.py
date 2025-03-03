@@ -3,6 +3,7 @@ from typing import Any, Dict, List, Optional, Tuple
 from astrotime.encoders.base import Encoder
 from torch import Tensor, device
 from omegaconf import DictConfig, OmegaConf
+from torch.nn.functional import normalize
 from astrotime.util.math import tmean, tstd, tmag, npnorm, shp
 import logging
 
@@ -16,21 +17,21 @@ class Expansion(Encoder):
 		self._xstride: float = None
 		self._trange: float = None
 
-	def encode_dset(self, dset: Dict[str,np.ndarray]) -> Tuple[Tensor,Tensor]:
-		with (self.device):
-			y1, x1 = [], []
-			for idx, (y,x) in enumerate(zip(dset['y'],dset['x'])):
-				nanmask = ~np.isnan(y)
-				x, y = x[nanmask], y[nanmask]
-				x,y = self.apply_filters(x,y,dim=0)
-				x0: int = random.randint(0, y.shape[0] - self.cfg.series_length)
-				ys: np.ndarray =  npnorm( y[x0:x0 + self.cfg.series_length], dim=0)
-				xs: np.ndarray =  x[x0:x0 + self.cfg.series_length]
-				xc,yc = self.get_expansion_coeff( xs,ys )
-				x1.append( xc ); y1.append( yc )
-			X = torch.FloatTensor( np.concatenate( x1, axis=0 ) ).to(self.device)
-			Y = torch.FloatTensor( np.concatenate( y1, axis=0 ) ).to(self.device)
-			return X, Y
+	# def encode_dset(self, dset: Dict[str,np.ndarray]) -> Tuple[Tensor,Tensor]:
+	# 	with (self.device):
+	# 		y1, x1 = [], []
+	# 		for idx, (y,x) in enumerate(zip(dset['y'],dset['x'])):
+	# 			nanmask = ~np.isnan(y)
+	# 			x, y = x[nanmask], y[nanmask]
+	# 			x,y = self.apply_filters(x,y,dim=0)
+	# 			x0: int = random.randint(0, y.shape[0] - self.cfg.series_length)
+	# 			ys: np.ndarray =  npnorm( y[x0:x0 + self.cfg.series_length], dim=0)
+	# 			xs: np.ndarray =  x[x0:x0 + self.cfg.series_length]
+	# 			xc,yc = self.get_expansion_coeff( xs,ys )
+	# 			x1.append( xc ); y1.append( yc )
+	# 		X = torch.FloatTensor( np.concatenate( x1, axis=0 ) ).to(self.device)
+	# 		Y = torch.FloatTensor( np.concatenate( y1, axis=0 ) ).to(self.device)
+	# 		return X, Y
 
 	def init_xstride(self, x: np.ndarray ):
 		if self._xstride is None:
@@ -50,9 +51,10 @@ class Expansion(Encoder):
 			Y = torch.FloatTensor( Z[:,:,1:] ).to(self.device)
 			X = torch.FloatTensor( Z[:,:,0]  ).to(self.device)
 			print(f"apply_along_axis result: X{shp(X)} Y{shp(Y)} ")
+			Y = normalize(Y,p=1,dim=1)
 			if self.chan_first: Y = Y.transpose(1,2)
 			self.log.info( f" * ENCODED BATCH: x{list(xb.shape)} y{list(yb.shape)} -> X{list(X.shape)} Y{list(Y.shape)}")
-			return X,Y
+			return X, Y
 
 	def _apply_expansion(self, xy: np.ndarray ) -> Tuple[np.ndarray,np.ndarray]:
 		print( f"_apply_expansion input: xy{shp(xy)}")
