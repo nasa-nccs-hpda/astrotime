@@ -20,7 +20,11 @@ class Encoder:
 		raise NotImplementedError("Expansion.nfeatures() not implemented")
 
 	@property
-	def series_length(self):
+	def input_series_length(self):
+		return self.cfg.series_length
+
+	@property
+	def output_series_length(self):
 		return self.cfg.series_length
 
 	def encode_dset(self, dset: Mapping[str,np.ndarray]) -> Tensor:

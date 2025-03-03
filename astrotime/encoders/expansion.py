@@ -12,14 +12,14 @@ class Expansion(Encoder):
 	def __init__(self, cfg: DictConfig, device: device ):
 		super(Expansion, self).__init__( cfg, device )
 		self.chan_first = True
-		self.nstrides: float = self.cfg.nstrides
-		self.stride = self.cfg.series_length // self.nstrides
+		self.stride = self.input_series_length // self.output_series_length
 		self._xstride: float = None
 		self._trange: float = None
 
 	@property
-	def series_length(self):
-		return self.nstrides
+	def output_series_length(self):
+		return self.cfg.nstrides
+
 
 	# def encode_dset(self, dset: Dict[str,np.ndarray]) -> Tuple[Tensor,Tensor]:
 	# 	with (self.device):
@@ -40,17 +40,17 @@ class Expansion(Encoder):
 	def init_xstride(self, x: np.ndarray ):
 		if self._xstride is None:
 			self._trange = (x[:,-1] - x[:,0]).mean()
-			self._xstride =  self._trange / self.nstrides
+			self._xstride =  self._trange / self.output_series_length
 
 	def encode_batch(self, xb: np.ndarray, yb: np.ndarray ) -> Tuple[Tensor,Tensor]:
 		with (self.device):
 			x,y = self.apply_filters(xb,yb, dim=1)
-			x0: int = random.randint(0,  x.shape[1]-self.series_length )
-			y: np.ndarray =  npnorm( y[:,x0:x0 + self.series_length], dim=0)
-			x: np.ndarray =  x[:,x0:x0 + self.series_length]
+			x0: int = random.randint(0,  x.shape[1]-self.input_series_length )
+			y: np.ndarray =  npnorm( y[:,x0:x0 + self.input_series_length], dim=0)
+			x: np.ndarray =  x[:,x0:x0 + self.input_series_length]
 			self.init_xstride(x)
 			xy = np.concat( [x,y], axis=1 )
-			print(f"encode_batch input: x{shp(x)} y{shp(y)} xy{shp(xy)} xstride={self._xstride:.4f} nstrides={self.nstrides} trange={self._trange:.4f}")
+			print(f"encode_batch input: x{shp(x)} y{shp(y)} xy{shp(xy)} xstride={self._xstride:.4f} output_series_length={self.output_series_length} trange={self._trange:.4f}")
 			Z = np.apply_along_axis( self._apply_expansion, axis=1, arr=xy )
 			Y = torch.FloatTensor( Z[:,:,1:] ).to(self.device)
 			X = torch.FloatTensor( Z[:,:,0]  ).to(self.device)
@@ -60,7 +60,7 @@ class Expansion(Encoder):
 			self.log.info( f" * ENCODED BATCH: x{list(xb.shape)} y{list(yb.shape)} -> X{list(X.shape)} Y{list(Y.shape)}")
 			return X, Y
 
-	def _apply_expansion(self, xy: np.ndarray ) -> Tuple[np.ndarray,np.ndarray]:
+	def _apply_expansion(self, xy: np.ndarray ) -> np.ndarray:
 		print( f"_apply_expansion input: xy{shp(xy)}")
 		s = xy.shape[0]//2
 		x,y = xy[:s], xy[s:]
