@@ -29,7 +29,7 @@ class PolyExpansion(Expansion):
 			mask = np.abs(x-x0) < dr
 			poly: Polynomial = Polynomial.fit( x[mask], y[mask], self.degree, domain )
 			coeffs.append( poly.coef )
-			print( f" ** x-mask{shp(x[mask])}, y-mask{shp(y[mask])}, x0={x0:.4f}, coef={poly.coef.tolist()}")
+			# print( f" ** x-mask{shp(x[mask])}, y-mask{shp(y[mask])}, x0={x0:.4f}, coef={poly.coef.tolist()}")
 			xs.append( x0 )
 		X,C = np.array(xs), np.concatenate(coeffs)
 		print( f"PolyExpansion output: X{shp(X)} C{shp(C)}")
