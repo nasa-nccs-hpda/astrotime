@@ -16,7 +16,7 @@ class ValueEncoder(Encoder):
 
 	@property
 	def nfeatures(self) -> int:
-		return 1
+		return self.cfg.nfeatures
 
 	def encode_dset(self, dset: Dict[str,np.ndarray]) -> Tuple[Tensor,Tensor]:
 		with (self.device):
