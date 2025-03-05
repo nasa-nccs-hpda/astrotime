@@ -128,13 +128,17 @@ class SignalTrainer(object):
                     if mode == TSet.Train:
                         self.update_weights(loss)
                     losses.append(loss.item())
-                    if (ibatch % log_interval == 0) or ((ibatch < 5) and (epoch==0)):
+                    if (mode == TSet.Train) and ((ibatch % log_interval == 0) or ((ibatch < 5) and (epoch==0))):
                         aloss = np.array(losses)
                         print(f"E-{epoch} B-{ibatch} loss={aloss.mean():.3f} ({aloss.min():.3f} -> {aloss.max():.3f}), dt={time.time()-t0:.4f} sec")
                         losses = []
 
                 if mode == TSet.Train:
                     self._checkpoint_manager.save_checkpoint( epoch, 0 )
+                else:
+                    val_losses = np.array(losses)
+                    print( f" Validation Loss: mean={val_losses.mean():.3f}, median={np.median(val_losses):.3f}, range=({val_losses.min():.3f} -> {val_losses.max():.3f})")
+
 
 
 
