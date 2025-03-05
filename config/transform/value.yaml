@@ -1,4 +1,4 @@
-series_length: 1024
-nfeatures: 1
-sparsity: 0.0
-batch_size: ${data.batch_size}
+series_length: 1024                 # Length of subset of input timeseries to process
+nfeatures: 1                        # Number of feaatures to be passed to network
+sparsity: 0.0                       # Fraction of observations to drop (randomly)
+batch_size: ${data.batch_size}      # Batch size for training

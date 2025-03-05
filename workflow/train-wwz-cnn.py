@@ -2,6 +2,7 @@ import os, glob, hydra, torch, logging
 from omegaconf import DictConfig, OmegaConf
 from typing import Any, Dict, List, Tuple, Type, Optional, Union, Hashable
 from torch import nn
+from astrotime.util.series import TSet
 from astrotime.encoders.baseline import ValueEncoder
 from astrotime.loaders.sinusoid import ncSinusoidLoader
 from astrotime.encoders.wavelet import WaveletEmbeddingLayer

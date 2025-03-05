@@ -21,7 +21,7 @@ def my_app(cfg: DictConfig) -> None:
 
 	trainer = SignalTrainer( cfg.train, sinusoid_loader, encoder, model )
 	trainer.initialize_checkpointing(version)
-	trainer.compute(TSet.Validation)
+	trainer.compute()
 
 if __name__ == "__main__":
 	my_app()

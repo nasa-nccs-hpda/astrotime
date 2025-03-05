@@ -1,8 +1,10 @@
-series_length: 1536
-nfeatures: 2
-nfreq: 1536
-freq_start: 0.1
-freq_end: 10.0
-fscale: "log"
-sparsity: 0.0
-batch_size: ${data.batch_size}
+series_length: 1536                 # Length of subset of input timeseries to process
+nfeatures: 2                        # Number of feaatures to be passed to network
+sparsity: 0.0                       # Fraction of observations to drop (randomly)
+batch_size: ${data.batch_size}      # Batch size for training
+nfreq: 1536                         # Number of frequency values to compute (spectral resolution)
+freq_start: 0.1                     # Lowest frequency value in computed spectra
+freq_end: 10.0                      # Highest frequency value in computed spectra
+fscale: "log"                       # Scale of frequency axis
+
+

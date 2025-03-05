@@ -33,7 +33,6 @@ class SignalTrainer(object):
         self.start_epoch: int = 0
         self.epoch_loss: float = 0.0
         self.epoch0: int = 0
-        self.nepochs = self.cfg.nepochs
         self.train_state = None
         self.global_time = None
         self.exec_stats = []
@@ -67,13 +66,13 @@ class SignalTrainer(object):
             self.epoch0      = self.train_state.get('epoch', 0)
             self.start_batch = self.train_state.get('batch', 0)
             self.start_epoch = int(self.epoch0)
-            self.nepochs    += self.start_epoch
             print(f"\n      Loading checkpoint from {self._checkpoint_manager.checkpoint_path()}: epoch={self.start_epoch}, batch={self.start_batch}\n")
 
-    def update_weights(self, loss: Tensor):
-        self.optimizer.zero_grad()
-        loss.backward()
-        self.optimizer.step()
+    def conditionally_update_weights(self, loss: Tensor):
+        if self.mode == TSet.Train:
+            self.optimizer.zero_grad()
+            loss.backward()
+            self.optimizer.step()
 
     def get_batch(self, tset: TSet, batch_index) -> Tuple[torch.Tensor,torch.Tensor]:
         dset: xa.Dataset = self.loader.get_batch(tset,batch_index)
@@ -82,58 +81,53 @@ class SignalTrainer(object):
         input: Tensor = torch.concat((t[:, None, :], y), dim=1)
         return input, target
 
-    def step_validation(self, threshold = None):
-        self.model.train(False)
-        losses, nb = [], self.loader.nbatches(TSet.Validation)
-        print(f"      Exec validation: {nb} batches, nelements = {self.loader.nelements(TSet.Validation)}, device={self.device}\n")
-        for ibatch in range(0, nb):
-            batch_input, batch_target = self.get_batch(TSet.Validation, ibatch)
-            batch_losses = []
-            for ielem in range(batch_input.shape[0]):
-                elem_input, elem_target = batch_input[ielem:ielem+1], batch_target[ielem:ielem+1]
-                #print(f" >>>> batch_input:  {batch_input.shape} -> {elem_input.shape}")
-                #print(f" >>>> batch_target: {batch_target.shape} -> {elem_target.shape}")
-                result: Tensor = self.model(elem_input)
-                #print(f" >>>> result:       {result.shape}")
-                fr, ft, fi = result.squeeze().item(), elem_target.squeeze().item(), elem_input[0,1,:]
-                loss: float = abs( fr - ft )
-                if (threshold is not None) and (loss > threshold):
-                    print(f" B-{ibatch}:{ielem} loss = {loss:.3f}, fr={fr:.2f}, ft={ft:.2f}, target_range=({batch_target.min().item():.2f}, {batch_target.max().item():.2f}), "
-                          f"input{list(fi.shape)}: stats=({fi.min().item():.2f},{fi.max().item():.2f},{fi.mean().item():.2f},{fi.std().item():.2f})")
-                else:
-                    batch_losses.append(loss)
-            print( f"                  B-{ibatch}: loss = {np.array(batch_losses).mean():.3f}")
-            losses.extend(batch_losses)
-        return np.array(losses)
+    @property
+    def mode(self) -> TSet:
+        return TSet.Validation if self.cfg.mode.startswith("val") else TSet.Train
 
+    @property
+    def nbatches(self) -> int:
+        return self.loader.nbatches(self.mode)
 
-    def compute(self,mode:TSet=TSet.Train):
-        nb = self.loader.nbatches(mode)
-        nepochs = self.nepochs if mode == TSet.Train else 1
-        start_epoch = self.start_epoch if mode == TSet.Train else 0
-        print(f"SignalTrainer[{mode}]: {nb} batches, {self.nepochs} epochs, nelements = {self.loader.nelements(TSet.Train)}, device={self.device}")
+    @property
+    def nepochs(self) -> int:
+        return self.cfg.nepochs if self.training else 1
+
+    @property
+    def epoch_range(self) -> Tuple[int,int]:
+        e0: int = self.start_epoch if (self.mode == TSet.Train) else 0
+        return e0, e0+self.nepochs
+
+    def set_train_status(self):
+        if self.mode == TSet.Train:
+            self.model.train(True)
+
+    @property
+    def training(self) -> bool:
+        return not self.cfg.mode.startswith("val")
+
+    def compute(self):
+        print(f"SignalTrainer[{self.mode}]: {self.nbatches} batches, {self.nepochs} epochs, nelements = {self.loader.nelements(self.mode)}, device={self.device}")
         with self.device:
-            for epoch in range(start_epoch,nepochs):
-                if mode == TSet.Train:
-                    self.model.train(True)
+            self.set_train_status()
+            for epoch in range(*self.epoch_range):
                 losses, log_interval = [], 200
-                batch0 = self.start_batch if ((epoch == self.start_epoch) and (mode == TSet.Train)) else 0
-                for ibatch in range(batch0,nb):
+                batch0 = self.start_batch if ((epoch == self.start_epoch) and (self.mode == TSet.Train)) else 0
+                for ibatch in range(batch0,self.nbatches):
                     t0 = time.time()
-                    input, target = self.get_batch(mode,ibatch)
+                    batch_input, target = self.get_batch(self.mode,ibatch)
                     self.global_time = time.time()
-                    self.log.info( f"BATCH-{ibatch}: input={shp(input)}, target={shp(target)}")
-                    result: Tensor = self.model( input )
+                    self.log.info( f"BATCH-{ibatch}: input={shp(batch_input)}, target={shp(target)}")
+                    result: Tensor = self.model( batch_input )
                     loss: Tensor = self.loss_function( result.squeeze(), target.squeeze() )
-                    if mode == TSet.Train:
-                        self.update_weights(loss)
+                    self.conditionally_update_weights(loss)
                     losses.append(loss.item())
-                    if (mode == TSet.Train) and ((ibatch % log_interval == 0) or ((ibatch < 5) and (epoch==0))):
+                    if (self.mode == TSet.Train) and ((ibatch % log_interval == 0) or ((ibatch < 5) and (epoch==0))):
                         aloss = np.array(losses)
                         print(f"E-{epoch} B-{ibatch} loss={aloss.mean():.3f} ({aloss.min():.3f} -> {aloss.max():.3f}), dt={time.time()-t0:.4f} sec")
                         losses = []
 
-                if mode == TSet.Train:
+                if self.mode == TSet.Train:
                     self._checkpoint_manager.save_checkpoint( epoch, 0 )
                 else:
                     val_losses = np.array(losses)
