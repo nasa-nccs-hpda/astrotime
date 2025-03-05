@@ -20,7 +20,7 @@ def my_app(cfg: DictConfig) -> None:
 
 	trainer = SignalTrainer( cfg.train, sinusoid_loader, encoder, model )
 	trainer.initialize_checkpointing(version)
-	trainer.train()
+	trainer.compute()
 
 if __name__ == "__main__":
 	my_app()
