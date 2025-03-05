@@ -1,7 +1,5 @@
 import os, glob, hydra, torch
 from omegaconf import DictConfig, OmegaConf
-# from typing import Any, Dict, List, Tuple, Type, Optional, Union, Hashable
-import xarray as xa, numpy as np
 from torch import nn
 from astrotime.loaders.sinusoid import ncSinusoidLoader
 from astrotime.encoders.baseline import ValueEncoder, ValueEmbeddingLayer
@@ -20,7 +18,7 @@ def my_app(cfg: DictConfig) -> None:
 
 	trainer = SignalTrainer( cfg.train, sinusoid_loader, encoder, model )
 	trainer.initialize_checkpointing(version)
-	trainer.train()
+	trainer.compute()
 
 if __name__ == "__main__":
 	my_app()

@@ -82,7 +82,7 @@ class SignalTrainer(object):
         input: Tensor = torch.concat((t[:, None, :], y), dim=1)
         return input, target
 
-    def exec_validation(self, threshold = None):
+    def step_validation(self, threshold = None):
         self.model.train(False)
         losses, nb = [], self.loader.nbatches(TSet.Validation)
         print(f"      Exec validation: {nb} batches, nelements = {self.loader.nelements(TSet.Validation)}, device={self.device}\n")
@@ -106,29 +106,35 @@ class SignalTrainer(object):
             losses.extend(batch_losses)
         return np.array(losses)
 
-    def train(self):
-        nb = self.loader.nbatches(TSet.Train)
-        print(f"SignalTrainer: {nb} batches, {self.nepochs} epochs, nelements = {self.loader.nelements(TSet.Train)}, device={self.device}")
+
+    def compute(self,mode:TSet=TSet.Train):
+        nb = self.loader.nbatches(mode)
+        nepochs = self.nepochs if mode == TSet.Train else 1
+        start_epoch = self.start_epoch if mode == TSet.Train else 0
+        print(f"SignalTrainer[{mode}]: {nb} batches, {self.nepochs} epochs, nelements = {self.loader.nelements(TSet.Train)}, device={self.device}")
         with self.device:
-            for epoch in range(self.start_epoch,self.nepochs):
-                self.model.train(True)
+            for epoch in range(start_epoch,nepochs):
+                if mode == TSet.Train:
+                    self.model.train(True)
                 losses, log_interval = [], 200
-                batch0 = self.start_batch if (epoch == self.start_epoch) else 0
+                batch0 = self.start_batch if ((epoch == self.start_epoch) and (mode == TSet.Train)) else 0
                 for ibatch in range(batch0,nb):
                     t0 = time.time()
-                    input, target = self.get_batch(TSet.Train,ibatch)
+                    input, target = self.get_batch(mode,ibatch)
                     self.global_time = time.time()
-                    self.log.info( f"TRAIN BATCH-{ibatch}: input={shp(input)}, target={shp(target)}")
+                    self.log.info( f"BATCH-{ibatch}: input={shp(input)}, target={shp(target)}")
                     result: Tensor = self.model( input )
                     loss: Tensor = self.loss_function( result.squeeze(), target.squeeze() )
-                    self.update_weights(loss)
+                    if mode == TSet.Train:
+                        self.update_weights(loss)
                     losses.append(loss.item())
                     if (ibatch % log_interval == 0) or ((ibatch < 5) and (epoch==0)):
                         aloss = np.array(losses)
                         print(f"E-{epoch} B-{ibatch} loss={aloss.mean():.3f} ({aloss.min():.3f} -> {aloss.max():.3f}), dt={time.time()-t0:.4f} sec")
                         losses = []
 
-                self._checkpoint_manager.save_checkpoint( epoch, 0 )
+                if mode == TSet.Train:
+                    self._checkpoint_manager.save_checkpoint( epoch, 0 )
 
 
 
