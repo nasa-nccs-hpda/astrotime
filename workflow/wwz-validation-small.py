@@ -8,7 +8,7 @@ from astrotime.encoders.wavelet import WaveletEmbeddingLayer
 from astrotime.trainers.signal_trainer import SignalTrainer
 from astrotime.models.cnn_baseline import get_model_from_cfg
 from astrotime.config.context import astrotime_initialize
-from util.series import TSet
+from astrotime.util.series import TSet
 
 version = "sinusoid_period.wwz_small"
 
