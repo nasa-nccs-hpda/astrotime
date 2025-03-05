@@ -10,10 +10,10 @@ version = "sinusoid_period.baseline"
 
 @hydra.main(version_base=None, config_path="../config", config_name=version)
 def my_app(cfg: DictConfig) -> None:
-	device: torch.device = astrotime_initialize(cfg,version)
-	sinusoid_loader = ncSinusoidLoader( cfg.data )
+	device: torch.device = astrotime_initialize(cfg, version)
+	sinusoid_loader = ncSinusoidLoader(cfg.data)
 	encoder = ValueEncoder( cfg.transform, device )
-	embedding = ValueEmbeddingLayer( cfg.transform, device)
+	embedding = ValueEmbeddingLayer( cfg.transform, device )
 	model: nn.Module = get_model_from_cfg( cfg.model, device, embedding, encoder )
 
 	trainer = SignalTrainer( cfg.train, sinusoid_loader, encoder, model )
