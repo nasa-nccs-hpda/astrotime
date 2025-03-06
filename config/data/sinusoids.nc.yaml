@@ -1,6 +1,6 @@
-source: sinusoid
-dataset_root:  "${platform.project_root}/sinusoids/nc"
-dataset_files:  "padded_sinusoids_*.nc"
+source: sinusoid                                          # Dataset type (currently only sinusoid is supported)
+dataset_root:  "${platform.project_root}/sinusoids/nc"    # Location of processed netcdf files
+dataset_files:  "padded_sinusoids_*.nc"                   # Glob pattern for file names
 file_size: 1000               # Number of sinusoids in a single nc file
 batch_size: 50                # Batch size for training
 validation_fraction: 0.1      # Fraction of training dataset that is used for validation

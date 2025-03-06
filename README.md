@@ -13,7 +13,7 @@ purpose: Template for python projects tailored to scientific applications (e.g.,
 * If mamba is not available, install [miniforge](https://github.com/conda-forge/miniforge) (or load mamba module)
 * Execute the following to set up a conda environment for astrotime:
 
-###### Torch Environment
+###### Torch Environment (Current)
 
     >   * mamba create -n astrotime.pt ninja python=3.10
     >   * mamba activate astrotime
@@ -43,7 +43,46 @@ This project provides two ML workflows:
 ### Configuration
 
 The workflows are configured using [hydra](https://hydra.cc/docs/intro/).
-* All configuration files are found under **.config**.
+* All hydra yaml configuration files are found under **.config**.
 * The workflow configurations can be modified at runtime as [supported by hydra](https://hydra.cc/docs/tutorials/basic/your_first_app/simple_cli/).
 * For example, the following command runs the baseline workflow on gpu 3 with random initialization (i.e. ignoring any existing checkpoints):
     >   python .workflow/train-baseline-cnn.py platform.gpu=3 train.refresh_state=True
+* To run validation (no training), execute:
+    >   python .workflow/train-baseline-cnn.py training.mode=valid
+
+#### Configuration Parameters
+
+Here is a partial list of configuration parameters with typical values.  Their values are configured in the hydra yaml files and reconfigurable on the command line:
+
+       platform.project_root:  "/explore/nobackup/projects/ilab/data/astrotime"   # Checkpoint and log files are saved under this directory
+       platform.gpu: 0                                                            # Index of gpu to execcute on
+       platform.log_level: "info"                                                 # Log level: typically debug or info
+       data.source: sinusoid                                            # Dataset type (currently only sinusoid is supported)
+       data.dataset_root:  "${platform.project_root}/sinusoids/nc"      # Location of processed netcdf files
+       data.dataset_files:  "padded_sinusoids_*.nc"                     # Glob pattern for file names
+       data.file_size: 1000                                             # Number of sinusoids in a single nc file
+       data.batch_size: 50                                              # Batch size for training
+       data.validation_fraction: 0.1                                    # Fraction of training dataset that is used for validation
+       data.dset_reduction: 1.0                                         # Fraction of the full dataset that is used for training/validation
+       transform.series_length: 1536                         # Length of subset of input timeseries to process
+       transform.nfeatures: 1                                # Number of feaatures to be passed to network
+       transform.sparsity: 0.0                               # Fraction of observations to drop (randomly)
+       transform.batch_size: ${data.batch_size}              # Batch size for training
+       model.cnn_channels: 64                                # Number of channels in first CNN layer
+       model.dense_channels: 64                              # Number of channels in dense layer
+       model.out_channels: 1                                 # Number of network output channels
+       model.series_length: ${transform.series_length}       # Length of network input series
+       model.num_cnn_layers: 3                               # Number of CNN layers in a CNN block
+       model.num_blocks: 7                                   # Number of CNN blocks in the network
+       model.pool_size: 2                                    # Max pool size for every block
+       model.stride: 1                                       # Stride value for every CNN layer
+       model.kernel_size: 3                                  # Kernel size for every CNN layer
+       model.cnn_expansion_factor: 4                         # Increase in the number of channels from one CNN layer to the next
+       training.optim: rms                                              # Optimizer
+       training.lr: 1e-3                                                # Learning rate
+       training.nepochs: 5000                                           #  Training Epochs
+       training.refresh_state: False                                    # Start from random weights (Ignore existing checkpoints)
+       training.overwrite_log: True                                     # Start new log file
+       training.results_path: "${platform.project_root}/results"        # Save results here
+       training.weight_decay: 0.0                                       # Weight decay parameter for optimizer
+       training.mode:  train                                            # execution mode: 'train' or 'valid'
