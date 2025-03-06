@@ -1,8 +1,3 @@
----
-title: ILAB TEMPLATE - Data Science
-purpose: Template for python projects tailored to scientific applications (e.g., machine learning)
----
-
 ## Astrotime
 
 #### Machine learning methods for irregularly spaced time series
@@ -37,15 +32,18 @@ purpose: Template for python projects tailored to scientific applications (e.g.,
 
 ### Workflows
 This project provides two ML workflows:
-* _Baseline_ (**.workflow/train-baseline-cnn.py**):  This workflow runs the baseline CNN (developed by Brian Powell) which takes only timeseries value data as input.
-* _WWZ_ (**.workflow/train-wwz-cnn.py**): This workflow runs the same baseline CNN operating on a weighted wavelet z-transform, which enfolds both the time and value data from the timeseries.
+    *   _Baseline_ (**.workflow/train-baseline-cnn.py**):  This workflow runs the baseline CNN (developed by Brian Powell) which takes only timeseries value data as input.
+    *   _WWZ_ (**.workflow/train-wwz-cnn.py**): This workflow runs the same baseline CNN operating on a weighted wavelet z-transform, which enfolds both the time and value data from the timeseries. 
+The *_small versions execute the workflows on a subset (1/10) of the full training dataset.
+The workflows save checkpoint files at the end of each epoch.  By default the model is initialized with any existing checkpoint file at the begining of script execution.  To
+execute the script with a new set of checkpoints (while keeping the old ones), create a new script with a different value of the *version* parameter.  
 
 ### Configuration
 
 The workflows are configured using [hydra](https://hydra.cc/docs/intro/).
 * All hydra yaml configuration files are found under **.config**.
 * The workflow configurations can be modified at runtime as [supported by hydra](https://hydra.cc/docs/tutorials/basic/your_first_app/simple_cli/).
-* For example, the following command runs the baseline workflow on gpu 3 with random initialization (i.e. ignoring any existing checkpoints):
+* For example, the following command runs the baseline workflow on gpu 3 with random initialization (i.e. ignoring & overwriting any existing checkpoints):
     >   python .workflow/train-baseline-cnn.py platform.gpu=3 train.refresh_state=True
 * To run validation (no training), execute:
     >   python .workflow/train-baseline-cnn.py training.mode=valid
@@ -54,7 +52,7 @@ The workflows are configured using [hydra](https://hydra.cc/docs/intro/).
 
 Here is a partial list of configuration parameters with typical values.  Their values are configured in the hydra yaml files and reconfigurable on the command line:
 
-       platform.project_root:  "/explore/nobackup/projects/ilab/data/astrotime"   # Checkpoint and log files are saved under this directory
+       platform.project_root:  "/explore/nobackup/projects/ilab/data/astrotime"   # Base directory for all saved files
        platform.gpu: 0                                                            # Index of gpu to execcute on
        platform.log_level: "info"                                                 # Log level: typically debug or info
        data.source: sinusoid                                            # Dataset type (currently only sinusoid is supported)
@@ -67,22 +65,20 @@ Here is a partial list of configuration parameters with typical values.  Their v
        transform.series_length: 1536                         # Length of subset of input timeseries to process
        transform.nfeatures: 1                                # Number of feaatures to be passed to network
        transform.sparsity: 0.0                               # Fraction of observations to drop (randomly)
-       transform.batch_size: ${data.batch_size}              # Batch size for training
        model.cnn_channels: 64                                # Number of channels in first CNN layer
        model.dense_channels: 64                              # Number of channels in dense layer
        model.out_channels: 1                                 # Number of network output channels
-       model.series_length: ${transform.series_length}       # Length of network input series
        model.num_cnn_layers: 3                               # Number of CNN layers in a CNN block
        model.num_blocks: 7                                   # Number of CNN blocks in the network
        model.pool_size: 2                                    # Max pool size for every block
        model.stride: 1                                       # Stride value for every CNN layer
        model.kernel_size: 3                                  # Kernel size for every CNN layer
        model.cnn_expansion_factor: 4                         # Increase in the number of channels from one CNN layer to the next
-       training.optim: rms                                              # Optimizer
-       training.lr: 1e-3                                                # Learning rate
-       training.nepochs: 5000                                           #  Training Epochs
-       training.refresh_state: False                                    # Start from random weights (Ignore existing checkpoints)
-       training.overwrite_log: True                                     # Start new log file
-       training.results_path: "${platform.project_root}/results"        # Save results here
-       training.weight_decay: 0.0                                       # Weight decay parameter for optimizer
-       training.mode:  train                                            # execution mode: 'train' or 'valid'
+       train.optim: rms                                              # Optimizer
+       train.lr: 1e-3                                                # Learning rate
+       train.nepochs: 5000                                           #  Training Epochs
+       train.refresh_state: False                                    # Start from random weights (Ignore & overwrite existing checkpoints)
+       train.overwrite_log: True                                     # Start new log file
+       train.results_path: "${platform.project_root}/results"        # Checkpoint and log files are saved under this directory
+       train.weight_decay: 0.0                                       # Weight decay parameter for optimizer
+       train.mode:  train                                            # execution mode: 'train' or 'valid'
