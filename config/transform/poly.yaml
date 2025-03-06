@@ -1,6 +1,0 @@
-series_length: 1536                 # Length of subset of input timeseries to process
-sparsity: 0.0                       # Fraction of obaservation to drop (randomly)
-batch_size: ${data.batch_size}      # Batch size for training
-nstrides: 16
-domain_scale: 0.75
-degree: 3
