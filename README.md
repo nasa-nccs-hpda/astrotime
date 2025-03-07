@@ -36,7 +36,8 @@ This project provides two ML workflows:
     *   _WWZ_ (**.workflow/train-wwz-cnn.py**): This workflow runs the same baseline CNN operating on a weighted wavelet z-transform, which enfolds both the time and value data from the timeseries. 
 The *_small versions execute the workflows on a subset (1/10) of the full training dataset.
 The workflows save checkpoint files at the end of each epoch.  By default the model is initialized with any existing checkpoint file at the begining of script execution.  To
-execute the script with a new set of checkpoints (while keeping the old ones), create a new script with a different value of the *version* parameter.  
+execute the script with a new set of checkpoints (while keeping the old ones), create a new script with a different value of the *version* parameter 
+(and a new defaults hydra yaml file with the same name in the config dir).  
 
 ### Configuration
 
