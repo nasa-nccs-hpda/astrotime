@@ -28,11 +28,11 @@ class ValueEncoder(Encoder):
 				i0: int = random.randint(0, y.shape[0] - self.cfg.input_series_length)
 				ys: Tensor = torch.FloatTensor( y[i0:i0 + self.cfg.input_series_length] ).to(self.device)
 				xs: Tensor = torch.FloatTensor( x[i0:i0 + self.cfg.input_series_length] ).to(self.device)
-				y1.append( torch.unsqueeze( normalize(ys,p=1,dim=0), dim=0) )
+				y1.append( torch.unsqueeze( ys, dim=0) )
 				x1.append( torch.unsqueeze( xs, dim=0) )
 			Y, X = torch.concatenate(y1, dim=0), torch.concatenate(x1, dim=0)
 			if Y.ndim == 2: Y = torch.unsqueeze(Y, dim=2)
-			return X, Y
+			return X, normalize(Y)
 
 	def encode_batch(self, x0: np.ndarray, y0: np.ndarray ) -> Tuple[Tensor,Tensor]:
 		with (self.device):
