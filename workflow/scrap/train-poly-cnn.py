@@ -5,7 +5,7 @@ from astrotime.encoders.polynomial import PolyExpansion
 from astrotime.loaders.sinusoid import ncSinusoidLoader
 from astrotime.encoders.baseline import ValueEmbeddingLayer
 from astrotime.trainers.signal_trainer import SignalTrainer
-from models.cnn.cnn_baseline import get_model_from_cfg
+from astrotime.models.cnn.cnn_baseline import get_model_from_cfg
 from astrotime.config.context import astrotime_initialize
 version = "sinusoid_period.poly"
 
