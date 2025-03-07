@@ -1,20 +1,20 @@
 import hydra, torch
 from omegaconf import DictConfig
 from torch import nn
-from astrotime.encoders.baseline import ValueEncoder
 from astrotime.loaders.sinusoid import ncSinusoidLoader
-from astrotime.encoders.wavelet import WaveletEmbeddingLayer
+from astrotime.encoders.baseline import ValueEncoder
+from astrotime.encoders.polynomial import PolyEmbeddingLayer
 from astrotime.trainers.signal_trainer import SignalTrainer
 from models.cnn.cnn_baseline import get_model_from_cfg
 from astrotime.config.context import astrotime_initialize
-version = "sinusoid_period.wwz"
+version = "sinusoid_period.poly"
 
 @hydra.main(version_base=None, config_path="../config", config_name=version)
 def my_app(cfg: DictConfig) -> None:
-	device: torch.device = astrotime_initialize( cfg, version )
+	device: torch.device = astrotime_initialize(cfg, version)
+	sinusoid_loader = ncSinusoidLoader(cfg.data)
 	encoder = ValueEncoder( cfg.transform, device )
-	sinusoid_loader = ncSinusoidLoader( cfg.data )
-	embedding = WaveletEmbeddingLayer( cfg.transform, device)
+	embedding = PolyEmbeddingLayer( cfg.transform, device )
 	model: nn.Module = get_model_from_cfg( cfg.model, device, embedding, encoder )
 
 	trainer = SignalTrainer( cfg.train, sinusoid_loader, encoder, model )

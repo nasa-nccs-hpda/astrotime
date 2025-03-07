@@ -2,11 +2,22 @@ from astrotime.encoders.expansion import Expansion
 import random, time, torch, numpy as np
 from typing import Any, Dict, List, Optional, Tuple
 from torch import Tensor, device
+from .embedding import EmbeddingLayer
 from omegaconf import DictConfig, OmegaConf
 from numpy.polynomial.polynomial import Polynomial
 from astrotime.util.math import shp
 import logging
 log = logging.getLogger("astrotime")
+
+class PolyEmbeddingLayer(EmbeddingLayer):
+
+	def __init__(self, cfg, device: device):
+		EmbeddingLayer.__init__(self,cfg,device)
+
+	def embed(self, ts: torch.Tensor, ys: torch.Tensor ) -> Tensor:
+		print(f"     MODEL INPUT T: ts{list(ts.shape)}: ({ts.min().item():.2f}, {ts.max().item():.2f}, {ts.mean().item():.2f}, {ts.std().item():.2f}) ")
+		print(f"     MODEL INPUT Y: ys{list(ys.shape)}: ({ys.min().item():.2f}, {ys.max().item():.2f}, {ys.mean().item():.2f}, {ys.std().item():.2f}) ")
+		return ys
 
 
 class PolyExpansion(Expansion):

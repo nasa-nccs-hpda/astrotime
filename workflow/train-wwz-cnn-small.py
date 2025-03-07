@@ -1,12 +1,11 @@
-import os, glob, hydra, torch, logging
-from omegaconf import DictConfig, OmegaConf
-from typing import Any, Dict, List, Tuple, Type, Optional, Union, Hashable
+import hydra, torch
+from omegaconf import DictConfig
 from torch import nn
 from astrotime.encoders.baseline import ValueEncoder
 from astrotime.loaders.sinusoid import ncSinusoidLoader
 from astrotime.encoders.wavelet import WaveletEmbeddingLayer
 from astrotime.trainers.signal_trainer import SignalTrainer
-from astrotime.models.cnn_baseline import get_model_from_cfg
+from models.cnn.cnn_baseline import get_model_from_cfg
 from astrotime.config.context import astrotime_initialize
 version = "sinusoid_period.wwz_small"
 

@@ -13,7 +13,7 @@
     >   * mamba create -n astrotime.pt ninja python=3.10
     >   * mamba activate astrotime
     >   * pip install torch jupyterlab==4.0.13 ipywidgets==7.8.4 cuda-python jupyterlab_widgets ipykernel==6.29 ipympl ipython==8.26 xarray netCDF4
-    >   * pip install hydra-core rich  scikit-learn
+    >   * pip install torchcde torchdiffeq hydra-core rich  scikit-learn 
 
 ###### Tensorflow Environment (Deprecated)
 
@@ -44,9 +44,9 @@ The workflows are configured using [hydra](https://hydra.cc/docs/intro/).
 * All hydra yaml configuration files are found under **.config**.
 * The workflow configurations can be modified at runtime as [supported by hydra](https://hydra.cc/docs/tutorials/basic/your_first_app/simple_cli/).
 * For example, the following command runs the baseline workflow on gpu 3 with random initialization (i.e. ignoring & overwriting any existing checkpoints):
-    >   python .workflow/train-baseline-cnn.py platform.gpu=3 train.refresh_state=True
+    >   python workflow/train-baseline-cnn.py platform.gpu=3 train.refresh_state=True
 * To run validation (no training), execute:
-    >   python .workflow/train-baseline-cnn.py training.mode=valid
+    >   python workflow/train-baseline-cnn.py train.mode=valid platform.gpu=0
 
 #### Configuration Parameters
 
