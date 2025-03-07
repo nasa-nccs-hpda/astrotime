@@ -40,10 +40,10 @@ class ValueEncoder(Encoder):
 			i0: int = random.randint(0,  x.shape[1]-self.input_series_length )
 			Y: Tensor = torch.FloatTensor(y[:,i0:i0 + self.input_series_length]).to(self.device)
 			X: Tensor = torch.FloatTensor(x[:,i0:i0 + self.input_series_length]).to(self.device)
-			Y = normalize(Y,p=1,dim=1)
+			Y = normalize(Y)
 			if Y.ndim == 2: Y = torch.unsqueeze(Y, dim=2)
+			print( f" ** ENCODED BATCH: x{list(x0.shape)} y{list(y0.shape)} -> T{list(X.shape)} Y{list(Y.shape)} Yrange={Y.max().item()-Y.min().item():.4f}")
 			if self.chan_first: Y = Y.transpose(1,2)
-			self.log.info( f" ** ENCODED BATCH: x{list(x0.shape)} y{list(y0.shape)} -> T{list(X.shape)} Y{list(Y.shape)}")
 			return X, Y
 
 class ValueEmbeddingLayer(EmbeddingLayer):
