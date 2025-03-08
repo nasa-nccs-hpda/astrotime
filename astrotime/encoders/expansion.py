@@ -57,7 +57,7 @@ class Expansion(Encoder):
 			#print(f"apply_along_axis result: X{shp(X)} Y{shp(Y)} ")
 			Y = normalize(Y,p=1,dim=2)
 			if self.chan_first: Y = Y.transpose(1,2)
-			self.log.info( f" * ENCODED BATCH: x{list(xb.shape)} y{list(yb.shape)} -> X{list(X.shape)} Y{list(Y.shape)}")
+			self.log.debug( f" * ENCODED BATCH: x{list(xb.shape)} y{list(yb.shape)} -> X{list(X.shape)} Y{list(Y.shape)}")
 			return X, Y
 
 	def _apply_expansion(self, xy: np.ndarray ) -> np.ndarray:
