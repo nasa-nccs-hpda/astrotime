@@ -40,17 +40,17 @@ class RelationAwareTransformer(nn.Module):
 		hidden_state: torch.Tensor = self.fc(hidden_state)
 		return hidden_state
 
-# Generate dummy input tensors
-x_input = torch.rand((batch_size, seq_len, hidden_size))
-
-# Test RelativePosition
-relative_position_embeddings = relative_position_k(seq_len, seq_len)
-print("Relative Position Embeddings Shape:", relative_position_embeddings.shape)
-
-# Test RelationAwareAttentionHead
-output_attention_head = attention_head(x_input, x_input, x_input)
-print("RelationAwareAttentionHead Output Shape:", output_attention_head.shape)
-
-# Test RelationAwareMultiHeadAttention
-output_multihead_attention = multihead_attention(x_input, x_input, x_input)
-print("RelationAwareMultiHeadAttention Output Shape:", output_multihead_attention.shape)
+# # Generate dummy input tensors
+# x_input = torch.rand((batch_size, seq_len, hidden_size))
+#
+# # Test RelativePosition
+# relative_position_embeddings = relative_position_k(seq_len, seq_len)
+# print("Relative Position Embeddings Shape:", relative_position_embeddings.shape)
+#
+# # Test RelationAwareAttentionHead
+# output_attention_head = attention_head(x_input, x_input, x_input)
+# print("RelationAwareAttentionHead Output Shape:", output_attention_head.shape)
+#
+# # Test RelationAwareMultiHeadAttention
+# output_multihead_attention = multihead_attention(x_input, x_input, x_input)
+# print("RelationAwareMultiHeadAttention Output Shape:", output_multihead_attention.shape)
