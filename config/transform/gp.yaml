@@ -1,0 +1,4 @@
+sn_range_init: (1e-3, 1e10)          # (tuple): min and max value of the signal noise used for initialization (random uniform). Shape=(2,)
+sn_range_limits: (1e-3, 1)           # (tuple): min and max value allowed for the signal noise. Shape=(2,)
+n_gm: 10                             # (int): number of gaussian mixtures for the model
+max_f_init: 0                        # (float or None): maximum frequency used for initialization of the mean gaussian mixture. If zero, the maximum frequency possible in the data will be used

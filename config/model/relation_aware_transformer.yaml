@@ -1,0 +1,5 @@
+hidden_size: 768                  # (int): Hidden size for the model (embedding dimension).
+num_heads: 8                      # (int): Number of attention heads.
+k: 4                              # (int): Clipping distance for relative position embeddings.
+seq_len: 20                       # (int): Length of the input sequences.
+head_dim: 64                      # (int): Dimensionality of the attention head.
