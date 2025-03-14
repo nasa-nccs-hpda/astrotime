@@ -8,6 +8,7 @@ from astrotime.loaders.base import DataLoader
 import time, torch, logging, numpy as np
 from torch import nn, optim, Tensor
 from astrotime.util.series import TSet
+from astrotime.util.logging import elapsed
 
 def tocpu( c, idx=0 ):
     if isinstance( c, Tensor ):
@@ -124,7 +125,7 @@ class SignalTrainer(object):
                     losses.append(loss.item())
                     if (self.mode == TSet.Train) and ((ibatch % log_interval == 0) or ((ibatch < 5) and (epoch==0))):
                         aloss = np.array(losses)
-                        print(f"E-{epoch} B-{ibatch} loss={aloss.mean():.3f} ({aloss.min():.3f} -> {aloss.max():.3f}), dt={time.time()-t0:.4f} sec")
+                        print(f"E-{epoch} B-{ibatch} loss={aloss.mean():.3f} ({aloss.min():.3f} -> {aloss.max():.3f}), dt={elapsed(t0):.5f} sec")
                         losses = []
 
                 if self.mode == TSet.Train:
