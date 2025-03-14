@@ -13,12 +13,18 @@ class EmbeddingLayer(torch.nn.Module):
 		self.batch_size = cfg.batch_size
 		self.log = logging.getLogger()
 		self.log.info(f"EmbeddingLayer: series_length={self.series_length} batch_size={self.batch_size} ")
+		self.init_state = True
 
-	def forward(self, input: torch.Tensor ):
+	def init_log(self, msg: str):
+		if self.init_state: self.log.info(msg)
+
+	def forward(self, input: torch.Tensor ) -> torch.Tensor:
 		self.log.debug(f"WaveletEmbeddingLayer shapes:")
 		xs: torch.Tensor = input[:, 0, :]
 		ys: torch.Tensor = input[:, 1:, :]
-		return self.embed(xs,ys)
+		result: torch.Tensor = self.embed(xs,ys)
+		self.init_state = False
+		return result
 
 	def embed(self, xs: Tensor, ys: Tensor ) -> Tensor:
 		raise NotImplementedError("EmbeddingLayer.embed() not implemented")

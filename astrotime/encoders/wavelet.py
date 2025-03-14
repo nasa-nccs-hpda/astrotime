@@ -13,14 +13,15 @@ class WaveletEmbeddingLayer(EmbeddingLayer):
 		fspace = logspace if (self.cfg.fscale == "log") else np.linspace
 		self.freq = torch.FloatTensor( fspace( self.cfg.freq_start, self.cfg.freq_end, self.cfg.nfreq ) ).to(self.device)
 		self.ones: Tensor = None
-		self.log.info(f"WaveletEmbeddingLayer: nfreq={self.nfreq} ")
+		self.init_log(f"WaveletEmbeddingLayer: nfreq={self.nfreq} ")
 
 	def embed(self, ts: torch.Tensor, ys: torch.Tensor ) -> Tensor:
-		self.log.debug(f"WaveletEmbeddingLayer shapes:")
+		t0 = time.time()
+		self.init_log(f"WaveletEmbeddingLayer shapes:")
 		if self.ones is None:
 			self.ones: Tensor = torch.ones( ys.shape[0], self.nfreq, self.series_length, device=self.device)
 		tau = 0.5 * (ts[:, self.series_length // 2] + ts[:, self.series_length // 2 + 1])
-		self.log.debug(f" ys{list(ys.shape)} ts{list(ts.shape)} tau{list(tau.shape)}")
+		self.init_log(f" ys{list(ys.shape)} ts{list(ts.shape)} tau{list(tau.shape)}")
 		tau: Tensor = tau[:, None, None]
 		omega = self.freq * 2.0 * math.pi
 		omega_: Tensor = omega[None, :, None]  # broadcast-to(self.batch_size,self.nfreq,self.series_length)
@@ -42,42 +43,43 @@ class WaveletEmbeddingLayer(EmbeddingLayer):
 		sin_cos: Tensor = w_prod(sin_basis, cos_basis)
 		sin_sin: Tensor = w_prod(sin_basis, sin_basis)
 		cos_cos: Tensor = w_prod(cos_basis, cos_basis)
-		self.log.debug(f" --> sin_one{list(sin_one.shape)} cos_one{list(cos_one.shape)} sin_cos{list(sin_cos.shape)} sin_sin{list(sin_sin.shape)}")
+		self.init_log(f" --> sin_one{list(sin_one.shape)} cos_one{list(cos_one.shape)} sin_cos{list(sin_cos.shape)} sin_sin{list(sin_sin.shape)}")
 
 		numerator: Tensor = 2 * (sin_cos - sin_one * cos_one)
 		denominator: Tensor = (cos_cos - cos_one ** 2) - (sin_sin - sin_one ** 2)
 		time_shift: Tensor = torch.atan2(numerator, denominator) / (2 * omega)  # Eq. (S5)
 		time_shift_: Tensor = time_shift[:, :, None]  # broadcast-to(self.batch_size,self.nfreq,self.series_length)
-		self.log.debug(f" --> omega{list(omega.shape)} time_shift{list(time_shift.shape)} tau{list(tau.shape)}")
+		self.init_log(f" --> omega{list(omega.shape)} time_shift{list(time_shift.shape)} tau{list(tau.shape)}")
 
 		sin_shift: Tensor = torch.sin(omega_ * (ts - time_shift_))
 		cos_shift: Tensor = torch.cos(omega_ * (ts - time_shift_))
 		sin_tau_center: Tensor = torch.sin(omega * (time_shift - tau[:, :, 0]))
 		cos_tau_center: Tensor = torch.cos(omega * (time_shift - tau[:, :, 0]))
-		self.log.debug(f" --> cos_tau_center{list(cos_tau_center.shape)} sin_tau_center{list(sin_tau_center.shape)}")
+		self.init_log(f" --> cos_tau_center{list(cos_tau_center.shape)} sin_tau_center{list(sin_tau_center.shape)}")
 
 		ys_cos_shift: Tensor = w_prod(ys, cos_shift)
 		ys_sin_shift: Tensor = w_prod(ys, sin_shift)
 		ys_one: Tensor = w_prod(ys, self.ones)
-		self.log.debug(f" --> ys_one{list(ys_one.shape)} ys{list(ys.shape)} ones{list(self.ones.shape)}")
+		self.init_log(f" --> ys_one{list(ys_one.shape)} ys{list(ys.shape)} ones{list(self.ones.shape)}")
 
 		cos_shift_one: Tensor = w_prod(cos_shift, self.ones)
 		sin_shift_one: Tensor = w_prod(sin_shift, self.ones)
-		self.log.debug(f" --> sin_shift_one{list(sin_shift_one.shape)} cos_shift_one{list(cos_shift_one.shape)}")
+		self.init_log(f" --> sin_shift_one{list(sin_shift_one.shape)} cos_shift_one{list(cos_shift_one.shape)}")
 
 		A: Tensor = 2 * (ys_cos_shift - ys_one * cos_shift_one)
 		B: Tensor = 2 * (ys_sin_shift - ys_one * sin_shift_one)
-		self.log.debug(f" --> A{list(A.shape)} B{list(B.shape)} ")
+		self.init_log(f" --> A{list(A.shape)} B{list(B.shape)} ")
 
 		a0: Tensor = ys_one
 		a1: Tensor = cos_tau_center * A - sin_tau_center * B  # Eq. (S6)
 		a2: Tensor = sin_tau_center * A + cos_tau_center * B  # Eq. (S7)
-		self.log.debug(f" --> a0{list(a0.shape)} a1{list(a1.shape)} a2{list(a2.shape)}")
+		self.init_log(f" --> a0{list(a0.shape)} a1{list(a1.shape)} a2{list(a2.shape)}")
 
 		wwp: Tensor = a1 ** 2 + a2 ** 2
 		phase: Tensor = torch.atan2(a2, a1)
-		self.log.debug(f"WaveletEmbeddingLayer: wwp{list(wwp.shape)}({torch.mean(wwp):.2f},{torch.std(wwp):.2f}), phase{list(phase.shape)}({torch.mean(phase):.2f},{torch.std(phase):.2f})")
-		return torch.concat( (wwp[:, None, :] , phase[:, None, :]), dim=1)
+		self.init_log(f"WaveletEmbeddingLayer: wwp{list(wwp.shape)}({torch.mean(wwp):.2f},{torch.std(wwp):.2f}), phase{list(phase.shape)}({torch.mean(phase):.2f},{torch.std(phase):.2f})")
+		rv = torch.concat( (wwp[:, None, :] , phase[:, None, :]), dim=1)
+		self.init_log(f" Completed in {time.time() - t0:.5f} sec: result{list(rv.shape)}")
 
 	@property
 	def nfeatures(self) -> int:
@@ -92,14 +94,15 @@ class WaveletProjectionLayer(EmbeddingLayer):
 		fspace = logspace if (self.cfg.fscale == "log") else np.linspace
 		self.freq = torch.FloatTensor( fspace( self.cfg.freq_start, self.cfg.freq_end, self.cfg.nfreq ) ).to(self.device)
 		self.ones: Tensor = None
-		self.log.info(f"WaveletProjectionLayer: nfreq={self.nfreq} ")
+		self.init_log(f"WaveletProjectionLayer: nfreq={self.nfreq} ")
 
 	def embed(self, ts: torch.Tensor, ys: torch.Tensor ) -> Tensor:
-		self.log.debug(f"WaveletProjectionLayer shapes:")
+		t0 = time.time()
+		self.init_log(f"WaveletProjectionLayer shapes:")
 		if self.ones is None:
 			self.ones: Tensor = torch.ones( ys.shape[0], self.nfreq, self.series_length, device=self.device)
 		tau = 0.5 * (ts[:, self.series_length // 2] + ts[:, self.series_length // 2 + 1])
-		self.log.debug(f" ys{list(ys.shape)} ts{list(ts.shape)} tau{list(tau.shape)}")
+		self.init_log(f" ys{list(ys.shape)} ts{list(ts.shape)} tau{list(tau.shape)}")
 		tau: Tensor = tau[:, None, None]
 		omega = self.freq * 2.0 * math.pi
 		omega_: Tensor = omega[None, :, None]  # broadcast-to(self.batch_size,self.nfreq,self.series_length)
@@ -114,14 +117,15 @@ class WaveletProjectionLayer(EmbeddingLayer):
 
 		pw1: Tensor = torch.sin(omega * dt)
 		pw2: Tensor = torch.cos(omega * dt)
-		self.log.debug(f" --> pw0{self.ones.shape} pw1{list(pw1.shape)} pw2{pw2.shape}  ")
+		self.init_log(f" --> pw0{self.ones.shape} pw1{list(pw1.shape)} pw2{pw2.shape}  ")
 
 		p0: Tensor = w_prod(ys, self.ones)
 		p1: Tensor = w_prod(ys, pw1)
 		p2: Tensor = w_prod(ys, pw2)
-		self.log.debug(f" --> p0{list(p0.shape)} p1{list(p1.shape)} p2{list(p2.shape)}")
+		self.init_log(f" --> p0{list(p0.shape)} p1{list(p1.shape)} p2{list(p2.shape)}")
 
-		return torch.concat( (p0[:, None, :], p1[:, None, :], p2[:, None, :]), dim=1)
+		rv: Tensor = torch.concat( (p0[:, None, :], p1[:, None, :], p2[:, None, :]), dim=1)
+		self.init_log(f" Completed in {time.time()-t0:.5f} sec: result{list(rv.shape)}")
 
 	@property
 	def nfeatures(self) -> int:
