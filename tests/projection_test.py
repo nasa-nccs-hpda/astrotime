@@ -7,7 +7,7 @@ from astrotime.encoders.wavelet import WaveletProjectionLayer
 from astrotime.trainers.signal_trainer import SignalTrainer
 from astrotime.models.cnn.cnn_baseline import get_model_from_cfg
 from astrotime.config.context import astrotime_initialize
-version = "sinusoid_period.wwz"
+version = "sinusoid_period.wp"
 
 @hydra.main(version_base=None, config_path="../config", config_name=version)
 def my_app(cfg: DictConfig) -> None:
