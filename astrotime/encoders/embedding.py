@@ -23,3 +23,11 @@ class EmbeddingLayer(torch.nn.Module):
 	def embed(self, xs: Tensor, ys: Tensor ) -> Tensor:
 		raise NotImplementedError("EmbeddingLayer.embed() not implemented")
 
+	@property
+	def nfeatures(self) -> int:
+		raise NotImplementedError("EmbeddingLayer.nfeatures not implemented")
+
+	@property
+	def output_series_length(self):
+		return self.series_length
+

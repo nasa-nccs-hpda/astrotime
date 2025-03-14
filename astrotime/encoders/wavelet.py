@@ -79,34 +79,9 @@ class WaveletEmbeddingLayer(EmbeddingLayer):
 		self.log.debug(f"WaveletEmbeddingLayer: wwp{list(wwp.shape)}({torch.mean(wwp):.2f},{torch.std(wwp):.2f}), phase{list(phase.shape)}({torch.mean(phase):.2f},{torch.std(phase):.2f})")
 		return torch.concat( (wwp[:, None, :] , phase[:, None, :]), dim=1)
 
-	def project(self, ts: torch.Tensor, ys: torch.Tensor ) -> Tensor:
-		self.log.debug(f"WaveletEmbeddingLayer projection shapes:")
-		if self.ones is None:
-			self.ones: Tensor = torch.ones( ys.shape[0], self.nfreq, self.series_length, device=self.device)
-		tau = 0.5 * (ts[:, self.series_length // 2] + ts[:, self.series_length // 2 + 1])
-		self.log.debug(f" ys{list(ys.shape)} ts{list(ts.shape)} tau{list(tau.shape)}")
-		tau: Tensor = tau[:, None, None]
-		omega = self.freq * 2.0 * math.pi
-		omega_: Tensor = omega[None, :, None]  # broadcast-to(self.batch_size,self.nfreq,self.series_length)
-		ts: Tensor = ts[:, None, :]  # broadcast-to(self.batch_size,self.nfreq,self.series_length)
-		dt: Tensor = (ts - tau)
-		dz: Tensor = omega_ * dt
-		weights: Tensor = torch.exp(-self.C * dz ** 2)
-		sum_w: Tensor = torch.sum(weights, dim=-1)
-
-		def w_prod( x0: Tensor, x1: Tensor) -> Tensor:
-			return torch.sum(weights * x0 * x1, dim=-1) / sum_w
-
-		pw1: Tensor = torch.sin(omega * dt)
-		pw2: Tensor = torch.cos(omega * dt)
-		self.log.debug(f" --> pw0{self.ones.shape} pw1{list(pw1.shape)} pw2{pw2.shape}  ")
-
-		p0: Tensor = w_prod(ys, self.ones)
-		p1: Tensor = w_prod(ys, pw1)
-		p2: Tensor = w_prod(ys, pw2)
-		self.log.debug(f" --> p0{list(p0.shape)} p1{list(p1.shape)} p2{list(p2.shape)}")
-
-		return torch.concat( (p0[:, None, :], p1[:, None, :], p2[:, None, :]), dim=1)
+	@property
+	def nfeatures(self) -> int:
+		return 2
 
 class WaveletProjectionLayer(EmbeddingLayer):
 
@@ -147,3 +122,7 @@ class WaveletProjectionLayer(EmbeddingLayer):
 		self.log.debug(f" --> p0{list(p0.shape)} p1{list(p1.shape)} p2{list(p2.shape)}")
 
 		return torch.concat( (p0[:, None, :], p1[:, None, :], p2[:, None, :]), dim=1)
+
+	@property
+	def nfeatures(self) -> int:
+		return 3

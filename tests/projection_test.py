@@ -15,7 +15,7 @@ def my_app(cfg: DictConfig) -> None:
 	encoder = ValueEncoder( cfg.transform, device )
 	sinusoid_loader = ncSinusoidLoader( cfg.data )
 	embedding = WaveletProjectionLayer( cfg.transform, device)
-	model: nn.Module = get_model_from_cfg( cfg.model, device, embedding, encoder )
+	model: nn.Module = get_model_from_cfg( cfg.model, device, embedding )
 
 	trainer = SignalTrainer( cfg.train, sinusoid_loader, encoder, model )
 	trainer.initialize_checkpointing(version)

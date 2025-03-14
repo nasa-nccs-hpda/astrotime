@@ -19,6 +19,10 @@ class PolyEmbeddingLayer(EmbeddingLayer):
 		print(f"     MODEL INPUT Y: ys{list(ys.shape)}: ({ys.min().item():.4f}, {ys.max().item():.4f}, {ys.mean().item():.4f}, {ys.std().item():.4f}) ")
 		return ys
 
+	@property
+	def nfeatures(self) -> int:
+		return 1
+
 
 class PolyExpansion(Expansion):
 

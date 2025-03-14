@@ -54,3 +54,7 @@ class ValueEmbeddingLayer(EmbeddingLayer):
 	def embed(self, ts: torch.Tensor, ys: torch.Tensor ) -> Tensor:
 		# print(f"     MODEL INPUT: ys{list(ys.shape)}: ({ys.min().item():.2f}, {ys.max().item():.2f}, {ys.mean().item():.2f}, {ys.std().item():.2f}) ")
 		return ys
+
+	@property
+	def nfeatures(self) -> int:
+		return 1
