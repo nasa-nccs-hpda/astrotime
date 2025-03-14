@@ -80,6 +80,7 @@ class WaveletEmbeddingLayer(EmbeddingLayer):
 		self.init_log(f"WaveletEmbeddingLayer: wwp{list(wwp.shape)}({torch.mean(wwp):.2f},{torch.std(wwp):.2f}), phase{list(phase.shape)}({torch.mean(phase):.2f},{torch.std(phase):.2f})")
 		rv = torch.concat( (wwp[:, None, :] , phase[:, None, :]), dim=1)
 		self.init_log(f" Completed in {time.time() - t0:.5f} sec: result{list(rv.shape)}")
+		return rv
 
 	@property
 	def nfeatures(self) -> int:
@@ -117,7 +118,7 @@ class WaveletProjectionLayer(EmbeddingLayer):
 
 		pw1: Tensor = torch.sin(omega * dt)
 		pw2: Tensor = torch.cos(omega * dt)
-		self.init_log(f" --> pw0{self.ones.shape} pw1{list(pw1.shape)} pw2{pw2.shape}  ")
+		self.init_log(f" --> pw0{list(self.ones.shape)} pw1{list(pw1.shape)} pw2{list(pw2.shape)}  ")
 
 		p0: Tensor = w_prod(ys, self.ones)
 		p1: Tensor = w_prod(ys, pw1)
@@ -126,6 +127,7 @@ class WaveletProjectionLayer(EmbeddingLayer):
 
 		rv: Tensor = torch.concat( (p0[:, None, :], p1[:, None, :], p2[:, None, :]), dim=1)
 		self.init_log(f" Completed in {time.time()-t0:.5f} sec: result{list(rv.shape)}")
+		return rv
 
 	@property
 	def nfeatures(self) -> int:
