@@ -3,6 +3,7 @@ import torch, math
 from torch import Tensor, device
 from .embedding import EmbeddingLayer
 from astrotime.util.math import logspace, tnorm
+from astrotime.util.logging import elapsed
 
 class WaveletEmbeddingLayer(EmbeddingLayer):
 
@@ -79,7 +80,7 @@ class WaveletEmbeddingLayer(EmbeddingLayer):
 		phase: Tensor = torch.atan2(a2, a1)
 		self.init_log(f"WaveletEmbeddingLayer: wwp{list(wwp.shape)}({torch.mean(wwp):.2f},{torch.std(wwp):.2f}), phase{list(phase.shape)}({torch.mean(phase):.2f},{torch.std(phase):.2f})")
 		rv = torch.concat( (wwp[:, None, :] , phase[:, None, :]), dim=1)
-		self.init_log(f" Completed in {time.time() - t0:.5f} sec: result{list(rv.shape)}")
+		self.log.info(f" Completed embedding in {elapsed(t0):.5f} sec: result{list(rv.shape)}")
 		return rv
 
 	@property
@@ -128,7 +129,7 @@ class WaveletProjectionLayer(EmbeddingLayer):
 		self.init_log(f" --> p0{list(p0.shape)} p1{list(p1.shape)} p2{list(p2.shape)}")
 
 		rv: Tensor = torch.concat( (p0[:, None, :], p1[:, None, :], p2[:, None, :]), dim=1)
-		self.init_log(f" Completed in {time.time()-t0:.5f} sec: result{list(rv.shape)}")
+		self.log.info(f" Completed embedding in {elapsed(t0):.5f} sec: result{list(rv.shape)}")
 		return rv
 
 	@property

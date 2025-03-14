@@ -31,3 +31,7 @@ def log_timing(f):
             log.error( f" Error in {f}:" )
             log.error(traceback.format_exc(100))
     return wrap
+
+def elapsed(t0: float) -> float:
+    torch.cuda.synchronize()
+    return time.time() - t0
