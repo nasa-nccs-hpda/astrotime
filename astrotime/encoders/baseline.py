@@ -6,6 +6,7 @@ from omegaconf import DictConfig, OmegaConf
 from .embedding import EmbeddingLayer
 from astrotime.util.math import tmean, tstd, tmag, tnorm, shp
 from torch.nn.functional import normalize
+from astrotime.util.math import tnorm
 
 
 class ValueEncoder(Encoder):
@@ -32,7 +33,7 @@ class ValueEncoder(Encoder):
 				x1.append( torch.unsqueeze( xs, dim=0) )
 			Y, X = torch.concatenate(y1, dim=0), torch.concatenate(x1, dim=0)
 			if Y.ndim == 2: Y = torch.unsqueeze(Y, dim=2)
-			return X, normalize(Y)
+			return X, tnorm(Y,dim=1)
 
 	def encode_batch(self, x0: np.ndarray, y0: np.ndarray ) -> Tuple[Tensor,Tensor]:
 		with (self.device):

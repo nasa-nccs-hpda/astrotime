@@ -35,5 +35,5 @@ class EmbeddingLayer(torch.nn.Module):
 
 	@property
 	def output_series_length(self):
-		return self.series_length
+		return self.cfg.nfreq
 
