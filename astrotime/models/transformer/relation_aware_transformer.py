@@ -1,7 +1,7 @@
 import torch
 import torch.nn as nn
 from omegaconf import DictConfig
-import torch.nn.functional as F
+from sklearn.svm import SVR
 from typing import Any, Dict, List, Optional, Tuple
 from .time_embedding import RelativePosition
 from .attention import RelationAwareAttentionHead
@@ -21,6 +21,8 @@ class RelationAwareTransformer(nn.Module):
 		self.attention_head = RelationAwareAttentionHead( self.k_bias_matrix, self.v_bias_matrix, cfg )
 		self.attention_heads: nn.ModuleList = nn.ModuleList([RelationAwareAttentionHead( self.k_bias_matrix, self.v_bias_matrix, cfg ) for _ in range(cfg.num_heads)])
 		self.fc: nn.Linear = nn.Linear(cfg.hidden_size, cfg.hidden_size)
+		self.svr = SVR()
+
 
 	def forward(self, query: torch.Tensor, key: torch.Tensor, value: torch.Tensor, mask: torch.Tensor = None) -> torch.Tensor:
 		"""
