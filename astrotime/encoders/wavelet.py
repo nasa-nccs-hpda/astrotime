@@ -109,6 +109,7 @@ class WaveletProjectionLayer(EmbeddingLayer):
 		omega_: Tensor = omega[None, :, None]  # broadcast-to(self.batch_size,self.nfreq,self.series_length)
 		ts: Tensor = ts[:, None, :]  # broadcast-to(self.batch_size,self.nfreq,self.series_length)
 		dt: Tensor = (ts - tau)
+		self.init_log(f" ys{list(ys.shape)} ts{list(ts.shape)} tau{list(tau.shape)}")
 		dz: Tensor = omega_ * dt
 		weights: Tensor = torch.exp(-self.C * dz ** 2)
 		sum_w: Tensor = torch.sum(weights, dim=-1)
@@ -116,8 +117,9 @@ class WaveletProjectionLayer(EmbeddingLayer):
 		def w_prod( x0: Tensor, x1: Tensor) -> Tensor:
 			return torch.sum(weights * x0 * x1, dim=-1) / sum_w
 
-		pw1: Tensor = torch.sin(omega * dt)
-		pw2: Tensor = torch.cos(omega * dt)
+		self.init_log(f" dz{list(dz.shape)} weights{list(weights.shape)} sum_w{list(sum_w.shape)}")
+		pw1: Tensor = torch.sin(dz)
+		pw2: Tensor = torch.cos(dz)
 		self.init_log(f" --> pw0{list(self.ones.shape)} pw1{list(pw1.shape)} pw2{list(pw2.shape)}  ")
 
 		p0: Tensor = w_prod(ys, self.ones)
