@@ -165,6 +165,10 @@ class WaveletProjConvLayer(EmbeddingLayer):
 
 		self.init_log(f" ys{list(ys.shape)} ts{list(ts.shape)}")
 		tau, time_indices = self.get_tau(ts)
+
+		indices = torch.stack((time_indices, time_indices + self.K), dim=1 )
+		newtensor = torch.stack([ys[:,slice(idx[0], idx[1])] for idx in indices])
+
 		self.init_log(f" tau{list(tau.shape)} time_indices{list(time_indices.shape)}")
 		omega = self.freq * 2.0 * math.pi
 		omega_: Tensor = omega[None, :, None]  # broadcast-to(self.batch_size,self.nfreq,self.series_length)
