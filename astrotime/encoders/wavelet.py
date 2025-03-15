@@ -1,6 +1,6 @@
 import random, time, numpy as np
 import torch, math
-from sympy import Tuple
+from typing import List, Tuple, Mapping
 from torch import Tensor, device
 from .embedding import EmbeddingLayer
 from astrotime.util.math import logspace, tnorm
@@ -152,8 +152,12 @@ class WaveletProjConvLayer(EmbeddingLayer):
 	def get_tau(self, ts: torch.Tensor ) -> tuple[Tensor,Tensor]:
 		NK: int =  self.series_length // self.K
 		dt: torch.Tensor = (ts[:,-1]-ts[:,0]) / NK
-		tau: torch.Tensor = torch.stack( [ torch.arange( dt[ib].item()/2, ts[ib,-1].item(), dt[ib].item() ) for ib in range(ts.shape[0]) ] )
-		diff: torch.Tensor = torch.abs(tau.unsqueeze(2) - ts)
+		self.init_log(f"get_tau shapes: ts{list(ts.shape)} dt{list(dt.shape)} NK={NK}, K={self.K}, series_length={self.series_length}")
+		taus: List[torch.Tensor] =  [ torch.arange( dt[ib].item()/2, ts[ib,-1].item(), dt[ib].item() ) for ib in range(ts.shape[0]) ]
+		for idx in range(len(taus)):
+			print( f" * tau-{idx}{list(taus[idx].shape)}")
+		tau: Tensor = torch.stack(taus)
+		diff: torch.Tensor = torch.abs( tau.unsqueeze(2) - ts )
 		time_indices: torch.Tensor = torch.argmin(diff, dim=2)
 		return tau, time_indices
 
