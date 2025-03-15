@@ -110,7 +110,58 @@ class WaveletProjectionLayer(EmbeddingLayer):
 		omega_: Tensor = omega[None, :, None]  # broadcast-to(self.batch_size,self.nfreq,self.series_length)
 		ts: Tensor = ts[:, None, :]  # broadcast-to(self.batch_size,self.nfreq,self.series_length)
 		dt: Tensor = (ts - tau)
+		self.init_log(f" ys{list(ys.shape)} ts{list(ts.shape)} tau{list(tau.shape)} dt{list(dt.shape)}")
+		dz: Tensor = omega_ * dt
+		weights: Tensor = torch.exp(-self.C * dz ** 2)
+		sum_w: Tensor = torch.sum(weights, dim=-1)
+
+		def w_prod( x0: Tensor, x1: Tensor) -> Tensor:
+			return torch.sum(weights * x0 * x1, dim=-1) / sum_w
+
+		self.init_log(f" dz{list(dz.shape)} weights{list(weights.shape)} sum_w{list(sum_w.shape)}")
+		pw1: Tensor = torch.sin(dz)
+		pw2: Tensor = torch.cos(dz)
+		self.init_log(f" --> pw0{list(self.ones.shape)} pw1{list(pw1.shape)} pw2{list(pw2.shape)}  ")
+
+		p0: Tensor = w_prod(ys, self.ones)
+		p1: Tensor = w_prod(ys, pw1)
+		p2: Tensor = w_prod(ys, pw2)
+		self.init_log(f" --> p0{list(p0.shape)} p1{list(p1.shape)} p2{list(p2.shape)}")
+
+		rv: Tensor = torch.concat( (p0[:, None, :], p1[:, None, :], p2[:, None, :]), dim=1)
+		self.log.info(f" Completed embedding in {elapsed(t0):.5f} sec: result{list(rv.shape)}")
+		return rv
+
+	@property
+	def nfeatures(self) -> int:
+		return 3
+
+class WaveletProjConvLayer(EmbeddingLayer):
+
+	def __init__(self, cfg, device: device):
+		EmbeddingLayer.__init__(self,cfg,device)
+		self.nfreq = cfg.nfreq
+		self.K = cfg.kernel_size
+		self.C = 1 / (8 * math.pi ** 2)
+		fspace = logspace if (self.cfg.fscale == "log") else np.linspace
+		self.freq = torch.FloatTensor( fspace( self.cfg.freq_start, self.cfg.freq_end, self.cfg.nfreq ) ).to(self.device)
+		self.ones: Tensor = None
+		self.init_log(f"WaveletProjConvLayer: nfreq={self.nfreq} ")
+
+	def embed(self, ts: torch.Tensor, ys: torch.Tensor ) -> Tensor:
+		t0 = time.time()
+		self.init_log(f"WaveletProjConvLayer shapes:")
+		if self.ones is None:
+			self.ones: Tensor = torch.ones( ys.shape[0], self.nfreq, self.series_length, device=self.device)
+
 		self.init_log(f" ys{list(ys.shape)} ts{list(ts.shape)} tau{list(tau.shape)}")
+		NK =  self.series_length // self.K
+		omega = self.freq * 2.0 * math.pi
+		omega_: Tensor = omega[None, :, None]  # broadcast-to(self.batch_size,self.nfreq,self.series_length)
+		ts: Tensor = ts[:, None, :].unfold(2, self.K, self.K)         # [B,1,NK,K]
+		tau = 0.5 * (ts[:, self.series_length // 2] + ts[:, self.series_length // 2 + 1])
+		dt: Tensor = (ts - tau)
+		self.init_log(f" ys{list(ys.shape)} ts{list(ts.shape)} tau{list(tau.shape)} dt{list(dt.shape)}")
 		dz: Tensor = omega_ * dt
 		weights: Tensor = torch.exp(-self.C * dz ** 2)
 		sum_w: Tensor = torch.sum(weights, dim=-1)
