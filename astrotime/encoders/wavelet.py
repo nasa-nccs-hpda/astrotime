@@ -1,5 +1,6 @@
 import random, time, numpy as np
 import torch, math
+from sympy import Tuple
 from torch import Tensor, device
 from .embedding import EmbeddingLayer
 from astrotime.util.math import logspace, tnorm
@@ -148,14 +149,23 @@ class WaveletProjConvLayer(EmbeddingLayer):
 		self.ones: Tensor = None
 		self.init_log(f"WaveletProjConvLayer: nfreq={self.nfreq} ")
 
+	def get_tau(self, ts: torch.Tensor ) -> tuple[Tensor,Tensor]:
+		NK: int =  self.series_length // self.K
+		dt: float = (ts[-1]-ts[0]).item() / NK
+		tau: torch.Tensor = torch.arange( dt/2, ts[-1].item(), dt )
+		diff: torch.Tensor = torch.abs(tau.unsqueeze(1) - ts)
+		time_indices: torch.Tensor = torch.argmin(diff, dim=1)
+		return tau, time_indices
+
 	def embed(self, ts: torch.Tensor, ys: torch.Tensor ) -> Tensor:
 		t0 = time.time()
 		self.init_log(f"WaveletProjConvLayer shapes:")
 		if self.ones is None:
 			self.ones: Tensor = torch.ones( ys.shape[0], self.nfreq, self.series_length, device=self.device)
 
-		self.init_log(f" ys{list(ys.shape)} ts{list(ts.shape)} tau{list(tau.shape)}")
-		NK =  self.series_length // self.K
+		self.init_log(f" ys{list(ys.shape)} ts{list(ts.shape)}")
+		tau, time_indices = self.get_tau(ts)
+		self.init_log(f" tau{list(tau.shape)} time_indices{list(time_indices.shape)}")
 		omega = self.freq * 2.0 * math.pi
 		omega_: Tensor = omega[None, :, None]  # broadcast-to(self.batch_size,self.nfreq,self.series_length)
 		ts: Tensor = ts[:, None, :].unfold(2, self.K, self.K)         # [B,1,NK,K]
