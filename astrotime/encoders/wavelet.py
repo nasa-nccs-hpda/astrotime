@@ -151,8 +151,8 @@ class WaveletProjConvLayer(EmbeddingLayer):
 
 	def get_tau(self, ts: torch.Tensor ) -> tuple[Tensor,Tensor]:
 		NK: int =  self.series_length // self.K
-		dt: float = (ts[-1]-ts[0]).item() / NK
-		tau: torch.Tensor = torch.arange( dt/2, ts[-1].item(), dt )
+		dt: torch.Tensor = (ts[:,-1]-ts[:,0]) / NK
+		tau: torch.Tensor = torch.arange( dt/2, ts[-1], dt )
 		diff: torch.Tensor = torch.abs(tau.unsqueeze(1) - ts)
 		time_indices: torch.Tensor = torch.argmin(diff, dim=1)
 		return tau, time_indices
