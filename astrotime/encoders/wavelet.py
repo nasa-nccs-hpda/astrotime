@@ -155,7 +155,7 @@ class WaveletProjConvLayer(EmbeddingLayer):
 		self.init_log(f"get_tau shapes: ts{list(ts.shape)} dt{list(dt.shape)} NK={NK}, K={self.K}, series_length={self.series_length}")
 		taus: List[torch.Tensor] =  [ torch.arange( dt[ib].item()/2, ts[ib,-1].item(), dt[ib].item() ) for ib in range(ts.shape[0]) ]
 		for idx in range(len(taus)):
-			print( f" * tau-{idx}{list(taus[idx].shape)}")
+			self.init_log( f" * tau-{idx}{list(taus[idx].shape)}")
 		tau: Tensor = torch.stack(taus)
 		diff: torch.Tensor = torch.abs( tau.unsqueeze(2) - ts )
 		time_indices: torch.Tensor = torch.argmin(diff, dim=2)
