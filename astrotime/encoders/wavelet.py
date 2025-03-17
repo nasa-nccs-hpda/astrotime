@@ -143,28 +143,21 @@ class WaveletProjConvLayer(EmbeddingLayer):
 		EmbeddingLayer.__init__(self,cfg,device)
 		self.nfreq = cfg.nfreq
 		self.nk = cfg.nkernels
+		self.K = cfg.kernal_size
 		self.ktime_spacing = cfg.kernel_time_spacing
 		self.C = 1 / (8 * math.pi ** 2)
 		fspace = logspace if (self.cfg.fscale == "log") else np.linspace
 		self.freq = torch.FloatTensor( fspace( self.cfg.freq_start, self.cfg.freq_end, self.cfg.nfreq ) ).to(self.device)
 		self.ones: Tensor = None
-		self.K = None
 		self.init_log(f"WaveletProjConvLayer: nfreq={self.nfreq} ")
 
 	def get_tau(self, ts: torch.Tensor ) -> tuple[Tensor,Tensor]:
 		time_span = (ts[:,-1] - ts[:,0]).mean().item()
 		tau_spacing = self.ktime_spacing/2
 		dt = time_span / ts.shape[1]
-		self.init_log(f"get_tau: mean timespan={time_span}, len={ts.shape[1]}, dt={dt}, K={self.ktime_spacing/dt}")
 		taus: torch.Tensor =   torch.stack( [ ts[ib,0] + tau_spacing*torch.arange(1,self.nk+1) for ib in range(ts.shape[0]) ] )
-		self.init_log( f" * taus{list(taus.unsqueeze(2).shape)} ts{list(ts.shape)}")
 		diff: torch.Tensor = torch.abs( taus[:,:,None] - ts[:,None,:] )
-		self.init_log(f" * diff{list(diff.shape)}")
 		time_indices: torch.Tensor = torch.argmin(diff, dim=2)
-		self.init_log(f" * time_indices{list(time_indices.shape)}:")
-		self.init_log(f"    * B0: {time_indices[0].cpu().tolist()}")
-		self.init_log(f"    * B1: {time_indices[1].cpu().tolist()}")
-		self.init_log(f"    * B2: {time_indices[2].cpu().tolist()}")
 		return taus, time_indices
 
 	def embed(self, ts: torch.Tensor, ys: torch.Tensor ) -> Tensor:
@@ -177,10 +170,10 @@ class WaveletProjConvLayer(EmbeddingLayer):
 		tau, time_indices = self.get_tau(ts)
 		self.init_log(f" tau{list(tau.shape)} time_indices{list(time_indices.shape)}")
 
-		indices = torch.stack((time_indices, time_indices + self.K), dim=1 )
-		newtensor = torch.stack([ys[:,slice(idx[0], idx[1])] for idx in indices])
+		kernel_indices = torch.stack((time_indices, time_indices + self.K), dim=1 )
+		kernel_inputs = torch.stack([ys[:,slice(idx[0], idx[1])] for idx in kernel_indices])
 
-		self.init_log(f" tau{list(tau.shape)} time_indices{list(time_indices.shape)}")
+		self.init_log(f" kernel_indices{list(kernel_indices.shape)} kernel_inputs{list(kernel_inputs.shape)}")
 		omega = self.freq * 2.0 * math.pi
 		omega_: Tensor = omega[None, :, None]  # broadcast-to(self.batch_size,self.nfreq,self.series_length)
 		ts: Tensor = ts[:, None, :].unfold(2, self.K, self.K)         # [B,1,NK,K]
