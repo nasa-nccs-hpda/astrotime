@@ -156,10 +156,10 @@ class WaveletProjConvLayer(EmbeddingLayer):
 		self.init_log(f"get_tau: min timespan={time_span}, len={ts.shape[1]}, dt={time_span/ts.shape[1]}")
 		taus: torch.Tensor =   torch.stack( [ ts[ib,0] + dt*torch.arange(1,self.nk+1) for ib in range(ts.shape[0]) ] )
 		self.init_log( f" * taus{list(taus.unsqueeze(2).shape)} ts{list(ts.shape)}")
-		diff: torch.Tensor = torch.abs( taus.unsqueeze(2) - ts )
+		diff: torch.Tensor = torch.abs( taus[:,:,None] - ts[:,None,:] )
 		self.init_log(f" * diff{list(diff.shape)}")
 		time_indices: torch.Tensor = torch.argmin(diff, dim=2)
-		self.init_log(f" * time_indices{list(time_indices.shape)}")
+		self.init_log(f" * time_indices{list(time_indices.shape)}: {time_indices[0].cpu().tolist()}")
 		return taus, time_indices
 
 	def embed(self, ts: torch.Tensor, ys: torch.Tensor ) -> Tensor:
