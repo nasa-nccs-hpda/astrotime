@@ -31,9 +31,10 @@
 * The netcdf files, which are used in this project's ML workflows, can be found at: **{datadir}/sinusoids/nc**.
 
 ### Workflows
-This project provides two ML workflows:
+This project provides three ML workflows:
     *   _Baseline_ (**.workflow/train-baseline-cnn.py**):  This workflow runs the baseline CNN (developed by Brian Powell) which takes only timeseries value data as input.
     *   _WWZ_ (**.workflow/train-wwz-cnn.py**): This workflow runs the same baseline CNN operating on a weighted wavelet z-transform, which enfolds both the time and value data from the timeseries. 
+    *   _WP_ (**.workflow/train-wwp-cnn.py**): This workflow runs the same baseline CNN operating a projection of the timeseries onto a set of sinusoid basis functions, which enfolds both the time and value data from the timeseries. 
 The *_small versions execute the workflows on a subset (1/10) of the full training dataset.
 The workflows save checkpoint files at the end of each epoch.  By default the model is initialized with any existing checkpoint file at the begining of script execution.  To
 execute the script with a new set of checkpoints (while keeping the old ones), create a new script with a different value of the *version* parameter 
