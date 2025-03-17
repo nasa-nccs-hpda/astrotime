@@ -6,5 +6,7 @@ freq_start: 0.1                     # Lowest frequency value in computed spectra
 freq_end: 10.0                      # Highest frequency value in computed spectra
 fscale: "log"                       # Scale of frequency axis
 kernel_size: 128                    # Size of wpk conv kernel
+nkernels: 64
+kernel_time_spacing: 1.0
 
 

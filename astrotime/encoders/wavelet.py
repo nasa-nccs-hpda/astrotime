@@ -152,6 +152,8 @@ class WaveletProjConvLayer(EmbeddingLayer):
 
 	def get_tau(self, ts: torch.Tensor ) -> tuple[Tensor,Tensor]:
 		dt = self.ktime_spacing/2
+		time_span = (ts[:,-1] - ts[:,0]).mean().item()
+		self.init_log(f"get_tau: time_span={time_span}, len={ts.shape[1]}, dt={time_span/ts.shape[1]}")
 		taus: List[torch.Tensor] =  [ ts[ib,0] + dt*torch.arange(1,self.nk) for ib in range(ts.shape[0]) ]
 		for idx in range(len(taus)):
 			self.init_log( f" * tau-{idx}{list(taus[idx].shape)}")
