@@ -152,7 +152,7 @@ class WaveletProjConvLayer(EmbeddingLayer):
 		self.init_log(f"WaveletProjConvLayer: nfreq={self.nfreq} ")
 
 	def get_tau(self, ts: torch.Tensor ) -> tuple[Tensor,Tensor]:
-		taus: torch.Tensor =   ts[:,0] + (self.ktime_spacing/2)*torch.arange(1,self.nk+1)[None,:]
+		taus: torch.Tensor =   ts[:,0][:,None] + (self.ktime_spacing/2)*torch.arange(1,self.nk+1)[None,:]
 		diff: torch.Tensor = torch.abs( taus[:,:,None] - ts[:,None,:] )
 		time_indices: torch.Tensor = torch.argmin(diff, dim=2)
 		return taus, time_indices
