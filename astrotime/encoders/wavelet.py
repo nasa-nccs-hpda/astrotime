@@ -152,10 +152,7 @@ class WaveletProjConvLayer(EmbeddingLayer):
 		self.init_log(f"WaveletProjConvLayer: nfreq={self.nfreq} ")
 
 	def get_tau(self, ts: torch.Tensor ) -> tuple[Tensor,Tensor]:
-		time_span = (ts[:,-1] - ts[:,0]).mean().item()
-		tau_spacing = self.ktime_spacing/2
-		dt = time_span / ts.shape[1]
-		taus: torch.Tensor =   torch.stack( [ ts[ib,0] + tau_spacing*torch.arange(1,self.nk+1) for ib in range(ts.shape[0]) ] )
+		taus: torch.Tensor =   ts[:,0] + (self.ktime_spacing/2)*torch.arange(1,self.nk+1)[None,:]
 		diff: torch.Tensor = torch.abs( taus[:,:,None] - ts[:,None,:] )
 		time_indices: torch.Tensor = torch.argmin(diff, dim=2)
 		return taus, time_indices
@@ -169,11 +166,9 @@ class WaveletProjConvLayer(EmbeddingLayer):
 		self.init_log(f" ys{list(ys.shape)} ts{list(ts.shape)}")
 		tau, time_indices = self.get_tau(ts)
 		self.init_log(f" tau{list(tau.shape)} time_indices{list(time_indices.shape)}")
-
-		kernel_indices = torch.stack((time_indices, time_indices + self.K), dim=1 )
-		kernel_inputs = torch.stack([ys[:,slice(idx[0], idx[1])] for idx in kernel_indices])
-
-		self.init_log(f" kernel_indices{list(kernel_indices.shape)} kernel_inputs{list(kernel_inputs.shape)}")
+		kbnds = torch.stack( [time_indices-self.K//2,time_indices+self.K//2] )
+		kernel_inputs = torch.stack( [ torch.stack([ys[ib,slice(kbnds[ib,kidx,0], kbnds[ib,kidx,1])] for kidx in self.nk]) for ib in range(ys.shape[0]) ] )
+		self.init_log(f" kbnds{list(kbnds.shape)} kernel_inputs{list(kernel_inputs.shape)}")
 		omega = self.freq * 2.0 * math.pi
 		omega_: Tensor = omega[None, :, None]  # broadcast-to(self.batch_size,self.nfreq,self.series_length)
 		ts: Tensor = ts[:, None, :].unfold(2, self.K, self.K)         # [B,1,NK,K]
