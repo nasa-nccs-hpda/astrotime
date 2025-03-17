@@ -142,7 +142,8 @@ class WaveletProjConvLayer(EmbeddingLayer):
 	def __init__(self, cfg, device: device):
 		EmbeddingLayer.__init__(self,cfg,device)
 		self.nfreq = cfg.nfreq
-		self.K = cfg.kernel_size
+		self.nk = cfg.nkernels
+		self.ktime_spacing = cfg.kernel_time_spacing
 		self.C = 1 / (8 * math.pi ** 2)
 		fspace = logspace if (self.cfg.fscale == "log") else np.linspace
 		self.freq = torch.FloatTensor( fspace( self.cfg.freq_start, self.cfg.freq_end, self.cfg.nfreq ) ).to(self.device)
@@ -150,15 +151,14 @@ class WaveletProjConvLayer(EmbeddingLayer):
 		self.init_log(f"WaveletProjConvLayer: nfreq={self.nfreq} ")
 
 	def get_tau(self, ts: torch.Tensor ) -> tuple[Tensor,Tensor]:
-		NK: int =  self.series_length // self.K
-		dt: torch.Tensor = (ts[:,-1]-ts[:,0]) / NK
-		self.init_log(f"get_tau shapes: ts{list(ts.shape)} dt{list(dt.shape)} NK={NK}, K={self.K}, series_length={self.series_length}")
-		taus: List[torch.Tensor] =  [ torch.arange( dt[ib].item()/2, ts[ib,-1].item(), dt[ib].item() ) for ib in range(ts.shape[0]) ]
+		dt = self.ktime_spacing/2
+		taus: List[torch.Tensor] =  [ ts[ib,0] + dt*torch.arange(1,self.nk) for ib in range(ts.shape[0]) ]
 		for idx in range(len(taus)):
 			self.init_log( f" * tau-{idx}{list(taus[idx].shape)}")
 		tau: Tensor = torch.stack(taus)
 		diff: torch.Tensor = torch.abs( tau.unsqueeze(2) - ts )
 		time_indices: torch.Tensor = torch.argmin(diff, dim=2)
+		self.init_log(f" * tau{list(tau.shape)} time_indices{list(time_indices.shape)}")
 		return tau, time_indices
 
 	def embed(self, ts: torch.Tensor, ys: torch.Tensor ) -> Tensor:
