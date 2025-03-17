@@ -1,7 +1,6 @@
 from torch import nn
 import torch, math
 from omegaconf import DictConfig, OmegaConf
-from astrotime.encoders.base import Encoder
 from astrotime.encoders.embedding import EmbeddingLayer
 from typing import Any, Dict, List, Optional, Tuple, Mapping
 

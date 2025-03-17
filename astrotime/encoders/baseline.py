@@ -59,3 +59,7 @@ class ValueEmbeddingLayer(EmbeddingLayer):
 	@property
 	def nfeatures(self) -> int:
 		return 1
+
+	@property
+	def output_series_length(self):
+		return self.cfg.series_length

@@ -205,3 +205,7 @@ class WaveletProjConvLayer(EmbeddingLayer):
 	@property
 	def nfeatures(self) -> int:
 		return 3
+
+	@property
+	def output_series_length(self):
+		return self.cfg.nfreq
