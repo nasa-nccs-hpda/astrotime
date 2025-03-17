@@ -143,7 +143,7 @@ class WaveletProjConvLayer(EmbeddingLayer):
 		EmbeddingLayer.__init__(self,cfg,device)
 		self.nfreq = cfg.nfreq
 		self.nk = cfg.nkernels
-		self.K = cfg.kernal_size
+		self.K = cfg.kernel_size
 		self.ktime_spacing = cfg.kernel_time_spacing
 		self.C = 1 / (8 * math.pi ** 2)
 		fspace = logspace if (self.cfg.fscale == "log") else np.linspace
