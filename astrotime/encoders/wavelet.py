@@ -148,18 +148,23 @@ class WaveletProjConvLayer(EmbeddingLayer):
 		fspace = logspace if (self.cfg.fscale == "log") else np.linspace
 		self.freq = torch.FloatTensor( fspace( self.cfg.freq_start, self.cfg.freq_end, self.cfg.nfreq ) ).to(self.device)
 		self.ones: Tensor = None
+		self.K = None
 		self.init_log(f"WaveletProjConvLayer: nfreq={self.nfreq} ")
 
 	def get_tau(self, ts: torch.Tensor ) -> tuple[Tensor,Tensor]:
-		dt = self.ktime_spacing/2
-		time_span = (ts[:,-1] - ts[:,0]).min().item()
-		self.init_log(f"get_tau: min timespan={time_span}, len={ts.shape[1]}, dt={time_span/ts.shape[1]}")
-		taus: torch.Tensor =   torch.stack( [ ts[ib,0] + dt*torch.arange(1,self.nk+1) for ib in range(ts.shape[0]) ] )
+		time_span = (ts[:,-1] - ts[:,0]).mean().item()
+		tau_spacing = self.ktime_spacing/2
+		dt = time_span / ts.shape[1]
+		self.init_log(f"get_tau: mean timespan={time_span}, len={ts.shape[1]}, dt={dt}, K={self.ktime_spacing/dt}")
+		taus: torch.Tensor =   torch.stack( [ ts[ib,0] + tau_spacing*torch.arange(1,self.nk+1) for ib in range(ts.shape[0]) ] )
 		self.init_log( f" * taus{list(taus.unsqueeze(2).shape)} ts{list(ts.shape)}")
 		diff: torch.Tensor = torch.abs( taus[:,:,None] - ts[:,None,:] )
 		self.init_log(f" * diff{list(diff.shape)}")
 		time_indices: torch.Tensor = torch.argmin(diff, dim=2)
-		self.init_log(f" * time_indices{list(time_indices.shape)}: {time_indices[0].cpu().tolist()}")
+		self.init_log(f" * time_indices{list(time_indices.shape)}:")
+		self.init_log(f"    * B0: {time_indices[0].cpu().tolist()}")
+		self.init_log(f"    * B1: {time_indices[1].cpu().tolist()}")
+		self.init_log(f"    * B2: {time_indices[2].cpu().tolist()}")
 		return taus, time_indices
 
 	def embed(self, ts: torch.Tensor, ys: torch.Tensor ) -> Tensor:
