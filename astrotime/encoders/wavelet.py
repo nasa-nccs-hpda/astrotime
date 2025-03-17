@@ -166,9 +166,9 @@ class WaveletProjConvLayer(EmbeddingLayer):
 		self.init_log(f" ys{list(ys.shape)} ts{list(ts.shape)}")
 		tau, time_indices = self.get_tau(ts)
 		self.init_log(f" tau{list(tau.shape)} time_indices{list(time_indices.shape)}")
-		kbnds = torch.stack( [time_indices-self.K//2,time_indices+self.K//2] )
-		kernel_inputs = torch.stack( [ torch.stack([ys[ib,slice(kbnds[ib,kidx,0], kbnds[ib,kidx,1])] for kidx in self.nk]) for ib in range(ys.shape[0]) ] )
-		self.init_log(f" kbnds{list(kbnds.shape)} kernel_inputs{list(kernel_inputs.shape)}")
+		kbnds = [time_indices-self.K//2,time_indices+self.K//2]
+		kernel_inputs = torch.stack( [ torch.stack([ys[ib,slice(kbnds[0][ib,kidx],kbnds[1][ib,kidx])] for kidx in self.nk]) for ib in range(ys.shape[0]) ] )
+		self.init_log(f" kbnds{list(kbnds[0].shape)} kernel_inputs{list(kernel_inputs.shape)}")
 		omega = self.freq * 2.0 * math.pi
 		omega_: Tensor = omega[None, :, None]  # broadcast-to(self.batch_size,self.nfreq,self.series_length)
 		ts: Tensor = ts[:, None, :].unfold(2, self.K, self.K)         # [B,1,NK,K]
