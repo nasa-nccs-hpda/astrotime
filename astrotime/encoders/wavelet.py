@@ -6,6 +6,8 @@ from .embedding import EmbeddingLayer
 from astrotime.util.math import logspace, tnorm
 from astrotime.util.logging import elapsed
 
+def clamp( idx: int ) -> int: return max( 0, idx )
+
 class WaveletEmbeddingLayer(EmbeddingLayer):
 
 	def __init__(self, cfg, device: device):
@@ -169,7 +171,7 @@ class WaveletProjConvLayer(EmbeddingLayer):
 		self.init_log(f" K//2={self.K//2} \ntime_indices[0]={tidx[0].cpu().tolist()} \ntime_indices[1]={tidx[1].cpu().tolist()} \ntime_indices[2]={tidx[2].cpu().tolist()}")
 		#kbnds = [time_indices-self.K//2,time_indices+self.K//2]
 		# self.init_log(f" kbnds0{list(kbnds[0].shape)} kbnds1{list(kbnds[1].shape)}")
-		kernel_inputs = torch.stack( [ torch.stack( [ ys[ ib, :, tidx[ib,kidx]-self.K//2 : tidx[ib,kidx]+self.K//2+1 ] for kidx in range(self.nk) ] ) for ib in range(ys.shape[0]) ] )
+		kernel_inputs = torch.stack( [ torch.stack( [ ys[ ib, :, clamp(tidx[ib,kidx]-self.K//2) : tidx[ib,kidx]+self.K//2+1 ] for kidx in range(self.nk) ] ) for ib in range(ys.shape[0]) ] )
 		self.init_log(f" kernel_inputs{list(kernel_inputs.shape)} ")
 		omega = self.freq * 2.0 * math.pi
 		omega_: Tensor = omega[None, :, None]  # broadcast-to(self.batch_size,self.nfreq,self.series_length)
