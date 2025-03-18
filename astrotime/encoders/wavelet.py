@@ -171,7 +171,7 @@ class WaveletProjConvLayer(EmbeddingLayer):
 		dt: Tensor = kernel_inputs[:,:,0,:] - tau[:,:,None]
 		yk: Tensor = kernel_inputs[:,:,1,:]
 		omega = (self.freq * 2.0 * math.pi)
-		z: Tensor = omega[None,None,None,:] * dt[:,:,:,None]
+		z: Tensor = omega[None,None,:,None] * dt[:,:,None,:]
 		self.init_log(f" dt{list(dt.shape)} yk{list(yk.shape)} omega{list(omega.shape)} z{list(z.shape)}")
 		sdt: Tensor = 2*dt/self.ktime_spacing
 		weights: Tensor = torch.exp( -self.C * (sdt**2) )
