@@ -166,11 +166,12 @@ class WaveletProjConvLayer(EmbeddingLayer):
 		tau, tidx = self.get_tau(ts)
 		self.init_log(f" tau{list(tau.shape)} time_indices{list(tidx.shape)}")
 		self.init_log(f" K//2={self.K//2} \ntime_indices[0]={tidx[0].cpu().tolist()} \ntime_indices[1]={tidx[1].cpu().tolist()} \ntime_indices[2]={tidx[2].cpu().tolist()}")
-		z: Tensor = torch.concatenate([ts[:,None,:],ys],dim=1)
-		kernel_inputs = torch.stack( [ torch.stack( [ z[ ib, :, tidx[ib,kidx]-self.K//2 : tidx[ib,kidx]+self.K//2+1 ] for kidx in range(self.nk) ] ) for ib in range(ys.shape[0]) ] )
+		tys: Tensor = torch.concatenate([ts[:,None,:],ys],dim=1)
+		kernel_inputs = torch.stack( [ torch.stack( [ tys[ ib, :, tidx[ib,kidx]-self.K//2 : tidx[ib,kidx]+self.K//2+1 ] for kidx in range(self.nk) ] ) for ib in range(ys.shape[0]) ] )
 		dt: Tensor = kernel_inputs[:,:,0,:] - tau[:,:,None]
 		yk: Tensor = kernel_inputs[:,:,1,:]
-		omega = self.freq * 2.0 * math.pi
+		omega = (self.freq * 2.0 * math.pi)
+		z: Tensor = omega[None,None,None,:] * dt[:,:,:,None]
 		self.init_log(f" dt{list(dt.shape)} yk{list(yk.shape)} omega{list(omega.shape)}")
 		sdt: Tensor = 2*dt/self.ktime_spacing
 		weights: Tensor = torch.exp( -self.C * (sdt**2) )
@@ -182,8 +183,8 @@ class WaveletProjConvLayer(EmbeddingLayer):
 
 		if self.ones is None:
 			self.ones: Tensor = torch.ones( sdt.shape, device=self.device )
-		pw1: Tensor = torch.sin(sdt)
-		pw2: Tensor = torch.cos(sdt)
+		pw1: Tensor = torch.sin(z)
+		pw2: Tensor = torch.cos(z)
 		self.init_log(f" --> pw0{list(self.ones.shape)} pw1{list(pw1.shape)} pw2{list(pw2.shape)}  ")
 
 		p0: Tensor = w_prod(yk, self.ones)
