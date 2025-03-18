@@ -192,8 +192,7 @@ class WaveletProjConvLayer(EmbeddingLayer):
 		p1: Tensor = w_prod(yk, pw1)
 		p2: Tensor = w_prod(yk, pw2)
 		self.init_log(f" --> p0{list(p0.shape)} p1{list(p1.shape)} p2{list(p2.shape)}")
-
-		rv: Tensor = torch.concat( (p0[:, None, :], p1[:, None, :], p2[:, None, :]), dim=1)
+		rv: Tensor = torch.stack( (p0,p1,p2), dim=3).reshape( [p0.shape[0],p0.shape[1],3*p0.shape[2]] )
 		self.log.info(f" Completed embedding in {elapsed(t0):.5f} sec: result{list(rv.shape)}")
 		return rv
 
