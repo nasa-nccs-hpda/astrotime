@@ -162,9 +162,6 @@ class WaveletProjConvLayer(EmbeddingLayer):
 	def embed(self, ts: torch.Tensor, ys: torch.Tensor ) -> Tensor:
 		t0 = time.time()
 		self.init_log(f"WaveletProjConvLayer shapes:")
-		if self.ones is None:
-			self.ones: Tensor = torch.ones( ys.shape[0], self.nfreq, self.series_length, device=self.device)
-
 		self.init_log(f" ys{list(ys.shape)} ts{list(ts.shape)}")
 		tau, tidx = self.get_tau(ts)
 		self.init_log(f" tau{list(tau.shape)} time_indices{list(tidx.shape)}")
@@ -182,13 +179,15 @@ class WaveletProjConvLayer(EmbeddingLayer):
 		def w_prod( x0: Tensor, x1: Tensor) -> Tensor:
 			return torch.sum(weights * x0 * x1, dim=-1) / sum_w
 
-		pw1: Tensor = torch.sin(yk)
-		pw2: Tensor = torch.cos(yk)
+		if self.ones is None:
+			self.ones: Tensor = torch.ones( sdt.shape, device=self.device )
+		pw1: Tensor = torch.sin(sdt)
+		pw2: Tensor = torch.cos(sdt)
 		self.init_log(f" --> pw0{list(self.ones.shape)} pw1{list(pw1.shape)} pw2{list(pw2.shape)}  ")
 
-		p0: Tensor = w_prod(ys, self.ones)
-		p1: Tensor = w_prod(ys, pw1)
-		p2: Tensor = w_prod(ys, pw2)
+		p0: Tensor = w_prod(yk, self.ones)
+		p1: Tensor = w_prod(yk, pw1)
+		p2: Tensor = w_prod(yk, pw2)
 		self.init_log(f" --> p0{list(p0.shape)} p1{list(p1.shape)} p2{list(p2.shape)}")
 
 		rv: Tensor = torch.concat( (p0[:, None, :], p1[:, None, :], p2[:, None, :]), dim=1)
