@@ -147,7 +147,7 @@ class WaveletProjConvLayer(EmbeddingLayer):
 		self.nk = cfg.nkernels
 		self.K = cfg.kernel_size
 		self.ktime_spacing = cfg.kernel_time_spacing
-		self.C = 1 / (8 * math.pi ** 2)
+		self.C = math.log( cfg.envelope_reduction_factor )
 		fspace = logspace if (self.cfg.fscale == "log") else np.linspace
 		self.freq = torch.FloatTensor( fspace( self.cfg.freq_start, self.cfg.freq_end, self.cfg.nfreq ) ).to(self.device)
 		self.ones: Tensor = None
@@ -174,22 +174,16 @@ class WaveletProjConvLayer(EmbeddingLayer):
 		dt: Tensor = kernel_inputs[:,:,0,:] - tau[:,:,None]
 		yk: Tensor = kernel_inputs[:,:,1,:]
 		self.init_log(f" dt{list(dt.shape)} yk{list(yk.shape)} ")
-		omega = self.freq * 2.0 * math.pi
-		omega_: Tensor = omega[None, :, None]  # broadcast-to(self.batch_size,self.nfreq,self.series_length)
-		ts: Tensor = ts[:, None, :].unfold(2, self.K, self.K)         # [B,1,NK,K]
-
-		dt: Tensor = (ts - tau)
-		self.init_log(f" ys{list(ys.shape)} ts{list(ts.shape)} tau{list(tau.shape)} dt{list(dt.shape)}")
-		dz: Tensor = omega_ * dt
-		weights: Tensor = torch.exp(-self.C * dz ** 2)
+		sdt: Tensor = 2*dt/self.ktime_spacing
+		weights: Tensor = torch.exp( -self.C * (sdt**2) )
 		sum_w: Tensor = torch.sum(weights, dim=-1)
+		self.init_log(f" weights{list(weights.shape)} sdt{list(sdt.shape)} sum_w{list(sum_w.shape)}")
 
 		def w_prod( x0: Tensor, x1: Tensor) -> Tensor:
 			return torch.sum(weights * x0 * x1, dim=-1) / sum_w
 
-		self.init_log(f" dz{list(dz.shape)} weights{list(weights.shape)} sum_w{list(sum_w.shape)}")
-		pw1: Tensor = torch.sin(dz)
-		pw2: Tensor = torch.cos(dz)
+		pw1: Tensor = torch.sin(yk)
+		pw2: Tensor = torch.cos(yk)
 		self.init_log(f" --> pw0{list(self.ones.shape)} pw1{list(pw1.shape)} pw2{list(pw2.shape)}  ")
 
 		p0: Tensor = w_prod(ys, self.ones)
