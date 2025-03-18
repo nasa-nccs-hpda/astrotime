@@ -170,7 +170,8 @@ class WaveletProjConvLayer(EmbeddingLayer):
 		kernel_inputs = torch.stack( [ torch.stack( [ z[ ib, :, tidx[ib,kidx]-self.K//2 : tidx[ib,kidx]+self.K//2+1 ] for kidx in range(self.nk) ] ) for ib in range(ys.shape[0]) ] )
 		dt: Tensor = kernel_inputs[:,:,0,:] - tau[:,:,None]
 		yk: Tensor = kernel_inputs[:,:,1,:]
-		self.init_log(f" dt{list(dt.shape)} yk{list(yk.shape)} ")
+		omega = self.freq * 2.0 * math.pi
+		self.init_log(f" dt{list(dt.shape)} yk{list(yk.shape)} omega{list(omega.shape)}")
 		sdt: Tensor = 2*dt/self.ktime_spacing
 		weights: Tensor = torch.exp( -self.C * (sdt**2) )
 		sum_w: Tensor = torch.sum(weights, dim=-1)
