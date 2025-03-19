@@ -1,7 +1,7 @@
 import random, time, numpy as np
 import torch, math
 from typing import List, Tuple, Mapping
-from torch import Tensor, device
+from torch import Tensor, device, nn
 from .embedding import EmbeddingLayer
 from astrotime.util.math import logspace, tnorm
 from astrotime.util.logging import elapsed
@@ -144,6 +144,7 @@ class WaveletProjConvLayer(EmbeddingLayer):
 	def __init__(self, cfg, device: device):
 		EmbeddingLayer.__init__(self,cfg,device)
 		self.nfreq = cfg.nfreq
+		self._nfeatures = cfg.nfeatures
 		self.nk = cfg.nkernels
 		self.K = cfg.kernel_size
 		self.ktime_spacing = cfg.kernel_time_spacing
@@ -151,6 +152,7 @@ class WaveletProjConvLayer(EmbeddingLayer):
 		fspace = logspace if (self.cfg.fscale == "log") else np.linspace
 		self.freq = torch.FloatTensor( fspace( self.cfg.freq_start, self.cfg.freq_end, self.cfg.nfreq ) ).to(self.device)
 		self.ones: Tensor = None
+		self.weights = nn.Parameter( Tensor( self.nfreq*3, self._nfeatures ) )
 		self.init_log(f"WaveletProjConvLayer: nfreq={self.nfreq} ")
 
 	def get_tau(self, ts: torch.Tensor ) -> tuple[Tensor,Tensor]:
@@ -192,12 +194,13 @@ class WaveletProjConvLayer(EmbeddingLayer):
 		p1: Tensor = w_prod(yk, pw1)
 		p2: Tensor = w_prod(yk, pw2)
 		self.init_log(f" --> p0{list(p0.shape)} p1{list(p1.shape)} p2{list(p2.shape)}")
-		rv: Tensor = torch.stack( (p0,p1,p2), dim=3).reshape( [p0.shape[0],p0.shape[1],3*p0.shape[2]] )
-		self.log.info(f" Completed embedding in {elapsed(t0):.5f} sec: result{list(rv.shape)}")
-		return rv
+		projection: Tensor = torch.stack( (p0,p1,p2), dim=3).reshape( [p0.shape[0],p0.shape[1],3*p0.shape[2]] )
+		self.log.info(f" Completed embedding in {elapsed(t0):.5f} sec: result{list(projection.shape)}")
+		result: Tensor  = (projection[...,None] * self.weights[None,None,:,:]).sum(dim=2)
+		return result
 
 	@property
-	def nfeatures(self) -> int:
+	def projection_dims(self) -> int:
 		return 3
 
 	@property

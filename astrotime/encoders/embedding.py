@@ -30,10 +30,10 @@ class EmbeddingLayer(torch.nn.Module):
 		raise NotImplementedError("EmbeddingLayer.embed() not implemented")
 
 	@property
-	def nfeatures(self) -> int:
-		raise NotImplementedError("EmbeddingLayer.nfeatures not implemented")
+	def projection_dim(self) -> int:
+		raise NotImplementedError("EmbeddingLayer.projection_dim not implemented")
 
 	@property
 	def output_series_length(self):
-		raise NotImplementedError("EmbeddingLayer.nfeatures not implemented")
+		raise NotImplementedError("EmbeddingLayer.output_series_length not implemented")
 
