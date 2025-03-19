@@ -139,6 +139,10 @@ class WaveletProjectionLayer(EmbeddingLayer):
 	def nfeatures(self) -> int:
 		return 3
 
+	@property
+	def output_series_length(self):
+		return self.cfg.nfreq
+
 class WaveletProjConvLayer(EmbeddingLayer):
 
 	def __init__(self, cfg, device: device):
