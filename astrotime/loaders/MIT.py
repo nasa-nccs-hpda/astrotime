@@ -46,7 +46,7 @@ class MITLoader(DataLoader):
 	def load_sector( self, sector: int, refresh=False ):
 		if refresh: self.dataset = None
 		if (self.current_sector != sector) or (self.dataset is None):
-			if not refresh: self.load_cache_dataset(sector)
+			if not refresh: self.dataset = self.load_cache_dataset(sector)
 			if self.dataset is None:
 				TICS: List[str] = self.TICS(sector)
 				dataset_arrays = {}
