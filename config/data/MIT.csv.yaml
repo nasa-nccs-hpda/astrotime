@@ -1,0 +1,3 @@
+source: MIT                                                     # Dataset type
+dataset_root:  "$/explore/nobackup/people/bppowel1/mit_lcs/"    # Location of processed netcdf files
+sectors: (59 ,83)
