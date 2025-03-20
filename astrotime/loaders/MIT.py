@@ -37,7 +37,9 @@ class MITLoader(DataLoader):
 			fluxes = []
 			sns = []
 			for TIC in TICS:
-				dfbls = pd.read_csv( self.bls_file_path(sector,TIC), header=None, names=['Header', 'Data'])
+				data_file = self.bls_file_path(sector,TIC)
+				print( f"Reading file[{data_file}]: {data_file}")
+				dfbls = pd.read_csv( data_file, header=None, names=['Header', 'Data'] )
 				dfbls = dfbls.set_index('Header').T
 				period = np.float64(dfbls['per'].values[0])
 				sn = np.float64(dfbls['sn'].values[0])
