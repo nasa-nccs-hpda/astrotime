@@ -46,8 +46,7 @@ class MITLoader(DataLoader):
 				dflc = pd.read_csv( self.lc_file_path(sector,TIC), header=None, sep='\s+')
 				time = dflc[0].values
 				flux = dflc[1].values
-				print( f"time: {type(time)}")
-				print(f"period: {type(period)}")
+				print( f"time{time.shape}, flux: {flux.shape}")
 				periods.append(period)
 				sns.append(sn)
 				times.append(time)
