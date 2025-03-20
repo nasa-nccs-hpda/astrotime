@@ -13,7 +13,7 @@ To compare the performance of these models on a (more) irregularly sampled datas
 
 * This project implements two forms of wavelet transform: an analysis transform and a synthesis transform.
 * The analysis coefficients represent the projection of a signal onto a set of basis functions, implemented as a weighted inner product between the signal and the basis functions (evaluated at the time points).  
-* The synthesis coefficients represent the optimal representation of the signal as a weighted sum of the basis functions (i.e. the minimum error projection).   
+* The synthesis coefficients represent the optimal representation of the signal as a weighted sum of the basis functions (i.e. the minimum error projection).
 * If the basis functions are orthogonal, then the analysis and synthesis coefficients are the same (as in the FFT). However, when the time points are irregular, then the basis functions (evaluated at the time points) are never orthogonal, and additional computation is required to generate the synthesis coefficients.
 
 ### Model Equations
@@ -21,6 +21,7 @@ To compare the performance of these models on a (more) irregularly sampled datas
 There is a good summary of the equations implemented in this project in the appendix of [Witt & Schumann (2005)](https://www.researchgate.net/publication/200033740_Holocene_climate_variability_on_millennial_scales_recorded_in_Greenland_ice_cores).   
 The wavelet synthesis transform generates two features described by equations A10 and A11.  
 The wavelet analysis transform generates three features by computing weighted scalar products (equation A3) between the signal values and the sinusoid basis functions described by equation A5.  
+Equation A7 shows the relationship between the analysis and synthesis coefficients.
 Futher mathematical detail can be found in [Foster (1996)](https://articles.adsabs.harvard.edu/pdf/1996AJ....112.1709F).
 
 ## Conda environment
@@ -29,19 +30,12 @@ Futher mathematical detail can be found in [Foster (1996)](https://articles.adsa
 * If mamba is not available, install [miniforge](https://github.com/conda-forge/miniforge) (or load mamba module)
 * Execute the following to set up a conda environment for astrotime:
 
-### Torch Environment (Current)
+### Torch Environment 
 
     >   * mamba create -n astrotime.pt ninja python=3.10
     >   * mamba activate astrotime
     >   * pip install torch jupyterlab==4.0.13 ipywidgets==7.8.4 cuda-python jupyterlab_widgets ipykernel==6.29 ipympl ipython==8.26 xarray netCDF4
-    >   * pip install torchcde torchdiffeq hydra-core rich  scikit-learn 
-
-### Tensorflow Environment (Deprecated)
-
-    >   * mamba create -n astrotime.tf ninja python=3.10
-    >   * mamba activate astrotime
-    >   * pip install tensorflow[and-cuda] tensorboard jupyterlab==4.0.13 ipywidgets==7.8.4 jupyterlab_widgets ipykernel==6.29 ipympl ipython==8.26 xarray netCDF4
-    >   * pip install hydra-core rich termcolor scikit-learn
+    >   * pip install torchcde torchdiffeq hydra-core rich  scikit-learn
 
 ## Dataset Preparation
 
@@ -54,9 +48,9 @@ Futher mathematical detail can be found in [Foster (1996)](https://articles.adsa
 ## Workflows
 This project provides three ML workflows:
 
-*   _Baseline_ (**.workflow/train-baseline-cnn.py**):  This workflow runs the baseline CNN (developed by Brian Powell) which takes only timeseries value data as input.
-*   _Wavelet Synthesis_ (**.workflow/wavelet-synthesis-cnn.py**): This workflow runs the same baseline CNN operating on a weighted wavelet z-transform, which enfolds both the time and value data from the timeseries. 
-*   _Wavelet Analysis_ (**.workflow/wavelet-analysis-cnn.py**): This workflow runs the same baseline CNN operating a projection of the timeseries onto a set of sinusoid basis functions, which enfolds both the time and value data from the timeseries. 
+*   _Baseline_ (**workflow/train-baseline-cnn.py**):  This workflow runs the baseline CNN (developed by Brian Powell) which takes only timeseries value data as input.
+*   _Wavelet Synthesis_ (**workflow/wavelet-synthesis-cnn.py**): This workflow runs the same baseline CNN operating on a weighted wavelet z-transform, which enfolds both the time and value data from the timeseries. 
+*   _Wavelet Analysis_ (**workflow/wavelet-analysis-cnn.py**): This workflow runs the same baseline CNN operating a projection of the timeseries onto a set of sinusoid basis functions, which enfolds both the time and value data from the timeseries. 
 
 The *_small versions execute the workflows on a subset (1/10) of the full training dataset.
 The workflows save checkpoint files at the end of each epoch.  By default the model is initialized with any existing checkpoint file at the begining of script execution.  To
@@ -66,12 +60,12 @@ execute the script with a new set of checkpoints (while keeping the old ones), c
 ## Configuration
 
 The workflows are configured using [hydra](https://hydra.cc/docs/intro/).
-* All hydra yaml configuration files are found under **.config**.
+* All hydra yaml configuration files are found under **config**.
 * The workflow configurations can be modified at runtime as [supported by hydra](https://hydra.cc/docs/tutorials/basic/your_first_app/simple_cli/).
 * For example, the following command runs the baseline workflow on gpu 3 with random initialization (i.e. ignoring & overwriting any existing checkpoints):
-    >   python workflow/train-baseline-cnn.py platform.gpu=3 train.refresh_state=True
+    >   python workflow/baseline-cnn.py platform.gpu=3 train.refresh_state=True
 * To run validation (no training), execute:
-    >   python workflow/train-baseline-cnn.py train.mode=valid platform.gpu=0
+    >   python workflow/baseline-cnn.py train.mode=valid platform.gpu=0
 
 ### Configuration Parameters
 
