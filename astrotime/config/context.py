@@ -14,6 +14,7 @@ def astrotime_initialize(config: DictConfig, version: str):
 
 def configure_logging(cfg: DictConfig, version) -> Logger:
     log_file = f"{cfg.project_root}/logs/astrotime.{version}.log"
+    os.makedirs(f"{cfg.project_root}/logs", exist_ok=True)
 
     logger = logging.getLogger()
     logger.setLevel(cfg.log_level.upper())
