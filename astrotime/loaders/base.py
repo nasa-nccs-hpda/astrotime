@@ -9,7 +9,7 @@ class DataLoader:
 	def __init__(self):
 		pass
 
-	def get_dataset( self, dset_idx: int ) -> Dict[ str, np.ndarray]:
+	def get_dataset( self, dset_idx: int ) -> xa.Dataset:
 		raise NotImplementedError(f"The class '{self.__class__.__name__}' does not implement the 'get_dataset' method")
 
 	def get_batch(self, tset: TSet, batch_index: int) -> xa.Dataset:
