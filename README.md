@@ -9,6 +9,13 @@ The BCN operates directly on the timeseries values (without the time information
 When tested on the unmodified STD, the BCN achieved a mean absolute error (MAE) of 0.03 and the TAN achieved a MAE of 0.01.   Because the STD is close to being regularly sampled, the BCN (which implicitly assumes regularly sampled data) performs reasonably well, and the addition of time information in the TAN yields a relatively small improvement.
 To compare the performance of these models on a (more) irregularly sampled dataset, we subsampled the STD by randomly removing 50% of the observations.   On the sparse STD the TAN again achieved a MAE of 0.02, but the BCN performance was greatly degraded, resulting in a MAE of 0.25.   These results verify that the TAN is effectively using the time information of the dataset, whereas the BCN is operating on the shape of the value curve assuming regularly sampled observations.
 
+###### Analysis vs. Synthesis
+
+* This project implements two forms of wavelet transform: an analysis transform and a synthesis transform.
+* The analysis coefficients represent the projection of a signal onto a set of basis functions, implemented as a weighted inner product between the signal and the basis functions (evaluated at the time points).  
+* The synthesis coefficients represent the optimal representation of the signal as a weighted sum of the basis functions (i.e. the minimum error projection).   
+* If the basis functions are orthogonal, then the analysis and synthesis coefficients are the same (as in the FFT). However, when the time points are irregular, then the basis functions (evaluated at the time points) are never orthogonal, and additional computation is required to generate the synthesis coefficients.
+
 ###### Model Equations
 
 There is a good summary of the equations implemented in this project in the appendix of [Witt & Schumann (2005)](https://www.researchgate.net/publication/200033740_Holocene_climate_variability_on_millennial_scales_recorded_in_Greenland_ice_cores).   
@@ -101,6 +108,6 @@ Here is a partial list of configuration parameters with typical default values. 
        train.weight_decay: 0.0                                       # Weight decay parameter for optimizer
        train.mode:  train                                            # execution mode: 'train' or 'valid'
 
-#### References
+### References
 - Foster, G. Wavelets for period analysis of unevenly sampled time series. The Astronomical Journal 112, 1709 (1996).
 - Witt, A. & Schumann, A. Y. Holocene climate variability on millennial scales recorded in Greenland ice cores. Nonlinear Processes in Geophysics 12, 345–352 (2005).
