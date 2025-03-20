@@ -2,6 +2,27 @@
 
 #### Machine learning methods for irregularly spaced time series
 
+### Project Description
+
+This project contains the implementation of a set of time-aware neural network (TAN) and workflows for testing their performance on the task of predicting periods of the sinusoidal timeseries dataset (STD) provided by Brian Powell.   Its performance on this dataset (and a 50% reduced version) was compared with the performance of the baseline CNN network (BCN) provided by Brian Powell.
+The BCN operates directly on the timeseries values (without the time information).   The TAN utilizes the same network as the BCN but operates on a weighted projection of the timeseries onto a set of sinusoidal basis functions, which enfolds both value and time components.
+When tested on the unmodified STD, the BCN achieved a mean absolute error (MAE) of 0.03 and the TAN achieved a MAE of 0.01.   Because the STD is close to being regularly sampled, the BCN (which implicitly assumes regularly sampled data) performs reasonably well, and the addition of time information in the TAN yields a relatively small improvement.
+To compare the performance of these models on a (more) irregularly sampled dataset, we subsampled the STD by randomly removing 50% of the observations.   On the sparse STD the TAN again achieved a MAE of 0.02, but the BCN performance was greatly degraded, resulting in a MAE of 0.25.   These results verify that the TAN is effectively using the time information of the dataset, whereas the BCN is operating on the shape of the value curve assuming regularly sampled observations.
+
+###### Analysis vs. Synthesis
+
+* This project implements two forms of wavelet transform: an analysis transform and a synthesis transform.
+* The analysis coefficients represent the projection of a signal onto a set of basis functions, implemented as a weighted inner product between the signal and the basis functions (evaluated at the time points).  
+* The synthesis coefficients represent the optimal representation of the signal as a weighted sum of the basis functions (i.e. the minimum error projection).   
+* If the basis functions are orthogonal, then the analysis and synthesis coefficients are the same (as in the FFT). However, when the time points are irregular, then the basis functions (evaluated at the time points) are never orthogonal, and additional computation is required to generate the synthesis coefficients.
+
+###### Model Equations
+
+There is a good summary of the equations implemented in this project in the appendix of [Witt & Schumann (2005)](https://www.researchgate.net/publication/200033740_Holocene_climate_variability_on_millennial_scales_recorded_in_Greenland_ice_cores).   
+The wavelet synthesis transform generates two features described by equations A10 and A11.  
+The wavelet analysis transform generates three features by computing weighted scalar products (equation A3) between the signal values and the sinusoid basis functions described by equation A5.  
+Futher mathematical detail can be found in [Foster (1996)](https://articles.adsabs.harvard.edu/pdf/1996AJ....112.1709F).
+
 ### Conda environment
 
 * On Adapt load modules: gcc/12.1.0, nvidia/12.1
@@ -32,9 +53,11 @@
 
 ### Workflows
 This project provides three ML workflows:
-    *   _Baseline_ (**.workflow/train-baseline-cnn.py**):  This workflow runs the baseline CNN (developed by Brian Powell) which takes only timeseries value data as input.
-    *   _WWZ_ (**.workflow/train-wwz-cnn.py**): This workflow runs the same baseline CNN operating on a weighted wavelet z-transform, which enfolds both the time and value data from the timeseries. 
-    *   _WP_ (**.workflow/train-wwp-cnn.py**): This workflow runs the same baseline CNN operating a projection of the timeseries onto a set of sinusoid basis functions, which enfolds both the time and value data from the timeseries. 
+
+*   _Baseline_ (**.workflow/train-baseline-cnn.py**):  This workflow runs the baseline CNN (developed by Brian Powell) which takes only timeseries value data as input.
+*   _Wavelet Synthesis_ (**.workflow/wavelet-synthesis-cnn.py**): This workflow runs the same baseline CNN operating on a weighted wavelet z-transform, which enfolds both the time and value data from the timeseries. 
+*   _Wavelet Analysis_ (**.workflow/wavelet-analysis-cnn.py**): This workflow runs the same baseline CNN operating a projection of the timeseries onto a set of sinusoid basis functions, which enfolds both the time and value data from the timeseries. 
+
 The *_small versions execute the workflows on a subset (1/10) of the full training dataset.
 The workflows save checkpoint files at the end of each epoch.  By default the model is initialized with any existing checkpoint file at the begining of script execution.  To
 execute the script with a new set of checkpoints (while keeping the old ones), create a new script with a different value of the *version* parameter 
@@ -52,7 +75,7 @@ The workflows are configured using [hydra](https://hydra.cc/docs/intro/).
 
 #### Configuration Parameters
 
-Here is a partial list of configuration parameters with typical values.  Their values are configured in the hydra yaml files and reconfigurable on the command line:
+Here is a partial list of configuration parameters with typical default values.  Their values are configured in the hydra yaml files and reconfigurable on the command line:
 
        platform.project_root:  "/explore/nobackup/projects/ilab/data/astrotime"   # Base directory for all saved files
        platform.gpu: 0                                                            # Index of gpu to execcute on
@@ -84,3 +107,7 @@ Here is a partial list of configuration parameters with typical values.  Their v
        train.results_path: "${platform.project_root}/results"        # Checkpoint and log files are saved under this directory
        train.weight_decay: 0.0                                       # Weight decay parameter for optimizer
        train.mode:  train                                            # execution mode: 'train' or 'valid'
+
+### References
+- Foster, G. Wavelets for period analysis of unevenly sampled time series. The Astronomical Journal 112, 1709 (1996).
+- Witt, A. & Schumann, A. Y. Holocene climate variability on millennial scales recorded in Greenland ice cores. Nonlinear Processes in Geophysics 12, 345–352 (2005).

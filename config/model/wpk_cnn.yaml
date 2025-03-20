@@ -1,7 +1,7 @@
-cnn_channels: 64                                # Number of channels in first CNN layer
+cnn_channels: ${transform.nfeatures}            # Number of channels in first CNN layer
 dense_channels: 64                              # Number of channels in dense layer
 out_channels: 1                                 # Number of network output channels
-series_length: ${transform.series_length}       # Length of network input series
+series_length: ${transform.nkernels}            # Length of network input series
 num_cnn_layers: 3                               # Number of CNN layers in a CNN block
 num_blocks: 7                                   # Number of CNN blocks in the network
 pool_size: 2                                    # Max pool size for every block

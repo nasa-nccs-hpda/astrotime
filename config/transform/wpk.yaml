@@ -9,5 +9,6 @@ kernel_size: 82                     # Size of wpk conv kernel
 nkernels: 32
 kernel_time_spacing: 0.6
 envelope_reduction_factor: 1.0
+nfeatures: 64
 
 
