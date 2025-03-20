@@ -43,7 +43,7 @@ class MITLoader(DataLoader):
 				dfbls = dfbls.set_index('Header').T
 				period = np.float64(dfbls['per'].values[0])
 				sn = np.float64(dfbls['sn'].values[0])
-				dflc = pd.read_csv( self.lc_file_path(sector,TIC), header=None, delim_whitespace=True)
+				dflc = pd.read_csv( self.lc_file_path(sector,TIC), header=None, sep='\s+')
 				time = dflc[0].values
 				flux = dflc[1].values
 				periods.append(period)
