@@ -1,8 +1,7 @@
-import time, numpy as np, xarray as xa
+import time, os, numpy as np, xarray as xa
 from astrotime.loaders.base import DataLoader
 from typing import List, Optional, Dict, Type, Union, Tuple
 from astrotime.util.logging import exception_handled
-import os
 import pandas as pd
 from glob import glob
 from omegaconf import DictConfig, OmegaConf
@@ -32,6 +31,7 @@ class MITLoader(DataLoader):
 	@exception_handled
 	def load_sector(self, sector: int) -> bool:
 		if (self.current_sector != sector) or (self.dataset is None):
+			t0 = time.time()
 			TICS: List[str] = self.TICS(sector)
 			periods = []
 			times = []
@@ -45,20 +45,19 @@ class MITLoader(DataLoader):
 				period: float = np.float64(dfbls['per'].values[0])
 				sn: float = np.float64(dfbls['sn'].values[0])
 				dflc = pd.read_csv( self.lc_file_path(sector,TIC), header=None, sep='\s+')
-				time: np.ndarray = dflc[0].values
-				flux: np.ndarray = dflc[1].values
+				otimes: np.ndarray = dflc[0].values
+				fluxes: np.ndarray = dflc[1].values
 				periods.append(period)
-				lens.append( time.size )
+				lens.append( otimes.size )
 				sns.append(sn)
-				times.append(time)
-				fluxes.append(flux)
-				break
+				times.append(otimes)
+				fluxes.append(fluxes)
 			print( f"periods[{len(periods)}]")
 			print(f"sns[{len(sns)}]")
 			print(f"times[{len(times)}]")
 			print(f"fluxes[{len(fluxes)}]")
 			lengths: np.ndarray = np.array(lens)
-			print( f" lengths[{lengths.size}]: max={lengths.max()}, min={lengths.min()}, std={lengths.std():.4f}")
+			print( f" lengths[{lengths.size}]: max={lengths.max()}, min={lengths.min()}, std={lengths.std():.4f}, load_time={time.time()-t0:.3f} sec")
 
 # 			pd.read_csv( path + sector + '/bls/ ' + TIC + '.bls', header=None, names=['Header', 'Data'])
 #
