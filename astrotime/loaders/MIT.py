@@ -37,7 +37,7 @@ class MITLoader(DataLoader):
 		dspath: str = self.cache_path(sector_index)
 		if os.path.exists(dspath):
 			result = xa.open_dataset( dspath, engine="netcdf4" )
-			print( f"Opened cache dataset in {time.time()-t0:.3f} sec")
+			print( f"Opened cache dataset from {dspath} in in {time.time()-t0:.3f} sec, nvars = {len(result.data_vars)}")
 			return result
 		else:
 			print( f"Cache file not found: {dspath}")
