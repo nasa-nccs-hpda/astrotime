@@ -28,37 +28,41 @@ class MITLoader(DataLoader):
 	def lc_file_path( self, sector_index: int, TIC: str ) -> str:
 		return f"{self.cfg.dataset_root}/sector{sector_index}/lc/{TIC}.txt"
 
+	def cache_path( self, sector_index: int ) -> str:
+		os.makedirs(self.cfg.cache_path, exist_ok=True)
+		return f"{self.cfg.cache_path}/sector-{sector_index}.np"
+
+	def load_cache_dataset( self, sector_index ) -> Optional[xa.Dataset]:
+		t0 = time.time()
+		dspath: str = self.cache_path(sector_index)
+		if os.path.exists(dspath):
+			return xa.load_dataset( dspath )
+		print( f"Loaded cache dataset in {time.time()-t0:.3f} sec")
+
 	@exception_handled
-	def load_sector(self, sector: int) -> bool:
+	def load_sector( self, sector: int ):
 		if (self.current_sector != sector) or (self.dataset is None):
-			t0 = time.time()
-			TICS: List[str] = self.TICS(sector)
-			periods = []
-			times = []
-			fluxes = []
-			sns = []
-			lens = []
-			print( f"TICS[{len(TICS)}]")
-			for TIC in TICS:
-				data_file = self.bls_file_path(sector,TIC)
-				dfbls = pd.read_csv( data_file, header=None, names=['Header', 'Data'] )
-				dfbls = dfbls.set_index('Header').T
-				period: float = np.float64(dfbls['per'].values[0])
-				sn: float = np.float64(dfbls['sn'].values[0])
-				dflc = pd.read_csv( self.lc_file_path(sector,TIC), header=None, sep='\s+')
-				time_values: np.ndarray = dflc[0].values
-				flux_values: np.ndarray = dflc[1].values
-				periods.append(period)
-				lens.append( time_values.size )
-				sns.append(sn)
-				times.append(time_values)
-				fluxes.append(flux_values)
-			print( f"periods[{len(periods)}]")
-			print(f"sns[{len(sns)}]")
-			print(f"times[{len(times)}]")
-			print(f"fluxes[{len(fluxes)}]")
-			lengths: np.ndarray = np.array(lens)
-			print( f" lengths[{lengths.size}]: max={lengths.max()}, min={lengths.min()}, std={lengths.std():.4f}, load_time={time.time()-t0:.3f} sec")
+			self.dataset = self.load_cache_dataset(sector)
+			if self.dataset is None:
+				TICS: List[str] = self.TICS(sector)
+				dataset_arrays = {}
+				t0 = time.time()
+				for TIC in TICS:
+					data_file = self.bls_file_path(sector,TIC)
+					dfbls = pd.read_csv( data_file, header=None, names=['Header', 'Data'] )
+					dfbls = dfbls.set_index('Header').T
+					period: float = np.float64(dfbls['per'].values[0])
+					sn: float = np.float64(dfbls['sn'].values[0])
+					dflc = pd.read_csv( self.lc_file_path(sector,TIC), header=None, sep='\s+')
+					time_values: np.ndarray = dflc[0].values
+					flux_values: np.ndarray = dflc[1].values
+					dataset_arrays[TIC] = xa.DataArray( name=TIC, data=flux_values, coords=dict(time=time_values), dims=['time'], attrs=dict( period=period, sn=sn ) )
+				self.dataset = xa.Dataset( dataset_arrays )
+				t1 = time.time()
+				print(f"Loaded sector {sector} files in {t1-t0:.3f} sec")
+				self.dataset.to_netcdf( self.cache_path(sector) )
+				print(f"Saved sector {sector} files in {time.time()-t1:.3f} sec")
+
 
 # 			pd.read_csv( path + sector + '/bls/ ' + TIC + '.bls', header=None, names=['Header', 'Data'])
 #

@@ -1,5 +1,6 @@
 source: MIT                                                     # Dataset type
 dataset_root:  "/explore/nobackup/people/bppowel1/mit_lcs/"    # Location of processed netcdf files
+cache_path:  "${platform.project_root}/cache/data/MIT"
 sector_range:
   - 59
   - 83
