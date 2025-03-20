@@ -20,6 +20,7 @@ class MITLoader(DataLoader):
 	def TICS( self, sector_index: int ) -> List[str]:
 		bls_dir = f"{self.cfg.dataset_root}/sector{sector_index}/bls"
 		files = glob("*.bls", root_dir=bls_dir )
+		print( f"Get TICS from {bls_dir}, nfiles: {len(files)}")
 		return [ f.split('.')[0] for f in files ]
 
 	def bls_file_path( self, sector_index: int, TIC: str ) -> str:
