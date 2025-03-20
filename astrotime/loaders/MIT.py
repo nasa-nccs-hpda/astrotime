@@ -40,9 +40,10 @@ class MITLoader(DataLoader):
 		print( f"Loaded cache dataset in {time.time()-t0:.3f} sec")
 
 	@exception_handled
-	def load_sector( self, sector: int ):
+	def load_sector( self, sector: int, refresh=False ):
+		if refresh: self.dataset = None
 		if (self.current_sector != sector) or (self.dataset is None):
-			self.dataset = self.load_cache_dataset(sector)
+			if not refresh: self.load_cache_dataset(sector)
 			if self.dataset is None:
 				TICS: List[str] = self.TICS(sector)
 				dataset_arrays = {}
