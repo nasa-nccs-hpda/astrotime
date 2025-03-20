@@ -2,7 +2,7 @@ defaults:
   - platform: "explore"
   - train: "baseline_cnn"
   - transform: "wp"
-  - data: "MIT.csv"
+  - data: "MIT"
   - model: "wp_cnn"
   - _self_
   - override hydra/hydra_logging: disabled
