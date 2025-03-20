@@ -12,8 +12,7 @@ version = "MIT_period.wp"
 def my_app(cfg: DictConfig) -> None:
 	device: torch.device = astrotime_initialize(cfg, version)
 	MIT_loader = MITLoader(cfg.data)
-	sectors = cfg.data.sectors
-	MIT_loader.load_sector(sectors[0])
+	MIT_loader.load_sector( MIT_loader.sector_range[0] )
 
 
 if __name__ == "__main__":

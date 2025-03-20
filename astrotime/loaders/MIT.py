@@ -13,7 +13,7 @@ class MITLoader(DataLoader):
 	def __init__(self, cfg: DictConfig ):
 		super().__init__()
 		self.cfg = cfg
-		self.sectors =[str(i) for i in range(cfg.sectors)]
+		self.sector_range = cfg.sector_range
 		self.current_sector = None
 		self.dataset = None
 
