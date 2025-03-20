@@ -30,19 +30,12 @@ Futher mathematical detail can be found in [Foster (1996)](https://articles.adsa
 * If mamba is not available, install [miniforge](https://github.com/conda-forge/miniforge) (or load mamba module)
 * Execute the following to set up a conda environment for astrotime:
 
-### Torch Environment (Current)
+### Torch Environment 
 
     >   * mamba create -n astrotime.pt ninja python=3.10
     >   * mamba activate astrotime
     >   * pip install torch jupyterlab==4.0.13 ipywidgets==7.8.4 cuda-python jupyterlab_widgets ipykernel==6.29 ipympl ipython==8.26 xarray netCDF4
-    >   * pip install torchcde torchdiffeq hydra-core rich  scikit-learn 
-
-### Tensorflow Environment (Deprecated)
-
-    >   * mamba create -n astrotime.tf ninja python=3.10
-    >   * mamba activate astrotime
-    >   * pip install tensorflow[and-cuda] tensorboard jupyterlab==4.0.13 ipywidgets==7.8.4 jupyterlab_widgets ipykernel==6.29 ipympl ipython==8.26 xarray netCDF4
-    >   * pip install hydra-core rich termcolor scikit-learn
+    >   * pip install torchcde torchdiffeq hydra-core rich  scikit-learn
 
 ## Dataset Preparation
 
@@ -67,7 +60,7 @@ execute the script with a new set of checkpoints (while keeping the old ones), c
 ## Configuration
 
 The workflows are configured using [hydra](https://hydra.cc/docs/intro/).
-* All hydra yaml configuration files are found under **.config**.
+* All hydra yaml configuration files are found under **config**.
 * The workflow configurations can be modified at runtime as [supported by hydra](https://hydra.cc/docs/tutorials/basic/your_first_app/simple_cli/).
 * For example, the following command runs the baseline workflow on gpu 3 with random initialization (i.e. ignoring & overwriting any existing checkpoints):
     >   python workflow/baseline-cnn.py platform.gpu=3 train.refresh_state=True
