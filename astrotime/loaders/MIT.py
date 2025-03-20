@@ -38,6 +38,7 @@ class MITLoader(DataLoader):
 			fluxes = []
 			sns = []
 			lens = []
+			print( f"TICS[{len(TICS)}]")
 			for TIC in TICS:
 				data_file = self.bls_file_path(sector,TIC)
 				dfbls = pd.read_csv( data_file, header=None, names=['Header', 'Data'] )
@@ -45,13 +46,13 @@ class MITLoader(DataLoader):
 				period: float = np.float64(dfbls['per'].values[0])
 				sn: float = np.float64(dfbls['sn'].values[0])
 				dflc = pd.read_csv( self.lc_file_path(sector,TIC), header=None, sep='\s+')
-				otimes: np.ndarray = dflc[0].values
-				fluxes: np.ndarray = dflc[1].values
+				time_values: np.ndarray = dflc[0].values
+				flux_values: np.ndarray = dflc[1].values
 				periods.append(period)
-				lens.append( otimes.size )
+				lens.append( time_values.size )
 				sns.append(sn)
-				times.append(otimes)
-				fluxes.append(fluxes)
+				times.append(time_values)
+				fluxes.append(flux_values)
 			print( f"periods[{len(periods)}]")
 			print(f"sns[{len(sns)}]")
 			print(f"times[{len(times)}]")
