@@ -39,7 +39,6 @@ class MITLoader(DataLoader):
 			sns = []
 			for TIC in TICS:
 				data_file = self.bls_file_path(sector,TIC)
-				print( f"Reading file[{data_file}]: {data_file}")
 				dfbls = pd.read_csv( data_file, header=None, names=['Header', 'Data'] )
 				dfbls = dfbls.set_index('Header').T
 				period = np.float64(dfbls['per'].values[0])
