@@ -138,15 +138,28 @@ To get a shell session inside the container:
 singularity shell -B $NOBACKUP,/explore/nobackup/projects,/explore/nobackup/people --nv /lscratch/jacaraba/container/astrotime
 ```
 
-An example run:
+An example run training:
 
 ```bash
-PYTHONPATH="/explore/nobackup/people/jacaraba/development/astrotime" python workflow/baseline-cnn.py platform.project_root="/explore/nobackup/projects/ilab/scratch/jacaraba/astrotime" data.dataset_root="/explore/nobackup/projects/ilab/data/astrotime/sinusoids/nc"
+PYTHONPATH="/explore/nobackup/people/jacaraba/development/astrotime" python /explore/nobackup/people/jacaraba/development/astrotime/work
+flow/baseline-cnn.py platform.project_root="/explore/nobackup/projects/ilab/scratch/jacaraba/astrotime" data.dataset_root="/explore/nobackup/projects
+/ilab/data/astrotime/sinusoids/nc"
 ```
+
+An example run validation:
+
+```bash
+PYTHONPATH="/explore/nobackup/people/jacaraba/development/astrotime" python /explore/nobackup/people/jacaraba/development/astrotime/work
+flow/baseline-cnn.py platform.project_root="/explore/nobackup/projects/ilab/scratch/jacaraba/astrotime" data.dataset_root="/explore/nobackup/projects
+/ilab/data/astrotime/sinusoids/nc" train.mode=valid
+```
+
+PYTHONPATH="/explore/nobackup/people/jacaraba/development/astrotime" python /explore/nobackup/people/jacaraba/development/astrotime/workflow/baseline-cnn.py platform.project_root="/explore/nobackup/projects/ilab/scratch/jacaraba/astrotime" data.dataset_root="/explore/nobackup/projects/ilab/data/astrotime/sinusoids/nc"
 
 ### Sending a slurm job using the container
 
 ```bash
+TBD
 ```
 
 ## References

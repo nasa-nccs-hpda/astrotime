@@ -75,7 +75,8 @@ RUN pip --no-cache-dir install \
     timm \
     supervision \
     pytest \
-    coveralls
+    coveralls \
+    git+https://github.com/nasa-nccs-hpda/astrotime.git@main
 
 HEALTHCHECK NONE
 ENTRYPOINT []
