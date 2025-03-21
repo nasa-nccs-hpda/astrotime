@@ -15,7 +15,7 @@ class MITLoader(DataLoader):
 		self.cfg = cfg
 		self.sector_range = cfg.sector_range
 		self.current_sector = None
-		self.dataset = None
+		self.dataset: xa.DataSet = None
 
 	def TICS( self, sector_index: int ) -> List[str]:
 		bls_dir = f"{self.cfg.dataset_root}/sector{sector_index}/bls"
@@ -81,4 +81,5 @@ class MITLoader(DataLoader):
 
 	def get_element(self, sector: int, element_index ) -> xa.DataArray:
 		self.load_sector(sector)
-		return self.dataset.values[element_index]
+		elements = self.dataset.data_vars.values()
+		return elements[element_index]
