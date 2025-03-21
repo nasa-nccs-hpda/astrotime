@@ -93,8 +93,8 @@ class SignalDatasetPlot(SignalPlot):
 	@exception_handled
 	def _setup(self):
 		xdata, ydata, target = self.get_element_data()
-		self.lines['y'], = self.ax.plot(xdata, ydata, label='y', color='blue', marker="o", linewidth=1, markersize=3)
-		self.lines['target'] = self.ax.axvline(x=1.0/target, color='r', linestyle='-')
+		self.lines['y'], = self.ax.plot(xdata, ydata, label='y', color='blue', marker=".", markersize=1)
+	#	self.lines['target'] = self.ax.axvline(x=1.0/target, color='r', linestyle='-')
 		self.ax.title.set_text(self.name)
 		self.ax.title.set_fontsize(8)
 		self.ax.title.set_fontweight('bold')
@@ -119,8 +119,8 @@ class SignalDatasetPlot(SignalPlot):
 	def update(self, val):
 		xdata, ydata, target = self.get_element_data()
 		self.lines['y'].set_ydata(ydata)
-		self.lines['target'].remove()
-		self.lines['target'] = self.ax.axvline(x=1.0/target, color='r', linestyle='-')
+	#	self.lines['target'].remove()
+	#	self.lines['target'] = self.ax.axvline(x=1.0/target, color='r', linestyle='-')
 		self.ax.set_ylim(*bounds(ydata))
 		self.plot.set_xdata(xdata)
 		self.ax.set_xlim(*bounds(xdata))
