@@ -81,5 +81,5 @@ class MITLoader(DataLoader):
 
 	def get_element(self, sector: int, element_index ) -> xa.DataArray:
 		self.load_sector(sector)
-		elements = self.dataset.data_vars.values()
+		elements: List[xa.DataArray] = list(self.dataset.data_vars.values())
 		return elements[element_index]
