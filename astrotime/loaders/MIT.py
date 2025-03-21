@@ -5,6 +5,7 @@ from astrotime.util.logging import exception_handled
 import pandas as pd
 from glob import glob
 from omegaconf import DictConfig, OmegaConf
+from astrotime.util.series import TSet
 import logging
 
 class MITLoader(DataLoader):
@@ -45,6 +46,9 @@ class MITLoader(DataLoader):
 	def size(self, sector_index) -> int:
 		self.load_sector(sector_index)
 		return len(self.dataset.data_vars)
+
+	def nelements(self, tset: TSet = TSet.Train) -> int:
+		return self.size(self.current_sector)
 
 	@exception_handled
 	def load_sector( self, sector: int, refresh=False ):

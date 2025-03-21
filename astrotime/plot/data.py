@@ -91,7 +91,7 @@ class SignalDatasetPlot(SignalPlot):
 		self.colors = ['blue', 'green'] + [ 'yellow' ] * 16
 		self.ofac = kwargs.get('upsample_factor',1)
 		self.lines: Dict[str,Line2D] = {}
-		self.add_param( STIntParam('element', (0,len(self.data_arrays))  ) )
+		self.add_param( STIntParam('element', (0,data_loader.nelements())  ) )
 		self.transax = None
 
 	def set_dset_index(self, dset_index: int ):
