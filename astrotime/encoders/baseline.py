@@ -30,6 +30,7 @@ class ValueEncoder(Encoder):
 				y1.append( torch.unsqueeze( ys, dim=0) )
 				x1.append( torch.unsqueeze( xs, dim=0) )
 			Y, X = torch.concatenate(y1, dim=0), torch.concatenate(x1, dim=0)
+			Y = tnorm( Y, dim=1 )
 			if Y.ndim == 2: Y = torch.unsqueeze(Y, dim=2)
 			if self.chan_first: Y = Y.transpose(1, 2)
 			return X, tnorm(Y,dim=1)
@@ -40,10 +41,11 @@ class ValueEncoder(Encoder):
 			i0: int = random.randint(0,  x.shape[1]-self.input_series_length )
 			Y: Tensor = torch.FloatTensor(y[:,i0:i0 + self.input_series_length]).to(self.device)
 			X: Tensor = torch.FloatTensor(x[:,i0:i0 + self.input_series_length]).to(self.device)
-			if Y.ndim == 2: Y = torch.unsqueeze(Y, dim=2)
+			Y = tnorm(Y, dim=1)
+			if Y.ndim == 2: Y = torch.unsqueeze( Y, dim=2)
 			self.log.debug( f" ** ENCODED BATCH: x{list(x0.shape)} y{list(y0.shape)} -> T{list(X.shape)} Y{list(Y.shape)} Yrange={Y.max().item()-Y.min().item():.4f}")
 			if self.chan_first: Y = Y.transpose(1,2)
-			return X, tnorm(Y,dim=1)
+			return X, Y
 
 class ValueEmbeddingLayer(EmbeddingLayer):
 
