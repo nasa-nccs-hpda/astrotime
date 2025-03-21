@@ -14,8 +14,12 @@ class MITLoader(DataLoader):
 		super().__init__()
 		self.cfg = cfg
 		self.sector_range = cfg.sector_range
-		self.current_sector = None
+		self.current_sector = self.sector_range[0]
 		self.dataset: xa.DataSet = None
+
+	@property
+	def dset_idx(self) -> int:
+		return self.current_sector
 
 	def TICS( self, sector_index: int ) -> List[str]:
 		bls_dir = f"{self.cfg.dataset_root}/sector{sector_index}/bls"

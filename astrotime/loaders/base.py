@@ -25,5 +25,9 @@ class DataLoader:
 	def batch_size(self) -> int:
 		raise NotImplementedError(f"The class '{self.__class__.__name__}' does not implement the 'batch_size' property")
 
+	@property
+	def dset_idx(self) -> int:
+		raise NotImplementedError(f"The class '{self.__class__.__name__}' does not implement the 'dset_idx' property")
+
 	def nelements( self, tset: TSet=TSet.Train ) -> int:
 		return self.nbatches(tset) * self.batch_size

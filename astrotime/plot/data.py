@@ -86,7 +86,7 @@ class SignalDatasetPlot(SignalPlot):
 		SignalPlot.__init__(self, **kwargs)
 		self.name = name
 		self.data_loader: DataLoader = data_loader
-		self.dset_idx = kwargs.get('dset_idx', 0 )
+		self.dset_idx = data_loader.dset_idx
 		self.annotations: List[str] = tolower( kwargs.get('annotations',None) )
 		self.colors = ['blue', 'green'] + [ 'yellow' ] * 16
 		self.ofac = kwargs.get('upsample_factor',1)
