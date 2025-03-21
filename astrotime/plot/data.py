@@ -1,21 +1,25 @@
 import logging, numpy as np
 import xarray as xa
 from .param import STIntParam
+from astrotime.loaders.base import DataLoader
 from .base import SignalPlot, bounds
 from matplotlib.lines import Line2D
 from astrotime.util.logging import exception_handled
 from typing import List, Optional, Dict, Type, Union, Tuple
 log = logging.getLogger("astrotime")
 
+def tolower(ls: Optional[List[str]]) -> List[str]:
+	return [a.lower() for a in ls] if (ls is not None) else []
+
 class SignalDataPlot(SignalPlot):
 
-	def __init__(self, name: str, x: np.ndarray, y: np.ndarray, target: np.ndarray = None, annotations: List[str] = None, **kwargs):
+	def __init__(self, name: str, x: np.ndarray, y: np.ndarray, target: np.ndarray = None,  **kwargs):
 		SignalPlot.__init__(self, **kwargs)
 		self.name = name
 		self.x = x
 		self.y = y
 		self.target = target
-		self.annotations: List[str] = [a.lower() for a in annotations] if (annotations is not None) else []
+		self.annotations: List[str] = tolower( kwargs.get('annotations',None) )
 		self.colors = ['blue', 'green'] + [ 'yellow' ] * 16
 		self.ofac = kwargs.get('upsample_factor',1)
 		self.lines: Dict[str,Line2D] = {}
@@ -78,17 +82,20 @@ class SignalDataPlot(SignalPlot):
 
 class SignalDatasetPlot(SignalPlot):
 
-	def __init__(self, name: str, dataset: xa.Dataset, annotations: List[str] = None, **kwargs):
+	def __init__(self, name: str, data_loader: DataLoader, **kwargs):
 		SignalPlot.__init__(self, **kwargs)
 		self.name = name
-		self.dataset: xa.Dataset = dataset
-		self.data_arrays: List[xa.DataArray] = list(dataset.data_vars.values())
-		self.annotations: List[str] = [a.lower() for a in annotations] if (annotations is not None) else []
+		self.data_loader: DataLoader = data_loader
+		self.dset_idx = kwargs.get('dset_idx', 0 )
+		self.annotations: List[str] = tolower( kwargs.get('annotations',None) )
 		self.colors = ['blue', 'green'] + [ 'yellow' ] * 16
 		self.ofac = kwargs.get('upsample_factor',1)
 		self.lines: Dict[str,Line2D] = {}
 		self.add_param( STIntParam('element', (0,len(self.data_arrays))  ) )
 		self.transax = None
+
+	def set_dset_index(self, dset_index: int ):
+		self.dset_idx = dset_index
 
 	@exception_handled
 	def _setup(self):
@@ -101,7 +108,7 @@ class SignalDatasetPlot(SignalPlot):
 		self.ax.set_xlim(xdata[0],xdata[-1])
 
 	def get_element_data(self) -> Tuple[np.ndarray,np.ndarray,float]:
-		element: xa.DataArray = self.data_arrays[self.element]
+		element: xa.DataArray = self.data_loader.get_element(self.dset_idx,self.element)
 		ydata: np.ndarray = element.values
 		xdata: np.ndarray = element.coords['time'].values
 		target: float = element.attrs['period']

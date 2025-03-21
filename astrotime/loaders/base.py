@@ -15,6 +15,9 @@ class DataLoader:
 	def get_batch(self, tset: TSet, batch_index: int) -> xa.Dataset:
 		raise NotImplementedError(f"The class '{self.__class__.__name__}' does not implement the 'get_batch' method")
 
+	def get_element(self, dset_idx: int, element_index) -> xa.DataArray:
+		raise NotImplementedError(f"The class '{self.__class__.__name__}' does not implement the 'get_batch' method")
+
 	def nbatches(self, tset: TSet) -> int:
 		raise NotImplementedError(f"The class '{self.__class__.__name__}' does not implement the 'nbatches' method")
 

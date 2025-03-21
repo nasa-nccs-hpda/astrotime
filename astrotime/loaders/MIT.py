@@ -74,3 +74,7 @@ class MITLoader(DataLoader):
 	def get_dataset( self, sector: int, refresh=False ) -> xa.Dataset:
 		self.load_sector( sector, refresh )
 		return self.dataset
+
+	def get_element(self, sector: int, element_index ) -> xa.DataArray:
+		self.load_sector(sector)
+		return self.dataset.values[element_index]
