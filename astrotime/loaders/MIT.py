@@ -35,6 +35,7 @@ class MITLoader(DataLoader):
 
 	def load_cache_dataset( self, sector_index ) -> Optional[xa.Dataset]:
 		t0 = time.time()
+		self.current_sector = sector_index
 		dspath: str = self.cache_path(sector_index)
 		if os.path.exists(dspath):
 			result = xa.open_dataset( dspath, engine="netcdf4" )
