@@ -103,7 +103,7 @@ class SignalDatasetPlot(SignalPlot):
 	def get_element_data(self) -> Tuple[np.ndarray,np.ndarray,float]:
 		element: xa.DataArray = self.data_arrays[self.element]
 		ydata: np.ndarray = element.values
-		xdata: np.ndarray = element.cooors.time.values
+		xdata: np.ndarray = element.coords['time'].values
 		target: float = element.attrs['period']
 		return xdata, ydata, target
 
