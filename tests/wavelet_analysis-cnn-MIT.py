@@ -1,6 +1,7 @@
 import hydra, torch
 from numpy.ma.core import shape
 from omegaconf import DictConfig
+from typing import List, Optional, Dict, Type, Any
 from torch import nn
 import numpy as np
 from astrotime.loaders.MIT import MITLoader
@@ -14,16 +15,17 @@ version = "MIT_period.wp"
 def my_app(cfg: DictConfig) -> None:
 	device: torch.device = astrotime_initialize(cfg, version)
 	MIT_loader = MITLoader(cfg.data)
-	MIT_loader.load_sector( MIT_loader.sector_range[0], refresh=True )
+	MIT_loader.load_sector( MIT_loader.sector_range[0] )
 
-#	times = []
-#	for signal in MIT_loader.dataset.data_vars.values():
-#		time_coord = signal.coords["time"].values
-#		times.append( time_coord )
-#	time = np.stack(times,axis=0)
-# dt: np.ndarray = np.diff(time,axis=1)
-# print( f" *** times{list(time.shape)} dt{list(dt.shape)}")
-# #print( f" diff: median={np.median(dt)}, max={np.max(dt)},  min={np.min(dt)}")
+	diffs: List[np.ndarray] = []
+	for TIC, xsignal in MIT_loader.dataset.data_vars.items():
+		if TIC.endswith(".time"):
+			time_coord = xsignal.values
+			diff = np.diff(time_coord)
+			diffs.append( diff*1000 )
+	cdiff: np.ndarray = np.concatenate(diffs)
+	print( f" *** diffs(x1000): range=({cdiff.min():.3f},{cdiff.max()}:.3f) median={np.median(cdiff):.3f}")
+#print( f" diff: median={np.median(dt)}, max={np.max(dt)},  min={np.min(dt)}")
 # for it in range(15):
 # 	idx = it*100
 # 	print( f" diff-{idx}: mean={np.mean(dt[idx,:])}, max={np.max(dt[idx,:])},  min={np.min(dt[idx,:])}")
