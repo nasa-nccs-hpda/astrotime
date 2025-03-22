@@ -15,10 +15,15 @@ def my_app(cfg: DictConfig) -> None:
 	device: torch.device = astrotime_initialize(cfg, version)
 	MIT_loader = MITLoader(cfg.data)
 	MIT_loader.load_sector( MIT_loader.sector_range[0] )
-	times: np.ndarray = MIT_loader.dataset.coords["time"].values
-	dt: np.ndarray = np.diff(times)
-	print( f" *** times{times.shape} dt{dt.shape}")
-	print( f" diff: median={np.median(dt)}, max={np.max(dt)},  min={np.min(dt)}")
+	times = []
+	for signal in MIT_loader.dataset.data_vars.values:
+		times.append( signal.coords["time"].values )
+	time = np.stack(times,axis=0)
+	dt: np.ndarray = np.diff(time,axis=1)
+	print( f" *** times{time.shape} dt{dt.shape}")
+#	print( f" diff: median={np.median(dt)}, max={np.max(dt)},  min={np.min(dt)}")
+#	threshold = 10.0
+#	breaks = (dt > threshold).nonzero()
 
 if __name__ == "__main__":
 	my_app()
