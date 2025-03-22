@@ -24,8 +24,9 @@ def my_app(cfg: DictConfig) -> None:
 	print( f" *** times{list(time.shape)} dt{list(dt.shape)}")
 	print( f" diff: median={np.median(dt)}, max={np.max(dt)},  min={np.min(dt)}")
 	threshold = 10.0
-#	breaks = (dt > threshold).nonzero()
-#	print(f" diff: median={np.median(dt)}, max={np.max(dt)},  min={np.min(dt)}")
+	breaks = (dt > threshold)
+	nbreaks = np.count_nonzero(breaks, axis=1)
+	print(f" nbreaks{list(nbreaks.shape)}: mean={np.mean(nbreaks)}, max={np.max(nbreaks)},  min={np.min(nbreaks)}")
 
 if __name__ == "__main__":
 	my_app()
