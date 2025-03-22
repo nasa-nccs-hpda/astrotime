@@ -23,8 +23,8 @@ def my_app(cfg: DictConfig) -> None:
 	dt: np.ndarray = np.diff(time,axis=1)
 	print( f" *** times{list(time.shape)} dt{list(dt.shape)}")
 	#print( f" diff: median={np.median(dt)}, max={np.max(dt)},  min={np.min(dt)}")
-	for it in range(10):
-		idx = it*1000
+	for it in range(15):
+		idx = it*100
 		print( f" diff-{idx}: mean={np.mean(dt[idx,:])}, max={np.max(dt[idx,:])},  min={np.min(dt[idx,:])}")
 #	threshold = 0.002
 #	breaks: np.ndarray = (dt > threshold)
