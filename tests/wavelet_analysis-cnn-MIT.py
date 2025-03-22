@@ -25,7 +25,7 @@ def my_app(cfg: DictConfig) -> None:
 			diffs.append( diff*1000 )
 	cdiff: np.ndarray = np.concatenate(diffs)
 	print( f" *** diffs(x1000): range=({cdiff.min():.3f},{cdiff.max():.3f}) median={np.median(cdiff):.3f}")
-	threshold = 10.0
+	threshold = 100.0
 	breaks: np.ndarray = (cdiff > threshold)
 	nbreaks = np.count_nonzero(breaks)
 	print(f" Threshold={threshold:.3f}: nbreaks/signal: {nbreaks/len(diffs):.3f}")
