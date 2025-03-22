@@ -35,14 +35,14 @@ class MITLoader(DataLoader):
 
 	def cache_path( self, sector_index: int ) -> str:
 		os.makedirs(self.cfg.cache_path, exist_ok=True)
-		return f"{self.cfg.cache_path}/sector-{sector_index}.zarr"
+		return f"{self.cfg.cache_path}/sector-{sector_index}.nc"
 
 	def load_cache_dataset( self, sector_index ) -> Optional[xa.Dataset]:
 		t0 = time.time()
 		self.current_sector = sector_index
 		dspath: str = self.cache_path(sector_index)
 		if os.path.exists(dspath):
-			result = xa.open_dataset( dspath, engine="zarr" )
+			result = xa.open_dataset( dspath, engine="netcdf4" )
 			print( f"Opened cache dataset from {dspath} in in {time.time()-t0:.3f} sec, nvars = {len(result.data_vars)}")
 			return result
 		else:
@@ -65,7 +65,7 @@ class MITLoader(DataLoader):
 				xarrays: Dict[str,xa.DataArray] = {}
 				print(f"Loading {len(TICS)} TIC files for sector {sector}:  ",end="")
 				for iT, TIC in enumerate(TICS):
-					if iT % 100 == 0: print(".",end="",flush=True)
+					if iT % 50 == 0: print(".",end="",flush=True)
 					data_file = self.bls_file_path(sector,TIC)
 					dfbls = pd.read_csv( data_file, header=None, names=['Header', 'Data'] )
 					dfbls = dfbls.set_index('Header').T
@@ -76,9 +76,9 @@ class MITLoader(DataLoader):
 					xarrays[ TIC + ".y" ]    = xa.DataArray( dflc[1].values, dims=TIC+".obs", attrs=dict(sn=sn,period=period) )
 				self.dataset = xa.Dataset( xarrays )
 				t1 = time.time()
-				print(f"Loaded sector {sector} files in {t1-t0:.3f} sec")
-				self.dataset.to_zarr( self.cache_path(sector) )
-				print(f"Saved sector {sector} files in {time.time()-t1:.3f} sec")
+				print(f" Loaded files in {t1-t0:.3f} sec")
+				self.dataset.to_netcdf( self.cache_path(sector), engine="netcdf4" )
+				print(f" Saved files in {time.time()-t1:.3f} sec")
 
 	def get_dataset( self, sector: int, refresh=False ) -> xa.Dataset:
 		self.load_sector( sector, refresh )
