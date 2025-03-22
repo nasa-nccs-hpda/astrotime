@@ -63,7 +63,7 @@ class MITLoader(DataLoader):
 			if self.dataset is None:
 				TICS: List[str] = self.TICS(sector)
 				xarrays: Dict[str,xa.DataArray] = {}
-				print(f"Loading TIC files for sector {sector}:  ",end="")
+				print(f"Loading {len(TICS)} TIC files for sector {sector}:  ",end="")
 				for iT, TIC in enumerate(TICS):
 					if iT % 100 == 0: print(".",end="",flush=True)
 					data_file = self.bls_file_path(sector,TIC)
@@ -72,8 +72,8 @@ class MITLoader(DataLoader):
 					period: float = np.float64(dfbls['per'].values[0])
 					sn: float = np.float64(dfbls['sn'].values[0])
 					dflc = pd.read_csv( self.lc_file_path(sector,TIC), header=None, sep='\s+')
-					xarrays[ TIC + ".time" ] = xa.DataArray( dflc[0].values, dims="observations" )
-					xarrays[ TIC + ".y" ]    = xa.DataArray( dflc[1].values, dims="observations", attrs=dict(sn=sn,period=period) )
+					xarrays[ TIC + ".time" ] = xa.DataArray( dflc[0].values, dims=TIC+".obs" )
+					xarrays[ TIC + ".y" ]    = xa.DataArray( dflc[1].values, dims=TIC+".obs", attrs=dict(sn=sn,period=period) )
 				self.dataset = xa.Dataset( xarrays )
 				t1 = time.time()
 				print(f"Loaded sector {sector} files in {t1-t0:.3f} sec")
