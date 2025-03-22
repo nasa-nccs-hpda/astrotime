@@ -66,6 +66,7 @@ class MITLoader(DataLoader):
 				times = []
 				periods = []
 				sns = []
+				lens = []
 				print(f"Loading TIC files for sector {sector}",end="")
 				for iT, TIC in enumerate(TICS):
 					if iT % 100 == 0: print(".",end="")
@@ -78,8 +79,10 @@ class MITLoader(DataLoader):
 					times.append( dflc[0].values )
 					fluxes.append( dflc[1].values )
 					periods.append( period )
+					lens.append( times[-1].size )
 					sns.append( sn )
-				print("  DONEß")
+				slens = np.array(lens)
+				print(f"  DONE: lengths range ({slens.min()} -> {slens.max()})")
 				elem = np.arange(len(TICS))
 				obs = np.arange(len(times[0]))
 				xperiod = xa.DataArray( np.array(periods), dims=['elem'], coords=dict(elem=elem) )

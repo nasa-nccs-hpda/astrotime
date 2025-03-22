@@ -5,7 +5,7 @@ from time import time
 import time, traceback
 Array = torch.Tensor | np.ndarray
 import logging
-log = logging.getLogger("astrotime")
+
 
 def shp(x): return list(x.shape)
 
@@ -14,6 +14,7 @@ def exception_handled(func):
         try:
             return func( *args, **kwargs )
         except:
+            log = logging.getLogger("astrotime")
             log.error( f" Error in {func}:" )
             log.error( traceback.format_exc(100) )
     return wrapper
@@ -21,6 +22,7 @@ def exception_handled(func):
 def log_timing(f):
     @wraps(f)
     def wrap(*args, **kw):
+        log = logging.getLogger("astrotime")
         try:
             ts = time.time()
             result = f(*args, **kw)
