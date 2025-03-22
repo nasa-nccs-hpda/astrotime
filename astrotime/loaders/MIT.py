@@ -35,14 +35,14 @@ class MITLoader(DataLoader):
 
 	def cache_path( self, sector_index: int ) -> str:
 		os.makedirs(self.cfg.cache_path, exist_ok=True)
-		return f"{self.cfg.cache_path}/sector-{sector_index}.np"
+		return f"{self.cfg.cache_path}/sector-{sector_index}.zarr"
 
 	def load_cache_dataset( self, sector_index ) -> Optional[xa.Dataset]:
 		t0 = time.time()
 		self.current_sector = sector_index
 		dspath: str = self.cache_path(sector_index)
 		if os.path.exists(dspath):
-			result = xa.open_dataset( dspath, engine="netcdf4" )
+			result = xa.open_dataset( dspath, engine="zarr" )
 			print( f"Opened cache dataset from {dspath} in in {time.time()-t0:.3f} sec, nvars = {len(result.data_vars)}")
 			return result
 		else:
@@ -62,37 +62,22 @@ class MITLoader(DataLoader):
 			if not refresh: self.dataset = self.load_cache_dataset(sector)
 			if self.dataset is None:
 				TICS: List[str] = self.TICS(sector)
-				fluxes = []
-				times = []
-				periods = []
-				sns = []
-				lens = []
-				print(f"Loading TIC files for sector {sector}",end="")
+				xarrays: Dict[str,xa.DataArray] = {}
+				print(f"Loading TIC files for sector {sector}:  ",end="")
 				for iT, TIC in enumerate(TICS):
-					if iT % 100 == 0: print(".",end="")
+					if iT % 100 == 0: print(".",end="",flush=True)
 					data_file = self.bls_file_path(sector,TIC)
 					dfbls = pd.read_csv( data_file, header=None, names=['Header', 'Data'] )
 					dfbls = dfbls.set_index('Header').T
 					period: float = np.float64(dfbls['per'].values[0])
 					sn: float = np.float64(dfbls['sn'].values[0])
 					dflc = pd.read_csv( self.lc_file_path(sector,TIC), header=None, sep='\s+')
-					times.append( dflc[0].values )
-					fluxes.append( dflc[1].values )
-					periods.append( period )
-					lens.append( times[-1].size )
-					sns.append( sn )
-				slens = np.array(lens)
-				print(f"  DONE: lengths range ({slens.min()} -> {slens.max()})")
-				elem = np.arange(len(TICS))
-				obs = np.arange(len(times[0]))
-				xperiod = xa.DataArray( np.array(periods), dims=['elem'], coords=dict(elem=elem) )
-				xsns    = xa.DataArray( np.array(sns), dims=['elem'], coords=dict(elem=elem) )
-				xtime   = xa.DataArray( np.stack(times,axis=0), dims=['elem','obs'], coords=dict(elem=elem,obs=obs) )
-				xflux   = xa.DataArray( np.stack(fluxes,axis=0), dims=['elem','obs'], coords=dict(elem=elem,obs=obs) )
-				self.dataset = xa.Dataset( dict(y=xflux,time=xtime,period=xperiod,sns=xsns), coords=dict(elem=elem,obs=obs) )
+					xarrays[ TIC + ".time" ] = xa.DataArray( dflc[0].values, dims="observations" )
+					xarrays[ TIC + ".y" ]    = xa.DataArray( dflc[1].values, dims="observations", attrs=dict(sn=sn,period=period) )
+				self.dataset = xa.Dataset( xarrays )
 				t1 = time.time()
 				print(f"Loaded sector {sector} files in {t1-t0:.3f} sec")
-				self.dataset.to_netcdf( self.cache_path(sector) )
+				self.dataset.to_zarr( self.cache_path(sector) )
 				print(f"Saved sector {sector} files in {time.time()-t1:.3f} sec")
 
 	def get_dataset( self, sector: int, refresh=False ) -> xa.Dataset:
