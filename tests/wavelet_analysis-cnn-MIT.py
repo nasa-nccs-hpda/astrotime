@@ -17,10 +17,12 @@ def my_app(cfg: DictConfig) -> None:
 	MIT_loader.load_sector( MIT_loader.sector_range[0] )
 	times = []
 	for signal in MIT_loader.dataset.data_vars.values():
-		times.append( signal.coords["time"].values )
+		time_coord = signal.coords["time"].values
+		print( f" time_coord{list(time_coord.shape)}")
+		times.append( time_coord )
 	time = np.stack(times,axis=0)
 	dt: np.ndarray = np.diff(time,axis=1)
-	print( f" *** times{time.shape} dt{dt.shape}")
+	print( f" *** times{list(time.shape)} dt{list(dt.shape)}")
 #	print( f" diff: median={np.median(dt)}, max={np.max(dt)},  min={np.min(dt)}")
 #	threshold = 10.0
 #	breaks = (dt > threshold).nonzero()
