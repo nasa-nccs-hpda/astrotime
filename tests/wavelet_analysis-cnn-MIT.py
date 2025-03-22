@@ -26,7 +26,7 @@ def my_app(cfg: DictConfig) -> None:
 			diffs.append( diff*1000 )
 			tlen.append( (time_coord[-1]-time_coord[0])*1000 )
 	cdiff: np.ndarray = np.concatenate(diffs)
-	tlens = np.ndarray(tlen)
+	tlens: np.ndarray = np.array(tlen)
 	print( f" *** diffs(x1000): range=({cdiff.min():.3f},{cdiff.max():.3f}) median={np.median(cdiff):.3f}")
 	print( f" *** tlens(x1000): range=({tlens.min():.3f},{tlens.max():.3f}) median={np.median(tlens):.3f}")
 	threshold = 500.0
