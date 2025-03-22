@@ -22,11 +22,13 @@ def my_app(cfg: DictConfig) -> None:
 	time = np.stack(times,axis=0)
 	dt: np.ndarray = np.diff(time,axis=1)
 	print( f" *** times{list(time.shape)} dt{list(dt.shape)}")
-	print( f" diff: median={np.median(dt)}, max={np.max(dt)},  min={np.min(dt)}")
-	threshold = 0.002
-	breaks = (dt > threshold)
-	nbreaks: np.ndarray = np.count_nonzero(breaks, axis=1)
-	print(f" nbreaks{list(nbreaks.shape)}: mean={np.mean(nbreaks)}, max={np.max(nbreaks)},  min={np.min(nbreaks)}")
+	#print( f" diff: median={np.median(dt)}, max={np.max(dt)},  min={np.min(dt)}")
+	for it in range(10):
+		print( f" diff-{it}: mean={np.mean(dt[it,:])}, max={np.max(dt[it,:])},  min={np.min(dt[it,:])}")
+#	threshold = 0.002
+#	breaks: np.ndarray = (dt > threshold)
+#	nbreaks: np.ndarray = np.count_nonzero(breaks, axis=1)
+#	print(f" nbreaks{list(nbreaks.shape)}: mean={np.mean(nbreaks)}, max={np.max(nbreaks)},  min={np.min(nbreaks)}")
 
 if __name__ == "__main__":
 	my_app()
