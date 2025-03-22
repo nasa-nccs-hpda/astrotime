@@ -24,7 +24,8 @@ def my_app(cfg: DictConfig) -> None:
 	print( f" *** times{list(time.shape)} dt{list(dt.shape)}")
 	#print( f" diff: median={np.median(dt)}, max={np.max(dt)},  min={np.min(dt)}")
 	for it in range(10):
-		print( f" diff-{it}: mean={np.mean(dt[it,:])}, max={np.max(dt[it,:])},  min={np.min(dt[it,:])}")
+		idx = it*1000
+		print( f" diff-{idx}: mean={np.mean(dt[idx,:])}, max={np.max(dt[idx,:])},  min={np.min(dt[idx,:])}")
 #	threshold = 0.002
 #	breaks: np.ndarray = (dt > threshold)
 #	nbreaks: np.ndarray = np.count_nonzero(breaks, axis=1)
