@@ -16,7 +16,7 @@ def my_app(cfg: DictConfig) -> None:
 	MIT_loader = MITLoader(cfg.data)
 	MIT_loader.load_sector( MIT_loader.sector_range[0] )
 	times = []
-	for signal in MIT_loader.dataset.data_vars.values:
+	for signal in MIT_loader.dataset.data_vars.values():
 		times.append( signal.coords["time"].values )
 	time = np.stack(times,axis=0)
 	dt: np.ndarray = np.diff(time,axis=1)
