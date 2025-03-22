@@ -57,13 +57,16 @@ class MITLoader(DataLoader):
 
 	@exception_handled
 	def load_sector( self, sector: int, refresh=False ):
+		t0 = time.time()
 		if refresh: self.dataset = None
 		if (self.current_sector != sector) or (self.dataset is None):
 			if not refresh: self.dataset = self.load_cache_dataset(sector)
 			if self.dataset is None:
 				TICS: List[str] = self.TICS(sector)
-				dataset_arrays = {}
-				t0 = time.time()
+				fluxes = []
+				times = []
+				periods = []
+				sns = []
 				for TIC in TICS:
 					data_file = self.bls_file_path(sector,TIC)
 					dfbls = pd.read_csv( data_file, header=None, names=['Header', 'Data'] )
@@ -71,10 +74,17 @@ class MITLoader(DataLoader):
 					period: float = np.float64(dfbls['per'].values[0])
 					sn: float = np.float64(dfbls['sn'].values[0])
 					dflc = pd.read_csv( self.lc_file_path(sector,TIC), header=None, sep='\s+')
-					time_values: np.ndarray = dflc[0].values
-					flux_values: np.ndarray = dflc[1].values
-					dataset_arrays[TIC] = xa.DataArray( name=TIC, data=flux_values, coords=dict(time=time_values), dims=['time'], attrs=dict( period=period, sn=sn ) )
-				self.dataset = xa.Dataset( dataset_arrays )
+					times.append( dflc[0].values )
+					fluxes.append( dflc[1].values )
+					periods.append( period )
+					sns.append( sn )
+				elem = np.arange(len(TICS))
+				obs = np.arange(len(times[0]))
+				xperiod = xa.DataArray( np.array(periods), dims=['elem'], coords=dict(elem=elem) )
+				xsns    = xa.DataArray( np.array(sns), dims=['elem'], coords=dict(elem=elem) )
+				xtime   = xa.DataArray( np.stack(times,axis=0), dims=['elem','obs'], coords=dict(elem=elem,obs=obs) )
+				xflux   = xa.DataArray( np.stack(fluxes,axis=0), dims=['elem','obs'], coords=dict(elem=elem,obs=obs) )
+				self.dataset = xa.Dataset( dict(y=xflux,time=xtime,period=xperiod,sns=xsns), coords=dict(elem=elem,obs=obs) )
 				t1 = time.time()
 				print(f"Loaded sector {sector} files in {t1-t0:.3f} sec")
 				self.dataset.to_netcdf( self.cache_path(sector) )
