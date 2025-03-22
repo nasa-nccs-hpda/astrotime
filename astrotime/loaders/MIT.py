@@ -55,7 +55,6 @@ class MITLoader(DataLoader):
 	def nelements(self, tset: TSet = TSet.Train) -> int:
 		return self.size(self.current_sector)
 
-	@exception_handled
 	def load_sector( self, sector: int, refresh=False ):
 		t0 = time.time()
 		if refresh: self.dataset = None
@@ -67,8 +66,9 @@ class MITLoader(DataLoader):
 				times = []
 				periods = []
 				sns = []
-				print(f"Loading TIC files for sector {sector}")
-				for TIC in TICS:
+				print(f"Loading TIC files for sector {sector}",end="")
+				for iT, TIC in enumerate(TICS):
+					if iT % 100 == 0: print(".",end="")
 					data_file = self.bls_file_path(sector,TIC)
 					dfbls = pd.read_csv( data_file, header=None, names=['Header', 'Data'] )
 					dfbls = dfbls.set_index('Header').T
@@ -79,6 +79,7 @@ class MITLoader(DataLoader):
 					fluxes.append( dflc[1].values )
 					periods.append( period )
 					sns.append( sn )
+				print("  DONEß")
 				elem = np.arange(len(TICS))
 				obs = np.arange(len(times[0]))
 				xperiod = xa.DataArray( np.array(periods), dims=['elem'], coords=dict(elem=elem) )
