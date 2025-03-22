@@ -19,20 +19,24 @@ def my_app(cfg: DictConfig) -> None:
 
 	diffs: List[np.ndarray] = []
 	tlen = []
+	threshold = 1.0
 	for TIC, xsignal in MIT_loader.dataset.data_vars.items():
 		if TIC.endswith(".time"):
 			time_coord = xsignal.values
 			diff = np.diff(time_coord)
 			diffs.append( diff )
 			tlen.append( (time_coord[-1]-time_coord[0]) )
+			# break_indies = np.argwhere( diff > threshold )
+			# blocks = np.split( signal, break_indies)
 	cdiff: np.ndarray = np.concatenate(diffs)
 	tlens: np.ndarray = np.array(tlen)
 	print( f" *** diffs: range=({cdiff.min():.4f},{cdiff.max():.4f}) median={np.median(cdiff):.4f}")
-	print( f" *** tlens: range=({tlens.min():.2f},{tlens.max():.2f}) median={np.median(tlens):.2f}")
-	threshold = 1.0
+	print( f" *** tlens: range=({tlens.min():.1f},{tlens.max():.1f}) median={np.median(tlens):.1f}")
+
 	breaks: np.ndarray = (cdiff > threshold)
 	nbreaks = np.count_nonzero(breaks)
 	print(f" Threshold={threshold:.2f}: nbreaks/signal: {nbreaks/len(diffs):.1f}")
+
 
 if __name__ == "__main__":
 	my_app()
