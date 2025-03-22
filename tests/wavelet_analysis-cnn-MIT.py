@@ -23,13 +23,13 @@ def my_app(cfg: DictConfig) -> None:
 		if TIC.endswith(".time"):
 			time_coord = xsignal.values
 			diff = np.diff(time_coord)
-			diffs.append( diff*1000 )
-			tlen.append( (time_coord[-1]-time_coord[0])*1000 )
+			diffs.append( diff )
+			tlen.append( (time_coord[-1]-time_coord[0]) )
 	cdiff: np.ndarray = np.concatenate(diffs)
 	tlens: np.ndarray = np.array(tlen)
-	print( f" *** diffs(x1000): range=({cdiff.min():.3f},{cdiff.max():.3f}) median={np.median(cdiff):.3f}")
-	print( f" *** tlens(x1000): range=({tlens.min():.3f},{tlens.max():.3f}) median={np.median(tlens):.3f}")
-	threshold = 1000.0
+	print( f" *** diffs: range=({cdiff.min():.5f},{cdiff.max():.5f}) median={np.median(cdiff):.5f}")
+	print( f" *** tlens: range=({tlens.min():.3f},{tlens.max():.3f}) median={np.median(tlens):.3f}")
+	threshold = 1.0
 	breaks: np.ndarray = (cdiff > threshold)
 	nbreaks = np.count_nonzero(breaks)
 	print(f" Threshold={threshold:.3f}: nbreaks/signal: {nbreaks/len(diffs):.3f}")
