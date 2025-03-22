@@ -18,14 +18,14 @@ def my_app(cfg: DictConfig) -> None:
 	times = []
 	for signal in MIT_loader.dataset.data_vars.values():
 		time_coord = signal.coords["time"].values
-		print( f" time_coord{list(time_coord.shape)}")
 		times.append( time_coord )
 	time = np.stack(times,axis=0)
 	dt: np.ndarray = np.diff(time,axis=1)
 	print( f" *** times{list(time.shape)} dt{list(dt.shape)}")
-#	print( f" diff: median={np.median(dt)}, max={np.max(dt)},  min={np.min(dt)}")
-#	threshold = 10.0
+	print( f" diff: median={np.median(dt)}, max={np.max(dt)},  min={np.min(dt)}")
+	threshold = 10.0
 #	breaks = (dt > threshold).nonzero()
+#	print(f" diff: median={np.median(dt)}, max={np.max(dt)},  min={np.min(dt)}")
 
 if __name__ == "__main__":
 	my_app()
