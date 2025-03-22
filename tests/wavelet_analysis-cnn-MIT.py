@@ -29,7 +29,7 @@ def my_app(cfg: DictConfig) -> None:
 	tlens: np.ndarray = np.array(tlen)
 	print( f" *** diffs(x1000): range=({cdiff.min():.3f},{cdiff.max():.3f}) median={np.median(cdiff):.3f}")
 	print( f" *** tlens(x1000): range=({tlens.min():.3f},{tlens.max():.3f}) median={np.median(tlens):.3f}")
-	threshold = 2000.0
+	threshold = 1000.0
 	breaks: np.ndarray = (cdiff > threshold)
 	nbreaks = np.count_nonzero(breaks)
 	print(f" Threshold={threshold:.3f}: nbreaks/signal: {nbreaks/len(diffs):.3f}")
