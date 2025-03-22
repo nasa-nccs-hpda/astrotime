@@ -27,21 +27,12 @@ def my_app(cfg: DictConfig) -> None:
 			tlen.append( (time_coord[-1]-time_coord[0]) )
 	cdiff: np.ndarray = np.concatenate(diffs)
 	tlens: np.ndarray = np.array(tlen)
-	print( f" *** diffs: range=({cdiff.min():.5f},{cdiff.max():.5f}) median={np.median(cdiff):.5f}")
-	print( f" *** tlens: range=({tlens.min():.3f},{tlens.max():.3f}) median={np.median(tlens):.3f}")
+	print( f" *** diffs: range=({cdiff.min():.4f},{cdiff.max():.4f}) median={np.median(cdiff):.4f}")
+	print( f" *** tlens: range=({tlens.min():.2f},{tlens.max():.2f}) median={np.median(tlens):.2f}")
 	threshold = 1.0
 	breaks: np.ndarray = (cdiff > threshold)
 	nbreaks = np.count_nonzero(breaks)
-	print(f" Threshold={threshold:.3f}: nbreaks/signal: {nbreaks/len(diffs):.3f}")
-
-#print( f" diff: median={np.median(dt)}, max={np.max(dt)},  min={np.min(dt)}")
-# for it in range(15):
-# 	idx = it*100
-# 	print( f" diff-{idx}: mean={np.mean(dt[idx,:])}, max={np.max(dt[idx,:])},  min={np.min(dt[idx,:])}")
-#	threshold = 0.002
-#	breaks: np.ndarray = (dt > threshold)
-#	nbreaks: np.ndarray = np.count_nonzero(breaks, axis=1)
-#	print(f" nbreaks{list(nbreaks.shape)}: mean={np.mean(nbreaks)}, max={np.max(nbreaks)},  min={np.min(nbreaks)}")
+	print(f" Threshold={threshold:.2f}: nbreaks/signal: {nbreaks/len(diffs):.1f}")
 
 if __name__ == "__main__":
 	my_app()
