@@ -18,14 +18,18 @@ def my_app(cfg: DictConfig) -> None:
 	MIT_loader.load_sector( MIT_loader.sector_range[0] )
 
 	diffs: List[np.ndarray] = []
+	tlen = []
 	for TIC, xsignal in MIT_loader.dataset.data_vars.items():
 		if TIC.endswith(".time"):
 			time_coord = xsignal.values
 			diff = np.diff(time_coord)
 			diffs.append( diff*1000 )
+			tlen.append( (time_coord[-1]-time_coord[0])*1000 )
 	cdiff: np.ndarray = np.concatenate(diffs)
+	tlens = np.ndarray(tlen)
 	print( f" *** diffs(x1000): range=({cdiff.min():.3f},{cdiff.max():.3f}) median={np.median(cdiff):.3f}")
-	threshold = 100.0
+	print( f" *** tlens(x1000): range=({tlens.min():.3f},{tlens.max():.3f}) median={np.median(tlens):.3f}")
+	threshold = 500.0
 	breaks: np.ndarray = (cdiff > threshold)
 	nbreaks = np.count_nonzero(breaks)
 	print(f" Threshold={threshold:.3f}: nbreaks/signal: {nbreaks/len(diffs):.3f}")
