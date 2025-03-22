@@ -67,6 +67,7 @@ class MITLoader(DataLoader):
 				times = []
 				periods = []
 				sns = []
+				print(f"Loading TIC files for sector {sector}")
 				for TIC in TICS:
 					data_file = self.bls_file_path(sector,TIC)
 					dfbls = pd.read_csv( data_file, header=None, names=['Header', 'Data'] )
