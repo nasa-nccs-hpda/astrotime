@@ -24,7 +24,12 @@ def my_app(cfg: DictConfig) -> None:
 			diff = np.diff(time_coord)
 			diffs.append( diff*1000 )
 	cdiff: np.ndarray = np.concatenate(diffs)
-	print( f" *** diffs(x1000): range=({cdiff.min():.3f},{cdiff.max()}:.3f) median={np.median(cdiff):.3f}")
+	print( f" *** diffs(x1000): range=({cdiff.min():.3f},{cdiff.max():.3f}) median={np.median(cdiff):.3f}")
+	threshold = 10.0
+	breaks: np.ndarray = (cdiff > threshold)
+	nbreaks = np.count_nonzero(breaks)
+	print(f" Threshold={threshold:.3f}: nbreaks/signal: {nbreaks/len(diffs):.3f}")
+
 #print( f" diff: median={np.median(dt)}, max={np.max(dt)},  min={np.min(dt)}")
 # for it in range(15):
 # 	idx = it*100
