@@ -32,6 +32,7 @@ def my_app(cfg: DictConfig) -> None:
 				largest_block = time_coord
 			elif break_indices.size == 1:
 				largest_block = time_coord[0:break_indices[0]] if (break_indices[0] >= time_coord.size//2) else time_coord[break_indices[0]:]
+				print(f" -------------------------------------------------------------- ")
 				print(f"break_indices: {break_indices}")
 				print(f"time_coord.size: {time_coord.size}")
 				print(f"largest_block.size: {largest_block.size}")
@@ -41,6 +42,7 @@ def my_app(cfg: DictConfig) -> None:
 				idx_largest_block = np.argmax(bsizes)
 				largest_block = time_blocks[idx_largest_block]
 				if elem % 100 == 0:
+					print(f" -------------------------------------------------------------- ")
 					print(f"break_indices: {break_indices}")
 					print(f"diffs: {diffs}")
 					print(f"bsizes: {bsizes}")
@@ -50,6 +52,8 @@ def my_app(cfg: DictConfig) -> None:
 	cdiff: np.ndarray = np.concatenate(diffs)
 	tlens: np.ndarray = np.array(tlen)
 	block_sizes: np.ndarray = np.array(block_size_list)
+	print(f" -------------------------------------------------------------- ")
+	print(f" -------------------------------------------------------------- ")
 	print( f" *** diffs: range=({cdiff.min():.4f},{cdiff.max():.4f}) median={np.median(cdiff):.4f}")
 	print( f" *** tlens: range=({tlens.min():.1f},{tlens.max():.1f}) median={np.median(tlens):.1f}")
 	print(f" *** block_sizes: range=({block_sizes.min()},{block_sizes.max()}) median={np.median(block_sizes)}")
