@@ -25,11 +25,9 @@ def my_app(cfg: DictConfig) -> None:
 		if TIC.endswith(".time"):
 			time_coord: np.ndarray = xsignal.values.squeeze()
 			diff: np.ndarray = np.diff(time_coord)
-			print(diff)
 			diffs.append( diff )
 			tlen.append( (time_coord[-1]-time_coord[0]) )
 			break_indices: np.ndarray = np.nonzero( diff > threshold )[0]
-			print( break_indices )
 			if break_indices.size == 0:
 				largest_block = time_coord
 			elif break_indices.size == 1:
