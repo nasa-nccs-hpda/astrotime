@@ -81,7 +81,7 @@ class MITLoader(DataLoader):
 				print(f" Saved files in {time.time()-t1:.3f} sec")
 
 	def get_largest_block( self, TIC: str ) -> np.ndarray:
-		threshold = 0.01
+		threshold = self.cfg.block_gap_threshold
 		ctime: np.ndarray = self.dataset[TIC+".time"].values.squeeze()
 		cy: np.ndarray = self.dataset[TIC+".y"].values.squeeze()
 		diff: np.ndarray = np.diff(ctime)

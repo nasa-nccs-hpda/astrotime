@@ -5,3 +5,4 @@ sector_range:
   - 59
   - 83
 batch_size: 50
+block_gap_threshold: 0.01

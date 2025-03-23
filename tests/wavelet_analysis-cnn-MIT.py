@@ -7,11 +7,11 @@ import xarray as xa
 from astrotime.config.context import astrotime_initialize
 version = "MIT_period.wp"
 
-def get_blocks_test( dataset: xa.Dataset, TICS: List[str] ):
+def get_blocks_test( cfg, dataset: xa.Dataset, TICS: List[str] ):
 	diffs: List[np.ndarray] = []
 	tlen = []
 	block_size_list = []
-	threshold = 0.01
+	threshold = cfg.block_gap_threshold
 	for elem, TIC in enumerate(TICS):
 		time_coord: np.ndarray = dataset.data_vars[TIC+".time"].values.squeeze()
 		diff: np.ndarray = np.diff(time_coord)
@@ -57,7 +57,7 @@ def my_app(cfg: DictConfig) -> None:
 	MIT_loader.load_sector( sector_index )
 	TICs: List[str] = MIT_loader.TICS(sector_index)[:16]
 
-	get_blocks_test( MIT_loader.dataset, TICs )
+	get_blocks_test( cfg.data, MIT_loader.dataset, TICs )
 
 	for TIC in TICs:
 		block = MIT_loader.get_largest_block( TIC )
