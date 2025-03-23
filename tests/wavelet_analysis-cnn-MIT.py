@@ -20,7 +20,7 @@ def my_app(cfg: DictConfig) -> None:
 	diffs: List[np.ndarray] = []
 	tlen = []
 	block_size_list = []
-	threshold = 1.0
+	threshold = 0.1
 	for elem, (TIC, xsignal) in enumerate(MIT_loader.dataset.data_vars.items()):
 		if TIC.endswith(".time"):
 			time_coord: np.ndarray = xsignal.values.squeeze()
