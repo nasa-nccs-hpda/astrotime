@@ -80,6 +80,25 @@ class MITLoader(DataLoader):
 				self.dataset.to_netcdf( self.cache_path(sector), engine="netcdf4" )
 				print(f" Saved files in {time.time()-t1:.3f} sec")
 
+	def get_largest_block( self, TIC: str ) -> np.ndarray:
+		threshold = 0.01
+		ctime: np.ndarray = self.dataset[TIC+".time"].values.squeeze()
+		cy: np.ndarray = self.dataset[TIC+".y"].values.squeeze()
+		diff: np.ndarray = np.diff(ctime)
+		break_indices: np.ndarray = np.nonzero(diff > threshold)[0]
+		cz = np.stack([ctime,cy],axis=0)
+		if break_indices.size == 0:
+			bz = cz
+		elif break_indices.size == 1:
+			bz = cz[:,0:break_indices[0]] if (break_indices[0] >= ctime.size//2) else cz[:,break_indices[0]:]
+		else:
+			zblocks: List[np.ndarray] = np.array_split(ctime, break_indices,axis=1)
+			bsizes: np.array = np.array([break_indices[0]] + np.diff(break_indices).tolist() + [ctime.size - break_indices[-1]])
+			idx_largest_block: int = int(np.argmax(bsizes))
+			bz: np.array = zblocks[:,idx_largest_block]
+		return bz
+
+
 	def get_dataset( self, sector: int, refresh=False ) -> xa.Dataset:
 		self.load_sector( sector, refresh )
 		return self.dataset
