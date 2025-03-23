@@ -45,7 +45,6 @@ def my_app(cfg: DictConfig) -> None:
 				if elem % 100 == 0:
 					print(f" -------------------------------------------------------------- ")
 					print(f"break_indices: {break_indices[:16]}")
-					print(f"diffs: {diffs[:16]}")
 					print(f"bsizes: {bsizes[:16]}")
 					print(f"Largest block: {idx_largest_block}")
 					print(f"Block size: {bsizes[idx_largest_block]} {largest_block.size} ")
