@@ -31,7 +31,7 @@ def my_app(cfg: DictConfig) -> None:
 			time_blocks: List[np.ndarray] = np.split( time_coord, break_indies)
 			block_sizes =  np.diff(break_indies)
 			idx_largest_block = np.argmax(block_sizes)
-			if elem & 10 == 0:
+			if elem % 100 == 0:
 				print( f"Largest block: {idx_largest_block}")
 				print(block_sizes)
 				print([t.size for t in time_blocks])
