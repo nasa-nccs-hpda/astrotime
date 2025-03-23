@@ -13,7 +13,7 @@ class WaveletSynthesisLayer(EmbeddingLayer):
 	def __init__(self, cfg, device: device):
 		EmbeddingLayer.__init__(self,cfg,device)
 		self.nfreq = cfg.nfreq
-		self.C = 1 / (8 * math.pi ** 2)
+		self.C = cfg.decay_factor / (8 * math.pi ** 2)
 		fspace = logspace if (self.cfg.fscale == "log") else np.linspace
 		self.freq = torch.FloatTensor( fspace( self.cfg.freq_start, self.cfg.freq_end, self.cfg.nfreq ) ).to(self.device)
 		self.ones: Tensor = None
@@ -32,8 +32,8 @@ class WaveletSynthesisLayer(EmbeddingLayer):
 		ts: Tensor = ts[:, None, :]  # broadcast-to(self.batch_size,self.nfreq,self.series_length)
 		dt: Tensor = (ts - tau)
 		dz: Tensor = omega_ * dt
-		weights: Tensor = torch.exp(-self.C * dz ** 2)
-		sum_w: Tensor = torch.sum(weights, dim=-1)
+		weights: Tensor = torch.exp(-self.C * dz ** 2) if (self.cfg.decay_factor > 0.0) else 1.0
+		sum_w: Tensor = torch.sum(weights, dim=-1) if (self.cfg.decay_factor > 0.0) else 1.0
 
 		def w_prod(xs: Tensor, ys: Tensor) -> Tensor:
 			return torch.sum(weights * xs * ys, dim=-1) / sum_w

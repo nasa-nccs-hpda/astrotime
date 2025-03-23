@@ -7,6 +7,14 @@ import xarray as xa
 from astrotime.config.context import astrotime_initialize
 version = "MIT_period.wp"
 
+def get_freq_range( dataset: xa.Dataset, TICS: List[str] ):
+	freqs: List[float] = []
+	for elem, TIC in enumerate(TICS):
+		dvar: xa.DataArray = dataset.data_vars[TIC+".y"]
+		freqs.append( 1.0/dvar.attrs["period"] )
+	freq = np.array(freqs)
+	print(f" freqs: range=({freq.min():.2f},{freq.max():.2f}) median={np.median(freq):.2f}")
+
 def get_blocks_test( cfg, dataset: xa.Dataset, TICS: List[str] ):
 	diffs: List[np.ndarray] = []
 	tlen = []
@@ -55,11 +63,13 @@ def my_app(cfg: DictConfig) -> None:
 	MIT_loader = MITLoader(cfg.data)
 	sector_index = MIT_loader.sector_range[0]
 	MIT_loader.load_sector( sector_index )
-	TICs: List[str] = MIT_loader.TICS(sector_index)[:16]
+	TICs: List[str] = MIT_loader.TICS(sector_index)
 
-	get_blocks_test( cfg.data, MIT_loader.dataset, TICs )
+	get_freq_range( MIT_loader.dataset, TICs)
 
-	for TIC in TICs:
+	get_blocks_test( cfg.data, MIT_loader.dataset, TICs[:16] )
+
+	for TIC in TICs[:16]:
 		block = MIT_loader.get_largest_block( TIC )
 		print( f"{TIC}: largest_block{block.shape}")
 
