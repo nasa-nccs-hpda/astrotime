@@ -28,9 +28,9 @@ def my_app(cfg: DictConfig) -> None:
 			diffs.append( diff )
 			tlen.append( (time_coord[-1]-time_coord[0]) )
 			break_indices: np.ndarray = np.argwhere( diff > threshold ).squeeze()
-			if len(break_indices) == 0:
+			if break_indices.size == 0:
 				largest_block = time_coord
-			elif len(break_indices) == 1:
+			elif break_indices.size == 1:
 				largest_block = time_coord[0:break_indices[0]] if (break_indices[0] >= time_coord.size//2) else time_coord[break_indices[0]:]
 			else:
 				time_blocks: List[np.ndarray] = np.array_split( time_coord, break_indices)
