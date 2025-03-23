@@ -38,9 +38,9 @@ def my_app(cfg: DictConfig) -> None:
 				print(f"largest_block.size: {largest_block.size}")
 			else:
 				time_blocks: List[np.ndarray] = np.array_split( time_coord, break_indices)
-				bsizes =  break_indices[0:1] + np.diff(break_indices) + [ time_coord.size-break_indices[-1] ]
-				idx_largest_block = np.argmax(bsizes)
-				largest_block = time_blocks[idx_largest_block]
+				bsizes: np.array =  np.array( [break_indices[0]] + np.diff(break_indices).tolist() + [time_coord.size-break_indices[-1]] )
+				idx_largest_block: int = int(np.argmax(bsizes))
+				largest_block: np.array = time_blocks[idx_largest_block]
 				if elem % 100 == 0:
 					print(f" -------------------------------------------------------------- ")
 					print(f"#time_blocks: {len(time_blocks)}")
