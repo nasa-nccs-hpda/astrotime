@@ -43,6 +43,8 @@ def my_app(cfg: DictConfig) -> None:
 				largest_block = time_blocks[idx_largest_block]
 				if elem % 100 == 0:
 					print(f" -------------------------------------------------------------- ")
+					print(f"#time_blocks: {len(time_blocks)}")
+					print(f"#time_coords: {time_coord.size}")
 					print(f"break_indices: {break_indices[:16]}")
 					print(f"bsizes: {bsizes[:16]}")
 					print(f"Largest block: {idx_largest_block}")
