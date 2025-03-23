@@ -27,7 +27,7 @@ def my_app(cfg: DictConfig) -> None:
 			diffs.append( diff )
 			tlen.append( (time_coord[-1]-time_coord[0]) )
 			break_indies: np.ndarray = np.argwhere( diff > threshold ).squeeze()
-			time_blocks: List[np.ndarray] = np.split( time_coord, break_indies)
+			time_blocks: List[np.ndarray] = np.array_split( time_coord, break_indies)
 			block_sizes =  np.diff(break_indies)
 			idx_largest_block = np.argmax(block_sizes)
 			if elem % 100 == 0:
