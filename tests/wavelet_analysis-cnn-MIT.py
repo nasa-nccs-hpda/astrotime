@@ -28,12 +28,13 @@ def my_app(cfg: DictConfig) -> None:
 			diffs.append( diff )
 			tlen.append( (time_coord[-1]-time_coord[0]) )
 			break_indices: np.ndarray = np.nonzero( diff > threshold )[0]
-			print( break_indices )
 			if break_indices.size == 0:
 				largest_block = time_coord
 			elif break_indices.size == 1:
 				largest_block = time_coord[0:break_indices[0]] if (break_indices[0] >= time_coord.size//2) else time_coord[break_indices[0]:]
 			else:
+				print(f"break_indices: {break_indices}")
+				print(f"diffs: {diffs}")
 				time_blocks: List[np.ndarray] = np.array_split( time_coord, break_indices)
 				bsizes =  break_indices[0:1] + np.diff(break_indices) + [ time_coord.size-break_indices[-1] ]
 				idx_largest_block = np.argmax(bsizes)
