@@ -19,6 +19,7 @@ def my_app(cfg: DictConfig) -> None:
 
 	diffs: List[np.ndarray] = []
 	tlen = []
+	block_size_list = []
 	threshold = 1.0
 	for elem, (TIC, xsignal) in enumerate(MIT_loader.dataset.data_vars.items()):
 		if TIC.endswith(".time"):
@@ -27,18 +28,20 @@ def my_app(cfg: DictConfig) -> None:
 			diffs.append( diff )
 			tlen.append( (time_coord[-1]-time_coord[0]) )
 			break_indices: np.ndarray = np.argwhere( diff > threshold ).squeeze()
-			print(f"break_indices: {break_indices}")
 			time_blocks: List[np.ndarray] = np.array_split( time_coord, break_indices)
-			block_sizes =  np.diff(break_indices)
-			idx_largest_block = np.argmax(block_sizes)
+			bsizes =  break_indices[0:1] + np.diff(break_indices) + [ time_coord.size-break_indices[-1] ]
+			idx_largest_block = np.argmax(bsizes)
+			largest_block = time_blocks[idx_largest_block]
+			block_size_list.append(largest_block.size)
 			if elem % 100 == 0:
 				print( f"Largest block: {idx_largest_block}")
-				print(f"block_sizes: {block_sizes}")
-				print(f"time_block_sizees: {[t.size for t in time_blocks]}")
+				print(f"Block size: {bsizes[idx_largest_block]} {largest_block.size} ")
 	cdiff: np.ndarray = np.concatenate(diffs)
 	tlens: np.ndarray = np.array(tlen)
+	block_sizes: np.ndarray = np.array(block_size_list)
 	print( f" *** diffs: range=({cdiff.min():.4f},{cdiff.max():.4f}) median={np.median(cdiff):.4f}")
 	print( f" *** tlens: range=({tlens.min():.1f},{tlens.max():.1f}) median={np.median(tlens):.1f}")
+	print(f" *** block_sizes: range=({block_sizes.min()},{block_sizes.max()}) median={np.median(block_sizes)}")
 
 	breaks: np.ndarray = (cdiff > threshold)
 	nbreaks = np.count_nonzero(breaks)
