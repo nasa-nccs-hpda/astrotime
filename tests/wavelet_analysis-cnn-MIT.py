@@ -24,12 +24,11 @@ def my_app(cfg: DictConfig) -> None:
 	for elem, (TIC, xsignal) in enumerate(MIT_loader.dataset.data_vars.items()):
 		if TIC.endswith(".time"):
 			time_coord: np.ndarray = xsignal.values.squeeze()
-			print(f" * time_coord{time_coord.shape}")
 			diff: np.ndarray = np.diff(time_coord)
-			print(f" * diff{diff.shape}")
 			diffs.append( diff )
 			tlen.append( (time_coord[-1]-time_coord[0]) )
 			break_indices: np.ndarray = np.nonzero( diff > threshold )[0]
+			print(f" * break_indices{break_indices.shape}")
 			if break_indices.size == 0:
 				largest_block = time_coord
 			elif break_indices.size == 1:
