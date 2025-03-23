@@ -28,6 +28,7 @@ def my_app(cfg: DictConfig) -> None:
 			diffs.append( diff )
 			tlen.append( (time_coord[-1]-time_coord[0]) )
 			break_indices: np.ndarray = np.argwhere( diff > threshold )
+			print( break_indices )
 			if break_indices.size == 0:
 				largest_block = time_coord
 			elif break_indices.size == 1:
