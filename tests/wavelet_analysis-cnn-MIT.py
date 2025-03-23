@@ -33,7 +33,7 @@ def my_app(cfg: DictConfig) -> None:
 			elif break_indices.size == 1:
 				largest_block = time_coord[0:break_indices[0]] if (break_indices[0] >= time_coord.size//2) else time_coord[break_indices[0]:]
 				print(f" -------------------------------------------------------------- ")
-				print(f"break_indices: {break_indices}")
+				print(f"break_indices: {break_indices[:16]}")
 				print(f"time_coord.size: {time_coord.size}")
 				print(f"largest_block.size: {largest_block.size}")
 			else:
@@ -43,9 +43,9 @@ def my_app(cfg: DictConfig) -> None:
 				largest_block = time_blocks[idx_largest_block]
 				if elem % 100 == 0:
 					print(f" -------------------------------------------------------------- ")
-					print(f"break_indices: {break_indices}")
-					print(f"diffs: {diffs}")
-					print(f"bsizes: {bsizes}")
+					print(f"break_indices: {break_indices[:16]}")
+					print(f"diffs: {diffs[:16]}")
+					print(f"bsizes: {bsizes[:16]}")
 					print(f"Largest block: {idx_largest_block}")
 					print(f"Block size: {bsizes[idx_largest_block]} {largest_block.size} ")
 			block_size_list.append(largest_block.size)
