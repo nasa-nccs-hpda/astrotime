@@ -32,7 +32,9 @@ def my_app(cfg: DictConfig) -> None:
 			block_sizes =  np.diff(break_indies)
 			idx_largest_block = np.argmax(block_sizes)
 			if elem & 10 == 0:
-				print( f"Largest block: {block_sizes[idx_largest_block]} {time_blocks[idx_largest_block].size}")
+				print( f"Largest block: {idx_largest_block}")
+				print(block_sizes)
+				print([t.size for t in time_blocks])
 	cdiff: np.ndarray = np.concatenate(diffs)
 	tlens: np.ndarray = np.array(tlen)
 	print( f" *** diffs: range=({cdiff.min():.4f},{cdiff.max():.4f}) median={np.median(cdiff):.4f}")
