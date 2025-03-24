@@ -15,17 +15,33 @@ class MITLoader(DataLoader):
 		self.cfg = cfg
 		self.sector_range = cfg.sector_range
 		self.current_sector = self.sector_range[0]
-		self.dataset: xa.DataSet = None
+		self.dataset: Optional[xa.Dataset] = None
+		self._TICS = None
+
+	def get_freq_range(self, sector_index: int ) -> Tuple[float,float]:
+		self.load_sector(sector_index)
+		freqs: List[float] = []
+		for elem, TIC in enumerate( self.TICS(sector_index) ):
+			dvar: xa.DataArray = self.dataset.data_vars[TIC + ".y"]
+			freqs.append(1.0 / dvar.attrs["period"])
+		freq = np.array(freqs)
+		fmin, fmax = freq.min(), freq.max()
+		print(f" freqs: range=({fmin:.2f},{fmax:.2f}) median={np.median(freq):.2f}")
+		return fmin, fmax
 
 	@property
 	def dset_idx(self) -> int:
 		return self.current_sector
 
 	def TICS( self, sector_index: int ) -> List[str]:
+		self.load_sector(sector_index)
+		return self._TICS
+
+	def _read_TICS(self, sector_index: int ):
 		bls_dir = f"{self.cfg.dataset_root}/sector{sector_index}/bls"
 		files = glob("*.bls", root_dir=bls_dir )
 		print( f"Get TICS from {bls_dir}, nfiles: {len(files)}")
-		return [ f.split('.')[0] for f in files ]
+		self._TICS = [ f.split('.')[0] for f in files ]
 
 	def bls_file_path( self, sector_index: int, TIC: str ) -> str:
 		return f"{self.cfg.dataset_root}/sector{sector_index}/bls/{TIC}.bls"
@@ -37,16 +53,19 @@ class MITLoader(DataLoader):
 		os.makedirs(self.cfg.cache_path, exist_ok=True)
 		return f"{self.cfg.cache_path}/sector-{sector_index}.nc"
 
-	def load_cache_dataset( self, sector_index ) -> Optional[xa.Dataset]:
+	def _load_cache_dataset( self, sector_index ):
 		t0 = time.time()
-		self.current_sector = sector_index
-		dspath: str = self.cache_path(sector_index)
-		if os.path.exists(dspath):
-			result = xa.open_dataset( dspath, engine="netcdf4" )
-			print( f"Opened cache dataset from {dspath} in in {time.time()-t0:.3f} sec, nvars = {len(result.data_vars)}")
-			return result
-		else:
-			print( f"Cache file not found: {dspath}")
+		if self.current_sector != sector_index:
+			self.refresh()
+		if self.dataset is None:
+			self.current_sector = sector_index
+			dspath: str = self.cache_path(sector_index)
+			if os.path.exists(dspath):
+				self.dataset = xa.open_dataset( dspath, engine="netcdf4" )
+				print( f"Opened cache dataset from {dspath} in in {time.time()-t0:.3f} sec, nvars = {len(self.dataset.data_vars)}")
+			else:
+				print( f"Cache file not found: {dspath}")
+		return self.dataset
 
 	def size(self, sector_index) -> int:
 		self.load_sector(sector_index)
@@ -55,11 +74,11 @@ class MITLoader(DataLoader):
 	def nelements(self, tset: TSet = TSet.Train) -> int:
 		return self.size(self.current_sector)
 
-	def load_sector( self, sector: int, refresh=False ):
+	def load_sector( self, sector: int ):
 		t0 = time.time()
-		if refresh: self.dataset = None
 		if (self.current_sector != sector) or (self.dataset is None):
-			if not refresh: self.dataset = self.load_cache_dataset(sector)
+			self._read_TICS(sector)
+			self._load_cache_dataset(sector)
 			if self.dataset is None:
 				TICS: List[str] = self.TICS(sector)
 				xarrays: Dict[str,xa.DataArray] = {}
@@ -98,6 +117,8 @@ class MITLoader(DataLoader):
 			bz: np.array = zblocks[:,idx_largest_block]
 		return bz
 
+	def refresh(self):
+		self.dataset = None
 
 	def get_dataset( self, sector: int, refresh=False ) -> xa.Dataset:
 		self.load_sector( sector, refresh )
