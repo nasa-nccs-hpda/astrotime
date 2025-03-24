@@ -18,16 +18,16 @@ class MITLoader(DataLoader):
 		self.dataset: Optional[xa.Dataset] = None
 		self._TICS = None
 
-	def get_freq_range(self, sector_index: int ) -> Tuple[float,float]:
+	def get_period_range(self, sector_index: int ) -> Tuple[float,float]:
 		self.load_sector(sector_index)
-		freqs: List[float] = []
+		periods: List[float] = []
 		for elem, TIC in enumerate( self.TICS(sector_index) ):
 			dvar: xa.DataArray = self.dataset.data_vars[TIC + ".y"]
-			freqs.append(1.0 / dvar.attrs["period"])
-		freq = np.array(freqs)
-		fmin, fmax = freq.min(), freq.max()
-		print(f" freqs: range=({fmin:.2f},{fmax:.2f}) median={np.median(freq):.2f}")
-		return fmin, fmax
+			periods.append(1.0 / dvar.attrs["period"])
+		period = np.array(periods)
+		pmin, pmax = period.min(), period.max()
+		print(f" periods: range=({pmin:.2f},{pmax:.2f}) median={np.median(period):.2f}")
+		return pmin, pmax
 
 	@property
 	def dset_idx(self) -> int:

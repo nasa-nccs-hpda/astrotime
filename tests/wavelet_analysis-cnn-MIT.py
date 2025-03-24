@@ -56,7 +56,7 @@ def my_app(cfg: DictConfig) -> None:
 	sector_index = MIT_loader.sector_range[0]
 	TICs: List[str] = MIT_loader.TICS(sector_index)
 
-	MIT_loader.get_freq_range(sector_index)
+	MIT_loader.get_period_range(sector_index)
 
 	get_blocks_test( cfg.data, MIT_loader.dataset, TICs[:16] )
 
