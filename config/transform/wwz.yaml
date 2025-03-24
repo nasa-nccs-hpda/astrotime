@@ -5,7 +5,7 @@ nfreq: 256                          # Number of frequency values to compute (spe
 base_freq_range:                    # Base frequency range in computed spectra (before time rescaling)
   - 0.1
   - 10.0
-time_scale: 5.0                     # Time rescale factor for shifted frequency range
+time_scale: 1.0                     # Time rescale factor for shifted frequency range
 fscale: "log"                       # Scale of frequency axis
 decay_factor: 0.0                   # Time envelope decay factor
 
