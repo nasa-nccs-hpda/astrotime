@@ -1,8 +1,8 @@
 defaults:
   - platform: "explore"
   - train: "baseline_cnn"
-  - transform: "wp"
-  - data: "sinusoids.nc"
+  - transform: "wp-scaled"
+  - data: "sinusoids_small.nc"
   - model: "wp_cnn"
   - _self_
   - override hydra/hydra_logging: disabled
