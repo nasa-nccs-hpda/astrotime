@@ -80,10 +80,8 @@ class MITLoader(DataLoader):
 			self._read_TICS(sector)
 			self._load_cache_dataset(sector)
 			if self.dataset is None:
-				TICS: List[str] = self.TICS(sector)
 				xarrays: Dict[str,xa.DataArray] = {}
-				print(f"Loading {len(TICS)} TIC files for sector {sector}:  ",end="")
-				for iT, TIC in enumerate(TICS):
+				for iT, TIC in enumerate(self._TICS):
 					if iT % 50 == 0: print(".",end="",flush=True)
 					data_file = self.bls_file_path(sector,TIC)
 					dfbls = pd.read_csv( data_file, header=None, names=['Header', 'Data'] )
