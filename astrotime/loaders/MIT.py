@@ -139,7 +139,7 @@ class MITLoader(IterativeDataLoader):
 		elif break_indices.size == 1:
 			bz = cz[:,0:break_indices[0]] if (break_indices[0] >= ctime.size//2) else cz[:,break_indices[0]:]
 		else:
-			zblocks: List[np.ndarray] = np.array_split(ctime, break_indices,axis=1)
+			zblocks: List[np.ndarray] = np.array_split(cz, break_indices,axis=1)
 			bsizes: np.array = np.array([break_indices[0]] + np.diff(break_indices).tolist() + [ctime.size - break_indices[-1]])
 			idx_largest_block: int = int(np.argmax(bsizes))
 			bz: np.array = zblocks[:,idx_largest_block]
