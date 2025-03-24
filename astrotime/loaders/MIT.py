@@ -23,7 +23,7 @@ class MITLoader(DataLoader):
 		periods: List[float] = []
 		for elem, TIC in enumerate( self.TICS(sector_index) ):
 			dvar: xa.DataArray = self.dataset.data_vars[TIC + ".y"]
-			periods.append(1.0 / dvar.attrs["period"])
+			periods.append(dvar.attrs["period"])
 		period = np.array(periods)
 		pmin, pmax = period.min(), period.max()
 		print(f" periods: range=({pmin:.2f},{pmax:.2f}) median={np.median(period):.2f}")
