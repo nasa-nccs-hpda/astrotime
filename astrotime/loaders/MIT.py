@@ -26,7 +26,7 @@ class MITLoader(DataLoader):
 			periods.append(dvar.attrs["period"])
 		period = np.array(periods)
 		pmin, pmax = period.min(), period.max()
-		print(f" periods: range=({pmin:.2f},{pmax:.2f}) median={np.median(period):.2f}")
+		print(f"\n ** periods: range=({pmin:.2f},{pmax:.2f}) median={np.median(period):.2f}")
 		return pmin, pmax
 
 	@property

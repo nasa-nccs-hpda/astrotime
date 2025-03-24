@@ -53,7 +53,7 @@ def get_blocks_test( cfg, dataset: xa.Dataset, TICS: List[str] ):
 @hydra.main(version_base=None, config_path="../config", config_name=version)
 def my_app(cfg: DictConfig) -> None:
 	MIT_loader = MITLoader(cfg.data)
-	sector_index = MIT_loader.sector_range[0]
+	sector_index = MIT_loader.sector_range[0]+1
 	TICs: List[str] = MIT_loader.TICS(sector_index)
 
 	MIT_loader.get_period_range(sector_index)
