@@ -9,4 +9,6 @@ mode:  train                                            # execution mode: 'train
 time_scale:
   - 5
   - 20
-
+  - 5
+  - 20
+  - 40
