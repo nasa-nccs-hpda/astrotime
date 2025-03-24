@@ -2,8 +2,8 @@ series_length: 2048                 # Length of subset of input timeseries to pr
 sparsity: 0.0                       # Fraction of observations to drop (randomly)
 batch_size: ${data.batch_size}      # Batch size for training
 nfreq: 512                          # Number of frequency values to compute (spectral resolution)
-freq_start: 0.01                     # Lowest frequency value in computed spectra
-freq_end: 2.0                       # Highest frequency value in computed spectra
+freq_start: 0.5                     # Lowest frequency value in computed spectra
+freq_end: 50.0                      # Highest frequency value in computed spectra
 fscale: "log"                       # Scale of frequency axis
 decay_factor: 0.0
 
