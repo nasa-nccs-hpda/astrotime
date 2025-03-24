@@ -126,7 +126,8 @@ class SignalTrainer(object):
                     losses.append(loss.item())
                     if (self.mode == TSet.Train) and ((ibatch % log_interval == 0) or ((ibatch < 5) and (epoch==0))):
                         aloss = np.array(losses)
-                        print(f"E-{epoch} B-{ibatch} loss={aloss.mean():.3f} ({aloss.min():.3f} -> {aloss.max():.3f}), dt={elapsed(t0):.5f} sec")
+                        mean_loss = aloss.mean()
+                        print(f"E-{epoch} B-{ibatch} loss={mean_loss:.3f} (unscaled: {mean_loss/self.time_scale:.3f}), range=({aloss.min():.3f} -> {aloss.max():.3f}), dt={elapsed(t0):.5f} sec")
                         losses = []
 
                 if self.mode == TSet.Train:
