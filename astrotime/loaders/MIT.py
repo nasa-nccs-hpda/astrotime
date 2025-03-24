@@ -14,6 +14,7 @@ class MITLoader(IterativeDataLoader):
 		super().__init__()
 		self.cfg = cfg
 		self.sector_range = cfg.sector_range
+		self.max_period = cfg.max_period
 		self.current_sector = None
 		self.sector_batch_offset = None
 		self.dataset: Optional[xa.Dataset] = None
@@ -140,9 +141,21 @@ class MITLoader(IterativeDataLoader):
 		else:
 			zblocks: List[np.ndarray] = np.array_split(cz, break_indices,axis=1)
 			bsizes: np.array = np.array([break_indices[0]] + np.diff(break_indices).tolist() + [ctime.size - break_indices[-1]])
-			idx_largest_block: int = int(np.argmax(bsizes))
-			bz: np.array = zblocks[:,idx_largest_block]
+			idx_largest_blocks: np.ndarray = np.argmax(bsizes)
+			bz: np.array = zblocks[ :, idx_largest_blocks[0] ]
 		return bz
+
+	def get_training_data(self, sector_index: int) -> xa.Dataset:
+		TICs: List[str] = self.TICS( sector_index )
+		elems = []
+		for TIC in TICs:
+			cy: xa.DataArray = self.dataset[TIC + ".y"]
+			p = cy.attrs["period"]
+			if p <= self.max_period:
+				bz: np.ndarray = self.get_largest_block(TIC)
+				elems.append(bz)
+		z = np.stack(elems,axis=0)
+
 
 	def refresh(self):
 		self.dataset = None
