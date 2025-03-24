@@ -14,24 +14,33 @@ class MITLoader(IterativeDataLoader):
 		super().__init__()
 		self.cfg = cfg
 		self.sector_range = cfg.sector_range
-		self.current_sector = self.sector_range[0]
-		self.validation_sector = self.sector_range[1]
-		self.sector_batch_offset = 0
+		self.current_sector = None
+		self.sector_batch_offset = None
 		self.dataset: Optional[xa.Dataset] = None
 		self.tset: TSet = None
 		self._TICS = None
 
-	def initialize(self, tset: TSet) -> xa.Dataset:
+	def initialize(self, tset: TSet):
 		self.tset = tset
 		self.sector_batch_offset = 0
+		self.current_sector = self.sector_range[0] if tset == TSet.Train else self.sector_range[1]
 
 	@exception_handled
 	def get_next_batch( self ) -> xa.Dataset:
-		t0 = time.time()
-		batch_sector = self.validation_sector if self.tset == TSet.Validation else self.current_sector
-		self.load_sector(batch_sector)
-		result = self.dataset.isel( elem=slice(bstart,bstart+self.cfg.batch_size))
-		self.log.info( f" ----> BATCH-{sector_index}.{batch_index}: bstart={bstart}, batch_size={self.cfg.batch_size}, batches_per_file={self.batches_per_sector}, y{result['y'].shape} t{result['t'].shape} p{result['p'].shape}, dt={time.time()-t0:.4f} sec")
+		result, t0 = None, time.time()
+		if self.current_sector >= 0:
+			self.load_sector(self.current_sector)
+			batch_end = min( self.sector_batch_offset+self.cfg.batch_size, self.dataset.sizes['elem'])
+			result = self.dataset.isel( elem=slice(self.sector_batch_offset,batch_end))  # get_largest_block
+			if batch_end == self.dataset.sizes['elem']:
+				if self.tset == TSet.Validation:
+					self.current_sector = -1
+				else:
+					self.sector_batch_offset = 0
+					self.current_sector = self.current_sector+1
+					if self.current_sector == self.sector_range[1]:
+						self.current_sector = -1
+	#	self.log.info( f" ----> BATCH-{sector_index}.{batch_index}: bstart={bstart}, batch_size={self.cfg.batch_size}, batches_per_file={self.batches_per_sector}, y{result['y'].shape} t{result['t'].shape} p{result['p'].shape}, dt={time.time()-t0:.4f} sec")
 		return result
 
 	@property
@@ -109,6 +118,7 @@ class MITLoader(IterativeDataLoader):
 					period: float = np.float64(dfbls['per'].values[0])
 					sn: float = np.float64(dfbls['sn'].values[0])
 					dflc = pd.read_csv( self.lc_file_path(sector,TIC), header=None, sep='\s+')
+					print( f" ***** {TIC}: time{dflc[0].values.shape}, y{dflc[1].values.shape}")
 					xarrays[ TIC + ".time" ] = xa.DataArray( dflc[0].values, dims=TIC+".obs" )
 					xarrays[ TIC + ".y" ]    = xa.DataArray( dflc[1].values, dims=TIC+".obs", attrs=dict(sn=sn,period=period) )
 				self.dataset = xa.Dataset( xarrays )
