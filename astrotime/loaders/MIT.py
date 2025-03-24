@@ -1,5 +1,5 @@
 import time, os, numpy as np, xarray as xa
-from astrotime.loaders.base import DataLoader
+from astrotime.loaders.base import IterativeDataLoader
 from typing import List, Optional, Dict, Type, Union, Tuple
 from astrotime.util.logging import exception_handled
 import pandas as pd
@@ -8,15 +8,35 @@ from omegaconf import DictConfig, OmegaConf
 from astrotime.util.series import TSet
 import logging
 
-class MITLoader(DataLoader):
+class MITLoader(IterativeDataLoader):
 
 	def __init__(self, cfg: DictConfig ):
 		super().__init__()
 		self.cfg = cfg
 		self.sector_range = cfg.sector_range
 		self.current_sector = self.sector_range[0]
+		self.validation_sector = self.sector_range[1]
+		self.sector_batch_offset = 0
 		self.dataset: Optional[xa.Dataset] = None
+		self.tset: TSet = None
 		self._TICS = None
+
+	def initialize(self, tset: TSet) -> xa.Dataset:
+		self.tset = tset
+		self.sector_batch_offset = 0
+
+	@exception_handled
+	def get_next_batch( self ) -> xa.Dataset:
+		t0 = time.time()
+		batch_sector = self.validation_sector if self.tset == TSet.Validation else self.current_sector
+		self.load_sector(batch_sector)
+		result = self.dataset.isel( elem=slice(bstart,bstart+self.cfg.batch_size))
+		self.log.info( f" ----> BATCH-{sector_index}.{batch_index}: bstart={bstart}, batch_size={self.cfg.batch_size}, batches_per_file={self.batches_per_sector}, y{result['y'].shape} t{result['t'].shape} p{result['p'].shape}, dt={time.time()-t0:.4f} sec")
+		return result
+
+	@property
+	def batch_size(self) -> int:
+		return self.cfg.batch_size
 
 	def get_period_range(self, sector_index: int ) -> Tuple[float,float]:
 		self.load_sector(sector_index)
@@ -118,8 +138,8 @@ class MITLoader(DataLoader):
 	def refresh(self):
 		self.dataset = None
 
-	def get_dataset( self, sector: int, refresh=False ) -> xa.Dataset:
-		self.load_sector( sector, refresh )
+	def get_dataset( self, sector: int ) -> xa.Dataset:
+		self.load_sector( sector )
 		return self.dataset
 
 	def get_element(self, sector: int, element_index ) -> xa.DataArray:

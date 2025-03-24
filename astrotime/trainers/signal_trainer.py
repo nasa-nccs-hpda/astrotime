@@ -24,10 +24,10 @@ class SignalTrainer(object):
         self.device = encoder.device
         self.loader: DataLoader = loader
         self.cfg: DictConfig = cfg
-        self.time_scale = cfg.time_scale
         self.loss_function: nn.Module = nn.L1Loss()
         self.model: nn.Module = model
         self.encoder: Encoder = encoder
+        self.time_scale = encoder.time_scale
         self.optimizer: optim.Optimizer = self.get_optimizer()
         self.log = logging.getLogger()
         self._checkpoint_manager = None
@@ -77,12 +77,11 @@ class SignalTrainer(object):
             self.optimizer.step()
 
     def get_batch(self, tset: TSet, batch_index) -> Tuple[torch.Tensor,torch.Tensor]:
-        tscale = self.time_scale[ batch_index % len(self.time_scale) ]
         dset: xa.Dataset = self.loader.get_batch(tset,batch_index)
         target: Tensor = torch.from_numpy(dset['p'].values[:, None]).to(self.device)
         t, y = self.encoder.encode_batch( dset['t'].values, dset['y'].values )
-        z: Tensor = torch.concat((t[:, None, :]*tscale, y), dim=1)
-        return z, target * tscale
+        z: Tensor = torch.concat((t[:, None, :]*self.time_scale, y), dim=1)
+        return z, target*self.time_scale
 
     @property
     def mode(self) -> TSet:

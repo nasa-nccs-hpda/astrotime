@@ -15,7 +15,8 @@ class WaveletSynthesisLayer(EmbeddingLayer):
 		self.nfreq = cfg.nfreq
 		self.C = cfg.decay_factor / (8 * math.pi ** 2)
 		fspace = logspace if (self.cfg.fscale == "log") else np.linspace
-		self.freq = torch.FloatTensor( fspace( self.cfg.freq_start, self.cfg.freq_end, self.cfg.nfreq ) ).to(self.device)
+		f0, f1 = self.cfg.base_freq_range[0]/self.time_scale, self.cfg.base_freq_range[1]/self.time_scale
+		self.freq = torch.FloatTensor( fspace( f0, f1, self.cfg.nfreq ) ).to(self.device)
 		self.ones: Tensor = None
 		self.init_log(f"WaveletSynthesisLayer: nfreq={self.nfreq} ")
 
@@ -101,7 +102,8 @@ class WaveletAnalysisLayer(EmbeddingLayer):
 		self.nfreq = cfg.nfreq
 		self.C = 1 / (8 * math.pi ** 2)
 		fspace = logspace if (self.cfg.fscale == "log") else np.linspace
-		self.freq = torch.FloatTensor( fspace( self.cfg.freq_start, self.cfg.freq_end, self.cfg.nfreq ) ).to(self.device)
+		f0, f1 = self.cfg.base_freq_range[0]/self.time_scale, self.cfg.base_freq_range[1]/self.time_scale
+		self.freq = torch.FloatTensor( fspace( f0, f1, self.cfg.nfreq ) ).to(self.device)
 		self.ones: Tensor = None
 		self.init_log(f"WaveletAnalysisLayer: nfreq={self.nfreq} ")
 
@@ -158,7 +160,8 @@ class WaveletProjConvLayer(EmbeddingLayer):
 		self.ktime_spacing = cfg.kernel_time_spacing
 		self.C = math.log( cfg.envelope_reduction_factor )
 		fspace = logspace if (self.cfg.fscale == "log") else np.linspace
-		self.freq = torch.FloatTensor( fspace( self.cfg.freq_start, self.cfg.freq_end, self.cfg.nfreq ) ).to(self.device)
+		f0, f1 = self.cfg.base_freq_range[0]/self.time_scale, self.cfg.base_freq_range[1]/self.time_scale
+		self.freq = torch.FloatTensor( fspace( f0, f1, self.cfg.nfreq ) ).to(self.device)
 		self.ones: Tensor = None
 		self.weights = nn.Parameter( Tensor( self.nfreq*3, self._nfeatures ) )
 		self.init_log(f"WaveletProjConvLayer: nfreq={self.nfreq} ")

@@ -12,6 +12,7 @@ class Encoder:
 		self.cfg = cfg
 		self.filters: List[TrainingFilter] = []
 		self.log = logging.getLogger()
+		self.time_scale = cfg.time_scale
 		if cfg.sparsity > 0.0:
 			self.add_filter( RandomDownsample(sparsity=cfg.sparsity) )
 
