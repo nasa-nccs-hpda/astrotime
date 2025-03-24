@@ -81,8 +81,8 @@ class SignalTrainer(object):
         dset: xa.Dataset = self.loader.get_batch(tset,batch_index)
         target: Tensor = torch.from_numpy(dset['p'].values[:, None]).to(self.device)
         t, y = self.encoder.encode_batch( dset['t'].values, dset['y'].values )
-        input: Tensor = torch.concat((t[:, None, :]*tscale, y), dim=1)
-        return input, target * tscale
+        z: Tensor = torch.concat((t[:, None, :]*tscale, y), dim=1)
+        return z, target * tscale
 
     @property
     def mode(self) -> TSet:

@@ -46,10 +46,6 @@ def get_blocks_test( cfg, dataset: xa.Dataset, TICS: List[str] ):
 	print( f" *** tlens: range=({tlens.min():.1f},{tlens.max():.1f}) median={np.median(tlens):.1f}")
 	print(f" *** block_sizes: range=({block_sizes.min()},{block_sizes.max()}) median={np.median(block_sizes)}")
 
-	breaks: np.ndarray = (cdiff > threshold)
-	nbreaks = np.count_nonzero(breaks)
-	print(f" Threshold={threshold:.2f}: nbreaks/signal: {nbreaks/len(diffs):.1f}")
-
 @hydra.main(version_base=None, config_path="../config", config_name=version)
 def my_app(cfg: DictConfig) -> None:
 	MIT_loader = MITLoader(cfg.data)
