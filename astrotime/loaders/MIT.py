@@ -6,6 +6,7 @@ import pandas as pd
 from glob import glob
 from omegaconf import DictConfig, OmegaConf
 from astrotime.util.series import TSet
+from astrotime.util.math import tmean, tstd, tmag, npnorm, shp
 import logging
 
 class MITLoader(IterativeDataLoader):
@@ -14,6 +15,7 @@ class MITLoader(IterativeDataLoader):
 		super().__init__()
 		self.cfg = cfg
 		self.sector_range = cfg.sector_range
+		self.series_length = cfg.series_length
 		self.max_period = cfg.max_period
 		self.current_sector = None
 		self.sector_batch_offset = None
@@ -145,6 +147,11 @@ class MITLoader(IterativeDataLoader):
 			bz: np.array = zblocks[ idx_largest_block ]
 		return bz
 
+	def get_batch_element(self, bz: np.ndarray) -> np.ndarray:
+		center = bz.size // 2
+		bdata = bz[center-self.series_length//2:center+self.series_length//2]
+		return npnorm(bdata)
+
 	def get_training_data(self, sector_index: int) -> np.ndarray:
 		TICs: List[str] = self.TICS( sector_index )
 		elems = []
@@ -153,7 +160,7 @@ class MITLoader(IterativeDataLoader):
 			p = cy.attrs["period"]
 			if p <= self.max_period:
 				bz: np.ndarray = self.get_largest_block(TIC)
-				elems.append(bz)
+				elems.append( self.get_batch_element(bz) )
 		print( f"get_training_data({sector_index}): {len(elems)} elements, sizes={[b.size for b in elems]}")
 		z = np.stack(elems,axis=0)
 		fdropped = (z.shape[0]-len(TICs))/len(TICs)
