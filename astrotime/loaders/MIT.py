@@ -142,7 +142,7 @@ class MITLoader(IterativeDataLoader):
 			zblocks: List[np.ndarray] = np.array_split(cz, break_indices,axis=1)
 			bsizes: np.array = np.array([break_indices[0]] + np.diff(break_indices).tolist() + [ctime.size - break_indices[-1]])
 			idx_largest_block: np.ndarray = np.argmax(bsizes)
-			print( f" idx_largest_block{idx_largest_block.shape}")
+			print( f" get_largest_block({TIC}): zblocks{len(zblocks)} bsizes{bsizes.shape} idx_largest_block={idx_largest_block}")
 			bz: np.array = zblocks[ idx_largest_block ]
 		return bz
 
