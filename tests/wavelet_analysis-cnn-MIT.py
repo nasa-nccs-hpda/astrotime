@@ -51,7 +51,9 @@ def my_app(cfg: DictConfig) -> None:
 	MIT_loader = MITLoader(cfg.data)
 	sector_index = MIT_loader.sector_range[0]+3
 	TICs: List[str] = MIT_loader.TICS(sector_index)
-	(t,y) = MIT_loader.get_training_data( sector_index )
+	for ib in range(10):
+		batch = MIT_loader.get_next_batch()
+		print( f"Batch-{ib}: t{batch['t'].shape} y{batch['y'].shape} p{batch['p'].shape}")
 
 if __name__ == "__main__":
 	my_app()

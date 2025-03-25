@@ -30,20 +30,24 @@ class MITLoader(IterativeDataLoader):
 		self.current_sector = self.sector_range[0] if tset == TSet.Train else self.sector_range[1]
 
 	@exception_handled
-	def get_next_batch( self ) -> xa.Dataset:
+	def get_next_batch( self ) -> Optional[Dict[str,np.ndarray]]:
 		result, t0 = None, time.time()
+		if self.sector_batch_offset == self.dataset.sizes['elem']:
+			if self.tset == TSet.Validation:
+				self.current_sector = -1
+			else:
+				self.sector_batch_offset = 0
+				self.current_sector = self.current_sector + 1
+				if self.current_sector == self.sector_range[1]:
+					self.current_sector = -1
 		if self.current_sector >= 0:
 			self.load_sector(self.current_sector)
-			batch_end = min( self.sector_batch_offset+self.cfg.batch_size, self.dataset.sizes['elem'])
-			result = self.dataset.isel( elem=slice(self.sector_batch_offset,batch_end))  # get_largest_block
-			if batch_end == self.dataset.sizes['elem']:
-				if self.tset == TSet.Validation:
-					self.current_sector = -1
-				else:
-					self.sector_batch_offset = 0
-					self.current_sector = self.current_sector+1
-					if self.current_sector == self.sector_range[1]:
-						self.current_sector = -1
+			batch_start = self.sector_batch_offset
+			batch_end = min( batch_start+self.cfg.batch_size, self.dataset.sizes['elem'])
+			result = { k: self.train_data[k][batch_start:batch_end] for k in ['t','y','p'] }
+			self.sector_batch_offset = batch_end
+			return result
+
 	#	self.log.info( f" ----> BATCH-{sector_index}.{batch_index}: bstart={bstart}, batch_size={self.cfg.batch_size}, batches_per_file={self.batches_per_sector}, y{result['y'].shape} t{result['t'].shape} p{result['p'].shape}, dt={time.time()-t0:.4f} sec")
 		return result
 
