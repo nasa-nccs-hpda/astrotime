@@ -51,13 +51,7 @@ def my_app(cfg: DictConfig) -> None:
 	MIT_loader = MITLoader(cfg.data)
 	sector_index = MIT_loader.sector_range[0]+3
 	TICs: List[str] = MIT_loader.TICS(sector_index)
-
-	MIT_loader.get_period_range(sector_index)
-
-	get_blocks_test( cfg.data, MIT_loader.dataset, TICs[:16] )
-
-	tdata: np.ndarray = MIT_loader.get_training_data( sector_index )
-
+	(t,y) = MIT_loader.get_training_data( sector_index )
 
 if __name__ == "__main__":
 	my_app()

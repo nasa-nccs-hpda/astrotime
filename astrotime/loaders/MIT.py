@@ -20,6 +20,7 @@ class MITLoader(IterativeDataLoader):
 		self.current_sector = None
 		self.sector_batch_offset = None
 		self.dataset: Optional[xa.Dataset] = None
+		self.train_data: Dict[str,np.ndarray] = {}
 		self.tset: TSet = None
 		self._TICS = None
 
@@ -128,6 +129,7 @@ class MITLoader(IterativeDataLoader):
 				print(f" Loaded files in {t1-t0:.3f} sec")
 				self.dataset.to_netcdf( self.cache_path(sector), engine="netcdf4" )
 				print(f" Saved files in {time.time()-t1:.3f} sec")
+			self.update_training_data()
 
 	def get_largest_block( self, TIC: str ) -> np.ndarray:
 		threshold = self.cfg.block_gap_threshold
@@ -152,22 +154,23 @@ class MITLoader(IterativeDataLoader):
 		bdata = bz[:,center-self.series_length//2:center+self.series_length//2]
 		return bdata
 
-	def get_training_data(self, sector_index: int) -> Tuple[np.ndarray,np.ndarray]:
-		TICs: List[str] = self.TICS( sector_index )
+	def update_training_data(self):
 		elems = []
-		for TIC in TICs:
+		periods = []
+		for TIC in self._TICS:
 			cy: xa.DataArray = self.dataset[TIC + ".y"]
 			p = cy.attrs["period"]
 			if p <= self.max_period:
 				bz: np.ndarray = self.get_largest_block(TIC)
 				if bz.shape[1] >= self.series_length:
 					elems.append( self.get_batch_element(bz) )
+					periods.append(p)
 		z = np.stack(elems,axis=0)
-		t: np.ndarray = z[:,0,:]
-		y = npnorm(z[:,1,:],dim=1)
-		fdropped = (len(TICs)-z.shape[0])/len(TICs)
-		print( f"get_training_data({sector_index}): t{t.shape}, y{y.shape}, max_period={self.max_period:.2f}, dropped {fdropped*100:.2f}%")
-		return t,y
+		self.train_data['t'] = z[:,0,:]
+		self.train_data['y'] = npnorm(z[:,1,:],dim=1)
+		self.train_data['p'] = np.array(periods)
+		fdropped = (len(self._TICS)-z.shape[0])/len(self._TICS)
+		print( f"get_training_data: t{self.train_data['t'].shape}, y{self.train_data['y'].shape}, p{self.train_data['p'].shape}, max_period={self.max_period:.2f}, dropped {fdropped*100:.2f}%")
 
 	def refresh(self):
 		self.dataset = None
