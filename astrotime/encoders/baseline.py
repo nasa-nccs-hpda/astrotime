@@ -6,6 +6,27 @@ from omegaconf import DictConfig, OmegaConf
 from .embedding import EmbeddingLayer
 from astrotime.util.math import tnorm
 
+class IterativeEncoder(Encoder):
+
+	def __init__(self, cfg: DictConfig, device: device ):
+		super(IterativeEncoder, self).__init__( cfg, device )
+		self.chan_first = True
+
+	@property
+	def nfeatures(self) -> int:
+		return self.cfg.nfeatures
+
+	def encode_batch(self, x0: np.ndarray, y0: np.ndarray ) -> Tuple[Tensor,Tensor]:
+		with (self.device):
+			x,y = self.apply_filters(x0,y0, dim=1)
+			Y: Tensor = torch.FloatTensor(y).to(self.device)
+			X: Tensor = torch.FloatTensor(x).to(self.device)
+			Y = tnorm(Y, dim=1)
+			if Y.ndim == 2: Y = torch.unsqueeze( Y, dim=2)
+			self.log.debug( f" ** ENCODED BATCH: x{list(x0.shape)} y{list(y0.shape)} -> T{list(X.shape)} Y{list(Y.shape)} Yrange={Y.max().item()-Y.min().item():.4f}")
+			if self.chan_first: Y = Y.transpose(1,2)
+			return X, Y
+
 
 class ValueEncoder(Encoder):
 
@@ -33,7 +54,7 @@ class ValueEncoder(Encoder):
 			Y = tnorm( Y, dim=1 )
 			if Y.ndim == 2: Y = torch.unsqueeze(Y, dim=2)
 			if self.chan_first: Y = Y.transpose(1, 2)
-			return X, tnorm(Y,dim=1)
+			return X, Y
 
 	def encode_batch(self, x0: np.ndarray, y0: np.ndarray ) -> Tuple[Tensor,Tensor]:
 		with (self.device):

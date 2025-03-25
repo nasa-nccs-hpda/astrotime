@@ -6,7 +6,6 @@ import pandas as pd
 from glob import glob
 from omegaconf import DictConfig, OmegaConf
 from astrotime.util.series import TSet
-from astrotime.util.math import tmean, tstd, tmag, npnorm, shp
 import logging
 
 class MITLoader(IterativeDataLoader):
@@ -168,7 +167,7 @@ class MITLoader(IterativeDataLoader):
 					periods.append(p)
 		z = np.stack(elems,axis=0)
 		self.train_data['t'] = z[:,0,:]
-		self.train_data['y'] = npnorm(z[:,1,:],dim=1)
+		self.train_data['y'] = z[:,1,:]
 		self.train_data['p'] = np.array(periods)
 		fdropped = (len(self._TICS)-z.shape[0])/len(self._TICS)
 		print( f"get_training_data: t{self.train_data['t'].shape}, y{self.train_data['y'].shape}, p{self.train_data['p'].shape}, max_period={self.max_period:.2f}, dropped {fdropped*100:.2f}%")
