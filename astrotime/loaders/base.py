@@ -42,7 +42,7 @@ class IterativeDataLoader:
 	def initialize(self, tset: TSet) -> xa.Dataset:
 		raise NotImplementedError(f"The class '{self.__class__.__name__}' does not implement the 'get_batch' method")
 
-	def get_next_batch(self) -> xa.Dataset:
+	def get_next_batch(self) -> Optional[Dict[str,np.ndarray]]:
 		raise NotImplementedError(f"The class '{self.__class__.__name__}' does not implement the 'get_batch' method")
 
 	def get_element(self, dset_idx: int, element_index) -> xa.DataArray:
