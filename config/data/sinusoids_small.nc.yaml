@@ -5,5 +5,5 @@ file_size: 1000               # Number of sinusoids in a single nc file
 batch_size: 50                # Batch size for training
 validation_fraction: 0.1      # Fraction of training dataset that is used for validation
 dset_reduction: 0.1           # Fraction of the full dataset that is used for training/validation
-
+series_length: 1536           # Length of subset of input timeseries to process
 
