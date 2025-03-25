@@ -141,8 +141,8 @@ class MITLoader(IterativeDataLoader):
 		else:
 			zblocks: List[np.ndarray] = np.array_split(cz, break_indices,axis=1)
 			bsizes: np.array = np.array([break_indices[0]] + np.diff(break_indices).tolist() + [ctime.size - break_indices[-1]])
-			idx_largest_blocks: np.ndarray = np.argmax(bsizes)
-			bz: np.array = zblocks[ :, idx_largest_blocks[0] ]
+			idx_largest_block: np.ndarray = np.argmax(bsizes)
+			bz: np.array = zblocks[ idx_largest_block[0] ]
 		return bz
 
 	def get_training_data(self, sector_index: int) -> np.ndarray:
@@ -156,7 +156,7 @@ class MITLoader(IterativeDataLoader):
 				elems.append(bz)
 		z = np.stack(elems,axis=0)
 		fdropped = (z.shape[0]-len(TICs))/len(TICs)
-		print( f"get_training_data: z{z.shape}, dropped {fdropped*100:.2f}%")
+		print( f"get_training_data({sector_index}): z{z.shape}, max_period={self.max_period:.2f}, dropped {fdropped*100:.2f}%")
 		return z
 
 	def refresh(self):
