@@ -145,7 +145,7 @@ class MITLoader(IterativeDataLoader):
 			bz: np.array = zblocks[ :, idx_largest_blocks[0] ]
 		return bz
 
-	def get_training_data(self, sector_index: int) -> xa.Dataset:
+	def get_training_data(self, sector_index: int) -> np.ndarray:
 		TICs: List[str] = self.TICS( sector_index )
 		elems = []
 		for TIC in TICs:
@@ -155,7 +155,9 @@ class MITLoader(IterativeDataLoader):
 				bz: np.ndarray = self.get_largest_block(TIC)
 				elems.append(bz)
 		z = np.stack(elems,axis=0)
-
+		fdropped = (z.shape[0]-len(TICs))/len(TICs)
+		print( f"get_training_data: z{z.shape}, dropped {fdropped*100:.2f}%")
+		return z
 
 	def refresh(self):
 		self.dataset = None

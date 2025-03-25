@@ -56,11 +56,7 @@ def my_app(cfg: DictConfig) -> None:
 
 	get_blocks_test( cfg.data, MIT_loader.dataset, TICs[:16] )
 
-	for TIC in TICs[:16]:
-		block = MIT_loader.get_largest_block( TIC )
-		print( f"{TIC}: largest_block{block.shape}")
-
-
+	tdata: np.ndarray = MIT_loader.get_training_data( sector_index )
 
 
 if __name__ == "__main__":
