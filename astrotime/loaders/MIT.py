@@ -30,7 +30,7 @@ class MITLoader(IterativeDataLoader):
 		self.current_sector = self.sector_range[0] if tset == TSet.Train else self.sector_range[1]
 
 	def get_next_batch( self ) -> Optional[Dict[str,np.ndarray]]:
-		if self.sector_batch_offset == self.dataset.sizes['elem']:
+		if self.sector_batch_offset == self.nelements:
 			if self.tset == TSet.Validation:
 				self.current_sector = -1
 			else:
@@ -41,7 +41,7 @@ class MITLoader(IterativeDataLoader):
 		if self.current_sector >= 0:
 			self.load_sector(self.current_sector)
 			batch_start = self.sector_batch_offset
-			batch_end = min( batch_start+self.cfg.batch_size, self.dataset.sizes['elem'])
+			batch_end = min( batch_start+self.cfg.batch_size, self.nelements)
 			result = { k: self.train_data[k][batch_start:batch_end] for k in ['t','y','p'] }
 			self.sector_batch_offset = batch_end
 			return result
@@ -103,8 +103,9 @@ class MITLoader(IterativeDataLoader):
 		self.load_sector(sector_index)
 		return len(self.dataset.data_vars)
 
-	def nelements(self, tset: TSet = TSet.Train) -> int:
-		return self.size(self.current_sector)
+	@property
+	def nelements(self) -> int:
+		return len(self._TICS)
 
 	def load_sector( self, sector: int ):
 		t0 = time.time()
