@@ -150,7 +150,7 @@ class MITLoader(IterativeDataLoader):
 	def get_batch_element(self, bz: np.ndarray) -> np.ndarray:
 		center = bz.shape[1] // 2
 		bdata = bz[:,center-self.series_length//2:center+self.series_length//2]
-		return npnorm(bdata,dim=1)
+		return bdata
 
 	def get_training_data(self, sector_index: int) -> np.ndarray:
 		TICs: List[str] = self.TICS( sector_index )
