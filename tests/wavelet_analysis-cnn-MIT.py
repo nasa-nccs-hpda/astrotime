@@ -2,6 +2,7 @@ import hydra, torch
 from omegaconf import DictConfig
 from typing import List, Optional, Dict, Type, Any
 import numpy as np
+from astrotime.util.series import TSet
 from astrotime.loaders.MIT import MITLoader
 import xarray as xa
 from astrotime.config.context import astrotime_initialize
@@ -48,9 +49,9 @@ def get_blocks_test( cfg, dataset: xa.Dataset, TICS: List[str] ):
 
 @hydra.main(version_base=None, config_path="../config", config_name=version)
 def my_app(cfg: DictConfig) -> None:
+	astrotime_initialize(cfg, version)
 	MIT_loader = MITLoader(cfg.data)
-	sector_index = MIT_loader.sector_range[0]+3
-	TICs: List[str] = MIT_loader.TICS(sector_index)
+	MIT_loader.initialize(TSet.Train)
 	for ib in range(10):
 		batch = MIT_loader.get_next_batch()
 		print( f"Batch-{ib}: t{batch['t'].shape} y{batch['y'].shape} p{batch['p'].shape}")
