@@ -141,8 +141,9 @@ class MITLoader(IterativeDataLoader):
 		else:
 			zblocks: List[np.ndarray] = np.array_split(cz, break_indices,axis=1)
 			bsizes: np.array = np.array([break_indices[0]] + np.diff(break_indices).tolist() + [ctime.size - break_indices[-1]])
-			idx_largest_block: np.ndarray = np.argmax(bsizes)
-			bz: np.array = zblocks[ idx_largest_block[0] ]
+			idx_largest_block: np.ndarray = np.argmax(bsizes)[0]
+			print( f" {type(zblocks)} {type(idx_largest_block)}")
+			bz: np.array = zblocks[ idx_largest_block ]
 		return bz
 
 	def get_training_data(self, sector_index: int) -> np.ndarray:
