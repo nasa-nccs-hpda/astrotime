@@ -28,6 +28,7 @@ class MITLoader(IterativeDataLoader):
 		self.tset = tset
 		self.sector_batch_offset = 0
 		self.current_sector = self.sector_range[0] if tset == TSet.Train else self.sector_range[1]
+		self._read_TICS(self.current_sector)
 
 	def get_next_batch( self ) -> Optional[Dict[str,np.ndarray]]:
 		if self.sector_batch_offset == self.nelements:
