@@ -145,13 +145,12 @@ class MITLoader(IterativeDataLoader):
 			bsizes: np.array = np.array([break_indices[0]] + np.diff(break_indices).tolist() + [ctime.size - break_indices[-1]])
 			idx_largest_block: np.ndarray = np.argmax(bsizes)
 			bz: np.array = zblocks[ idx_largest_block ]
-		print( f"get_largest_block({TIC}): {bz.shape}")
 		return bz
 
 	def get_batch_element(self, bz: np.ndarray) -> np.ndarray:
-		center = bz.size // 2
-		bdata = bz[center-self.series_length//2:center+self.series_length//2]
-		return npnorm(bdata,dim=0)
+		center = bz.shape[1] // 2
+		bdata = bz[:,center-self.series_length//2:center+self.series_length//2]
+		return npnorm(bdata,dim=1)
 
 	def get_training_data(self, sector_index: int) -> np.ndarray:
 		TICs: List[str] = self.TICS( sector_index )
