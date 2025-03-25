@@ -28,7 +28,7 @@ class MITLoader(IterativeDataLoader):
 		self.tset = tset
 		self.sector_batch_offset = 0
 		self.current_sector = self.sector_range[0] if tset == TSet.Train else self.sector_range[1]
-		#self._read_TICS(self.current_sector)
+		self._read_TICS(self.current_sector)
 
 	def get_next_batch( self ) -> Optional[Dict[str,np.ndarray]]:
 		if self.sector_batch_offset == self.nelements:
@@ -73,7 +73,6 @@ class MITLoader(IterativeDataLoader):
 	def _read_TICS(self, sector_index: int ):
 		bls_dir = f"{self.cfg.dataset_root}/sector{sector_index}/bls"
 		files = glob("*.bls", root_dir=bls_dir )
-		print( f"Get TICS from {bls_dir}, nfiles: {len(files)}")
 		self._TICS = [ f.split('.')[0] for f in files ]
 
 	def bls_file_path( self, sector_index: int, TIC: str ) -> str:
