@@ -150,7 +150,7 @@ class MITLoader(IterativeDataLoader):
 	def get_batch_element(self, bz: np.ndarray) -> np.ndarray:
 		center = bz.size // 2
 		bdata = bz[center-self.series_length//2:center+self.series_length//2]
-		return npnorm(bdata)
+		return npnorm(bdata,dim=0)
 
 	def get_training_data(self, sector_index: int) -> np.ndarray:
 		TICs: List[str] = self.TICS( sector_index )
@@ -161,7 +161,7 @@ class MITLoader(IterativeDataLoader):
 			if p <= self.max_period:
 				bz: np.ndarray = self.get_largest_block(TIC)
 				elems.append( self.get_batch_element(bz) )
-		print( f"get_training_data({sector_index}): {len(elems)} elements, sizes={[b.size for b in elems]}")
+		print( f"get_training_data({sector_index}): {len(elems)} elements, shapes={[b.shape for b in elems]}")
 		z = np.stack(elems,axis=0)
 		fdropped = (z.shape[0]-len(TICs))/len(TICs)
 		print( f"get_training_data({sector_index}): z{z.shape}, max_period={self.max_period:.2f}, dropped {fdropped*100:.2f}%")
