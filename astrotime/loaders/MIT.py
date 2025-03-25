@@ -162,7 +162,6 @@ class MITLoader(IterativeDataLoader):
 				bz: np.ndarray = self.get_largest_block(TIC)
 				if bz.shape[1] >= self.series_length:
 					elems.append( self.get_batch_element(bz) )
-		print( f"get_training_data({sector_index}): {len(elems)} elements, sizes={[b.size for b in elems]}")
 		z = np.stack(elems,axis=0)
 		t: np.ndarray = z[:,0,:]
 		y = npnorm(z[:,1,:],dim=1)
