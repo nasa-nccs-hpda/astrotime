@@ -29,9 +29,7 @@ class MITLoader(IterativeDataLoader):
 		self.sector_batch_offset = 0
 		self.current_sector = self.sector_range[0] if tset == TSet.Train else self.sector_range[1]
 
-	@exception_handled
 	def get_next_batch( self ) -> Optional[Dict[str,np.ndarray]]:
-		result, t0 = None, time.time()
 		if self.sector_batch_offset == self.dataset.sizes['elem']:
 			if self.tset == TSet.Validation:
 				self.current_sector = -1
@@ -47,9 +45,6 @@ class MITLoader(IterativeDataLoader):
 			result = { k: self.train_data[k][batch_start:batch_end] for k in ['t','y','p'] }
 			self.sector_batch_offset = batch_end
 			return result
-
-	#	self.log.info( f" ----> BATCH-{sector_index}.{batch_index}: bstart={bstart}, batch_size={self.cfg.batch_size}, batches_per_file={self.batches_per_sector}, y{result['y'].shape} t{result['t'].shape} p{result['p'].shape}, dt={time.time()-t0:.4f} sec")
-		return result
 
 	@property
 	def batch_size(self) -> int:
@@ -114,6 +109,7 @@ class MITLoader(IterativeDataLoader):
 	def load_sector( self, sector: int ):
 		t0 = time.time()
 		if (self.current_sector != sector) or (self.dataset is None):
+			print(f"Loading sector {sector}")
 			self._read_TICS(sector)
 			self._load_cache_dataset(sector)
 			if self.dataset is None:
