@@ -152,7 +152,7 @@ class MITLoader(IterativeDataLoader):
 		bdata = bz[:,center-self.series_length//2:center+self.series_length//2]
 		return bdata
 
-	def get_training_data(self, sector_index: int) -> np.ndarray:
+	def get_training_data(self, sector_index: int) -> Tuple[np.ndarray,np.ndarray]:
 		TICs: List[str] = self.TICS( sector_index )
 		elems = []
 		for TIC in TICs:
@@ -160,12 +160,15 @@ class MITLoader(IterativeDataLoader):
 			p = cy.attrs["period"]
 			if p <= self.max_period:
 				bz: np.ndarray = self.get_largest_block(TIC)
-				elems.append( self.get_batch_element(bz) )
+				if bz.shape[1] >= self.series_length:
+					elems.append( self.get_batch_element(bz) )
 		print( f"get_training_data({sector_index}): {len(elems)} elements, sizes={[b.size for b in elems]}")
 		z = np.stack(elems,axis=0)
-		fdropped = (z.shape[0]-len(TICs))/len(TICs)
-		print( f"get_training_data({sector_index}): z{z.shape}, max_period={self.max_period:.2f}, dropped {fdropped*100:.2f}%")
-		return z
+		t: np.ndarray = z[:,0,:]
+		y = npnorm(z[:,1,:],dim=1)
+		fdropped = (len(TICs)-z.shape[0])/len(TICs)
+		print( f"get_training_data({sector_index}): t{t.shape}, y{y.shape}, max_period={self.max_period:.2f}, dropped {fdropped*100:.2f}%")
+		return t,y
 
 	def refresh(self):
 		self.dataset = None
