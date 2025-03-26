@@ -210,11 +210,3 @@ class MITLoader(IterativeDataLoader):
 	def refresh(self):
 		self.dataset = None
 
-	def get_dataset( self, sector: int ) -> xa.Dataset:
-		self.load_sector( sector )
-		return self.dataset
-
-	def get_element(self, sector: int, element_index ) -> xa.DataArray:
-		self.load_sector(sector)
-		elements: List[xa.DataArray] = list(self.dataset.data_vars.values())
-		return elements[element_index]
