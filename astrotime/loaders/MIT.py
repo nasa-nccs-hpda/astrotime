@@ -21,16 +21,18 @@ class MITLoader(IterativeDataLoader):
 		self.dataset: Optional[xa.Dataset] = None
 		self.train_data: Dict[str,np.ndarray] = {}
 		self.tset: TSet = None
+		self._nbatches = -1
 		self._TICS = None
 
 	def initialize(self, tset: TSet):
 		self.tset = tset
 		self.sector_batch_offset = 0
 		self.current_sector = self.sector_range[0] if tset == TSet.Train else self.sector_range[1]
+		self._nbatches = -1
 		self._read_TICS(self.current_sector)
 
 	def get_next_batch( self ) -> Optional[Dict[str,np.ndarray]]:
-		if self.sector_batch_offset > self.nelements-self.cfg.batch_size:
+		if (self._nbatches > 0) and (self.sector_batch_offset > self._nbatches-self.cfg.batch_size):
 			if self.tset == TSet.Validation:
 				self.current_sector = -1
 			else:
@@ -45,23 +47,24 @@ class MITLoader(IterativeDataLoader):
 			batch_end   = batch_start+self.cfg.batch_size
 			result = { k: self.train_data[k][batch_start:batch_end] for k in ['t','y','p'] }
 			self.sector_batch_offset = batch_end
+			self._nbatches = self.train_data['t'].shape[0]
 			return result
 
-	def get_batch( self, batch_index ) -> Optional[Dict[str,np.ndarray]]:
-		if self.current_sector >= 0:
-			self.load_sector(self.current_sector)
-			batch_start = self.sector_batch_offset*batch_index
-			batch_end   = batch_start+self.cfg.batch_size
-			result = { k: self.train_data[k][batch_start:batch_end] for k in ['t','y','p'] }
-			self.sector_batch_offset = batch_end
-			return result
-
-	@property
-	def nbatches(self) -> int:
-		if self.current_sector >= 0:
-			self.load_sector(self.current_sector)
-			return self.nelements//self.cfg.batch_size
-		return -1
+	# def get_batch( self, batch_index ) -> Optional[Dict[str,np.ndarray]]:
+	# 	if self.current_sector >= 0:
+	# 		self.load_sector(self.current_sector)
+	# 		batch_start = self.sector_batch_offset*batch_index
+	# 		batch_end   = batch_start+self.cfg.batch_size
+	# 		result = { k: self.train_data[k][batch_start:batch_end] for k in ['t','y','p'] }
+	# 		self.sector_batch_offset = batch_end
+	# 		return result
+	#
+	# @property
+	# def nbatches(self) -> int:
+	# 	if self.current_sector >= 0:
+	# 		self.load_sector(self.current_sector)
+	# 		return self.nelements//self.cfg.batch_size
+	# 	return -1
 
 	@property
 	def batch_size(self) -> int:
