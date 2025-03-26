@@ -42,7 +42,6 @@ class MITLoader(IterativeDataLoader):
 			self.load_sector(self.current_sector)
 			batch_start = self.sector_batch_offset
 			batch_end   = batch_start+self.cfg.batch_size
-			print(f"MITLoader.get_next_batch({batch_start}:{batch_end}) #Nan: t={nnan(self.train_data['t'])} y={nnan(self.train_data['y'])} p={nnan(self.train_data['p'])}")
 			result = { k: self.train_data[k][batch_start:batch_end] for k in ['t','y','p'] }
 			self.sector_batch_offset = batch_end
 			return result
@@ -167,6 +166,7 @@ class MITLoader(IterativeDataLoader):
 					elems.append( self.get_batch_element(bz) )
 					periods.append(p)
 		z = np.stack(elems,axis=0)
+		print(f"MITLoader.update_training_data #Nan: z{z.shape}={nnan(z)} ")
 		self.train_data['t'] = z[:,0,:]
 		self.train_data['y'] = z[:,1,:]
 		self.train_data['p'] = np.array(periods)
