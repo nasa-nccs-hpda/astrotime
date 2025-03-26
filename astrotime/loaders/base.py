@@ -40,13 +40,16 @@ class IterativeDataLoader:
 		raise NotImplementedError(f"The class '{self.__class__.__name__}' does not implement the 'get_dataset' method")
 
 	def initialize(self, tset: TSet) -> xa.Dataset:
-		raise NotImplementedError(f"The class '{self.__class__.__name__}' does not implement the 'get_batch' method")
+		raise NotImplementedError(f"The class '{self.__class__.__name__}' does not implement the 'initialize' method")
 
 	def get_next_batch(self) -> Optional[Dict[str,np.ndarray]]:
+		raise NotImplementedError(f"The class '{self.__class__.__name__}' does not implement the 'get_next_batch' method")
+
+	def get_batch( self, batch_index ) -> Optional[Dict[str,np.ndarray]]:
 		raise NotImplementedError(f"The class '{self.__class__.__name__}' does not implement the 'get_batch' method")
 
 	def get_element(self, dset_idx: int, element_index) -> xa.DataArray:
-		raise NotImplementedError(f"The class '{self.__class__.__name__}' does not implement the 'get_batch' method")
+		raise NotImplementedError(f"The class '{self.__class__.__name__}' does not implement the 'get_element' method")
 
 	@property
 	def batch_size(self) -> int:
@@ -55,3 +58,7 @@ class IterativeDataLoader:
 	@property
 	def dset_idx(self) -> int:
 		raise NotImplementedError(f"The class '{self.__class__.__name__}' does not implement the 'dset_idx' property")
+
+	@property
+	def nbatches(self) -> int:
+		raise NotImplementedError(f"The class '{self.__class__.__name__}' does not implement the 'nbatches' property")

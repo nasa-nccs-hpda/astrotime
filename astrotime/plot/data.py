@@ -1,7 +1,7 @@
 import logging, numpy as np
 import xarray as xa
 from .param import STIntParam
-from astrotime.loaders.base import DataLoader
+from astrotime.loaders.base import IterativeDataLoader
 from .base import SignalPlot, bounds
 from matplotlib.lines import Line2D
 from astrotime.util.logging import exception_handled
@@ -82,10 +82,10 @@ class SignalDataPlot(SignalPlot):
 
 class SignalDatasetPlot(SignalPlot):
 
-	def __init__(self, name: str, data_loader: DataLoader, **kwargs):
+	def __init__(self, name: str, data_loader: IterativeDataLoader, **kwargs):
 		SignalPlot.__init__(self, **kwargs)
 		self.name = name
-		self.data_loader: DataLoader = data_loader
+		self.data_loader: IterativeDataLoader = data_loader
 		self.dset_idx = data_loader.dset_idx
 		self.annotations: List[str] = tolower( kwargs.get('annotations',None) )
 		self.colors = ['blue', 'green'] + [ 'yellow' ] * 16
