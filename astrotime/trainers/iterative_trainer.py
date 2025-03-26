@@ -77,13 +77,21 @@ class IterativeTrainer(object):
             loss.backward()
             self.optimizer.step()
 
+    def encode_batch(self, batch: Dict[str,np.ndarray]) -> Dict[str,torch.Tensor]:
+        target: Tensor = torch.from_numpy(batch['p']).to(self.device)
+        t, y = self.encoder.encode_batch(batch['t'], batch['y'])
+        z: Tensor = torch.concat((t[:, None, :] * self.time_scale, y), dim=1)
+        return dict(z=z, target=target * self.time_scale)
+
     def get_next_batch(self) -> Optional[Dict[str,torch.Tensor]]:
         dset: Optional[Dict[str,np.ndarray]] = self.loader.get_next_batch()
         if dset is not None:
-            target: Tensor = torch.from_numpy(dset['p']).to(self.device)
-            t, y = self.encoder.encode_batch( dset['t'], dset['y'])
-            z: Tensor = torch.concat((t[:, None, :]*self.time_scale, y), dim=1)
-            return dict( z=z, target=target*self.time_scale)
+            return self.encode_batch(dset)
+
+    def get_batch(self, ibatch: int) -> Optional[Dict[str,torch.Tensor]]:
+        dset: Optional[Dict[str,np.ndarray]] = self.loader.get_batch(ibatch)
+        if dset is not None:
+            return self.encode_batch(dset)
 
     @property
     def mode(self) -> TSet:
@@ -110,8 +118,8 @@ class IterativeTrainer(object):
     def compute(self):
         print(f"SignalTrainer[{self.mode}]: , {self.nepochs} epochs, device={self.device}")
         with self.device:
-            self.set_train_status()
             for epoch in range(*self.epoch_range):
+                self.set_train_status()
                 losses, log_interval = [], 200
                 for ibatch in range(0,1000000):
                     t0 = time.time()

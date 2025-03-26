@@ -185,7 +185,6 @@ class MITLoader(IterativeDataLoader):
 					elems.append( self.get_batch_element(bz) )
 					periods.append(p)
 		z = np.stack(elems,axis=0)
-		print(f"MITLoader.update_training_data #Nan: z{z.shape}={nnan(z)} ")
 		self.train_data['t'] = z[:,0,:]
 		self.train_data['y'] = z[:,1,:]
 		self.train_data['p'] = np.array(periods)
