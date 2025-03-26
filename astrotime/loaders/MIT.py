@@ -122,7 +122,7 @@ class MITLoader(IterativeDataLoader):
 					period: float = np.float64(dfbls['per'].values[0])
 					sn: float = np.float64(dfbls['sn'].values[0])
 					dflc = pd.read_csv( self.lc_file_path(sector,TIC), header=None, sep='\s+')
-					nan_mask = np.isnan(dflc[1].values)
+					nan_mask = ~np.isnan(dflc[1].values)
 					t, y = dflc[0].values[nan_mask], dflc[1].values[nan_mask]
 					xarrays[ TIC + ".time" ] = xa.DataArray( t, dims=TIC+".obs" )
 					xarrays[ TIC + ".y" ]    = xa.DataArray( y, dims=TIC+".obs", attrs=dict(sn=sn,period=period) )
