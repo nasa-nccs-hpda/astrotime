@@ -42,6 +42,7 @@ class MITLoader(IterativeDataLoader):
 			self.load_sector(self.current_sector)
 			batch_start = self.sector_batch_offset
 			batch_end   = batch_start+self.cfg.batch_size
+			print(f"MITLoader.get_next_batch({batch_start}:{batch_end}) #Nan: t={nnan(self.train_data['t'])} y={nnan(self.train_data['y'])} p={nnan(self.train_data['p'])}")
 			result = { k: self.train_data[k][batch_start:batch_end] for k in ['t','y','p'] }
 			self.sector_batch_offset = batch_end
 			return result

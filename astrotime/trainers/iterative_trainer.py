@@ -82,7 +82,6 @@ class IterativeTrainer(object):
         if dset is not None:
             target: Tensor = torch.from_numpy(dset['p']).to(self.device)
             t, y = self.encoder.encode_batch( dset['t'], dset['y'])
-            print(f"get_next_batch #Nan: dt={nnan(dset['t'])} dy={nnan(dset['y'])} dp={nnan(dset['p'])} bt={nnan(t)} by={nnan(y)}")
             z: Tensor = torch.concat((t[:, None, :]*self.time_scale, y), dim=1)
             return dict( z=z, target=target*self.time_scale)
 
