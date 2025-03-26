@@ -121,7 +121,7 @@ class IterativeTrainer(object):
                     self.log.info( f"BATCH-{ibatch}: input={shp(batch['z'])}, target={shp(batch['target'])}")
                     result: Tensor = self.model( batch['z'] )
                     loss: Tensor = self.loss_function( result.squeeze(), batch['target'].squeeze() )
-                    print( f"E-{epoch} B-{ibatch} #NaN: result={nnan(result)} loss={nnan(loss)}")
+                    print( f"E-{epoch} B-{ibatch} #NaN: input={nnan(batch['z'])} result={nnan(result)} loss={nnan(loss)}")
                     self.conditionally_update_weights(loss)
                     losses.append(loss.item())
                     if (self.mode == TSet.Train) and ((ibatch % log_interval == 0) or ((ibatch < 5) and (epoch==0))):
