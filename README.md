@@ -123,11 +123,12 @@ To create a sandbox out of the container:
 ```bash
 singularity build --sandbox /lscratch/$USER/container/astrotime docker://nasanccs/astrotime:latest
 ```
+*note - /lscratch is only available on gpu### nodes
 
 An already downloaded version of this sandbox is available under:
 
 ```bash
-TBD: Need to move the container to the ILAB container space. @Sav will take care of this.
+/explore/nobackup/projects/ilab/containers/astrotime-latest
 ```
 
 ### Working from the container with a shell session
@@ -135,26 +136,41 @@ TBD: Need to move the container to the ILAB container space. @Sav will take care
 To get a shell session inside the container:
 
 ```bash
-singularity shell -B $NOBACKUP,/explore/nobackup/projects,/explore/nobackup/people --nv /lscratch/jacaraba/container/astrotime
+singularity shell -B $NOBACKUP,/explore/nobackup/projects,/explore/nobackup/people --nv /explore/nobackup/projects/ilab/containers/astrotime-latest
 ```
 
 An example run training:
 
 ```bash
-python /explore/nobackup/people/jacaraba/development/astrotime/workflow/baseline-cnn.py platform.project_root="/explore/nobackup/projects/ilab/scratch/jacaraba/astrotime" data.dataset_root="/explore/nobackup/projects/ilab/data/astrotime/sinusoids/nc"
+python /explore/nobackup/projects/ilab/ilab_testing/astrotime/workflow/baseline-cnn.py platform.project_root=/explore/nobackup/projects/ilab/ilab_testing/astrotime data.dataset_root=/explore/nobackup/projects/ilab/data/astrotime/sinusoids/nc
+```
+Expected raining output files:
+```bash
+/explore/nobackup/projects/ilab/ilab_testing/astrotime/results/checkpoints/sinusoid_period.baseline.pt
+/explore/nobackup/projects/ilab/ilab_testing/astrotime/results/checkpoints/sinusoid_period.baseline.backup.pt
 ```
 
 An example run validation:
 
 ```bash
-python /explore/nobackup/people/jacaraba/development/astrotime/workflow/baseline-cnn.py platform.project_root="/explore/nobackup/projects/ilab/scratch/jacaraba/astrotime" data.dataset_root="/explore/nobackup/projects/ilab/data/astrotime/sinusoids/nc" train.mode=valid
+python /explore/nobackup/projects/ilab/ilab_testing/astrotime/workflow/baseline-cnn.py platform.project_root=/explore/nobackup/projects/ilab/ilab_testing/astrotime data.dataset_root=/explore/nobackup/projects/ilab/data/astrotime/sinusoids/nc
+```
+Expected validation output:
+```bash
+      Loading checkpoint from /explore/nobackup/projects/ilab/ilab_testing/astrotime/results/checkpoints/sinusoid_period.baseline.pt: epoch=122, batch=0
+
+SignalTrainer[TSet.Validation]: 2000 batches, 1 epochs, nelements = 100000, device=cuda:0
+ Validation Loss: mean=0.021, median=0.021, range=(0.012 -> 0.043)
+98.04user 8.85system 2:00.79elapsed 88%CPU (0avgtext+0avgdata 1080416maxresident)k
+2059752inputs+1120outputs (1677major+582379minor)pagefaults 0swaps
 ```
 
-### Sending a slurm job using the container
+### Sending a slurm job using the container (training example):
+
+From gpulogin1:
 
 ```bash
-@Sav will take care of this. We will need the singularity exec command and how to call it from slurm with a single line (look
-at vhr-cloudmask for an example).
+sbatch --mem-per-cpu=10240 -G1 -c10 -t01:00:00 -J astrotime --wrap="time singularity exec -B $NOBACKUP,/explore/nobackup/projects,/explore/nobackup/people --nv /explore/nobackup/projects/ilab/containers/astrotime-latest python /explore/nobackup/projects/ilab/ilab_testing/astrotime/workflow/baseline-cnn.py platform.project_root=/explore/nobackup/projects/ilab/ilab_testing/astrotime data.dataset_root=/explore/nobackup/projects/ilab/data/astrotime/sinusoids/nc"
 ```
 
 ## References
