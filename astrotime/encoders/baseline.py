@@ -45,9 +45,9 @@ class ValueEncoder(Encoder):
 				nanmask = ~np.isnan(y)
 				x, y = x[nanmask], y[nanmask]
 				x,y = self.apply_filters(x,y,dim=0)
-				i0: int = random.randint(0, y.shape[0] - self.cfg.input_series_length)
-				ys: Tensor = torch.FloatTensor( y[i0:i0 + self.cfg.input_series_length] ).to(self.device)
-				xs: Tensor = torch.FloatTensor( x[i0:i0 + self.cfg.input_series_length] ).to(self.device)
+				i0: int = random.randint(0, y.shape[0] - self.cfg.series_length)
+				ys: Tensor = torch.FloatTensor( y[i0:i0 + self.cfg.series_length] ).to(self.device)
+				xs: Tensor = torch.FloatTensor( x[i0:i0 + self.cfg.series_length] ).to(self.device)
 				y1.append( torch.unsqueeze( ys, dim=0) )
 				x1.append( torch.unsqueeze( xs, dim=0) )
 			Y, X = torch.concatenate(y1, dim=0), torch.concatenate(x1, dim=0)
