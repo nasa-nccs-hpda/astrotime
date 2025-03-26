@@ -47,7 +47,7 @@ class MITLoader(IterativeDataLoader):
 			batch_end   = batch_start+self.cfg.batch_size
 			result = { k: self.train_data[k][batch_start:batch_end] for k in ['t','y','p'] }
 			self.sector_batch_offset = batch_end
-			self._nbatches = self.train_data['t'].shape[0]
+
 			return result
 
 	# def get_batch( self, batch_index ) -> Optional[Dict[str,np.ndarray]]:
@@ -193,7 +193,8 @@ class MITLoader(IterativeDataLoader):
 		self.train_data['y'] = z[:,1,:]
 		self.train_data['p'] = np.array(periods)
 		fdropped = (len(self._TICS)-z.shape[0])/len(self._TICS)
-		print( f"get_training_data: t{self.train_data['t'].shape}, y{self.train_data['y'].shape}, p{self.train_data['p'].shape}, max_period={self.max_period:.2f}, dropped {fdropped*100:.2f}%")
+		self._nbatches = self.train_data['t'].shape[0] // self.cfg.batch_size
+		print( f"get_training_data: nbatches={self._nbatches}, t{self.train_data['t'].shape}, y{self.train_data['y'].shape}, p{self.train_data['p'].shape}, max_period={self.max_period:.2f}, dropped {fdropped*100:.2f}%")
 
 	def refresh(self):
 		self.dataset = None
