@@ -1,6 +1,6 @@
 import numpy as np
 from typing import List, Optional, Dict, Type, Any
-import torch
+import torch, xarray as xa
 from torch import Tensor
 Array = Tensor | np.ndarray
 
@@ -33,11 +33,13 @@ def npnorm(x: np.ndarray, dim: int) -> np.ndarray:
 	s: np.ndarray = x.std( axis=dim, keepdims=True)
 	return (x - m) / s
 
-def nnan(x: Tensor) -> int:
-	return torch.sum(torch.isnan(x.view(-1))).item()
+def nnan(x: Array) -> int:
+	if type(x) is xa.DataArray: x = x.values
+	return np.sum(np.isnan(x)) if (type(x) is np.ndarray) else torch.sum(torch.isnan(x)).item()
 
 def hasNaN(x: Array) -> bool:
-	return np.isnan(x).any() if type(x) is np.ndarray else torch.isnan(x).any()
+	if type(x) is xa.DataArray: x = x.values
+	return np.isnan(x).any() if (type(x) is np.ndarray) else torch.isnan(x).any()
 
 def nan_mask(x: np.ndarray, axis=0) -> np.ndarray:
 	return ~np.any( np.isnan(x), axis=axis )

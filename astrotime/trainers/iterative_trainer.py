@@ -82,6 +82,7 @@ class IterativeTrainer(object):
         if dset is not None:
             target: Tensor = torch.from_numpy(dset['p']).to(self.device)
             t, y = self.encoder.encode_batch( dset['t'], dset['y'])
+            print(f"get_next_batch #Nan: dt={nnan(dset['t'])} dy={nnan(dset['y'])} dp={nnan(dset['p'])} bt={nnan(t)} by={nnan(y)}")
             z: Tensor = torch.concat((t[:, None, :]*self.time_scale, y), dim=1)
             return dict( z=z, target=target*self.time_scale)
 
@@ -121,7 +122,6 @@ class IterativeTrainer(object):
                     self.log.info( f"BATCH-{ibatch}: input={shp(batch['z'])}, target={shp(batch['target'])}")
                     result: Tensor = self.model( batch['z'] )
                     loss: Tensor = self.loss_function( result.squeeze(), batch['target'].squeeze() )
-                    print( f"E-{epoch} B-{ibatch} #NaN: input={nnan(batch['z'])} result={nnan(result)} loss={nnan(loss)}")
                     self.conditionally_update_weights(loss)
                     losses.append(loss.item())
                     if (self.mode == TSet.Train) and ((ibatch % log_interval == 0) or ((ibatch < 5) and (epoch==0))):
