@@ -153,7 +153,7 @@ Expected training output files:
 An example run validation:
 
 ```bash
-python /explore/nobackup/projects/ilab/ilab_testing/astrotime/workflow/baseline-cnn.py platform.project_root=/explore/nobackup/projects/ilab/ilab_testing/astrotime data.dataset_root=/explore/nobackup/projects/ilab/data/astrotime/sinusoids/nc
+python /explore/nobackup/projects/ilab/ilab_testing/astrotime/workflow/baseline-cnn.py platform.project_root=/explore/nobackup/projects/ilab/ilab_testing/astrotime data.dataset_root=/explore/nobackup/projects/ilab/data/astrotime/sinusoids/nc train.mode=valid
 ```
 Expected validation output:
 ```bash
