@@ -109,6 +109,7 @@ class SignalDatasetPlot(SignalPlot):
 
 	def get_element_data(self) -> Tuple[np.ndarray,np.ndarray,float]:
 		element: Dict[str,np.ndarray|float] = self.data_loader.get_element(self.dset_idx,self.element)
+		print( element.keys())
 		ydata: np.ndarray = element['y']
 		xdata: np.ndarray = element['t']
 		target: float = element['p']
