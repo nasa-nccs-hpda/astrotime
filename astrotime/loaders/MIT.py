@@ -126,7 +126,7 @@ class MITLoader(IterativeDataLoader):
 					t, y = dflc[0].values[nan_mask], dflc[1].values[nan_mask]
 					xarrays[ TIC + ".time" ] = xa.DataArray( t, dims=TIC+".obs" )
 					xarrays[ TIC + ".y" ]    = xa.DataArray( y, dims=TIC+".obs", attrs=dict(sn=sn,period=period) )
-					print(f"load_sector({sector}) {TIC} #Nan: {nnan(y)} / {y.size}")
+					# print(f"load_sector({sector}) {TIC} #Nan: {nnan(y)} / {y.size}")
 				self.dataset = xa.Dataset( xarrays )
 				t1 = time.time()
 				print(f" Loaded files in {t1-t0:.3f} sec")
