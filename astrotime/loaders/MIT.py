@@ -124,7 +124,7 @@ class MITLoader(IterativeDataLoader):
 					dflc = pd.read_csv( self.lc_file_path(sector,TIC), header=None, sep='\s+')
 					xarrays[ TIC + ".time" ] = xa.DataArray( dflc[0].values, dims=TIC+".obs" )
 					xarrays[ TIC + ".y" ]    = xa.DataArray( dflc[1].values, dims=TIC+".obs", attrs=dict(sn=sn,period=period) )
-					print(f"load_sector({sector}) {TIC} #Nan: y{nnan(dflc[1].values)} ")
+					print(f"load_sector({sector}) {TIC} #Nan: {nnan(dflc[1].values)} / {dflc[1].values.size}")
 				self.dataset = xa.Dataset( xarrays )
 				t1 = time.time()
 				print(f" Loaded files in {t1-t0:.3f} sec")
