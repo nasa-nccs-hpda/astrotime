@@ -31,6 +31,10 @@ class MITLoader(IterativeDataLoader):
 		self._nbatches = -1
 		self._read_TICS(self.current_sector)
 
+	@property
+	def ndsets(self) -> int:
+		return self.sector_range[1]-self.sector_range[0] + 1
+
 	def get_next_batch( self ) -> Optional[Dict[str,np.ndarray]]:
 		if (self._nbatches > 0) and (self.sector_batch_offset > self._nbatches-self.cfg.batch_size):
 			if self.tset == TSet.Validation:
@@ -47,24 +51,31 @@ class MITLoader(IterativeDataLoader):
 			batch_end   = batch_start+self.cfg.batch_size
 			result = { k: self.train_data[k][batch_start:batch_end] for k in ['t','y','p'] }
 			self.sector_batch_offset = batch_end
-
 			return result
 
-	# def get_batch( self, batch_index ) -> Optional[Dict[str,np.ndarray]]:
-	# 	if self.current_sector >= 0:
-	# 		self.load_sector(self.current_sector)
-	# 		batch_start = self.sector_batch_offset*batch_index
-	# 		batch_end   = batch_start+self.cfg.batch_size
-	# 		result = { k: self.train_data[k][batch_start:batch_end] for k in ['t','y','p'] }
-	# 		self.sector_batch_offset = batch_end
-	# 		return result
-	#
-	# @property
-	# def nbatches(self) -> int:
-	# 	if self.current_sector >= 0:
-	# 		self.load_sector(self.current_sector)
-	# 		return self.nelements//self.cfg.batch_size
-	# 	return -1
+	def get_batch( self, sector_index: int, batch_index: int ) -> Optional[Dict[str,np.ndarray]]:
+		self.load_sector(sector_index)
+		batch_start = self.sector_batch_offset*batch_index
+		batch_end   = batch_start+self.cfg.batch_size
+		result = { k: self.train_data[k][batch_start:batch_end] for k in ['t','y','p'] }
+		return result
+
+	def get_element( self, sector_index: int, element_index: int ) -> Optional[Dict[str,Union[np.ndarray,float]]]:
+		self.load_sector(sector_index)
+		result = { k: self.train_data[k][element_index] for k in ['t','y','p'] }
+		return result
+
+	@property
+	def nbatches(self) -> int:
+		ne = self.nelements
+		return -1 if (ne == -1) else ne//self.cfg.batch_size
+
+	@property
+	def nelements(self) -> int:
+		if self.current_sector >= 0:
+			self.load_sector(self.current_sector)
+			return self.train_data['t'].shape[0]
+		return -1
 
 	@property
 	def batch_size(self) -> int:
@@ -122,9 +133,9 @@ class MITLoader(IterativeDataLoader):
 		self.load_sector(sector_index)
 		return len(self.dataset.data_vars)
 
-	@property
-	def nelements(self) -> int:
-		return len(self._TICS)
+	def get_dataset(self, dset_idx: int) -> xa.Dataset:
+		self.load_sector(dset_idx)
+		return self.dataset
 
 	def load_sector( self, sector: int ):
 		t0 = time.time()

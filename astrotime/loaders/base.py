@@ -1,6 +1,6 @@
 import numpy as np, xarray as xa
 from astrotime.util.series import TSet
-from typing import List, Optional, Dict, Type, Tuple
+from typing import List, Optional, Dict, Type, Tuple, Union
 import logging
 
 class DataLoader:
@@ -45,10 +45,10 @@ class IterativeDataLoader:
 	def get_next_batch(self) -> Optional[Dict[str,np.ndarray]]:
 		raise NotImplementedError(f"The class '{self.__class__.__name__}' does not implement the 'get_next_batch' method")
 
-	def get_batch( self, batch_index ) -> Optional[Dict[str,np.ndarray]]:
+	def get_batch( self, dset_idx: int, batch_index: int ) -> Optional[Dict[str,np.ndarray]]:
 		raise NotImplementedError(f"The class '{self.__class__.__name__}' does not implement the 'get_batch' method")
 
-	def get_element(self, dset_idx: int, element_index) -> xa.DataArray:
+	def get_element(self, dset_idx: int, element_index) -> Optional[Dict[str,Union[np.ndarray,float]]]:
 		raise NotImplementedError(f"The class '{self.__class__.__name__}' does not implement the 'get_element' method")
 
 	@property
@@ -62,3 +62,11 @@ class IterativeDataLoader:
 	@property
 	def nbatches(self) -> int:
 		raise NotImplementedError(f"The class '{self.__class__.__name__}' does not implement the 'nbatches' property")
+
+	@property
+	def nelements(self) -> int:
+		raise NotImplementedError(f"The class '{self.__class__.__name__}' does not implement the 'nelements' property")
+
+	@property
+	def ndsets(self) -> int:
+		raise NotImplementedError(f"The class '{self.__class__.__name__}' does not implement the 'ndsets' property")

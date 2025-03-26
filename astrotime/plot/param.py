@@ -37,7 +37,7 @@ class Parameterized(object):
 
 	def share_param(self, param: STParam):
 		if param.name in self._sparms:
-			log.info( f" {type(self).__name__}: Sharing parameter '{param.name}' ({hex(id(param))}) with {len(self.children)} children")
+	#		log.info( f" {type(self).__name__}: Sharing parameter '{param.name}' ({hex(id(param))}) with {len(self.children)} children")
 			self.add_param( param )
 			for child in self.children:
 				child.share_param( param )
