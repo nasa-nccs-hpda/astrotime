@@ -38,6 +38,7 @@ class MITLoader(IterativeDataLoader):
 				self.current_sector = self.current_sector + 1
 				if self.current_sector == self.sector_range[1]:
 					self.current_sector = -1
+				print( f"Init Dataset: sector={self.current_sector}")
 		if self.current_sector >= 0:
 			self.load_sector(self.current_sector)
 			batch_start = self.sector_batch_offset
