@@ -18,10 +18,11 @@ To compare the performance of these models on a (more) irregularly sampled datas
 
 ### Model Equations
 
-There is a good summary of the equations implemented in this project in the appendix of [Witt & Schumann (2005)](https://www.researchgate.net/publication/200033740_Holocene_climate_variability_on_millennial_scales_recorded_in_Greenland_ice_cores).   
-The wavelet synthesis transform generates two features described by equations A10 and A11.  
-The wavelet analysis transform generates three features by computing weighted scalar products (equation A3) between the signal values and the sinusoid basis functions described by equation A5.  
-Futher mathematical detail can be found in [Foster (1996)](https://articles.adsabs.harvard.edu/pdf/1996AJ....112.1709F).
+* There is a good summary of the equations implemented in this project in the appendix of [Witt & Schumann (2005)](https://www.researchgate.net/publication/200033740_Holocene_climate_variability_on_millennial_scales_recorded_in_Greenland_ice_cores).   
+* The wavelet synthesis transform generates two features described by equations A10 and A11.  
+* The wavelet analysis transform generates three features by computing weighted scalar products (equation A3) between the signal values and the sinusoid basis functions described by equation A5. 
+* Equation A7 shows the relationship between the analysis and synthesis coefficients.
+* Futher mathematical detail can be found in [Foster (1996)](https://articles.adsabs.harvard.edu/pdf/1996AJ....112.1709F).
 
 ## Conda environment
 
