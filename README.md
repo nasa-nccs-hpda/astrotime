@@ -144,7 +144,7 @@ An example run training:
 ```bash
 python /explore/nobackup/projects/ilab/ilab_testing/astrotime/workflow/baseline-cnn.py platform.project_root=/explore/nobackup/projects/ilab/ilab_testing/astrotime data.dataset_root=/explore/nobackup/projects/ilab/data/astrotime/sinusoids/nc
 ```
-Expected raining output files:
+Expected training output files:
 ```bash
 /explore/nobackup/projects/ilab/ilab_testing/astrotime/results/checkpoints/sinusoid_period.baseline.pt
 /explore/nobackup/projects/ilab/ilab_testing/astrotime/results/checkpoints/sinusoid_period.baseline.backup.pt
@@ -153,7 +153,7 @@ Expected raining output files:
 An example run validation:
 
 ```bash
-python /explore/nobackup/projects/ilab/ilab_testing/astrotime/workflow/baseline-cnn.py platform.project_root=/explore/nobackup/projects/ilab/ilab_testing/astrotime data.dataset_root=/explore/nobackup/projects/ilab/data/astrotime/sinusoids/nc
+python /explore/nobackup/projects/ilab/ilab_testing/astrotime/workflow/baseline-cnn.py platform.project_root=/explore/nobackup/projects/ilab/ilab_testing/astrotime data.dataset_root=/explore/nobackup/projects/ilab/data/astrotime/sinusoids/nc train.mode=valid
 ```
 Expected validation output:
 ```bash
