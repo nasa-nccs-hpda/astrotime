@@ -33,6 +33,9 @@ def npnorm(x: np.ndarray, dim: int) -> np.ndarray:
 	s: np.ndarray = x.std( axis=dim, keepdims=True)
 	return (x - m) / s
 
+def nnan(x: Tensor) -> int:
+	return torch.sum(torch.isnan(x.view(-1))).item()
+
 def hasNaN(x: Array) -> bool:
 	return np.isnan(x).any() if type(x) is np.ndarray else torch.isnan(x).any()
 

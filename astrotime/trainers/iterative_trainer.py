@@ -7,6 +7,7 @@ from astrotime.util.math import shp
 from astrotime.loaders.base import IterativeDataLoader
 import time, torch, logging, numpy as np
 from torch import nn, optim, Tensor
+from astrotime.util.math import nnan
 from astrotime.util.series import TSet
 from astrotime.util.logging import elapsed
 
@@ -117,9 +118,10 @@ class IterativeTrainer(object):
                     batch = self.get_next_batch()
                     if batch is None: break
                     self.global_time = time.time()
-                    print( f"BATCH-{ibatch}: input={shp(batch['z'])}, target={shp(batch['target'])}" )
+                    self.log.info( f"BATCH-{ibatch}: input={shp(batch['z'])}, target={shp(batch['target'])}")
                     result: Tensor = self.model( batch['z'] )
                     loss: Tensor = self.loss_function( result.squeeze(), batch['target'].squeeze() )
+                    print( f"E-{epoch} B-{ibatch} #NaN: result={nnan(result)} loss={nnan(loss)}")
                     self.conditionally_update_weights(loss)
                     losses.append(loss.item())
                     if (self.mode == TSet.Train) and ((ibatch % log_interval == 0) or ((ibatch < 5) and (epoch==0))):

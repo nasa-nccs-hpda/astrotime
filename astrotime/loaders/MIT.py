@@ -1,7 +1,7 @@
 import time, os, numpy as np, xarray as xa
 from astrotime.loaders.base import IterativeDataLoader
 from typing import List, Optional, Dict, Type, Union, Tuple
-from astrotime.util.logging import exception_handled
+from astrotime.util.math import nnan
 import pandas as pd
 from glob import glob
 from omegaconf import DictConfig, OmegaConf
@@ -30,7 +30,7 @@ class MITLoader(IterativeDataLoader):
 		self._read_TICS(self.current_sector)
 
 	def get_next_batch( self ) -> Optional[Dict[str,np.ndarray]]:
-		if self.sector_batch_offset == self.nelements:
+		if self.sector_batch_offset > self.nelements-self.cfg.batch_size:
 			if self.tset == TSet.Validation:
 				self.current_sector = -1
 			else:
@@ -41,7 +41,7 @@ class MITLoader(IterativeDataLoader):
 		if self.current_sector >= 0:
 			self.load_sector(self.current_sector)
 			batch_start = self.sector_batch_offset
-			batch_end = min( batch_start+self.cfg.batch_size, self.nelements)
+			batch_end   = batch_start+self.cfg.batch_size
 			result = { k: self.train_data[k][batch_start:batch_end] for k in ['t','y','p'] }
 			self.sector_batch_offset = batch_end
 			return result
