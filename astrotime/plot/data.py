@@ -108,10 +108,10 @@ class SignalDatasetPlot(SignalPlot):
 		self.ax.set_xlim(xdata[0],xdata[-1])
 
 	def get_element_data(self) -> Tuple[np.ndarray,np.ndarray,float]:
-		element: xa.DataArray = self.data_loader.get_element(self.dset_idx,self.element)
-		ydata: np.ndarray = element.values
-		xdata: np.ndarray = element.coords['time'].values
-		target: float = element.attrs['period']
+		element: Dict[str,np.ndarray|float] = self.data_loader.get_element(self.dset_idx,self.element)
+		ydata: np.ndarray = element['y']
+		xdata: np.ndarray = element['t']
+		target: float = element['p']
 		return xdata, ydata, target
 
 	@exception_handled
