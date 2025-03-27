@@ -1,7 +1,6 @@
 import time, os, numpy as np, xarray as xa
 from astrotime.loaders.base import IterativeDataLoader
 from typing import List, Optional, Dict, Type, Union, Tuple
-from astrotime.util.math import nnan
 import pandas as pd
 from glob import glob
 from omegaconf import DictConfig, OmegaConf

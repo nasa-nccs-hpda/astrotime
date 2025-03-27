@@ -41,6 +41,7 @@ class MITDatasetPlot(SignalPlot):
 		self.ax.title.set_fontsize(8)
 		self.ax.title.set_fontweight('bold')
 		self.ax.set_xlim(xdata[0],xdata[-1])
+		self.ax.set_ylim(0.0,self.data_loader.ymax )
 
 	def get_element_data(self) -> Tuple[np.ndarray,np.ndarray,float]:
 		element: xa.Dataset = self.data_loader.get_dataset_element(self.sector,self.TICS[self.element])
@@ -48,6 +49,7 @@ class MITDatasetPlot(SignalPlot):
 		ydata: np.ndarray = y.values
 		xdata: np.ndarray = t.values
 		target: float = y.attrs['period']
+		self.ymax = self.data_loader.ymax(self.sector)
 		return xdata, ydata, target
 
 	# @exception_handled
@@ -62,9 +64,6 @@ class MITDatasetPlot(SignalPlot):
 	def update(self, val):
 		xdata, ydata, target = self.get_element_data()
 		self.plot.set_ydata(ydata)
-	#	self.lines['target'].remove()
-	#	self.lines['target'] = self.ax.axvline(x=1.0/target, color='r', linestyle='-')
-		self.ax.set_ylim(*bounds(ydata))
 		self.plot.set_xdata(xdata)
 		self.ax.set_xlim(xdata[0],xdata[-1])
 		self.log.info( f"Plot update: xlim={self.ax.get_xlim()} ({xdata[0]:.3f},{xdata[-1]:.3f}), xdata.shape={self.plot.get_xdata().shape} " )
