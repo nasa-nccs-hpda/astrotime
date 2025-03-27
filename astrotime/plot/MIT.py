@@ -35,7 +35,7 @@ class MITDatasetPlot(SignalPlot):
 	@exception_handled
 	def _setup(self):
 		xdata, ydata, target = self.get_element_data()
-		self.plot: Line2D = self.ax.plot(xdata, ydata, label='y', color='blue', marker=".", linewidth=1, markersize=2, alpha=0.5)[0]
+		self.plot: Line2D = self.ax.plot(xdata.squeeze(), ydata.squeeze(), label='y', color='blue', marker=".", linewidth=1, markersize=2, alpha=0.5)[0]
 		self.ax.title.set_text(self.name)
 		self.ax.title.set_fontsize(8)
 		self.ax.title.set_fontweight('bold')
@@ -92,7 +92,7 @@ class MITTransformPlot(SignalPlot):
 	@exception_handled
 	def _setup(self):
 		xdata, ydata, target = self.get_transform_data()
-		self.plot: Line2D = self.ax.plot(xdata, ydata, label='y', color='blue', marker=".", linewidth=1, markersize=2, alpha=0.5)[0]
+		self.plot: Line2D = self.ax.plot(xdata.squeeze(), ydata.squeeze(), label='y', color='blue', marker=".", linewidth=1, markersize=2, alpha=0.5)[0]
 		self.target_marker: Line2D = self.ax.axvline(x=1.0/target, color='r', linestyle='-')
 		self.ax.title.set_text(self.name)
 		self.ax.title.set_fontsize(8)
