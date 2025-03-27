@@ -22,6 +22,7 @@ class MITLoader(IterativeDataLoader):
 		self.train_data: Dict[str,np.ndarray] = {}
 		self.tset: TSet = None
 		self._nbatches = -1
+		self.ymax = None
 		self._TICS = None
 
 	def initialize(self, tset: TSet):
@@ -153,6 +154,7 @@ class MITLoader(IterativeDataLoader):
 			self._load_cache_dataset(sector)
 			if self.dataset is None:
 				xarrays: Dict[str,xa.DataArray] = {}
+				ymax = 0.0
 				for iT, TIC in enumerate(self._TICS):
 					if iT % 50 == 0: print(".",end="",flush=True)
 					data_file = self.bls_file_path(sector,TIC)
@@ -163,14 +165,16 @@ class MITLoader(IterativeDataLoader):
 					dflc = pd.read_csv( self.lc_file_path(sector,TIC), header=None, sep='\s+')
 					nan_mask = ~np.isnan(dflc[1].values)
 					t, y = dflc[0].values[nan_mask], dflc[1].values[nan_mask]
+					ym = y.max()
+					if ym > ymax: ymax = ym
 					xarrays[ TIC + ".time" ] = xa.DataArray( t, dims=TIC+".obs" )
 					xarrays[ TIC + ".y" ]    = xa.DataArray( y, dims=TIC+".obs", attrs=dict(sn=sn,period=period) )
-					# print(f"load_sector({sector}) {TIC} #Nan: {nnan(y)} / {y.size}")
-				self.dataset = xa.Dataset( xarrays )
+				self.dataset = xa.Dataset( xarrays, attrs=dict(ymax=ymax) )
 				t1 = time.time()
 				print(f" Loaded files in {t1-t0:.3f} sec")
 				self.dataset.to_netcdf( self.cache_path(sector), engine="netcdf4" )
 				print(f" Saved files in {time.time()-t1:.3f} sec")
+			self.ymax = self.dataset.attrs["ymax"]
 			return True
 		return False
 

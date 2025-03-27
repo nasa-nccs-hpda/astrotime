@@ -91,6 +91,7 @@ class MITTransformPlot(SignalPlot):
 
 	@exception_handled
 	def _setup(self):
+		dset: xa.Dataset = self.data_loader.get_dataset(self.sector)
 		xdata, ydata, target = self.get_transform_data()
 		self.plot: Line2D = self.ax.plot(xdata.squeeze(), ydata.squeeze(), label='y', color='blue', marker=".", linewidth=1, markersize=2, alpha=0.5)[0]
 		self.target_marker: Line2D = self.ax.axvline(x=1.0/target, color='r', linestyle='-')
@@ -123,14 +124,11 @@ class MITTransformPlot(SignalPlot):
 	@exception_handled
 	def update(self, val):
 		xdata, ydata, target = self.get_transform_data()
-		target_freq: np.float64 = np.float64(1.0/target)
-		ybnds = bounds(ydata)
+		target_freq = 1.0/target
+		ybnds = [0.0,ydata.max()]
 		self.plot.set_ydata(ydata)
-		self.target_marker.remove()
-		self.target_marker: Line2D = self.ax.axvline(x=target_freq, color='r', linestyle='-')
-		# self.target_marker.set_xdata([target_freq,target_freq])
-		# self.target_marker.set_ydata([np.float64(ybnds[0]),np.float64(ybnds[1])])
-		# self.target_marker.set_visible(True)
+		self.target_marker.set_xdata([target_freq,target_freq])
+		self.target_marker.set_ydata(ybnds)
 		self.ax.set_ylim(*ybnds)
 		self.plot.set_xdata(xdata)
 		self.ax.set_xlim(xdata[0],xdata[-1])
