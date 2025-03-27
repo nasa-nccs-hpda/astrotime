@@ -49,7 +49,6 @@ class MITDatasetPlot(SignalPlot):
 		ydata: np.ndarray = y.values
 		xdata: np.ndarray = t.values
 		target: float = y.attrs['period']
-		self.ymax = self.data_loader.ymax(self.sector)
 		return xdata, ydata, target
 
 	# @exception_handled
