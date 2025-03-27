@@ -46,7 +46,8 @@ class MITLoader(IterativeDataLoader):
 				print( f"Init Dataset: sector={self.current_sector}, nbatches={self._nbatches} sector_batch_offset={self.sector_batch_offset}")
 				self.sector_batch_offset = 0
 		if self.current_sector >= 0:
-			self.load_sector(self.current_sector)
+			if self.load_sector(self.current_sector):
+				self.update_training_data()
 			batch_start = self.sector_batch_offset
 			batch_end   = batch_start+self.cfg.batch_size
 			result = { k: self.train_data[k][batch_start:batch_end] for k in ['t','y','p'] }
@@ -54,16 +55,22 @@ class MITLoader(IterativeDataLoader):
 			return result
 
 	def get_batch( self, sector_index: int, batch_index: int ) -> Optional[Dict[str,np.ndarray]]:
-		self.load_sector(sector_index)
+		if self.load_sector(sector_index):
+			self.update_training_data()
 		batch_start = self.sector_batch_offset*batch_index
 		batch_end   = batch_start+self.cfg.batch_size
 		result = { k: self.train_data[k][batch_start:batch_end] for k in ['t','y','p'] }
 		return result
 
 	def get_element( self, sector_index: int, element_index: int ) -> Optional[Dict[str,Union[np.ndarray,float]]]:
-		self.load_sector(sector_index)
+		if self.load_sector(sector_index):
+			self.update_training_data()
 		result = { k: self.train_data[k][element_index] for k in ['t','y','p'] }
 		return result
+
+	def get_dataset_element( self, sector_index: int, TIC: str ) -> xa.Dataset:
+		self.load_sector(sector_index)
+		return xa.Dataset( { k: self.dataset.data_vars[TIC+"."+k] for k in ['time','y'] } )
 
 	@property
 	def nbatches(self) -> int:
@@ -73,7 +80,8 @@ class MITLoader(IterativeDataLoader):
 	@property
 	def nelements(self) -> int:
 		if self.current_sector >= 0:
-			self.load_sector(self.current_sector)
+			if self.load_sector(self.current_sector):
+				self.update_training_data()
 			return self.train_data['t'].shape[0]
 		return -1
 
@@ -137,7 +145,7 @@ class MITLoader(IterativeDataLoader):
 		self.load_sector(dset_idx)
 		return self.dataset
 
-	def load_sector( self, sector: int ):
+	def load_sector( self, sector: int ) -> bool:
 		t0 = time.time()
 		if (self.current_sector != sector) or (self.dataset is None):
 			print(f"Loading sector {sector}")
@@ -163,7 +171,9 @@ class MITLoader(IterativeDataLoader):
 				print(f" Loaded files in {t1-t0:.3f} sec")
 				self.dataset.to_netcdf( self.cache_path(sector), engine="netcdf4" )
 				print(f" Saved files in {time.time()-t1:.3f} sec")
-			self.update_training_data()
+			return True
+		return False
+
 
 	def get_largest_block( self, TIC: str ) -> np.ndarray:
 		threshold = self.cfg.block_gap_threshold
