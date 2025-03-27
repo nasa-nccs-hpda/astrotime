@@ -64,6 +64,7 @@ class MITDatasetPlot(SignalPlot):
 		self.plot.set_ydata(ydata)
 		self.plot.set_xdata(xdata)
 		self.ax.set_xlim(xdata[0],xdata[-1])
+		self.ax.set_ylim(0.0,ydata.max())
 		self.log.info( f"Plot update: xlim={self.ax.get_xlim()} ({xdata[0]:.3f},{xdata[-1]:.3f}), xdata.shape={self.plot.get_xdata().shape} " )
 
 
