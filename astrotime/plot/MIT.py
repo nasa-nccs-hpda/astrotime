@@ -98,6 +98,7 @@ class MITTransformPlot(SignalPlot):
 		self.ax.title.set_fontsize(8)
 		self.ax.title.set_fontweight('bold')
 		self.ax.set_xlim(xdata[0],xdata[-1])
+		self.ax.set_xscale('log')
 
 	@exception_handled
 	def get_element_data(self) -> Tuple[np.ndarray,np.ndarray,float]:
@@ -124,9 +125,10 @@ class MITTransformPlot(SignalPlot):
 		xdata, ydata, target = self.get_transform_data()
 		self.plot.set_ydata(ydata)
 		self.target_marker.remove()
-		self.target_marker = self.ax.axvline(x=1.0/target, color='r', linestyle='-')
+		# self.target_marker = self.ax.axvline(x=1.0/target, color='r', linestyle='-')
+		tdata = self.target_marker.get_xdata()
 		self.ax.set_ylim(*bounds(ydata))
 		self.plot.set_xdata(xdata)
 		self.ax.set_xlim(xdata[0],xdata[-1])
-		self.log.info( f"Plot update: xlim={self.ax.get_xlim()} ({xdata[0]:.3f},{xdata[-1]:.3f}), xdata.shape={self.plot.get_xdata().shape}, target: period={target:.5f}, freq={1.0/target:.5f}" )
+		self.log.info( f"Plot update: xlim={self.ax.get_xlim()} ({xdata[0]:.3f},{xdata[-1]:.3f}), xdata.shape={self.plot.get_xdata().shape}, target: period={target:.5f}, freq={1.0/target:.5f}, tdata={tdata}" )
 
