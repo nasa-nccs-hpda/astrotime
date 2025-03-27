@@ -41,7 +41,6 @@ class MITDatasetPlot(SignalPlot):
 		self.ax.title.set_fontsize(8)
 		self.ax.title.set_fontweight('bold')
 		self.ax.set_xlim(xdata[0],xdata[-1])
-		self.ax.set_ylim(0.0,self.data_loader.ymax )
 
 	def get_element_data(self) -> Tuple[np.ndarray,np.ndarray,float]:
 		element: xa.Dataset = self.data_loader.get_dataset_element(self.sector,self.TICS[self.element])
