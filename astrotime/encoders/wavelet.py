@@ -100,12 +100,15 @@ class WaveletAnalysisLayer(EmbeddingLayer):
 	def __init__(self, cfg, device: device):
 		EmbeddingLayer.__init__(self,cfg,device)
 		self.nfreq = cfg.nfreq
-		self.C = 1 / (8 * math.pi ** 2)
+		self.C = cfg.decay_factor / (8 * math.pi ** 2)
 		fspace = logspace if (self.cfg.fscale == "log") else np.linspace
 		f0, f1 = self.cfg.base_freq_range[0]/self.time_scale, self.cfg.base_freq_range[1]/self.time_scale
 		self.freq = torch.FloatTensor( fspace( f0, f1, self.cfg.nfreq ) ).to(self.device)
 		self.ones: Tensor = None
 		self.init_log(f"WaveletAnalysisLayer: nfreq={self.nfreq} ")
+
+	def xdata(self) -> Tensor:
+		return self.freq
 
 	def embed(self, ts: torch.Tensor, ys: torch.Tensor ) -> Tensor:
 		t0 = time.time()
@@ -121,8 +124,8 @@ class WaveletAnalysisLayer(EmbeddingLayer):
 		dt: Tensor = (ts - tau)
 		self.init_log(f" ys{list(ys.shape)} ts{list(ts.shape)} tau{list(tau.shape)} dt{list(dt.shape)}")
 		dz: Tensor = omega_ * dt
-		weights: Tensor = torch.exp(-self.C * dz ** 2)
-		sum_w: Tensor = torch.sum(weights, dim=-1)
+		weights: Tensor = torch.exp(-self.C * dz ** 2) if (self.cfg.decay_factor > 0.0) else 1.0
+		sum_w: Tensor = torch.sum(weights, dim=-1) if (self.cfg.decay_factor > 0.0) else 1.0
 
 		def w_prod( x0: Tensor, x1: Tensor) -> Tensor:
 			return torch.sum(weights * x0 * x1, dim=-1) / sum_w
@@ -165,6 +168,9 @@ class WaveletProjConvLayer(EmbeddingLayer):
 		self.ones: Tensor = None
 		self.weights = nn.Parameter( Tensor( self.nfreq*3, self._nfeatures ) )
 		self.init_log(f"WaveletProjConvLayer: nfreq={self.nfreq} ")
+
+	def xdata(self) -> Tensor:
+		return self.freq
 
 	def get_tau(self, ts: torch.Tensor ) -> tuple[Tensor,Tensor]:
 		taus: torch.Tensor =   ts[:,0][:,None] + (self.ktime_spacing/2)*torch.arange(2,self.nk+2)[None,:]

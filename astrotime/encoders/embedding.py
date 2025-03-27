@@ -30,6 +30,9 @@ class EmbeddingLayer(torch.nn.Module):
 	def embed(self, xs: Tensor, ys: Tensor ) -> Tensor:
 		raise NotImplementedError("EmbeddingLayer.embed() not implemented")
 
+	def xdata(self) -> Tensor:
+		raise NotImplementedError("EmbeddingLayer.xdata() not implemented")
+
 	@property
 	def projection_dim(self) -> int:
 		raise NotImplementedError("EmbeddingLayer.projection_dim not implemented")
