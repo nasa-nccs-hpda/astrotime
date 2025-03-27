@@ -99,6 +99,7 @@ class MITTransformPlot(SignalPlot):
 		self.ax.title.set_fontweight('bold')
 		self.ax.set_xlim(xdata[0],xdata[-1])
 
+	@exception_handled
 	def get_element_data(self) -> Tuple[np.ndarray,np.ndarray,float]:
 		element: xa.Dataset = self.data_loader.get_dataset_element(self.sector,self.TICS[self.element])
 		t, y = element.data_vars['time'], element.data_vars['y']
@@ -107,12 +108,12 @@ class MITTransformPlot(SignalPlot):
 		target: float = y.attrs['period']
 		return xdata, ydata, target
 
+	@exception_handled
 	def get_transform_data( self, feature: int = -1 ) -> Tuple[np.ndarray,np.ndarray,float]:
 		element: xa.Dataset = self.data_loader.get_dataset_element(self.sector,self.TICS[self.element])
 		ts_tensors: Dict[str,Tensor] =  { k: FloatTensor(element.data_vars[k].values).to(self.transform.device) for k in ['time','y'] }
-		transformed: Tensor = self.transform.embed(ts_tensors['time'],ts_tensors['y'])
-		if feature >= 0: embedding = transformed[:,feature]
-		else: embedding = (transformed*transformed).mean(dim=1).sqrt()
+		transformed: Tensor = self.transform.embed( ts_tensors['time'][None,:], ts_tensors['y'][None,:] )
+		embedding = transformed[:,feature] if (feature >= 0) else (transformed*transformed).mean(dim=1).sqrt()
 		ydata: np.ndarray = embedding.to('cpu').numpy()
 		xdata: np.ndarray = self.transform.xdata().to('cpu').numpy()
 		target: float = element.data_vars['y'].attrs['period']

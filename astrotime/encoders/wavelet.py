@@ -112,17 +112,16 @@ class WaveletAnalysisLayer(EmbeddingLayer):
 
 	def embed(self, ts: torch.Tensor, ys: torch.Tensor ) -> Tensor:
 		t0 = time.time()
-		self.init_log(f"WaveletAnalysisLayer shapes:")
+		self.init_log(f"WaveletAnalysisLayer shapes: ts{list(ts.shape)} ys{list(ys.shape)}")
 		if self.ones is None:
 			self.ones: Tensor = torch.ones( ys.shape[0], self.nfreq, self.series_length, device=self.device)
 		tau = 0.5 * (ts[:, self.series_length // 2] + ts[:, self.series_length // 2 + 1])
-		self.init_log(f" ys{list(ys.shape)} ts{list(ts.shape)} tau{list(tau.shape)}")
 		tau: Tensor = tau[:, None, None]
 		omega = self.freq * 2.0 * math.pi
 		omega_: Tensor = omega[None, :, None]  # broadcast-to(self.batch_size,self.nfreq,self.series_length)
 		ts: Tensor = ts[:, None, :]  # broadcast-to(self.batch_size,self.nfreq,self.series_length)
 		dt: Tensor = (ts - tau)
-		self.init_log(f" ys{list(ys.shape)} ts{list(ts.shape)} tau{list(tau.shape)} dt{list(dt.shape)}")
+		self.init_log(f" tau{list(tau.shape)} dt{list(dt.shape)}")
 		dz: Tensor = omega_ * dt
 		weights: Tensor = torch.exp(-self.C * dz ** 2) if (self.cfg.decay_factor > 0.0) else 1.0
 		sum_w: Tensor = torch.sum(weights, dim=-1) if (self.cfg.decay_factor > 0.0) else 1.0
