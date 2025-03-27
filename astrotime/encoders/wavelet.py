@@ -129,7 +129,6 @@ class WaveletAnalysisLayer(EmbeddingLayer):
 		def w_prod( x0: Tensor, x1: Tensor) -> Tensor:
 			return torch.sum(weights * x0 * x1, dim=-1) / sum_w
 
-		self.init_log(f" dz{list(dz.shape)} weights{list(weights.shape)} sum_w{list(sum_w.shape)}")
 		pw1: Tensor = torch.sin(dz)
 		pw2: Tensor = torch.cos(dz)
 		self.init_log(f" --> pw0{list(self.ones.shape)} pw1{list(pw1.shape)} pw2{list(pw2.shape)}  ")
