@@ -1,10 +1,10 @@
 series_length: ${data.series_length}  # Length of subset of input timeseries to process
 sparsity: 0.0                       # Fraction of observations to drop (randomly)
 batch_size: ${data.batch_size}      # Batch size for training
-nfreq: 256                          # Number of frequency values to compute (spectral resolution)
+nfreq: 512                          # Number of frequency values to compute (spectral resolution)
 base_freq_range:                    # Base frequency range in computed spectra (before time rescaling)
-  - 0.5
-  - 50.0
+  - 0.05
+  - 20.0
 time_scale: 1.0                     # Time rescale factor for shifted frequency range
 fscale: "log"                       # Scale of frequency axis
 decay_factor: 0.0                   # Time envelope decay factor
