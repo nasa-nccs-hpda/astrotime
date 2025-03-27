@@ -23,7 +23,7 @@ class MITDatasetPlot(SignalPlot):
 		self.annotations: List[str] = tolower( kwargs.get('annotations',None) )
 		self.colors = ['blue', 'green'] + [ 'yellow' ] * 16
 		self.ofac = kwargs.get('upsample_factor',1)
-		self.lines: Dict[str,Line2D] = {}
+		self.plot: Line2D = None
 		self.add_param( STIntParam('element', (0,len(self.TICS))  ) )
 		self.transax = None
 
@@ -33,7 +33,7 @@ class MITDatasetPlot(SignalPlot):
 	@exception_handled
 	def _setup(self):
 		xdata, ydata, target = self.get_element_data()
-		self.plot, = self.ax.plot(xdata, ydata, label='y', color='blue', marker=".", markersize=1)
+		self.plot: Line2D = self.ax.plot(xdata, ydata, label='y', color='blue', marker=".", markersize=1)[0]
 		self.ax.title.set_text(self.name)
 		self.ax.title.set_fontsize(8)
 		self.ax.title.set_fontweight('bold')
@@ -63,4 +63,5 @@ class MITDatasetPlot(SignalPlot):
 	#	self.lines['target'] = self.ax.axvline(x=1.0/target, color='r', linestyle='-')
 		self.ax.set_ylim(*bounds(ydata))
 		self.plot.set_xdata(xdata)
-		self.ax.set_xlim(*bounds(xdata))
+		self.ax.set_xlim(xdata[0],xdata[-1])
+		self.log.info( f"Plot update: xlim={self.ax.get_xlim()} ({xdata[0]:.3f},{xdata[-1]:.3f}), xdata.shape={self.plot.get_xdata().shape} " )

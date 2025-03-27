@@ -1,4 +1,4 @@
-import numpy as np
+import logging, numpy as np
 from matplotlib.widgets import Slider, RadioButtons
 from typing import Dict, List, Tuple, Type, Callable
 
@@ -34,6 +34,7 @@ class Parameterized(object):
 		self._current_value: Dict[str, Parameter] = {}
 		self.param_domain: np.ndarray = np.linspace(0, 1.0, 100)
 		self.children: List[Parameterized] = []
+		self.log = logging.getLogger()
 
 	def share_param(self, param: STParam):
 		if param.name in self._sparms:
