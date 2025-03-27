@@ -8,6 +8,7 @@ from matplotlib.lines import Line2D
 from astrotime.util.logging import exception_handled
 from astrotime.encoders.embedding import EmbeddingLayer
 from typing import List, Optional, Dict, Type, Union, Tuple
+from astrotime.util.math import tnorm
 log = logging.getLogger("astrotime")
 
 def tolower(ls: Optional[List[str]]) -> List[str]:
@@ -114,7 +115,7 @@ class MITTransformPlot(SignalPlot):
 	def get_transform_data( self, feature: int = -1 ) -> Tuple[np.ndarray,np.ndarray,float]:
 		element: xa.Dataset = self.data_loader.get_dataset_element(self.sector,self.TICS[self.element])
 		ts_tensors: Dict[str,Tensor] =  { k: FloatTensor(element.data_vars[k].values).to(self.transform.device) for k in ['time','y'] }
-		transformed: Tensor = self.transform.embed( ts_tensors['time'][None,:], ts_tensors['y'][None,:] )
+		transformed: Tensor = self.transform.embed( ts_tensors['time'][None,:], tnorm(ts_tensors['y'][None,:],dim=1) )
 		embedding = transformed[:,feature] if (feature >= 0) else (transformed*transformed).mean(dim=1).sqrt()
 		ydata: np.ndarray = embedding.to('cpu').numpy()
 		xdata: np.ndarray = self.transform.xdata().to('cpu').numpy()
@@ -129,8 +130,8 @@ class MITTransformPlot(SignalPlot):
 		self.plot.set_ydata(ydata)
 		self.target_marker.set_xdata([target_freq,target_freq])
 		self.target_marker.set_ydata(ybnds)
-		self.ax.set_ylim(*ybnds)
 		self.plot.set_xdata(xdata)
 		self.ax.set_xlim(xdata[0],xdata[-1])
+		self.ax.set_ylim(*ybnds)
 		self.log.info( f"Plot update: xlim={self.ax.get_xlim()} ({xdata[0]:.3f},{xdata[-1]:.3f}), xdata.shape={self.plot.get_xdata().shape}, target: period={target:.5f}, freq={float(target_freq):.5f}" )
 
