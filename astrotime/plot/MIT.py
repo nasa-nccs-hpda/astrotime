@@ -33,7 +33,7 @@ class MITDatasetPlot(SignalPlot):
 	@exception_handled
 	def _setup(self):
 		xdata, ydata, target = self.get_element_data()
-		self.plot: Line2D = self.ax.plot(xdata, ydata, label='y', color='blue', marker=".", markersize=1)[0]
+		self.plot: Line2D = self.ax.plot(xdata, ydata, label='y', color='blue', marker=".", linewidth=1, markersize=2, alpha=0.8)[0]
 		self.ax.title.set_text(self.name)
 		self.ax.title.set_fontsize(8)
 		self.ax.title.set_fontweight('bold')
