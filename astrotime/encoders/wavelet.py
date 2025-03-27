@@ -104,7 +104,6 @@ class WaveletAnalysisLayer(EmbeddingLayer):
 		fspace = logspace if (self.cfg.fscale == "log") else np.linspace
 		f0, f1 = self.cfg.base_freq_range[0]/self.time_scale, self.cfg.base_freq_range[1]/self.time_scale
 		self.freq = torch.FloatTensor( fspace( f0, f1, self.cfg.nfreq ) ).to(self.device)
-		self.ones: Tensor = None
 		self.init_log(f"WaveletAnalysisLayer: nfreq={self.nfreq} ")
 
 	def xdata(self) -> Tensor:
@@ -113,8 +112,7 @@ class WaveletAnalysisLayer(EmbeddingLayer):
 	def embed(self, ts: torch.Tensor, ys: torch.Tensor ) -> Tensor:
 		t0 = time.time()
 		self.init_log(f"WaveletAnalysisLayer shapes: ts{list(ts.shape)} ys{list(ys.shape)}")
-		if self.ones is None:
-			self.ones: Tensor = torch.ones( ys.shape[0], self.nfreq, self.series_length, device=self.device)
+		ones: Tensor = torch.ones( ys.shape[0], self.nfreq, self.series_length, device=self.device)
 		tau = 0.5 * (ts[:, self.series_length // 2] + ts[:, self.series_length // 2 + 1])
 		tau: Tensor = tau[:, None, None]
 		omega = self.freq * 2.0 * math.pi
@@ -131,9 +129,9 @@ class WaveletAnalysisLayer(EmbeddingLayer):
 
 		pw1: Tensor = torch.sin(dz)
 		pw2: Tensor = torch.cos(dz)
-		self.init_log(f" --> pw0{list(self.ones.shape)} pw1{list(pw1.shape)} pw2{list(pw2.shape)}  ")
+		self.init_log(f" --> pw0{list(ones.shape)} pw1{list(pw1.shape)} pw2{list(pw2.shape)}  ")
 
-		p0: Tensor = w_prod(ys, self.ones)
+		p0: Tensor = w_prod(ys, ones)
 		p1: Tensor = w_prod(ys, pw1)
 		p2: Tensor = w_prod(ys, pw2)
 		self.init_log(f" --> p0{list(p0.shape)} p1{list(p1.shape)} p2{list(p2.shape)}")
@@ -163,7 +161,6 @@ class WaveletProjConvLayer(EmbeddingLayer):
 		fspace = logspace if (self.cfg.fscale == "log") else np.linspace
 		f0, f1 = self.cfg.base_freq_range[0]/self.time_scale, self.cfg.base_freq_range[1]/self.time_scale
 		self.freq = torch.FloatTensor( fspace( f0, f1, self.cfg.nfreq ) ).to(self.device)
-		self.ones: Tensor = None
 		self.weights = nn.Parameter( Tensor( self.nfreq*3, self._nfeatures ) )
 		self.init_log(f"WaveletProjConvLayer: nfreq={self.nfreq} ")
 
@@ -201,11 +198,9 @@ class WaveletProjConvLayer(EmbeddingLayer):
 		pw1: Tensor = torch.sin(z)
 		pw2: Tensor = torch.cos(z)
 		self.init_log(f" --> pw1{list(pw1.shape)} pw2{list(pw2.shape)}  z{list(z.shape)}  ")
+		ones: Tensor = torch.ones( pw1.shape, device=self.device )
 
-		if self.ones is None:
-			self.ones: Tensor = torch.ones( pw1.shape, device=self.device )
-
-		p0: Tensor = w_prod(yk, self.ones)
+		p0: Tensor = w_prod(yk, ones)
 		p1: Tensor = w_prod(yk, pw1)
 		p2: Tensor = w_prod(yk, pw2)
 		self.init_log(f" --> p0{list(p0.shape)} p1{list(p1.shape)} p2{list(p2.shape)}")
