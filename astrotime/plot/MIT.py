@@ -123,12 +123,11 @@ class MITTransformPlot(SignalPlot):
 	@exception_handled
 	def update(self, val):
 		xdata, ydata, target = self.get_transform_data()
+		target_freq: np.float64 = np.float64(1.0/target)
 		self.plot.set_ydata(ydata)
-		self.target_marker.remove()
-		# self.target_marker = self.ax.axvline(x=1.0/target, color='r', linestyle='-')
-		tdata = self.target_marker.get_xdata()
+		self.target_marker.set_xdata([target_freq,target_freq])
 		self.ax.set_ylim(*bounds(ydata))
 		self.plot.set_xdata(xdata)
 		self.ax.set_xlim(xdata[0],xdata[-1])
-		self.log.info( f"Plot update: xlim={self.ax.get_xlim()} ({xdata[0]:.3f},{xdata[-1]:.3f}), xdata.shape={self.plot.get_xdata().shape}, target: period={target:.5f}, freq={1.0/target:.5f}, tdata={tdata}" )
+		self.log.info( f"Plot update: xlim={self.ax.get_xlim()} ({xdata[0]:.3f},{xdata[-1]:.3f}), xdata.shape={self.plot.get_xdata().shape}, target: period={target:.5f}, freq={float(target_freq):.5f}" )
 
