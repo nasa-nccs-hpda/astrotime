@@ -112,12 +112,13 @@ class WaveletAnalysisLayer(EmbeddingLayer):
 	def embed(self, ts: torch.Tensor, ys: torch.Tensor ) -> Tensor:
 		t0 = time.time()
 		self.init_log(f"WaveletAnalysisLayer shapes: ts{list(ts.shape)} ys{list(ys.shape)}")
-		ones: Tensor = torch.ones( ys.shape[0], self.nfreq, self.series_length, device=self.device)
-		tau = 0.5 * (ts[:, self.series_length // 2] + ts[:, self.series_length // 2 + 1])
+		slen: int = self.series_length if (self.series_length > 0) else ys.shape[1]
+		ones: Tensor = torch.ones( ys.shape[0], self.nfreq, slen, device=self.device)
+		tau = 0.5 * (ts[:, slen // 2] + ts[:, slen // 2 + 1])
 		tau: Tensor = tau[:, None, None]
 		omega = self.freq * 2.0 * math.pi
-		omega_: Tensor = omega[None, :, None]  # broadcast-to(self.batch_size,self.nfreq,self.series_length)
-		ts: Tensor = ts[:, None, :]  # broadcast-to(self.batch_size,self.nfreq,self.series_length)
+		omega_: Tensor = omega[None, :, None]  # broadcast-to(self.batch_size,self.nfreq,slen)
+		ts: Tensor = ts[:, None, :]  # broadcast-to(self.batch_size,self.nfreq,slen)
 		dt: Tensor = (ts - tau)
 		self.init_log(f" tau{list(tau.shape)} dt{list(dt.shape)} ones{list(ones.shape)}")
 		dz: Tensor = omega_ * dt
