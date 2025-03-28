@@ -2,7 +2,6 @@ import math, time, numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.text import Annotation
 from matplotlib.axes import Axes
-from matplotlib.ticker import NullLocator
 from typing import Any, Dict, List, Tuple, Type, Optional, Union
 from astrotime.util.logging import exception_handled, log_timing
 from .param import Number, Parameter, STParam, STFloatParam, STFloatValuesParam, Parameterized
@@ -19,15 +18,12 @@ class SignalPlot(Parameterized):
 	def __init__(self, **kwargs):
 		Parameterized.__init__(self)
 		self.ax: Axes = None
-		self.aux_axes = []
 		self.annotation: Annotation = None
 
 	@exception_handled
-	def initialize(self, ax: Axes, aux_axes: List[Axes] = None):
+	def initialize(self, ax: Axes):
 		self.ax = ax
 		self.annotation: Annotation = self.ax.annotate("", (0.75, 0.95), xycoords='axes fraction')
-		if aux_axes is None:
-			self.aux_axes = aux_axes
 		with plt.ioff():
 			self._setup()
 
@@ -72,11 +68,8 @@ class SignalPlotFigure(object):
 		adjust_factor = max( self.nparms, 6 )
 		plt.subplots_adjust( bottom=0.03*(adjust_factor+1) )
 		axes = [self.axs] if self.nplots == 1 else self.axs
-		self.aux_ax = plt.axes( (0.7,  0.0,  0.25,  0.03*adjust_factor ) )
-		self.aux_ax.xaxis.set_major_locator(NullLocator())
-		self.aux_ax.yaxis.set_major_locator(NullLocator())
 		for plot, ax in zip(self.plots, axes):
-			plot.initialize(ax,[self.aux_ax])
+			plot.initialize(ax)
 			self.link_plot(plot)
 		self.callbacks.append(self.update)
 		for aid, sp in enumerate(self.sparms.values()):
