@@ -20,14 +20,13 @@ class WaveletSynthesisLayer(EmbeddingLayer):
 		EmbeddingLayer.__init__(self, cfg, embedding_space, device)
 		self.nfreq = cfg.nfreq
 		self.C = cfg.decay_factor / (8 * math.pi ** 2)
-		self.ones: Tensor = None
 		self.init_log(f"WaveletSynthesisLayer: nfreq={self.nfreq} ")
 
 	def embed(self, ts: torch.Tensor, ys: torch.Tensor ) -> Tensor:
 		t0 = time.time()
 		self.init_log(f"WaveletSynthesisLayer shapes:")
-		if self.ones is None:
-			self.ones: Tensor = torch.ones( ys.shape[0], self.nfreq, self.series_length, device=self.device)
+		slen: int = self.series_length if (self.series_length > 0) else ys.shape[1]
+		ones: Tensor = torch.ones(ys.shape[0], self.nfreq, slen, device=self.device)
 		tau = 0.5 * (ts[:, self.series_length // 2] + ts[:, self.series_length // 2 + 1])
 		self.init_log(f" ys{list(ys.shape)} ts{list(ts.shape)} tau{list(tau.shape)}")
 		tau: Tensor = tau[:, None, None]
@@ -46,8 +45,8 @@ class WaveletSynthesisLayer(EmbeddingLayer):
 		sin_basis: Tensor = torch.sin(theta)
 		cos_basis: Tensor = torch.cos(theta)
 
-		sin_one: Tensor = w_prod(sin_basis, self.ones)
-		cos_one: Tensor = w_prod(cos_basis, self.ones)
+		sin_one: Tensor = w_prod(sin_basis, ones)
+		cos_one: Tensor = w_prod(cos_basis, ones)
 		sin_cos: Tensor = w_prod(sin_basis, cos_basis)
 		sin_sin: Tensor = w_prod(sin_basis, sin_basis)
 		cos_cos: Tensor = w_prod(cos_basis, cos_basis)
@@ -67,11 +66,11 @@ class WaveletSynthesisLayer(EmbeddingLayer):
 
 		ys_cos_shift: Tensor = w_prod(ys, cos_shift)
 		ys_sin_shift: Tensor = w_prod(ys, sin_shift)
-		ys_one: Tensor = w_prod(ys, self.ones)
-		self.init_log(f" --> ys_one{list(ys_one.shape)} ys{list(ys.shape)} ones{list(self.ones.shape)}")
+		ys_one: Tensor = w_prod(ys, ones)
+		self.init_log(f" --> ys_one{list(ys_one.shape)} ys{list(ys.shape)} ones{list(ones.shape)}")
 
-		cos_shift_one: Tensor = w_prod(cos_shift, self.ones)
-		sin_shift_one: Tensor = w_prod(sin_shift, self.ones)
+		cos_shift_one: Tensor = w_prod(cos_shift, ones)
+		sin_shift_one: Tensor = w_prod(sin_shift, ones)
 		self.init_log(f" --> sin_shift_one{list(sin_shift_one.shape)} cos_shift_one{list(cos_shift_one.shape)}")
 
 		A: Tensor = 2 * (ys_cos_shift - ys_one * cos_shift_one)

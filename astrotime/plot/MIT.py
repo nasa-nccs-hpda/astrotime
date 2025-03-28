@@ -28,19 +28,32 @@ class MITDatasetPlot(SignalPlot):
 		self.ofac = kwargs.get('upsample_factor',1)
 		self.plot: Line2D = None
 		self.add_param( STIntParam('element', (0,len(self.TICS))  ) )
+		self.period_markers= []
 		self.transax = None
 
 	def set_sector(self, sector: int ):
 		self.sector = sector
 
+	def update_period_markers(self, xs: np.ndarray, ys: np.ndarray, pval: float ):
+		t0: float = xs[ np.argmin(ys)[0] ]
+		for ip in range(-3,4):
+			tval = t0 + ip * pval
+			if ip >= len(self.period_markers):
+				self.period_markers.append( self.ax.axvline( tval, ys.min(), ys.max(), color='green', linestyle='-', alpha=0.5) )
+			else:
+				self.period_markers[ip].set_xdata([tval,tval])
+				self.period_markers[ip].set_ydata([ys.min(),ys.max()])
+
 	@exception_handled
 	def _setup(self):
 		xdata, ydata, target = self.get_element_data()
-		self.plot: Line2D = self.ax.plot(xdata.squeeze(), ydata.squeeze(), label='y', color='blue', marker=".", linewidth=1, markersize=2, alpha=0.5)[0]
+		xs, ys = xdata.squeeze(), ydata.squeeze()
+		self.plot: Line2D = self.ax.plot(xs, ys, label='y', color='blue', marker=".", linewidth=1, markersize=2, alpha=0.5)[0]
 		self.ax.title.set_text(self.name)
 		self.ax.title.set_fontsize(8)
 		self.ax.title.set_fontweight('bold')
 		self.ax.set_xlim(xdata[0],xdata[-1])
+		self.update_period_markers(xs,ys,target)
 
 	def get_element_data(self) -> Tuple[np.ndarray,np.ndarray,float]:
 		element: xa.Dataset = self.data_loader.get_dataset_element(self.sector,self.TICS[self.element])
@@ -66,6 +79,7 @@ class MITDatasetPlot(SignalPlot):
 		self.ax.set_xlim(xdata[0],xdata[-1])
 		self.ax.set_ylim(ydata.min(),ydata.max())
 		self.log.info( f"Plot update: xlim={self.ax.get_xlim()} ({xdata[0]:.3f},{xdata[-1]:.3f}), xdata.shape={self.plot.get_xdata().shape} " )
+		self.update_period_markers(xdata, ydata, target)
 
 
 class MITTransformPlot(SignalPlot):
