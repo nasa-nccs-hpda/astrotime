@@ -113,6 +113,7 @@ class MITTransformPlot(SignalPlot):
 		self.ax.set_xlim( self.embedding_space[0], self.embedding_space[-1] )
 		self.ax.set_ylim( 0.0, 1.0 )
 		self.ax.set_xscale('log')
+		self.ax.legend(loc="upper left")
 
 	@exception_handled
 	def apply_transform( self, transform: EmbeddingLayer, series_data: xa.Dataset, feature: int = -1 ) -> np.ndarray:
