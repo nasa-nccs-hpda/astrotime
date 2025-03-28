@@ -14,6 +14,9 @@ log = logging.getLogger("astrotime")
 def tolower(ls: Optional[List[str]]) -> List[str]:
 	return [a.lower() for a in ls] if (ls is not None) else []
 
+def znorm(ydata: np.ndarray) -> np.ndarray:
+	y0,y1 = ydata.min(), ydata.max()
+	return (ydata-y0)/(y1-y0)
 
 class MITDatasetPlot(SignalPlot):
 
@@ -36,13 +39,14 @@ class MITDatasetPlot(SignalPlot):
 
 	def update_period_markers(self, xs: np.ndarray, ys: np.ndarray, pval: float, npm: int = 7 ):
 		t0: float = xs[ np.argmin(ys) ]
+		ylim = self.ax.get_ylim()
 		for pid in range(0,npm):
 			tval = t0 + (pid-npm//2) * pval
 			if pid >= len(self.period_markers):
-				self.period_markers.append( self.ax.axvline( tval, ys.min(), ys.max(), color='green', linestyle='-', alpha=0.5) )
+				self.period_markers.append( self.ax.axvline( tval, ylim[0], ylim[1], color='green', linestyle='-', alpha=0.5) )
 			else:
 				self.period_markers[pid].set_xdata([tval,tval])
-				self.period_markers[pid].set_ydata([ys.min(),ys.max()])
+				self.period_markers[pid].set_ydata(ylim)
 
 	@exception_handled
 	def _setup(self):
@@ -110,11 +114,12 @@ class MITTransformPlot(SignalPlot):
 		for iplot, (tname, transform) in enumerate(self.transforms.items()):
 			tdata: np.ndarray = self.apply_transform(transform,series_data)
 			self.plots[tname] = self.ax.plot(self.embedding_space, tdata.squeeze(), label=tdata, color=self.colors[iplot], marker=".", linewidth=1, markersize=2, alpha=0.5)[0]
-		self.target_marker: Line2D = self.ax.axvline(x=1.0/target, color='grey', linestyle='-')
+		self.target_marker: Line2D = self.ax.axvline( 1.0/target, 0.0, 1.0, color='grey', linestyle='-')
 		self.ax.title.set_text(self.name)
 		self.ax.title.set_fontsize(8)
 		self.ax.title.set_fontweight('bold')
 		self.ax.set_xlim( self.embedding_space[0], self.embedding_space[-1] )
+		self.ax.set_ylim( 0.0, 1.0 )
 		self.ax.set_xscale('log')
 
 	@exception_handled
@@ -123,20 +128,14 @@ class MITTransformPlot(SignalPlot):
 		transformed: Tensor = transform.embed( ts_tensors['time'][None,:], tnorm(ts_tensors['y'][None,:],dim=1) )
 		embedding = transformed[:,feature] if (feature >= 0) else (transformed*transformed).mean(dim=1).sqrt()
 		ydata: np.ndarray = embedding.to('cpu').numpy()
-		return ydata
+		return znorm(ydata)
 
 	@exception_handled
 	def update(self, val):
 		series_data: xa.Dataset = self.data_loader.get_dataset_element(self.sector, self.TICS[self.element])
 		target: float = series_data.data_vars['y'].attrs['period']
-		ymin, ymax = 10000, -10000
 		for iplot, (tname, transform) in enumerate(self.transforms.items()):
 			tdata: np.ndarray = self.apply_transform(transform,series_data)
 			self.plots[tname].set_ydata(tdata)
-			tmin, tmax= tdata.min(), tdata.max()
-			if tmin < ymin: ymin = tmin
-			if tmax > ymax: ymax = tmax
-		self.ax.set_ylim(ymin,ymax)
 		self.target_marker.set_xdata([target,target])
-		self.target_marker.set_ydata([ymin,ymax])
 
