@@ -18,6 +18,11 @@ def znorm(ydata: np.ndarray) -> np.ndarray:
 	y0,y1 = ydata.min(), ydata.max()
 	return (ydata-y0)/(y1-y0)
 
+def unorm(ydata: np.ndarray) -> np.ndarray:
+	y0,y1 = ydata.min(), ydata.max()
+	z = (y1-ydata)/(y1-y0)
+	return 1 - 2*z
+
 class MITDatasetPlot(SignalPlot):
 
 	def __init__(self, name: str, data_loader: MITLoader, sector: int, **kwargs):
@@ -39,24 +44,20 @@ class MITDatasetPlot(SignalPlot):
 
 	def update_period_markers(self, xs: np.ndarray, ys: np.ndarray, pval: float, npm: int = 7 ):
 		t0: float = xs[ np.argmin(ys) ]
-		ylim = self.ax.get_ylim()
 		for pid in range(0,npm):
 			tval = t0 + (pid-npm//2) * pval
-			if pid >= len(self.period_markers):
-				self.period_markers.append( self.ax.axvline( tval, ylim[0], ylim[1], color='green', linestyle='-', alpha=0.5) )
-			else:
-				self.period_markers[pid].set_xdata([tval,tval])
-				self.period_markers[pid].set_ydata(ylim)
+			if pid >= len(self.period_markers):  self.period_markers.append( self.ax.axvline( tval, -1, 1, color='green', linestyle='-', alpha=0.5) )
+			else:                                self.period_markers[pid].set_xdata([tval,tval])
 
 	@exception_handled
 	def _setup(self):
-		xdata, ydata, target = self.get_element_data()
-		xs, ys = xdata.squeeze(), ydata.squeeze()
+		xs, ys, target = self.get_element_data()
 		self.plot: Line2D = self.ax.plot(xs, ys, label='y', color='blue', marker=".", linewidth=1, markersize=2, alpha=0.5)[0]
 		self.ax.title.set_text(self.name)
 		self.ax.title.set_fontsize(8)
 		self.ax.title.set_fontweight('bold')
-		self.ax.set_xlim(xdata[0],xdata[-1])
+		self.ax.set_xlim(xs[0],xs[-1])
+		self.ax.set_ylim(-1,1)
 		self.update_period_markers(xs,ys,target)
 
 	def get_element_data(self) -> Tuple[np.ndarray,np.ndarray,float]:
@@ -65,15 +66,7 @@ class MITDatasetPlot(SignalPlot):
 		ydata: np.ndarray = y.values
 		xdata: np.ndarray = t.values
 		target: float = y.attrs['period']
-		return xdata, ydata, target
-
-	# @exception_handled
-	# def update_peak_interp(self, xp: np.ndarray, yp: np.ndarray):
-	# 	log.info(f"\n ** update_peak_interp: xp{list(xp.shape)} ({xp.mean():.3f}), yp{list(yp.shape)} ({yp.mean():.3f}) " )
-	# 	if self.peak_plot is not None:
-	# 		try: self.peak_plot.remove()
-	# 		except: pass
-	# 	self.peak_plot, = self.ax.plot(    xp,  yp, label=self.transform.name, color='green', marker=".", linewidth=1, markersize=2, alpha=0.5 )
+		return xdata, znorm(ydata.squeeze()), target
 
 	@exception_handled
 	def update(self, val):
@@ -81,7 +74,6 @@ class MITDatasetPlot(SignalPlot):
 		self.plot.set_ydata(ydata)
 		self.plot.set_xdata(xdata)
 		self.ax.set_xlim(xdata[0],xdata[-1])
-		self.ax.set_ylim(ydata.min(),ydata.max())
 		self.log.info( f"Plot update: xlim={self.ax.get_xlim()} ({xdata[0]:.3f},{xdata[-1]:.3f}), xdata.shape={self.plot.get_xdata().shape} " )
 		self.update_period_markers(xdata, ydata, target)
 
