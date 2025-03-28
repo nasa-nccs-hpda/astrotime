@@ -105,7 +105,7 @@ class MITTransformPlot(SignalPlot):
 		target: float = series_data.data_vars['y'].attrs['period']
 		for iplot, (tname, transform) in enumerate(self.transforms.items()):
 			tdata: np.ndarray = self.apply_transform(transform,series_data)
-			self.plots[tname] = self.ax.plot(self.embedding_space, tdata.squeeze(), label=tdata, color=self.colors[iplot], marker=".", linewidth=1, markersize=2, alpha=0.5)[0]
+			self.plots[tname] = self.ax.plot(self.embedding_space, tdata.squeeze(), label=tname, color=self.colors[iplot], marker=".", linewidth=1, markersize=2, alpha=0.5)[0]
 		self.target_marker: Line2D = self.ax.axvline( 1.0/target, 0.0, 1.0, color='grey', linestyle='-')
 		self.ax.title.set_text(self.name)
 		self.ax.title.set_fontsize(8)
