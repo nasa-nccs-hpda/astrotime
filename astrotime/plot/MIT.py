@@ -35,7 +35,7 @@ class MITDatasetPlot(SignalPlot):
 		self.sector = sector
 
 	def update_period_markers(self, xs: np.ndarray, ys: np.ndarray, pval: float ):
-		t0: float = xs[ np.argmin(ys)[0] ]
+		t0: float = xs[ np.argmin(ys) ]
 		for ip in range(-3,4):
 			tval = t0 + ip * pval
 			if ip >= len(self.period_markers):
