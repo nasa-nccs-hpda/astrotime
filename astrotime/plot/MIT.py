@@ -70,17 +70,18 @@ class MITDatasetPlot(SignalPlot):
 
 class MITTransformPlot(SignalPlot):
 
-	def __init__(self, name: str, data_loader: MITLoader, transform: EmbeddingLayer, sector: int, **kwargs):
+	def __init__(self, name: str, data_loader: MITLoader, transforms: Dict[str,EmbeddingLayer], embedding_space: np.ndarray, sector: int, **kwargs):
 		SignalPlot.__init__(self, **kwargs)
 		self.name = name
 		self.sector: int = sector
-		self.transform = transform
+		self.transforms: Dict[str,EmbeddingLayer] = transforms
 		self.data_loader: MITLoader = data_loader
+		self.embedding_space: np.ndarray = embedding_space
 		self.TICS: List[str] = data_loader.TICS(sector)
 		self.annotations: List[str] = tolower( kwargs.get('annotations',None) )
-		self.colors = ['blue', 'green'] + [ 'yellow' ] * 16
+		self.colors = ['blue', 'green', 'red', 'cyan', 'magenta', 'orange', 'sienna', 'yellow']
 		self.ofac = kwargs.get('upsample_factor',1)
-		self.plot: Line2D = None
+		self.plots: Dict[str,Line2D] = {}
 		self.target_marker: Line2D = None
 		self.add_param( STIntParam('element', (0,len(self.TICS))  ) )
 		self.transax = None
@@ -90,46 +91,38 @@ class MITTransformPlot(SignalPlot):
 
 	@exception_handled
 	def _setup(self):
-		dset: xa.Dataset = self.data_loader.get_dataset(self.sector)
-		xdata, ydata, target = self.get_transform_data()
-		self.plot: Line2D = self.ax.plot(xdata.squeeze(), ydata.squeeze(), label='y', color='blue', marker=".", linewidth=1, markersize=2, alpha=0.5)[0]
-		self.target_marker: Line2D = self.ax.axvline(x=1.0/target, color='r', linestyle='-')
+		series_data: xa.Dataset = self.data_loader.get_dataset_element(self.sector, self.TICS[self.element])
+		target: float = series_data.data_vars['y'].attrs['period']
+		for iplot, (tname, transform) in enumerate(self.transforms.items()):
+			tdata: np.ndarray = self.apply_transform(transform,series_data)
+			self.plots[tname] = self.ax.plot(self.embedding_space, tdata.squeeze(), label=tdata, color=self.colors[iplot], marker=".", linewidth=1, markersize=2, alpha=0.5)[0]
+		self.target_marker: Line2D = self.ax.axvline(x=1.0/target, color='grey', linestyle='-')
 		self.ax.title.set_text(self.name)
 		self.ax.title.set_fontsize(8)
 		self.ax.title.set_fontweight('bold')
-		self.ax.set_xlim(xdata[0],xdata[-1])
+		self.ax.set_xlim( self.embedding_space[0], self.embedding_space[-1] )
 		self.ax.set_xscale('log')
 
 	@exception_handled
-	def get_element_data(self) -> Tuple[np.ndarray,np.ndarray,float]:
-		element: xa.Dataset = self.data_loader.get_dataset_element(self.sector,self.TICS[self.element])
-		t, y = element.data_vars['time'], element.data_vars['y']
-		ydata: np.ndarray = y.values
-		xdata: np.ndarray = t.values
-		target: float = y.attrs['period']
-		return xdata, ydata, target
-
-	@exception_handled
-	def get_transform_data( self, feature: int = -1 ) -> Tuple[np.ndarray,np.ndarray,float]:
-		element: xa.Dataset = self.data_loader.get_dataset_element(self.sector,self.TICS[self.element])
-		ts_tensors: Dict[str,Tensor] =  { k: FloatTensor(element.data_vars[k].values).to(self.transform.device) for k in ['time','y'] }
-		transformed: Tensor = self.transform.embed( ts_tensors['time'][None,:], tnorm(ts_tensors['y'][None,:],dim=1) )
+	def apply_transform( self, transform: EmbeddingLayer, series_data: xa.Dataset, feature: int = -1 ) -> np.ndarray:
+		ts_tensors: Dict[str,Tensor] =  { k: FloatTensor(series_data.data_vars[k].values).to(transform.device) for k in ['time','y'] }
+		transformed: Tensor = transform.embed( ts_tensors['time'][None,:], tnorm(ts_tensors['y'][None,:],dim=1) )
 		embedding = transformed[:,feature] if (feature >= 0) else (transformed*transformed).mean(dim=1).sqrt()
 		ydata: np.ndarray = embedding.to('cpu').numpy()
-		xdata: np.ndarray = self.transform.xdata().to('cpu').numpy()
-		target: float = element.data_vars['y'].attrs['period']
-		return xdata, ydata, target
+		return ydata
 
 	@exception_handled
 	def update(self, val):
-		xdata, ydata, target = self.get_transform_data()
-		target_freq = 1.0/target
-		ybnds = [0.0,ydata.max()]
-		self.plot.set_ydata(ydata)
-		self.target_marker.set_xdata([target_freq,target_freq])
-		self.target_marker.set_ydata(ybnds)
-		self.plot.set_xdata(xdata)
-		self.ax.set_xlim(xdata[0],xdata[-1])
-		self.ax.set_ylim(*ybnds)
-		self.log.info( f"Plot update: xlim={self.ax.get_xlim()} ({xdata[0]:.3f},{xdata[-1]:.3f}), xdata.shape={self.plot.get_xdata().shape}, target: period={target:.5f}, freq={float(target_freq):.5f}" )
+		series_data: xa.Dataset = self.data_loader.get_dataset_element(self.sector, self.TICS[self.element])
+		target: float = series_data.data_vars['y'].attrs['period']
+		ymin, ymax = 10000, -10000
+		for iplot, (tname, transform) in enumerate(self.transforms.items()):
+			tdata: np.ndarray = self.apply_transform(transform,series_data)
+			self.plots[tname].set_ydata(tdata)
+			tmin, tmax= tdata.min(), tdata.max()
+			if tmin < ymin: ymin = tmin
+			if tmax > ymax: ymax = tmax
+		self.ax.set_ylim(ymin,ymax)
+		self.target_marker.set_xdata([target,target])
+		self.target_marker.set_ydata([ymin,ymax])
 
