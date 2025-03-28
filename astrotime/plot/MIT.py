@@ -34,10 +34,10 @@ class MITDatasetPlot(SignalPlot):
 	def set_sector(self, sector: int ):
 		self.sector = sector
 
-	def update_period_markers(self, xs: np.ndarray, ys: np.ndarray, pval: float, np: int = 7 ):
+	def update_period_markers(self, xs: np.ndarray, ys: np.ndarray, pval: float, npm: int = 7 ):
 		t0: float = xs[ np.argmin(ys) ]
-		for pid in range(0,np):
-			tval = t0 + (pid-np//2) * pval
+		for pid in range(0,npm):
+			tval = t0 + (pid-npm//2) * pval
 			if pid >= len(self.period_markers):
 				self.period_markers.append( self.ax.axvline( tval, ys.min(), ys.max(), color='green', linestyle='-', alpha=0.5) )
 			else:
