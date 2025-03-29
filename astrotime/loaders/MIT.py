@@ -77,9 +77,9 @@ class MITLoader(IterativeDataLoader):
 
 	def get_sinusoid_element( self, sector_index: int, TIC: str ) -> xa.Dataset:
 		self.load_sector(sector_index)
-		time: np.ndarray = self.dataset.data_vars[TIC+".time"].values
+		time: xa.DataArray = self.dataset.data_vars[TIC+".time"]
 		y: xa.DataArray = self.dataset.data_vars[TIC+".y"]
-		sinusoid: np.ndarray = np.sin( 2*np.pi*time / y.attrs["period"] )
+		sinusoid: np.ndarray = np.sin( 2*np.pi*time.values / y.attrs["period"] )
 		return xa.Dataset( dict(  time=time, y=y.copy( data=sinusoid ) ) )
 
 	@property
