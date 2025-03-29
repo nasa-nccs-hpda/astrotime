@@ -168,7 +168,7 @@ class STIntParam(STParam):
 		return self._widget
 
 	def value_selected(self):
-		return self._widget.val
+		return self.value if (self._widget is None) else self._widget.val
 
 
 
