@@ -21,11 +21,13 @@ class MITLoader(IterativeDataLoader):
 		self.train_data: Dict[str,np.ndarray] = {}
 		self.tset: TSet = None
 		self._nbatches = -1
+		self.test_mode: bool = False
 		self.ymax = None
 		self._TICS = None
 
-	def initialize(self, tset: TSet):
+	def initialize(self, tset: TSet, **kwargs ):
 		self.tset = tset
+		self.test_mode = kwargs.get('test_mode',False)
 		self.sector_batch_offset = 0
 		self.current_sector = self.sector_range[0] if tset == TSet.Train else self.sector_range[1]
 		self._nbatches = -1
@@ -70,7 +72,15 @@ class MITLoader(IterativeDataLoader):
 
 	def get_dataset_element( self, sector_index: int, TIC: str ) -> xa.Dataset:
 		self.load_sector(sector_index)
-		return xa.Dataset( { k: self.dataset.data_vars[TIC+"."+k] for k in ['time','y'] } )
+		if self.test_mode:  return self.get_sinusoid_element(sector_index,TIC)
+		else:               return xa.Dataset( { k: self.dataset.data_vars[TIC+"."+k] for k in ['time','y'] } )
+
+	def get_sinusoid_element( self, sector_index: int, TIC: str ) -> xa.Dataset:
+		self.load_sector(sector_index)
+		time: np.ndarray = self.dataset.data_vars[TIC+".time"].values
+		y: xa.DataArray = self.dataset.data_vars[TIC+".y"]
+		sinusoid: np.ndarray = np.sin( 2*np.pi*time / y.attrs["period"] )
+		return xa.Dataset( dict(  time=time, y=y.copy( data=sinusoid ) ) )
 
 	@property
 	def nbatches(self) -> int:
