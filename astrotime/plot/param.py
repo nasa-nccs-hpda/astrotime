@@ -19,7 +19,7 @@ class STParam:
 		self.value = value
 
 	def value_selected(self):
-		raise NotImplementedError("The abstract method 'value_selected' of class 'STParam' is not implemented.")
+		return self.value
 
 	def __repr__(self) -> str:
 		val = f"{self.value:.3f}" if type(self.value) is float else f"{self.value}"
@@ -133,6 +133,9 @@ class FloatValuesSlider(Slider):
 		if self.eventson:
 			self._observers.process('changed', lval)
 
+	def value_selected(self):
+		return self.val
+
 
 class STIntParam(STParam):
 
@@ -164,7 +167,8 @@ class STIntParam(STParam):
 				self._widget.on_changed(callback)
 		return self._widget
 
-
+	def value_selected(self):
+		return self._widget.val
 
 
 
