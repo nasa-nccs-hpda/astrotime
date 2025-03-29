@@ -1,5 +1,5 @@
 import logging, numpy as np
-from matplotlib.widgets import Slider, RadioButtons
+from matplotlib.widgets import Slider, Button, RadioButtons
 from typing import Dict, List, Tuple, Type, Callable
 
 Number = float | int
@@ -10,8 +10,9 @@ class STParam:
 	def __init__(self, name: str, value: Parameter ) -> None:
 		self.name: str = name
 		self.value: Parameter = value
+		self.aux_sizes = None
 
-	def widget( self, ax, callbacks: List[Callable] ):
+	def widget( self, ax, callbacks: List[Callable], aux_axes=None ):
 		raise NotImplementedError( "The abstract method 'widget' of class 'STParam' is not implemented.")
 
 	def set_value(self, value: Parameter):
@@ -140,16 +141,32 @@ class STIntParam(STParam):
 		self.vrange: Tuple[int, int] = vrange
 		self.step: int = kwargs.get( 'step', 1 )
 		self._widget: Slider = None
+		self.aux_sizes = [ .15, .15 ]
+		self.back_button = None
+		self.forward_button = None
 
-	def widget(self, ax, callbacks: List[Callable]):
+	def forward(self, val):
+		self._widget.set_val( self._widget.val + self.step )
+
+	def backward(self, val):
+		self._widget.set_val( self._widget.val - self.step )
+
+	def widget(self, ax, callbacks: List[Callable], aux_axes=None ):
 		if self._widget is None:
 			self._widget = Slider( ax, self.name, self.vrange[0], self.vrange[1], valinit=self.value, valstep=self.step )
+			if aux_axes is not None:
+				self.back_button    = Button(aux_axes[0], '<-', color='cyan', hovercolor='deepskyblue')
+				self.back_button.on_clicked(self.backward)
+				self.forward_button = Button(aux_axes[1], '->', color='cyan', hovercolor='deepskyblue')
+				self.forward_button.on_clicked(self.forward)
+
 			for callback in callbacks:
 				self._widget.on_changed(callback)
 		return self._widget
 
-	def value_selected(self):
-		return self.value if (self._widget is None) else self._widget.val
+
+
+
 
 class STFloatValuesParam(STParam):
 
@@ -161,7 +178,7 @@ class STFloatValuesParam(STParam):
 		self.step: int = kwargs.get( 'step', 1 )
 		self._widget: Slider = None
 
-	def widget(self, ax, callbacks: List[Callable]):
+	def widget(self, ax, callbacks: List[Callable], aux_axes=None ):
 		if self._widget is None:
 			self._widget = FloatValuesSlider( ax, self.name, self.values, valinit=self.value, valstep=self.step )
 			for callback in callbacks:
@@ -184,7 +201,7 @@ class STFloatParam(STParam):
 		self.step: float = kwargs.get('step', (vrange[1]-vrange[0])/100 )
 		self._widget: Slider = None
 
-	def widget(self, ax, callbacks: List[Callable]):
+	def widget(self, ax, callbacks: List[Callable], aux_axes=None ):
 		if self._widget is None:
 			slider_cls = LogScaleSlider if self._log else Slider
 			self._widget = slider_cls( ax, self.name, self.vrange[0], self.vrange[1], valinit=self.value, valstep=self.step )
@@ -203,7 +220,7 @@ class STStrParam(STParam):
 		assert self.value in self.values, f"Unknown value for STParam: {self.value}"
 		self._widget: RadioButtons = None
 
-	def widget(self, ax, callbacks: List[Callable] ):
+	def widget(self, ax, callbacks: List[Callable], aux_axes=None  ):
 		self._widget = RadioButtons(ax, self.values, activecolor="yellow" )
 		for callback in callbacks:
 			self._widget.on_clicked(callback)

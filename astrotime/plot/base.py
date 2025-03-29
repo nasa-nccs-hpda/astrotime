@@ -73,9 +73,21 @@ class SignalPlotFigure(object):
 			self.link_plot(plot)
 		self.callbacks.append(self.update)
 		for aid, sp in enumerate(self.sparms.values()):
-			sax = plt.axes((0.1, 0.03*aid, 0.55, 0.03))
-			sp.widget(sax, self.callbacks)
+			root_size = (0.1, 0.03*aid, 0.55, 0.03)
+			sax = plt.axes(root_size)
+			aux_axes = self.get_aux_axes(list(root_size), sp.aux_sizes )
+			sp.widget(sax, self.callbacks, aux_axes)
 		log.info(f"SignalPlotFigure._setup complete")
+
+	def get_aux_axes(self, root_size: List[float], aux_sizes: List[float]) -> List[ Axes]:
+		aux_axes: List[ Axes] = []
+		p0 = root_size[0] + root_size[2]
+		for asize in aux_sizes:
+			adims = ( p0, root_size[1], asize, root_size[3] )
+			aux_axes.append( plt.axes( adims ) )
+			p0 = p0 + asize
+		return aux_axes
+
 
 	@exception_handled
 	def update(self, val: Any = None, **kwargs):
