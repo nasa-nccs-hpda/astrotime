@@ -89,6 +89,9 @@ class WaveletSynthesisLayer(EmbeddingLayer):
 		self.log.info(f" Completed embedding in {elapsed(t0):.5f} sec: result{list(rv.shape)}")
 		return rv
 
+	def magnitude(self, embedding: Tensor) -> Tensor:
+		return embedding[:,0,:]
+
 	@property
 	def nfeatures(self) -> int:
 		return 2
@@ -136,6 +139,9 @@ class WaveletAnalysisLayer(EmbeddingLayer):
 		rv: Tensor = torch.concat( (p0[:, None, :], p1[:, None, :], p2[:, None, :]), dim=1)
 		self.log.info(f" Completed embedding in {elapsed(t0):.5f} sec: result{list(rv.shape)}")
 		return rv
+
+	def magnitude(self, embedding: Tensor) -> Tensor:
+		return torch.sqrt( torch.sum( embedding**2, dim=1 ) )
 
 	@property
 	def nfeatures(self) -> int:

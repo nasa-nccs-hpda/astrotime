@@ -116,12 +116,11 @@ class MITTransformPlot(SignalPlot):
 		self.ax.legend(loc="upper left")
 
 	@exception_handled
-	def apply_transform( self, transform: EmbeddingLayer, series_data: xa.Dataset, feature: int = -1 ) -> np.ndarray:
+	def apply_transform( self, transform: EmbeddingLayer, series_data: xa.Dataset ) -> np.ndarray:
 		ts_tensors: Dict[str,Tensor] =  { k: FloatTensor(series_data.data_vars[k].values).to(transform.device) for k in ['time','y'] }
 		transformed: Tensor = transform.embed( ts_tensors['time'][None,:], tnorm(ts_tensors['y'][None,:],dim=1) )
-		embedding = transformed[:,feature] if (feature >= 0) else (transformed*transformed).mean(dim=1).sqrt()
-		ydata: np.ndarray = embedding.to('cpu').numpy()
-		return znorm(ydata)
+		embedding: np.ndarray = transform.magnitude( transformed ).to('cpu').numpy()
+		return znorm(embedding)
 
 	@exception_handled
 	def update(self, val):
