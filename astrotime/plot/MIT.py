@@ -61,7 +61,7 @@ class MITDatasetPlot(SignalPlot):
 
 	def update_period_markers(self, npm: int = 7 ):
 		for pid in range(0,npm):
-			tval = self.self.markers_origin + (pid-npm//2) * self.target_period
+			tval = self.markers_origin + (pid-npm//2) * self.target_period
 			if pid >= len(self.period_markers):  self.period_markers.append( self.ax.axvline( tval, -1, 1, color='green', linestyle='-', alpha=0.5) )
 			else:                                self.period_markers[pid].set_xdata([tval,tval])
 
