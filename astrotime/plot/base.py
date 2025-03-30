@@ -89,19 +89,19 @@ class SignalPlotFigure(object):
 		self.callbacks.append(plot.update)
 
 	def key_press(self, event: KeyEvent) -> Any:
-		self.log.info(f"@KEYPRESS: {event.key} ")
+		pass
 
 	def key_release(self, event: KeyEvent) -> Any:
-		self.log.info(f"@KEYRELEASE: {event.key} ")
+		pass
 
 	def button_press(self, event: MouseEvent) -> Any:
-		self.log.info(f"@BUTTONPRESS: {event.button} {event.key}")
+		pass
 
 	def button_release(self, event: MouseEvent) -> Any:
-		self.log.info(f"@BUTTONRELEASE: {event.button} {event.key} ")
+		pass
 
 	def on_motion(self, event: MouseEvent) -> Any:
-		self.log.info(f"@MOTION: ({event.xdata:.3f} {event.ydata:.3f}) ")
+		pass
 
 	@exception_handled
 	def _setup(self, **kwargs):
