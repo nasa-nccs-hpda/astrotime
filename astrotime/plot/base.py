@@ -22,12 +22,36 @@ class SignalPlot(Parameterized):
 		self.log = logging.getLogger()
 		self.annotation: Annotation = None
 
+	@property
+	def fig(self):
+		return self.ax.get_figure()
+
 	@exception_handled
 	def initialize(self, ax: Axes):
 		self.ax = ax
 		self.annotation: Annotation = self.ax.annotate("", (0.75, 0.95), xycoords='axes fraction')
 		with plt.ioff():
 			self._setup()
+		self.fig.canvas.mpl_connect('button_press_event', self.button_press)
+		self.fig.canvas.mpl_connect('button_release_event', self.button_release)
+		self.fig.canvas.mpl_connect('key_press_event', self.key_press)
+		self.fig.canvas.mpl_connect('key_release_event', self.key_release)
+		self.fig.canvas.mpl_connect('motion_notify_event', self.on_motion)
+
+	def key_press(self, event: KeyEvent) -> Any:
+		pass
+
+	def key_release(self, event: KeyEvent) -> Any:
+		pass
+
+	def button_press(self, event: MouseEvent) -> Any:
+		pass
+
+	def button_release(self, event: MouseEvent) -> Any:
+		pass
+
+	def on_motion(self, event: MouseEvent) -> Any:
+		pass
 
 	def display_text(self, message: str ):
 		self.annotation.set_text( message )
@@ -77,7 +101,7 @@ class SignalPlotFigure(object):
 		self.log.info(f"@BUTTONRELEASE: {event.button} {event.key} ")
 
 	def on_motion(self, event: MouseEvent) -> Any:
-		self.log.info(f"@MOTION: ({event.xdata} {event.ydata}) ")
+		self.log.info(f"@MOTION: ({event.xdata:.3f} {event.ydata:.3f}) ")
 
 	@exception_handled
 	def _setup(self, **kwargs):

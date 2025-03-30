@@ -5,9 +5,10 @@ from astrotime.loaders.MIT import MITLoader
 from torch import nn, optim, Tensor, FloatTensor
 from .base import SignalPlot, bounds
 from matplotlib.lines import Line2D
+from matplotlib.backend_bases import KeyEvent, MouseEvent
 from astrotime.util.logging import exception_handled
 from astrotime.encoders.embedding import EmbeddingLayer
-from typing import List, Optional, Dict, Type, Union, Tuple
+from typing import List, Optional, Dict, Type, Union, Tuple, Any
 from astrotime.util.math import tnorm
 log = logging.getLogger("astrotime")
 
@@ -37,28 +38,45 @@ class MITDatasetPlot(SignalPlot):
 		self.plot: Line2D = None
 		self.add_param( STIntParam('element', (0,len(self.TICS))  ) )
 		self.period_markers= []
+		self.markers_origin: float = 0.0
+		self.target_period: float = 1.0
+		self.drag_mode = None
+		self.drag_start = None
 		self.transax = None
+
+	def button_press(self, event: MouseEvent) -> Any:
+		self.drag_mode = event.modifiers
+		self.drag_start = event.xdata
+		self.log.info( f"button_press: drag_mode={self.drag_mode}, drag_start={self.drag_start}" )
+
+	def button_release(self, event: MouseEvent) -> Any:
+		self.drag_mode = None
+		self.drag_start = None
+
+	def on_motion(self, event: MouseEvent) -> Any:
+		pass
 
 	def set_sector(self, sector: int ):
 		self.sector = sector
 
-	def update_period_markers(self, xs: np.ndarray, ys: np.ndarray, pval: float, npm: int = 7 ):
-		t0: float = xs[ np.argmax( np.abs(ys) ) ]
+	def update_period_markers(self, npm: int = 7 ):
 		for pid in range(0,npm):
-			tval = t0 + (pid-npm//2) * pval
+			tval = self.self.markers_origin + (pid-npm//2) * self.target_period
 			if pid >= len(self.period_markers):  self.period_markers.append( self.ax.axvline( tval, -1, 1, color='green', linestyle='-', alpha=0.5) )
 			else:                                self.period_markers[pid].set_xdata([tval,tval])
 
 	@exception_handled
 	def _setup(self):
 		xs, ys, target = self.get_element_data()
+		self.target_period = target
 		self.plot: Line2D = self.ax.plot(xs, ys, label='y', color='blue', marker=".", linewidth=1, markersize=2, alpha=0.5)[0]
 		self.ax.title.set_text(self.name)
 		self.ax.title.set_fontsize(8)
 		self.ax.title.set_fontweight('bold')
 		self.ax.set_xlim(xs[0],xs[-1])
 		self.ax.set_ylim(-1,1)
-		self.update_period_markers(xs,ys,target)
+		self.markers_origin: float = xs[np.argmax(np.abs(ys))]
+		self.update_period_markers()
 
 	def get_element_data(self) -> Tuple[np.ndarray,np.ndarray,float]:
 		element: xa.Dataset = self.data_loader.get_dataset_element(self.sector,self.TICS[self.element])
@@ -75,7 +93,9 @@ class MITDatasetPlot(SignalPlot):
 		self.plot.set_xdata(xdata)
 		self.ax.set_xlim(xdata[0],xdata[-1])
 		self.log.info( f"Plot update: xlim={self.ax.get_xlim()} ({xdata[0]:.3f},{xdata[-1]:.3f}), xdata.shape={self.plot.get_xdata().shape} " )
-		self.update_period_markers(xdata, ydata, target)
+		self.markers_origin: float = xdata[np.argmax(np.abs(ydata))]
+		self.target_period = target
+		self.update_period_markers()
 
 
 class MITTransformPlot(SignalPlot):
