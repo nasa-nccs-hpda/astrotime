@@ -59,11 +59,12 @@ class MITDatasetPlot(SignalPlot):
 
 	@exception_handled
 	def on_motion(self, event: MouseEvent) -> Any:
-		distance = event.xdata - self.drag_start
-		self.log.info( f"Drag: drag_mode={self.drag_mode}, drag_distance={distance}" )
+		self.log.info( f"Drag: drag_mode={self.drag_mode}" )
 		if self.drag_mode == "markers":
+			distance = event.xdata - self.drag_start
 			self.markers_origin = self.markers_origin + distance
 			self.drag_start = event.xdata
+			self.log.info(f" update_period_markers: drag_distance={distance}")
 			self.update_period_markers()
 
 	def set_sector(self, sector: int ):
