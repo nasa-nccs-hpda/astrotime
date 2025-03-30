@@ -45,7 +45,8 @@ class MITDatasetPlot(SignalPlot):
 		self.transax = None
 
 	def button_press(self, event: MouseEvent) -> Any:
-		self.drag_mode = event.modifiers
+		if "shift" in event.modifiers:
+			self.drag_mode = "markers"
 		self.drag_start = event.xdata
 		self.log.info( f"button_press: drag_mode={self.drag_mode}, drag_start={self.drag_start}" )
 
@@ -54,7 +55,9 @@ class MITDatasetPlot(SignalPlot):
 		self.drag_start = None
 
 	def on_motion(self, event: MouseEvent) -> Any:
-		pass
+		distance = event.xdata - self.drag_start
+		self.log.info( f"Drag: drag_mode={self.drag_mode}, drag_distance={distance}" )
+		self.drag_start = event.xdata
 
 	def set_sector(self, sector: int ):
 		self.sector = sector
