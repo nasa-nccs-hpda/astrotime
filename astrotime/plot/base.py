@@ -2,6 +2,7 @@ import math, time, numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.text import Annotation
 from matplotlib.axes import Axes
+from matplotlib.backend_bases import KeyEvent, Event
 from typing import Any, Dict, List, Tuple, Type, Optional, Union
 from astrotime.util.logging import exception_handled, log_timing
 from .param import Number, Parameter, STParam, STFloatParam, STFloatValuesParam, Parameterized
@@ -18,6 +19,7 @@ class SignalPlot(Parameterized):
 	def __init__(self, **kwargs):
 		Parameterized.__init__(self)
 		self.ax: Axes = None
+		self.log = logging.getLogger()
 		self.annotation: Annotation = None
 
 	@exception_handled
@@ -41,6 +43,7 @@ class SignalPlotFigure(object):
 
 	def __init__(self, plots: List[SignalPlot], **kwargs):
 		plt.rc('xtick', labelsize=8)
+		self.log = logging.getLogger()
 		self.plots = plots
 		self.nplots = len(plots)
 		self.sparms: Dict[str,STParam] = {}
@@ -61,9 +64,29 @@ class SignalPlotFigure(object):
 			else:                   self.sparms[sn] = sp
 		self.callbacks.append(plot.update)
 
+	def key_press(self, event: KeyEvent) -> Any:
+		self.log.info(f"@KEYPRESS: {event.key} ")
+
+	def key_release(self, event: KeyEvent) -> Any:
+		self.log.info(f"@KEYRELEASE: {event.key} ")
+
+	def button_press(self, event: Event) -> Any:
+		self.log.info(f"@BUTTONPRESS: {type(event)} ")
+
+	def button_release(self, event: Event) -> Any:
+		self.log.info(f"@BUTTONRELEASE: {type(event)} ")
+
+	def on_motion(self, event: Event) -> Any:
+		self.log.info(f"@MOTION: {type(event)} ")
+
 	@exception_handled
 	def _setup(self, **kwargs):
 		self.fig, self.axs = plt.subplots(self.nplots, 1, figsize=kwargs.get('figsize', (15, 9)))
+		self.fig.canvas.mpl_connect('button_press_event', self.button_press)
+		self.fig.canvas.mpl_connect('button_release_event', self.button_release)
+		self.fig.canvas.mpl_connect('key_press_event', self.key_press)
+		self.fig.canvas.mpl_connect('key_release_event', self.key_release)
+		self.fig.canvas.mpl_connect('motion_notify_event', self.on_motion)
 		self.nparms = self.count_sparms()
 		adjust_factor = max( self.nparms, 6 )
 		plt.subplots_adjust( bottom=0.03*(adjust_factor+1) )
