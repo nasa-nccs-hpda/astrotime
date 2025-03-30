@@ -156,8 +156,11 @@ class STIntParam(STParam):
 	def backward(self, val):
 		self._widget.set_val( self._widget.val - self.step )
 
-	def set_index(self , val):
+	def set_value(self , val):
 		self._widget.set_val( int(val) )
+
+	def set_index(self , val):
+		self.index_box.set_val( str(int(val)) )
 
 	def widget(self, ax, callbacks: List[Callable], aux_axes=None ):
 		if self._widget is None:
@@ -168,10 +171,11 @@ class STIntParam(STParam):
 				self.forward_button = Button(aux_axes[1], '->', color='cyan', hovercolor='deepskyblue')
 				self.forward_button.on_clicked(self.forward)
 				self.index_box = TextBox(aux_axes[2], "Index: ", initial="0" )
-				self.index_box.on_submit( self.set_index )
+				self.index_box.on_submit( self.set_value )
 
 			for callback in callbacks:
 				self._widget.on_changed(callback)
+			self._widget.on_changed(self.set_index)
 		return self._widget
 
 	def value_selected(self):
