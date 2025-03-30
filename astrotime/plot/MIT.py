@@ -44,17 +44,20 @@ class MITDatasetPlot(SignalPlot):
 		self.drag_start = None
 		self.transax = None
 
+	@exception_handled
 	def button_press(self, event: MouseEvent) -> Any:
 		if "shift" in event.modifiers:
 			self.drag_mode = "markers"
 		self.drag_start = event.xdata
 		self.log.info( f"button_press: drag_mode={self.drag_mode}, drag_start={self.drag_start}, modifiers={event.modifiers}" )
 
+	@exception_handled
 	def button_release(self, event: MouseEvent) -> Any:
 		self.drag_mode = None
 		self.drag_start = None
 		self.log.info(f"button_release: drag_mode={self.drag_mode}, drag_start={self.drag_start}")
 
+	@exception_handled
 	def on_motion(self, event: MouseEvent) -> Any:
 		distance = event.xdata - self.drag_start
 		self.log.info( f"Drag: drag_mode={self.drag_mode}, drag_distance={distance}" )
