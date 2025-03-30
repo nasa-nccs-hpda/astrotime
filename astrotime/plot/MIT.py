@@ -48,7 +48,7 @@ class MITDatasetPlot(SignalPlot):
 		if "shift" in event.modifiers:
 			self.drag_mode = "markers"
 		self.drag_start = event.xdata
-		self.log.info( f"button_press: drag_mode={self.drag_mode}, drag_start={self.drag_start}" )
+		self.log.info( f"button_press: drag_mode={self.drag_mode}, drag_start={self.drag_start}, modifiers={event.modifiers}" )
 
 	def button_release(self, event: MouseEvent) -> Any:
 		self.drag_mode = None
