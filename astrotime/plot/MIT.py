@@ -5,7 +5,7 @@ from astrotime.loaders.MIT import MITLoader
 from torch import nn, optim, Tensor, FloatTensor
 from .base import SignalPlot, bounds
 from matplotlib.lines import Line2D
-from matplotlib.backend_bases import KeyEvent, MouseEvent
+from matplotlib.backend_bases import KeyEvent, MouseEvent, MouseButton
 from astrotime.util.logging import exception_handled
 from astrotime.encoders.embedding import EmbeddingLayer
 from typing import List, Optional, Dict, Type, Union, Tuple, Any
@@ -40,32 +40,22 @@ class MITDatasetPlot(SignalPlot):
 		self.period_markers= []
 		self.markers_origin: float = 0.0
 		self.target_period: float = 1.0
-		self.drag_mode = None
-		self.drag_start = None
 		self.transax = None
 
 	@exception_handled
 	def button_press(self, event: MouseEvent) -> Any:
-		if "shift" in event.modifiers:
-			self.drag_mode = "markers"
-		self.drag_start = event.xdata
-		self.log.info( f"button_press: drag_mode={self.drag_mode}, drag_start={self.drag_start}, modifiers={event.modifiers}" )
+		if ("shift" in event.modifiers) and (event.button == MouseButton.RIGHT):
+			self.markers_origin = event.xdata
+			self.update_period_markers()
+			self.fig.canvas.draw_idle()
 
 	@exception_handled
 	def button_release(self, event: MouseEvent) -> Any:
-		self.drag_mode = None
-		self.drag_start = None
-		self.log.info(f"button_release: drag_mode={self.drag_mode}, drag_start={self.drag_start}")
+		pass
 
 	@exception_handled
 	def on_motion(self, event: MouseEvent) -> Any:
-		self.log.info( f"Drag: drag_mode={self.drag_mode}" )
-		if self.drag_mode == "markers":
-			distance = event.xdata - self.drag_start
-			self.markers_origin = self.markers_origin + distance
-			self.drag_start = event.xdata
-			self.log.info(f" update_period_markers: drag_distance={distance}")
-			self.update_period_markers()
+		pass
 
 	def set_sector(self, sector: int ):
 		self.sector = sector

@@ -138,7 +138,7 @@ class SignalPlotFigure(object):
 
 	@exception_handled
 	def update(self, val: Any = None, **kwargs):
-		self.fig.canvas.draw_idle()
+		v
 
 	@exception_handled
 	def show(self):
