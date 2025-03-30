@@ -144,7 +144,7 @@ class STIntParam(STParam):
 		self.vrange: Tuple[int, int] = vrange
 		self.step: int = kwargs.get( 'step', 1 )
 		self._widget: Slider = None
-		self.aux_sizes = [ .15, .15 ]
+		self.aux_sizes = [ .05, .05 ]
 		self.back_button = None
 		self.forward_button = None
 
