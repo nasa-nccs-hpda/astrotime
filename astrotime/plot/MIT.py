@@ -53,6 +53,7 @@ class MITDatasetPlot(SignalPlot):
 	def button_release(self, event: MouseEvent) -> Any:
 		self.drag_mode = None
 		self.drag_start = None
+		self.log.info(f"button_release: drag_mode={self.drag_mode}, drag_start={self.drag_start}")
 
 	def on_motion(self, event: MouseEvent) -> Any:
 		distance = event.xdata - self.drag_start
