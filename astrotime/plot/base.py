@@ -2,7 +2,7 @@ import math, time, numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.text import Annotation
 from matplotlib.axes import Axes
-from matplotlib.backend_bases import KeyEvent, Event
+from matplotlib.backend_bases import KeyEvent, MouseEvent
 from typing import Any, Dict, List, Tuple, Type, Optional, Union
 from astrotime.util.logging import exception_handled, log_timing
 from .param import Number, Parameter, STParam, STFloatParam, STFloatValuesParam, Parameterized
@@ -70,14 +70,14 @@ class SignalPlotFigure(object):
 	def key_release(self, event: KeyEvent) -> Any:
 		self.log.info(f"@KEYRELEASE: {event.key} ")
 
-	def button_press(self, event: Event) -> Any:
-		self.log.info(f"@BUTTONPRESS: {type(event)} ")
+	def button_press(self, event: MouseEvent) -> Any:
+		self.log.info(f"@BUTTONPRESS: {event.button} {event.key}")
 
-	def button_release(self, event: Event) -> Any:
-		self.log.info(f"@BUTTONRELEASE: {type(event)} ")
+	def button_release(self, event: MouseEvent) -> Any:
+		self.log.info(f"@BUTTONRELEASE: {event.button} {event.key} ")
 
-	def on_motion(self, event: Event) -> Any:
-		self.log.info(f"@MOTION: {type(event)} ")
+	def on_motion(self, event: MouseEvent) -> Any:
+		self.log.info(f"@MOTION: ({event.xdata} {event.ydata}) ")
 
 	@exception_handled
 	def _setup(self, **kwargs):
