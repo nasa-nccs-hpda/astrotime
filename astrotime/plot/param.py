@@ -1,5 +1,5 @@
 import logging, numpy as np
-from matplotlib.widgets import Slider, Button, RadioButtons
+from matplotlib.widgets import Slider, Button, RadioButtons, TextBox
 from typing import Dict, List, Tuple, Type, Callable
 
 Number = float | int
@@ -144,15 +144,20 @@ class STIntParam(STParam):
 		self.vrange: Tuple[int, int] = vrange
 		self.step: int = kwargs.get( 'step', 1 )
 		self._widget: Slider = None
-		self.aux_sizes = [ .05, .05 ]
+		self.aux_sizes = [ .05, .05, .1 ]
 		self.back_button = None
 		self.forward_button = None
+		self.index_box = None
 
 	def forward(self, val):
 		self._widget.set_val( self._widget.val + self.step )
+		# self.index_box
 
 	def backward(self, val):
 		self._widget.set_val( self._widget.val - self.step )
+
+	def set_index(self , val):
+		self._widget.set_val( int(val) )
 
 	def widget(self, ax, callbacks: List[Callable], aux_axes=None ):
 		if self._widget is None:
@@ -162,6 +167,8 @@ class STIntParam(STParam):
 				self.back_button.on_clicked(self.backward)
 				self.forward_button = Button(aux_axes[1], '->', color='cyan', hovercolor='deepskyblue')
 				self.forward_button.on_clicked(self.forward)
+				self.index_box = TextBox(aux_axes[2], "Index: ", initial="0" )
+				self.index_box.on_submit( self.set_index )
 
 			for callback in callbacks:
 				self._widget.on_changed(callback)
