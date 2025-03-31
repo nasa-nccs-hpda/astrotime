@@ -4,11 +4,12 @@ from .param import STIntParam
 from astrotime.loaders.MIT import MITLoader
 from torch import nn, optim, Tensor, FloatTensor
 from .base import SignalPlot, bounds
+from matplotlib.axes import Axes
 from matplotlib.lines import Line2D
 from matplotlib.backend_bases import KeyEvent, MouseEvent, MouseButton
 from astrotime.util.logging import exception_handled
 from astrotime.encoders.embedding import EmbeddingLayer
-from typing import List, Optional, Dict, Type, Union, Tuple, Any
+from typing import List, Optional, Dict, Type, Union, Tuple, Any, Set
 from astrotime.util.math import tnorm
 log = logging.getLogger("astrotime")
 
@@ -24,6 +25,35 @@ def unorm(ydata: np.ndarray) -> np.ndarray:
 	z = (y1-ydata)/(y1-y0)
 	return 1 - 2*z
 
+class PeriodMarkers:
+
+	def __init__(self, ax: Axes, **kwargs):
+		self.ax: Axes = ax
+		self.origin: float = None
+		self.period: float = None
+		self.markers: List[Line2D] = []
+		self.yrange = kwargs.get('yrange', (-1,1) )
+		self.npm: int = kwargs.get('npm', 7 )
+		self.color: str = kwargs.get('color', 'green' )
+		self.alpha: float = kwargs.get('alpha', 0.5 )
+		self.linestyle: str = kwargs.get('linestyle', '-')
+
+	def update(self, origin: float, period: float ):
+		self.origin = origin
+		self.period = period
+		self.refresh()
+
+	@property
+	def fig(self):
+		return self.ax.get_figure()
+
+	def refresh(self):
+		for pid in range(0,self.npm):
+			tval = self.origin + (pid-self.npm//2) * self.period
+			if pid >= len(self.markers):  self.markers.append( self.ax.axvline( tval, self.yrange[0], self.yrange[1], color=self.color, linestyle=self.linestyle, alpha=self.alpha) )
+			else:                         self.markers[pid].set_xdata([tval,tval])
+		self.fig.canvas.draw_idle()
+
 class MITDatasetPlot(SignalPlot):
 
 	def __init__(self, name: str, data_loader: MITLoader, sector: int, **kwargs):
@@ -37,21 +67,27 @@ class MITDatasetPlot(SignalPlot):
 		self.ofac = kwargs.get('upsample_factor',1)
 		self.plot: Line2D = None
 		self.add_param( STIntParam('element', (0,len(self.TICS))  ) )
-		self.period_markers= []
-		self.markers_origin: float = 0.0
-		self.target_period: float = 1.0
+		self.period_markers: Dict[str,PeriodMarkers] = {}
+		self.ext_pm_ids: Set[str] = set()
 		self.transax = None
 
-	def process_external_event(self, event: Dict[str,Any] ) -> None:
-		# dict(type='period_grid', id='ww_analysis', center=event.xdata, period=event.ydata, color='yellow')
-		self.log.info(f"MITDatasetPlot.process_external_event: event={event}")
+	def update_period_markers(self, **marker_data ):
+		pm = self.period_markers.get( marker_data['id'], PeriodMarkers( self.ax ) )
+		pm.update( marker_data['origin'], marker_data['period'] )
+
+	def process_external_event(self, event_data: Dict[str,Any] ) -> None:
+		if event_data['type'] == 'period_grid':
+			self.ext_pm_ids.add( event_data['id'] )
+			self.update_period_markers(**event_data)
 
 	@exception_handled
 	def button_press(self, event: MouseEvent) -> Any:
-		if ("shift" in event.modifiers) and (event.button == MouseButton.RIGHT):
-			self.markers_origin = event.xdata
-			self.update_period_markers()
-			self.fig.canvas.draw_idle()
+		if event.button == MouseButton.RIGHT:
+			print( f"BPress: modifiers: {event.modifiers}")
+			if "shift" in event.modifiers:
+				self.update_period_markers(id="dataset", origin=event.xdata, period=self.target_period)
+			if "ctrl" in event.modifiers:
+				self.update_period_markers(id=self.ext_pm_ids[0], origin=event.xdata, period=self.target_period)
 
 	@exception_handled
 	def button_release(self, event: MouseEvent) -> Any:
@@ -64,12 +100,6 @@ class MITDatasetPlot(SignalPlot):
 	def set_sector(self, sector: int ):
 		self.sector = sector
 
-	def update_period_markers(self, npm: int = 7 ):
-		for pid in range(0,npm):
-			tval = self.markers_origin + (pid-npm//2) * self.target_period
-			if pid >= len(self.period_markers):  self.period_markers.append( self.ax.axvline( tval, -1, 1, color='green', linestyle='-', alpha=0.5) )
-			else:                                self.period_markers[pid].set_xdata([tval,tval])
-
 	@exception_handled
 	def _setup(self):
 		xs, ys, target = self.get_element_data()
@@ -80,8 +110,7 @@ class MITDatasetPlot(SignalPlot):
 		self.ax.title.set_fontweight('bold')
 		self.ax.set_xlim(xs[0],xs[-1])
 		self.ax.set_ylim(-1,1)
-		self.markers_origin: float = xs[np.argmax(np.abs(ys))]
-		self.update_period_markers()
+		self.update_period_markers(  id="dataset", origin=xs[np.argmax(np.abs(ys))], period=self.target_period )
 
 	def get_element_data(self) -> Tuple[np.ndarray,np.ndarray,float]:
 		element: xa.Dataset = self.data_loader.get_dataset_element(self.sector,self.TICS[self.element])
@@ -98,9 +127,7 @@ class MITDatasetPlot(SignalPlot):
 		self.plot.set_xdata(xdata)
 		self.ax.set_xlim(xdata[0],xdata[-1])
 		self.log.info( f"Plot update: xlim={self.ax.get_xlim()} ({xdata[0]:.3f},{xdata[-1]:.3f}), xdata.shape={self.plot.get_xdata().shape} " )
-		self.markers_origin: float = xdata[np.argmax(np.abs(ydata))]
-		self.target_period = target
-		self.update_period_markers()
+		self.update_period_markers( id="dataset", origin=xdata[np.argmax(np.abs(ydata))], period=self.target_period )
 
 
 class MITTransformPlot(SignalPlot):
@@ -144,7 +171,7 @@ class MITTransformPlot(SignalPlot):
 	@exception_handled
 	def button_press(self, event: MouseEvent) -> Any:
 		if ("shift" in event.modifiers) and (event.button == MouseButton.RIGHT):
-			event_data = dict(type='period_grid', id='ww_analysis', center=event.xdata, period=event.ydata, color='yellow')
+			event_data = dict(type='period_grid', id='ww_analysis', origin=event.xdata, period=event.ydata, color='yellow')
 			for listener in self.self.listeners:
 				listener(event_data)
 
