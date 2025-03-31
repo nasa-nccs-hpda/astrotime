@@ -28,6 +28,7 @@ def unorm(ydata: np.ndarray) -> np.ndarray:
 class PeriodMarkers:
 
 	def __init__(self, ax: Axes, **kwargs):
+		self.log = logging.getLogger("astrotime")
 		self.ax: Axes = ax
 		self.origin: float = None
 		self.period: float = None
@@ -48,6 +49,7 @@ class PeriodMarkers:
 		return self.ax.get_figure()
 
 	def refresh(self):
+		self.log.info( f"PeriodMarkers({id(self):%x}).refresh( origin={self.origin:.2f}, period={self.period:.2f} )")
 		for pid in range(0,self.npm):
 			tval = self.origin + (pid-self.npm//2) * self.period
 			if pid >= len(self.markers):  self.markers.append( self.ax.axvline( tval, self.yrange[0], self.yrange[1], color=self.color, linestyle=self.linestyle, alpha=self.alpha) )
@@ -129,8 +131,9 @@ class MITDatasetPlot(SignalPlot):
 		self.plot.set_ydata(ydata)
 		self.plot.set_xdata(xdata)
 		self.ax.set_xlim(xdata[0],xdata[-1])
-		self.log.info( f"Plot update: xlim={self.ax.get_xlim()} ({xdata[0]:.3f},{xdata[-1]:.3f}), xdata.shape={self.plot.get_xdata().shape} " )
-		self.update_period_markers( id="dataset", origin=xdata[np.argmax(np.abs(ydata))], period=self.target_period )
+		pd_origin = xdata[np.argmax(np.abs(ydata))]
+		self.log.info( f"Plot update: xlim={self.ax.get_xlim()} ({xdata[0]:.3f},{xdata[-1]:.3f}), xdata.shape={self.plot.get_xdata().shape} origin={pd_origin}" )
+		self.update_period_markers( id="dataset", origin=pd_origin, period=self.target_period )
 
 
 class MITTransformPlot(SignalPlot):
