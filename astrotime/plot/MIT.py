@@ -49,7 +49,7 @@ class PeriodMarkers:
 		return self.ax.get_figure()
 
 	def refresh(self):
-		self.log.info( f"PeriodMarkers({id(self):%x}).refresh( origin={self.origin:.2f}, period={self.period:.2f} )")
+		self.log.info( f"PeriodMarkers({id(self):02X}).refresh( origin={self.origin:.2f}, period={self.period:.2f} )")
 		for pid in range(0,self.npm):
 			tval = self.origin + (pid-self.npm//2) * self.period
 			if pid >= len(self.markers):  self.markers.append( self.ax.axvline( tval, self.yrange[0], self.yrange[1], color=self.color, linestyle=self.linestyle, alpha=self.alpha) )
