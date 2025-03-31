@@ -142,7 +142,7 @@ class SignalPlotFigure(object):
 
 	@exception_handled
 	def update(self, val: Any = None, **kwargs):
-		v
+		pass
 
 	@exception_handled
 	def show(self):
