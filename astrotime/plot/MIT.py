@@ -178,7 +178,7 @@ class MITTransformPlot(SignalPlot):
 	def button_press(self, event: MouseEvent) -> Any:
 		if ("shift" in event.modifiers) and (event.button == MouseButton.RIGHT):
 			event_data = dict(type='period_grid', id='ww_analysis', origin=event.xdata, period=1/event.ydata, color='yellow')
-			for listener in self.self.listeners:
+			for listener in self.listeners:
 				listener(event_data)
 
 	@exception_handled
