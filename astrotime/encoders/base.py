@@ -28,9 +28,6 @@ class Encoder:
 	def output_series_length(self):
 		return self.cfg.series_length
 
-	def encode_dset(self, dset: Mapping[str,np.ndarray]) -> Tensor:
-		raise NotImplementedError()
-
 	def encode_batch(self, x: np.ndarray, y: np.ndarray) -> Tuple[Tensor, Tensor]:
 		raise NotImplementedError()
 

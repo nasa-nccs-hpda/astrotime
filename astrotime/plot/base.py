@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 from matplotlib.text import Annotation
 from matplotlib.axes import Axes
 from matplotlib.backend_bases import KeyEvent, MouseEvent
-from typing import Any, Dict, List, Tuple, Type, Optional, Union
+from typing import Any, Dict, List, Tuple, Type, Optional, Callable
 from astrotime.util.logging import exception_handled, log_timing
 from .param import Number, Parameter, STParam, STFloatParam, STFloatValuesParam, Parameterized
 import logging
@@ -21,6 +21,10 @@ class SignalPlot(Parameterized):
 		self.ax: Axes = None
 		self.log = logging.getLogger()
 		self.annotation: Annotation = None
+		self.listeners: List[Callable] = []
+
+	def add_event_listener(self, listener: Callable):
+		self.listeners.append(listener)
 
 	@property
 	def fig(self):

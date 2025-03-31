@@ -1,0 +1,9 @@
+sparsity: 0.0                       # Fraction of observations to drop (randomly)
+batch_size: ${data.batch_size}      # Batch size for training
+nfreq: 512                          # Number of frequency values to compute (spectral resolution)
+base_freq_range:                    # Base frequency range in computed spectra (before time rescaling)
+  - 0.05
+  - 20.0
+fscale: "log"                       # Scale of frequency axis
+decay_factor:   1.0
+

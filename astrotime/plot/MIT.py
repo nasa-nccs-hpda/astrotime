@@ -42,6 +42,10 @@ class MITDatasetPlot(SignalPlot):
 		self.target_period: float = 1.0
 		self.transax = None
 
+	def process_external_event(self, event: Dict[str,Any] ) -> None:
+		# dict(type='period_grid', id='ww_analysis', center=event.xdata, period=event.ydata, color='yellow')
+		self.log.info(f"MITDatasetPlot.process_external_event: event={event}")
+
 	@exception_handled
 	def button_press(self, event: MouseEvent) -> Any:
 		if ("shift" in event.modifiers) and (event.button == MouseButton.RIGHT):
@@ -136,6 +140,13 @@ class MITTransformPlot(SignalPlot):
 		self.ax.set_ylim( 0.0, 1.0 )
 		self.ax.set_xscale('log')
 		self.ax.legend(loc="upper left")
+
+	@exception_handled
+	def button_press(self, event: MouseEvent) -> Any:
+		if ("shift" in event.modifiers) and (event.button == MouseButton.RIGHT):
+			event_data = dict(type='period_grid', id='ww_analysis', center=event.xdata, period=event.ydata, color='yellow')
+			for listener in self.self.listeners:
+				listener(event_data)
 
 	@exception_handled
 	def apply_transform( self, transform: EmbeddingLayer, series_data: xa.Dataset ) -> np.ndarray:

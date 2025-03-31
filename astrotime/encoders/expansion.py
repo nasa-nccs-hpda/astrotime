@@ -20,23 +20,6 @@ class Expansion(Encoder):
 	def output_series_length(self):
 		return self.cfg.nstrides
 
-
-	# def encode_dset(self, dset: Dict[str,np.ndarray]) -> Tuple[Tensor,Tensor]:
-	# 	with (self.device):
-	# 		y1, x1 = [], []
-	# 		for idx, (y,x) in enumerate(zip(dset['y'],dset['x'])):
-	# 			nanmask = ~np.isnan(y)
-	# 			x, y = x[nanmask], y[nanmask]
-	# 			x,y = self.apply_filters(x,y,dim=0)
-	# 			x0: int = random.randint(0, y.shape[0] - self.cfg.series_length)
-	# 			ys: np.ndarray =  npnorm( y[x0:x0 + self.cfg.series_length], dim=0)
-	# 			xs: np.ndarray =  x[x0:x0 + self.cfg.series_length]
-	# 			xc,yc = self.get_expansion_coeff( xs,ys )
-	# 			x1.append( xc ); y1.append( yc )
-	# 		X = torch.FloatTensor( np.concatenate( x1, axis=0 ) ).to(self.device)
-	# 		Y = torch.FloatTensor( np.concatenate( y1, axis=0 ) ).to(self.device)
-	# 		return X, Y
-
 	def init_xstride(self, x: np.ndarray ):
 		if self._xstride is None:
 			self._trange = (x[:,-1] - x[:,0]).mean()
