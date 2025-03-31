@@ -49,7 +49,7 @@ class PeriodMarkers:
 		return self.ax.get_figure()
 
 	def refresh(self):
-		self.log.info( f"PeriodMarkers({id(self):02X}).refresh( origin={self.origin:.2f}, period={self.period:.2f} )")
+		self.log.info( f"\n -- --- -- PeriodMarkers({id(self):02X}).refresh( origin={self.origin:.2f}, period={self.period:.2f} ) -- --- -- \n")
 		for pid in range(0,self.npm):
 			tval = self.origin + (pid-self.npm//2) * self.period
 			if pid >= len(self.markers):  self.markers.append( self.ax.axvline( tval, self.yrange[0], self.yrange[1], color=self.color, linestyle=self.linestyle, alpha=self.alpha) )
@@ -75,7 +75,7 @@ class MITDatasetPlot(SignalPlot):
 
 	@exception_handled
 	def update_period_markers(self, **marker_data ):
-		pm = self.period_markers.get( marker_data['id'], PeriodMarkers( self.ax ) )
+		pm = self.period_markers.setdefault( marker_data['id'], PeriodMarkers( self.ax ) )
 		pm.update( marker_data['origin'], marker_data['period'] )
 
 	@exception_handled
