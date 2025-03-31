@@ -71,10 +71,12 @@ class MITDatasetPlot(SignalPlot):
 		self.ext_pm_ids: Set[str] = set()
 		self.transax = None
 
+	@exception_handled
 	def update_period_markers(self, **marker_data ):
 		pm = self.period_markers.get( marker_data['id'], PeriodMarkers( self.ax ) )
 		pm.update( marker_data['origin'], marker_data['period'] )
 
+	@exception_handled
 	def process_external_event(self, event_data: Dict[str,Any] ) -> None:
 		if event_data['type'] == 'period_grid':
 			self.ext_pm_ids.add( event_data['id'] )
@@ -112,6 +114,7 @@ class MITDatasetPlot(SignalPlot):
 		self.ax.set_ylim(-1,1)
 		self.update_period_markers(  id="dataset", origin=xs[np.argmax(np.abs(ys))], period=self.target_period )
 
+	@exception_handled
 	def get_element_data(self) -> Tuple[np.ndarray,np.ndarray,float]:
 		element: xa.Dataset = self.data_loader.get_dataset_element(self.sector,self.TICS[self.element])
 		t, y = element.data_vars['time'], element.data_vars['y']
@@ -171,7 +174,7 @@ class MITTransformPlot(SignalPlot):
 	@exception_handled
 	def button_press(self, event: MouseEvent) -> Any:
 		if ("shift" in event.modifiers) and (event.button == MouseButton.RIGHT):
-			event_data = dict(type='period_grid', id='ww_analysis', origin=event.xdata, period=event.ydata, color='yellow')
+			event_data = dict(type='period_grid', id='ww_analysis', origin=event.xdata, period=1/event.ydata, color='yellow')
 			for listener in self.self.listeners:
 				listener(event_data)
 
