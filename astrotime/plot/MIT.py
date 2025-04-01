@@ -134,7 +134,7 @@ class MITDatasetPlot(SignalPlot):
 		self.plot.set_xdata(xdata)
 		self.ax.set_xlim(xdata[0],xdata[-1])
 		pd_origin = xdata[np.argmax(np.abs(ydata))]
-		self.log.info( f"\n ---- Plot update: xlim={self.ax.get_xlim()} ({xdata[0]:.3f},{xdata[-1]:.3f}), xdata.shape={self.plot.get_xdata().shape} origin={pd_origin} --- \n" )
+		self.log.info( f"\n ---- Plot update({self.element}:{self.TICS[self.element]}): xlim=({xdata[0]:.3f},{xdata[-1]:.3f}), ylim=({ydata[0]:.3f},{ydata[-1]:.3f}), xdata.shape={self.plot.get_xdata().shape} origin={pd_origin} --- \n" )
 		self.update_period_markers( id="dataset", origin=pd_origin, period=self.target_period )
 
 
