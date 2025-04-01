@@ -87,6 +87,7 @@ class WaveletSynthesisLayer(EmbeddingLayer):
 		self.init_log(f"WaveletSynthesisLayer: wwp{list(wwp.shape)}({torch.mean(wwp):.2f},{torch.std(wwp):.2f}), phase{list(phase.shape)}({torch.mean(phase):.2f},{torch.std(phase):.2f})")
 		rv = torch.concat( (wwp[:, None, :] , phase[:, None, :]), dim=1)
 		self.log.info(f" Completed embedding in {elapsed(t0):.5f} sec: result{list(rv.shape)}")
+		self.init_state = False
 		return rv
 
 	def magnitude(self, embedding: Tensor) -> Tensor:
@@ -138,6 +139,7 @@ class WaveletAnalysisLayer(EmbeddingLayer):
 
 		rv: Tensor = torch.concat( (p0[:, None, :], p1[:, None, :], p2[:, None, :]), dim=1)
 		self.log.info(f" Completed embedding in {elapsed(t0):.5f} sec: result{list(rv.shape)}")
+		self.init_state = False
 		return rv
 
 	def magnitude(self, embedding: Tensor) -> Tensor:
@@ -204,6 +206,7 @@ class WaveletProjConvLayer(EmbeddingLayer):
 		projection: Tensor = torch.stack( (p0,p1,p2), dim=3).reshape( [p0.shape[0],p0.shape[1],3*p0.shape[2]] )
 		self.log.info(f" Completed embedding in {elapsed(t0):.5f} sec: result{list(projection.shape)}")
 		result: Tensor  = (projection[...,None] * self.weights[None,None,:,:]).sum(dim=2)
+		self.init_state = False
 		return result
 
 	@property
