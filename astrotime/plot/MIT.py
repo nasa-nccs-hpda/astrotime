@@ -90,7 +90,7 @@ class MITDatasetPlot(SignalPlot):
 	@exception_handled
 	def button_press(self, event: MouseEvent) -> Any:
 		if event.button == MouseButton.RIGHT:
-			print( f" ---- button_press: dataset modifiers: {event.modifiers}")
+			self.log.info( f" ---- button_press: dataset modifiers: {event.modifiers}")
 			if "shift" in event.modifiers:
 				self.update_period_markers(id="dataset", origin=event.xdata, period=self.target_period)
 			if "ctrl" in event.modifiers:
