@@ -142,7 +142,7 @@ class SignalPlotFigure(object):
 
 	@exception_handled
 	def update(self, val: Any = None, **kwargs):
-		pass
+		self.log.info(f" ------- SignalPlotFigure: widget-generated update({val}) ---------")
 
 	@exception_handled
 	def show(self):

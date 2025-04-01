@@ -93,7 +93,7 @@ class MITDatasetPlot(SignalPlot):
 			if "shift" in event.modifiers:
 				self.update_period_markers(id="dataset", origin=event.xdata, period=self.target_period)
 			if "ctrl" in event.modifiers:
-				self.update_period_markers(id=self.ext_pm_ids[0], origin=event.xdata, period=self.target_period)
+				self.update_period_markers(id=list(self.ext_pm_ids)[0], origin=event.xdata, period=self.target_period)
 
 	@exception_handled
 	def button_release(self, event: MouseEvent) -> Any:
@@ -134,7 +134,7 @@ class MITDatasetPlot(SignalPlot):
 		self.plot.set_xdata(xdata)
 		self.ax.set_xlim(xdata[0],xdata[-1])
 		pd_origin = xdata[np.argmax(np.abs(ydata))]
-		self.log.info( f"Plot update: xlim={self.ax.get_xlim()} ({xdata[0]:.3f},{xdata[-1]:.3f}), xdata.shape={self.plot.get_xdata().shape} origin={pd_origin}" )
+		self.log.info( f"\n ---- Plot update: xlim={self.ax.get_xlim()} ({xdata[0]:.3f},{xdata[-1]:.3f}), xdata.shape={self.plot.get_xdata().shape} origin={pd_origin} --- \n" )
 		self.update_period_markers( id="dataset", origin=pd_origin, period=self.target_period )
 
 

@@ -1,4 +1,5 @@
 import logging, numpy as np
+from astrotime.util.logging import exception_handled
 from matplotlib.widgets import Slider, Button, RadioButtons, TextBox
 from typing import Dict, List, Tuple, Type, Callable
 
@@ -159,6 +160,7 @@ class STIntParam(STParam):
 	def set_value(self , val):
 		self._widget.set_val( int(val) )
 
+	@exception_handled
 	def set_index(self , val):
 		self.index_box.set_val( str(int(val)) )
 		self.index_box.canvas.draw_idle()
