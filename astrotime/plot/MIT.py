@@ -27,7 +27,8 @@ def unorm(ydata: np.ndarray) -> np.ndarray:
 
 class PeriodMarkers:
 
-	def __init__(self, ax: Axes, **kwargs):
+	def __init__(self, name: str, ax: Axes, **kwargs):
+		self.name = name
 		self.log = logging.getLogger("astrotime")
 		self.ax: Axes = ax
 		self.origin: float = None
@@ -49,7 +50,7 @@ class PeriodMarkers:
 		return self.ax.get_figure()
 
 	def refresh(self):
-		self.log.info( f"\n -- --- -- PeriodMarkers({id(self):02X}).refresh( origin={self.origin:.2f}, period={self.period:.2f} ) -- --- -- \n")
+		self.log.info( f"\n -- --- -- PeriodMarkers({self.name}:{id(self):02X}).refresh( origin={self.origin:.2f}, period={self.period:.2f} ) -- --- -- \n")
 		for pid in range(0,self.npm):
 			tval = self.origin + (pid-self.npm//2) * self.period
 			if pid >= len(self.markers):  self.markers.append( self.ax.axvline( tval, self.yrange[0], self.yrange[1], color=self.color, linestyle=self.linestyle, alpha=self.alpha) )
@@ -74,20 +75,22 @@ class MITDatasetPlot(SignalPlot):
 		self.transax = None
 
 	@exception_handled
-	def update_period_markers(self, **marker_data ):
-		pm = self.period_markers.setdefault( marker_data['id'], PeriodMarkers( self.ax ) )
+	def update_period_markers(self, **marker_data ) -> str:
+		print( f"\n ** update_period_markers: {marker_data}" )
+		pm_name=  marker_data['id']
+		pm = self.period_markers.setdefault( pm_name, PeriodMarkers( pm_name, self.ax ) )
 		pm.update( marker_data['origin'], marker_data['period'] )
+		return pm_name
 
 	@exception_handled
 	def process_external_event(self, event_data: Dict[str,Any] ) -> None:
 		if event_data['type'] == 'period_grid':
-			self.ext_pm_ids.add( event_data['id'] )
-			self.update_period_markers(**event_data)
+			self.ext_pm_ids.add(  self.update_period_markers(**event_data)  )
 
 	@exception_handled
 	def button_press(self, event: MouseEvent) -> Any:
 		if event.button == MouseButton.RIGHT:
-			print( f"BPress: modifiers: {event.modifiers}")
+			print( f"\n %%% BPress: modifiers: {event.modifiers}")
 			if "shift" in event.modifiers:
 				self.update_period_markers(id="dataset", origin=event.xdata, period=self.target_period)
 			if "ctrl" in event.modifiers:
