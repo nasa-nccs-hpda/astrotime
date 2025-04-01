@@ -76,7 +76,6 @@ class MITDatasetPlot(SignalPlot):
 
 	@exception_handled
 	def update_period_markers(self, **marker_data ) -> str:
-		print( f"\n ** update_period_markers: {marker_data}" )
 		pm_name=  marker_data['id']
 		pm = self.period_markers.setdefault( pm_name, PeriodMarkers( pm_name, self.ax ) )
 		pm.update( marker_data['origin'], marker_data['period'] )
