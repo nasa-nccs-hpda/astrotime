@@ -12,6 +12,7 @@ class STParam:
 		self.name: str = name
 		self.value: Parameter = value
 		self.aux_sizes = None
+		self.log = logging.getLogger()
 
 	def widget( self, ax, callbacks: List[Callable], aux_axes=None ):
 		raise NotImplementedError( "The abstract method 'widget' of class 'STParam' is not implemented.")
@@ -150,18 +151,24 @@ class STIntParam(STParam):
 		self.forward_button: Button = None
 		self.index_box: TextBox = None
 
+	@exception_handled
 	def forward(self, val):
+		self.log.info(f"STIntParam.forward: {val}")
 		self._widget.set_val( self._widget.val + self.step )
 		# self.index_box
 
+	@exception_handled
 	def backward(self, val):
+		self.log.info(f"STIntParam.backward: {val}")
 		self._widget.set_val( self._widget.val - self.step )
 
+	@exception_handled
 	def set_value(self , val):
 		self._widget.set_val( int(val) )
 
 	@exception_handled
 	def set_index(self , val):
+		self.log.info(f"STIntParam.set_index: {str(int(val))}")
 		self.index_box.set_val( str(int(val)) )
 		self.index_box.canvas.draw_idle()
 
