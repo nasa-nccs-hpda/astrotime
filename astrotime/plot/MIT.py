@@ -151,7 +151,7 @@ class MITTransformPlot(SignalPlot):
 	@exception_handled
 	def apply_transform( self, transform: Embedding, series_data: xa.Dataset) -> np.ndarray:
 		print( type(transform) )
-		if type(transform) is GPUEmbeddingLayer:
+		if isinstance(transform,GPUEmbeddingLayer):
 			ts_tensors: Dict[str,Tensor] =  { k: FloatTensor(series_data.data_vars[k].values).to(transform.device) for k in ['time','y'] }
 			transformed: Tensor = transform.embed( ts_tensors['time'][None,:], tnorm(ts_tensors['y'][None,:],dim=1) )
 			embedding: np.ndarray = transform.magnitude( transformed ).to('cpu').numpy()
