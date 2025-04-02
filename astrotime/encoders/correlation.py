@@ -2,19 +2,19 @@ from astrotime.encoders.expansion import Expansion
 import random, time, torch, numpy as np
 from typing import Any, Dict, List, Optional, Tuple
 from torch import Tensor, device
-from .embedding import EmbeddingLayer
+from .embedding import GPUEmbeddingLayer
 from omegaconf import DictConfig, OmegaConf
 from astrotime.util.math import shp
-from .embedding import EmbeddingLayer
+from .embedding import GPUEmbeddingLayer
 from astrotime.util.math import tnorm
 from torch import Tensor
 import logging
 log = logging.getLogger("astrotime")
 
-class PolyEmbeddingLayer(EmbeddingLayer):
+class PolyEmbeddingLayer(GPUEmbeddingLayer):
 
 	def __init__(self, cfg, device: device):
-		EmbeddingLayer.__init__(self,cfg,device)
+		GPUEmbeddingLayer.__init__(self,cfg,device)
 
 	def embed(self, ts: torch.Tensor, ys: torch.Tensor ) -> Tensor:
 		print(f"     MODEL INPUT T: ts{list(ts.shape)}: ({ts.min().item():.2f}, {ts.max().item():.2f}, {ts.mean().item():.2f}, {ts.std().item():.2f}) ")
@@ -25,10 +25,10 @@ class PolyEmbeddingLayer(EmbeddingLayer):
 	def nfeatures(self) -> int:
 		return 1
 
-class CorrelationEmbedding(EmbeddingLayer):
+class CorrelationEmbedding(GPUEmbeddingLayer):
 
 	def __init__(self, cfg, embedding_space: Tensor, device: device):
-		EmbeddingLayer.__init__(self, cfg, embedding_space, device)
+		GPUEmbeddingLayer.__init__(self, cfg, embedding_space, device)
 		self.nfreq = cfg.nfreq
 		self.C = cfg.decay_factor / (8 * np.pi ** 2)
 		self.init_log(f"WaveletSynthesisLayer: nfreq={self.nfreq} ")

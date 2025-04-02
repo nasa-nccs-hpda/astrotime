@@ -5,7 +5,7 @@ from numpy import sum, pi, cos, sin, arctan2, exp, log, sqrt, dot, arange
 from torch import Tensor, device
 from typing import Any, Dict, List, Tuple, Type, Optional, Union, Hashable
 from astrotime.plot.param import Number, Parameter, STParam, STFloatParam, STFloatValuesParam, Parameterized
-from astrotime.encoders.embedding import EmbeddingLayer
+from astrotime.encoders.embedding import GPUEmbeddingLayer
 
 class Periodogram:
     """
@@ -808,10 +808,10 @@ class Periodogram:
         print("Results have been written to file: ", ofile)
 
 
-class GLSAnalysisLayer(EmbeddingLayer):
+class GLSAnalysisLayer(GPUEmbeddingLayer):
 
     def __init__(self, cfg, embedding_space: Tensor, device: device):
-        EmbeddingLayer.__init__(self, cfg, embedding_space, device)
+        GPUEmbeddingLayer.__init__(self, cfg, embedding_space, device)
         self.nfreq = cfg.nfreq
 
     def embed(self, ts: Tensor, ys: Tensor) -> Tensor:

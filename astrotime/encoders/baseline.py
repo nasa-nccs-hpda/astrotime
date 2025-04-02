@@ -3,7 +3,7 @@ from typing import Any, Dict, List, Optional, Tuple
 from astrotime.encoders.base import Encoder
 from torch import Tensor, device
 from omegaconf import DictConfig, OmegaConf
-from .embedding import EmbeddingLayer
+from .embedding import GPUEmbeddingLayer
 from astrotime.util.math import tnorm
 
 class IterativeEncoder(Encoder):
@@ -68,10 +68,10 @@ class ValueEncoder(Encoder):
 			if self.chan_first: Y = Y.transpose(1,2)
 			return X, Y
 
-class ValueEmbeddingLayer(EmbeddingLayer):
+class ValueEmbeddingLayer(GPUEmbeddingLayer):
 
 	def __init__(self, cfg, device: device):
-		EmbeddingLayer.__init__(self,cfg,device)
+		GPUEmbeddingLayer.__init__(self,cfg,device)
 
 	def embed(self, ts: torch.Tensor, ys: torch.Tensor ) -> Tensor:
 		# print(f"     MODEL INPUT: ys{list(ys.shape)}: ({ys.min().item():.2f}, {ys.max().item():.2f}, {ys.mean().item():.2f}, {ys.std().item():.2f}) ")

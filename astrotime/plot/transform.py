@@ -5,7 +5,7 @@ from astrotime.loaders.base import DataLoader, IterativeDataLoader
 from .base import SignalPlot, bounds
 from matplotlib.lines import Line2D
 from astrotime.util.logging import exception_handled
-from astrotime.encoders.embedding import EmbeddingLayer
+from astrotime.encoders.embedding import GPUEmbeddingLayer
 from typing import List, Optional, Dict, Type, Union, Tuple
 log = logging.getLogger("astrotime")
 
@@ -27,7 +27,7 @@ def tolower(ls: Optional[List[str]]) -> List[str]:
 
 class SignalTransformPlot(SignalPlot):
 
-	def __init__(self, name: str, data_loader: DataLoader, transform: EmbeddingLayer, **kwargs):
+	def __init__(self, name: str, data_loader: DataLoader, transform: GPUEmbeddingLayer, **kwargs):
 		SignalPlot.__init__(self, **kwargs)
 		self.name = name
 		self.transform = transform
@@ -81,7 +81,7 @@ class SignalTransformPlot(SignalPlot):
 
 class IterativeDataTransformPlot(SignalPlot):
 
-	def __init__(self, name: str, data_loader: IterativeDataLoader, transform: EmbeddingLayer, **kwargs):
+	def __init__(self, name: str, data_loader: IterativeDataLoader, transform: GPUEmbeddingLayer, **kwargs):
 		SignalPlot.__init__(self, **kwargs)
 		self.name = name
 		self.transform = transform

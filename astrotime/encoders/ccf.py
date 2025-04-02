@@ -18,19 +18,107 @@ from numpy import (
 )
 from pandas import DataFrame, Index, Series, Timedelta, to_timedelta
 from scipy.stats import norm
+import numpy as np
 from typing import List, Optional, Dict, Type, Union, Tuple, Callable, Any, TypeVar
 from astrotime.util.types import ArrayLike
+from astrotime.encoders.embedding import CPUEmbedding
+
 CallBack = TypeVar("CallBack", bound=Any)  # Callback
 Function = Callable[..., Any]
 logger = logging.getLogger("astrotime")
 
 def njit(function: Function, **kwargs) -> Function:
-	def njit_decorator(f: Function) -> Function:
-		from numba import njit
-		fnumba = njit(f, **kwargs)
-		return fnumba
-	return njit_decorator(function)
+    def njit_decorator(f: Function) -> Function:
+        from numba import njit
+        fnumba = njit(f, **kwargs)
+        return fnumba
+    return njit_decorator(function)
 
+def acf(
+    x: Series,
+    lags: ArrayLike = 365,
+    bin_method: str = "gaussian",
+    bin_width: float = 0.5,
+    max_gap: float = inf,
+    min_obs: int = 50,
+    full_output: bool = False,
+    alpha: float = 0.05,
+) -> Union[Series, DataFrame]:
+    """Calculate the autocorrelation function for irregular time steps.
+
+    Parameters
+    ----------
+    x: pandas.Series
+        Pandas Series containing the values to calculate the cross-correlation on.
+        The index has to be a Pandas.DatetimeIndex.
+    lags: array_like, optional
+        numpy array containing the lags in days for which the cross-correlation if
+        calculated. Defaults is all lags from 1 to 365 days.
+    bin_method: str, optional
+        method to determine the type of bin. Options are "regular" for regular data
+        (default), and "gaussian" and "rectangle" for irregular data.
+    bin_width: float, optional
+        number of days used as the width for the bin to calculate the correlation.
+    max_gap: float, optional
+        Maximum time step gap in the data. All time steps above this gap value are
+        not used for calculating the average time step. This can be helpful when
+        there is a large gap in the data that influences the average time step.
+    min_obs: int, optional
+        Minimum number of observations in a bin to determine the correlation.
+    full_output: bool, optional
+        If True, also estimated uncertainties are returned. Default is False.
+    alpha: float, optional
+        alpha level to compute the confidence interval (e.g., 1-alpha).
+
+    Returns
+    -------
+    result: pandas.Series or pandas.DataFrame
+        If full_output=True, a DataFrame with columns "acf", "conf", and "n",
+        containing the autocorrelation function, confidence intervals (depends on
+        alpha), and the number of samples n used to compute these, respectively. If
+        full_output=False, only the ACF is returned.
+
+    Notes
+    -----
+    The autocorrelation function for irregular timesteps based on the slotting technique
+    :cite:t:`rehfeld_comparison_2011`. Different methods (kernels) to bin the data are
+    available.
+
+    Estimating the autocorrelation for irregular time steps can be challenging.
+    Depending on the data and the binning method and settings used, the correlation can
+    be above 1 or below -1. If this occurs, a warning is raised.
+
+    Examples
+    --------
+    For example, to estimate the autocorrelation for every second lag up to lags of
+    one year:
+
+    >>> acf = ps.stats.acf(x, lags=np.arange(1.0, 366.0, 2.0))
+
+    See Also
+    --------
+    pastas.stats.ccf
+    statsmodels.api.tsa.acf
+    """
+    c = ccf(
+        x=x,
+        y=x,
+        lags=lags,
+        bin_method=bin_method,
+        bin_width=bin_width,
+        max_gap=max_gap,
+        min_obs=min_obs,
+        full_output=full_output,
+        alpha=alpha,
+    )
+    # drop value for lag=0 by default, unless explicitly included
+    if c.index[0] == Timedelta(0) and isinstance(lags, int):
+        c = c.drop(c.index[0])
+    c.name = "ACF"
+    if full_output:
+        return c.rename(columns={"ccf": "acf"})
+    else:
+        return c
 
 def ccf(
     x: Series,
@@ -69,10 +157,6 @@ def ccf(
         If True, also estimated uncertainties are returned. Default is False.
     alpha: float
         alpha level to compute the confidence interval (e.g., 1-alpha).
-    fallback_bin_method: str, optional
-        method to determine the type of bin used to compute the correlations if the
-        data has irregular time steps between the measurements. Options are "gaussian"
-        (default) and "rectangle" .
 
     Returns
     -------
@@ -100,18 +184,6 @@ def ccf(
     1 or below -1. If this occurs, a warning is raised.
 
     """
-    # Check if the time series have regular time steps
-    if (
-        not x.index.inferred_freq
-        and not y.index.inferred_freq
-        and bin_method == "regular"
-    ):
-        msg = (
-            f"time series does not have regular time steps, the fallback_bin_method"
-            f"'{fallback_bin_method}' is applied"
-        )
-        logger.warning(msg)
-        bin_method = fallback_bin_method
 
     # prepare the time indices for x and y
     x, t_x, dt_x_mu = _preprocess(x, max_gap=max_gap)
@@ -322,4 +394,22 @@ def _get_weights(x: Series, weighted: bool = True, max_gap: int = 30) -> ArrayLi
         w = ones(x.index.size)
     w /= w.sum()
     return w
+
+
+class CCFEmbeddingLayer(CPUEmbedding):
+
+    def __init__(self, cfg):
+        CPUEmbedding.__init__(self,cfg)
+
+    def embed(self, ts: np.ndarray, ys: np.ndarray ) -> np.ndarray:
+        # print(f"     MODEL INPUT: ys{list(ys.shape)}: ({ys.min().item():.2f}, {ys.max().item():.2f}, {ys.mean().item():.2f}, {ys.std().item():.2f}) ")
+        return ys
+
+    @property
+    def nfeatures(self) -> int:
+        return 1
+
+    @property
+    def output_series_length(self):
+        return self.cfg.series_length
 

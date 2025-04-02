@@ -7,9 +7,9 @@ from .base import SignalPlot, bounds
 from matplotlib.lines import Line2D
 from matplotlib.backend_bases import KeyEvent, MouseEvent, MouseButton
 from astrotime.util.logging import exception_handled
-from astrotime.encoders.embedding import EmbeddingLayer
+from astrotime.encoders.embedding import EmbeddingLayer, GPUEmbeddingLayer
 from typing import List, Optional, Dict, Type, Union, Tuple, Any
-from astrotime.util.math import tnorm
+from astrotime.util.math import tnorm, npnorm
 log = logging.getLogger("astrotime")
 
 def tolower(ls: Optional[List[str]]) -> List[str]:
@@ -149,10 +149,15 @@ class MITTransformPlot(SignalPlot):
 				listener(event_data)
 
 	@exception_handled
-	def apply_transform( self, transform: EmbeddingLayer, series_data: xa.Dataset ) -> np.ndarray:
-		ts_tensors: Dict[str,Tensor] =  { k: FloatTensor(series_data.data_vars[k].values).to(transform.device) for k in ['time','y'] }
-		transformed: Tensor = transform.embed( ts_tensors['time'][None,:], tnorm(ts_tensors['y'][None,:],dim=1) )
-		embedding: np.ndarray = transform.magnitude( transformed ).to('cpu').numpy()
+	def apply_transform( self, transform: EmbeddingLayer, series_data: xa.Dataset) -> np.ndarray:
+		if type(EmbeddingLayer) == GPUEmbeddingLayer:
+			ts_tensors: Dict[str,Tensor] =  { k: FloatTensor(series_data.data_vars[k].values).to(transform.device) for k in ['time','y'] }
+			transformed: Tensor = transform.embed( ts_tensors['time'][None,:], tnorm(ts_tensors['y'][None,:],dim=1) )
+			embedding: np.ndarray = transform.magnitude( transformed ).to('cpu').numpy()
+		else:
+			signals: Dict[str,np.ndarray] =  { k: series_data.data_vars[k].values for k in ['time','y'] }
+			transformed: Tensor = transform.embed( signals['time'][None,:], npnorm(signals['y'][None,:],dim=1) )
+			embedding: np.ndarray = transform.magnitude( transformed )
 		return znorm(embedding)
 
 	@exception_handled

@@ -2,7 +2,7 @@ import random, time, numpy as np
 import torch, math
 from typing import List, Tuple, Mapping
 from torch import Tensor, device, nn
-from .embedding import EmbeddingLayer
+from .embedding import GPUEmbeddingLayer
 from astrotime.util.math import logspace, tnorm
 from astrotime.util.logging import elapsed
 
@@ -14,10 +14,10 @@ def embedding_space( cfg, device: device ) -> Tuple[np.ndarray,Tensor]:
 	tspace = torch.FloatTensor( nspace ).to(device)
 	return nspace, tspace
 
-class WaveletSynthesisLayer(EmbeddingLayer):
+class WaveletSynthesisLayer(GPUEmbeddingLayer):
 
 	def __init__(self, cfg, embedding_space: Tensor, device: device):
-		EmbeddingLayer.__init__(self, cfg, embedding_space, device)
+		GPUEmbeddingLayer.__init__(self, cfg, embedding_space, device)
 		self.nfreq = cfg.nfreq
 		self.C = cfg.decay_factor / (8 * math.pi ** 2)
 		self.init_log(f"WaveletSynthesisLayer: nfreq={self.nfreq} ")
@@ -100,10 +100,10 @@ class WaveletSynthesisLayer(EmbeddingLayer):
 	def output_series_length(self):
 		return self.cfg.nfreq
 
-class WaveletAnalysisLayer(EmbeddingLayer):
+class WaveletAnalysisLayer(GPUEmbeddingLayer):
 
 	def __init__(self, cfg, embedding_space: Tensor, device: device):
-		EmbeddingLayer.__init__(self, cfg, embedding_space, device)
+		GPUEmbeddingLayer.__init__(self, cfg, embedding_space, device)
 		self.nfreq = cfg.nfreq
 		self.C = cfg.decay_factor / (8 * math.pi ** 2)
 		self.init_log(f"WaveletAnalysisLayer: nfreq={self.nfreq} ")
@@ -151,10 +151,10 @@ class WaveletAnalysisLayer(EmbeddingLayer):
 	def output_series_length(self):
 		return self.cfg.nfreq
 
-class WaveletProjConvLayer(EmbeddingLayer):
+class WaveletProjConvLayer(GPUEmbeddingLayer):
 
 	def __init__(self, cfg, embedding_space: Tensor, device: device):
-		EmbeddingLayer.__init__(self, cfg, embedding_space, device)
+		GPUEmbeddingLayer.__init__(self, cfg, embedding_space, device)
 		self.nfreq = cfg.nfreq
 		self._nfeatures = cfg.nfeatures
 		self.nk = cfg.nkernels

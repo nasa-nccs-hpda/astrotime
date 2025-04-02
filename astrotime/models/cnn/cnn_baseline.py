@@ -1,7 +1,7 @@
 from torch import nn
 import torch, math
 from omegaconf import DictConfig, OmegaConf
-from astrotime.encoders.embedding import EmbeddingLayer
+from astrotime.encoders.embedding import GPUEmbeddingLayer
 from typing import Any, Dict, List, Optional, Tuple, Mapping
 
 def add_cnn_block( model: nn.Sequential, nchannels: int, num_input_features: int, cfg: DictConfig ) -> int:
@@ -27,7 +27,7 @@ def add_dense_block( model: nn.Sequential, in_channels:int, cfg: DictConfig ):
 	model.append( nn.ELU() )
 	model.append( nn.Linear( cfg.dense_channels, cfg.out_channels ) )
 
-def get_model_from_cfg( cfg: DictConfig, device: torch.device, embedding_layer: EmbeddingLayer  ) -> nn.Module:
+def get_model_from_cfg( cfg: DictConfig, device: torch.device, embedding_layer: GPUEmbeddingLayer) -> nn.Module:
 	model: nn.Sequential = nn.Sequential( embedding_layer )
 	cnn_channels = cfg.cnn_channels
 	num_input_features = embedding_layer.nfeatures
