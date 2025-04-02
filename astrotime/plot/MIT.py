@@ -7,7 +7,7 @@ from .base import SignalPlot, bounds
 from matplotlib.lines import Line2D
 from matplotlib.backend_bases import KeyEvent, MouseEvent, MouseButton
 from astrotime.util.logging import exception_handled
-from astrotime.encoders.embedding import EmbeddingLayer, GPUEmbeddingLayer
+from astrotime.encoders.embedding import Embedding, GPUEmbeddingLayer
 from typing import List, Optional, Dict, Type, Union, Tuple, Any
 from astrotime.util.math import tnorm, npnorm
 log = logging.getLogger("astrotime")
@@ -105,11 +105,11 @@ class MITDatasetPlot(SignalPlot):
 
 class MITTransformPlot(SignalPlot):
 
-	def __init__(self, name: str, data_loader: MITLoader, transforms: Dict[str,EmbeddingLayer], embedding_space: np.ndarray, sector: int, **kwargs):
+	def __init__(self, name: str, data_loader: MITLoader, transforms: Dict[str,Embedding], embedding_space: np.ndarray, sector: int, **kwargs):
 		SignalPlot.__init__(self, **kwargs)
 		self.name = name
 		self.sector: int = sector
-		self.transforms: Dict[str,EmbeddingLayer] = transforms
+		self.transforms: Dict[str,Embedding] = transforms
 		self.data_loader: MITLoader = data_loader
 		self.embedding_space: np.ndarray = embedding_space
 		self.TICS: List[str] = data_loader.TICS(sector)
@@ -149,8 +149,8 @@ class MITTransformPlot(SignalPlot):
 				listener(event_data)
 
 	@exception_handled
-	def apply_transform( self, transform: EmbeddingLayer, series_data: xa.Dataset) -> np.ndarray:
-		if type(EmbeddingLayer) == GPUEmbeddingLayer:
+	def apply_transform( self, transform: Embedding, series_data: xa.Dataset) -> np.ndarray:
+		if type(Embedding) == GPUEmbeddingLayer:
 			ts_tensors: Dict[str,Tensor] =  { k: FloatTensor(series_data.data_vars[k].values).to(transform.device) for k in ['time','y'] }
 			transformed: Tensor = transform.embed( ts_tensors['time'][None,:], tnorm(ts_tensors['y'][None,:],dim=1) )
 			embedding: np.ndarray = transform.magnitude( transformed ).to('cpu').numpy()
