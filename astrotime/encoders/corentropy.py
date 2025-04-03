@@ -50,7 +50,7 @@ class CorentropyLayer(EmbeddingLayer):
 		GY:  Tensor = self.cYn * torch.exp( -self.cYs * DY**2  )
 		NGY: Tensor = cLn * torch.sum(GY,dim=(1,2))
 		CGY: Tensor = GY - NGY[:, None, None]
-		UTP: Tensor = torch.sin(  DT * (np.pi/self.P) ) ** 2
+		UTP: Tensor = torch.sin(  DT * (np.pi/self.P) )**2
 		GT:  Tensor = self.cTn * torch.exp( -self.cTs * UTP )
 		delt:Tensor = ts[:,-1] - ts[:,0]
 		W:   Tensor = 0.54 + 0.46 * torch.cos( np.pi * DT / delt )
@@ -58,7 +58,7 @@ class CorentropyLayer(EmbeddingLayer):
 		return self.ysigma * cLn * torch.sum(V,dim=(1,2))
 
 	def magnitude(self, embedding: Tensor) -> Tensor:
-		return torch.sqrt( torch.sum( embedding**2, dim=1 ) )
+		return embedding
 
 	@property
 	def nfeatures(self) -> int:
