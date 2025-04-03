@@ -191,6 +191,27 @@ class STIntParam(STParam):
 	def value_selected(self):
 		return self.value if (self._widget is None) else self._widget.val
 
+class STIntParamBase(STParam):
+
+	def __init__(self, name: str, vrange: Tuple[int,int] = (0,100), **kwargs ) -> None:
+		super(STIntParamBase, self).__init__( name, kwargs.get('value', vrange[0]) )
+		self.vrange: Tuple[int, int] = vrange
+		self.step: int = kwargs.get( 'step', 1 )
+		self._widget: Slider = None
+
+	@exception_handled
+	def set_value(self , val):
+		self._widget.set_val( int(val) )
+
+	def widget(self, ax, callbacks: List[Callable], aux_axes=None ):
+		if self._widget is None:
+			self._widget = Slider( ax, self.name, self.vrange[0], self.vrange[1], valinit=self.value, valstep=self.step )
+			for callback in callbacks:
+				self._widget.on_changed(callback)
+		return self._widget
+
+	def value_selected(self):
+		return self.value if (self._widget is None) else self._widget.val
 
 
 class STFloatValuesParam(STParam):
