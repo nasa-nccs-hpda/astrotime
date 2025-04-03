@@ -1,5 +1,6 @@
 
 from matplotlib.lines import Line2D
+import logging
 from matplotlib.patches import Rectangle, Ellipse, Polygon
 from matplotlib.transforms import TransformedPatchPath, Affine2D
 from matplotlib.widgets import SliderBase
@@ -99,15 +100,12 @@ class Slider(SliderBase):
         `.Rectangle` documentation for valid property names (``facecolor``,
         ``edgecolor``, ``alpha``, etc.).
         """
-        super().__init__(ax, orientation, closedmin, closedmax,
-                         valmin, valmax, valfmt, dragging, valstep)
-
+        super().__init__(ax, orientation, closedmin, closedmax, valmin, valmax, valfmt, dragging, valstep)
+        self.log = logging.getLogger("astrotime")
         if slidermin is not None and not hasattr(slidermin, 'val'):
-            raise ValueError(
-                f"Argument slidermin ({type(slidermin)}) has no 'val'")
+            raise ValueError( f"Argument slidermin ({type(slidermin)}) has no 'val'")
         if slidermax is not None and not hasattr(slidermax, 'val'):
-            raise ValueError(
-                f"Argument slidermax ({type(slidermax)}) has no 'val'")
+            raise ValueError( f"Argument slidermax ({type(slidermax)}) has no 'val'")
         self.slidermin = slidermin
         self.slidermax = slidermax
         valinit = self._value_in_bounds(valinit)
@@ -118,9 +116,7 @@ class Slider(SliderBase):
 
         defaults = {'facecolor': 'white', 'edgecolor': '.75', 'size': 10}
         handle_style = {} if handle_style is None else handle_style
-        marker_props = {
-            f'marker{k}': v for k, v in {**defaults, **handle_style}.items()
-        }
+        marker_props = { f'marker{k}': v for k, v in {**defaults, **handle_style}.items()  }
 
         if orientation == 'vertical':
             self.track = Rectangle(
@@ -132,8 +128,7 @@ class Slider(SliderBase):
             self.poly = ax.axhspan(valmin, valinit, .25, .75, **kwargs)
             # Drawing a longer line and clipping it to the track avoids
             # pixelation-related asymmetries.
-            self.hline = ax.axhline(valinit, 0, 1, color=initcolor, lw=1,
-                                    clip_path=TransformedPatchPath(self.track))
+            self.hline = ax.axhline(valinit, 0, 1, color=initcolor, lw=1, clip_path=TransformedPatchPath(self.track))
             handleXY = [[0.5], [valinit]]
         else:
             self.track = Rectangle(
@@ -143,15 +138,9 @@ class Slider(SliderBase):
             )
             ax.add_patch(self.track)
             self.poly = ax.axvspan(valmin, valinit, .25, .75, **kwargs)
-            self.vline = ax.axvline(valinit, 0, 1, color=initcolor, lw=1,
-                                    clip_path=TransformedPatchPath(self.track))
+            self.vline = ax.axvline(valinit, 0, 1, color=initcolor, lw=1,  clip_path=TransformedPatchPath(self.track))
             handleXY = [[valinit], [0.5]]
-        self._handle, = ax.plot(
-            *handleXY,
-            "o",
-            **marker_props,
-            clip_on=False
-        )
+        self._handle, = ax.plot(  *handleXY,  "o", **marker_props,  clip_on=False )
 
         if orientation == 'vertical':
             self.label = ax.text(0.5, 1.02, label, transform=ax.transAxes,
@@ -200,6 +189,7 @@ class Slider(SliderBase):
 
     def _update(self, event):
         """Update the slider position."""
+        self.log.info( f" *** Slider Event: {event}")
         if self.ignore(event) or event.button != 1:
             return
 
@@ -210,8 +200,7 @@ class Slider(SliderBase):
         if not self.drag_active:
             return
 
-        if (event.name == 'button_release_event'
-              or event.name == 'button_press_event' and not self.ax.contains(event)[0]):
+        if event.name == 'button_release_event' or event.name == 'button_press_event' and not self.ax.contains(event)[0]:
             self.drag_active = False
             event.canvas.release_mouse(self.ax)
             return
