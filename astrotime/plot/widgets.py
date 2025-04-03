@@ -1,9 +1,12 @@
-
 from matplotlib.lines import Line2D
+from contextlib import ExitStack
+import matplotlib as mpl
+from matplotlib import (_api, _docstring, backend_tools, cbook, collections, colors,  text as mtext, ticker, transforms)
 import logging
 from matplotlib.patches import Rectangle, Ellipse, Polygon
 from matplotlib.transforms import TransformedPatchPath, Affine2D
-from matplotlib.widgets import SliderBase
+from matplotlib.widgets import SliderBase, AxesWidget
+from matplotlib.axes import Axes
 
 class Slider(SliderBase):
     """
@@ -19,7 +22,7 @@ class Slider(SliderBase):
         Slider value.
     """
 
-    def __init__(self, ax, label, valmin, valmax, *, valinit=0.5, valfmt=None,
+    def __init__(self, ax: Axes, label: str, valmin, valmax, *, valinit=0.5, valfmt=None,
                  closedmin=True, closedmax=True, slidermin=None,
                  slidermax=None, dragging=True, valstep=None,
                  orientation='horizontal', initcolor='r',
@@ -147,7 +150,10 @@ class Slider(SliderBase):
                                  verticalalignment='bottom',
                                  horizontalalignment='center')
 
-            self.valtext = ax.text(0.5, -0.02, self._format(valinit),
+            self.index_box = TextBox(aux_axes[2], "", initial="0")
+           # self.index_box.on_submit(self.set_value)
+
+            self.valtext = TextBox(ax,"", self._format(valinit),
                                    transform=ax.transAxes,
                                    verticalalignment='top',
                                    horizontalalignment='center')
@@ -257,3 +263,206 @@ class Slider(SliderBase):
             Connection id (which can be used to disconnect *func*).
         """
         return self._observers.connect('changed', lambda val: func(val))
+
+
+class TextBox(AxesWidget):
+    """
+    Call `.on_text_change` to be updated whenever the text changes.
+    Call `.on_submit` to be updated whenever the user hits enter or leaves the text entry field.
+    """
+
+    def __init__(self, ax, initial='' ):
+
+        super().__init__(ax)
+        self.text_disp = self.ax.text( 1.02, 0.5, initial, transform=self.ax.transAxes, verticalalignment='center', horizontalalignment='left', parse_math=False)
+        self._observers = cbook.CallbackRegistry(signals=["change", "submit"])
+        #ax.set( xlim=(0, 1), ylim=(0, 1), navigate=False, facecolor="darkturquoise", xticks=[], yticks=[])
+
+        self.cursor_index = 0
+        self.cursor = ax.vlines(0, 0, 0, visible=False, color="k", lw=1,  transform=mpl.transforms.IdentityTransform())
+
+        self.connect_event('button_press_event', self._click)
+        self.connect_event('button_release_event', self._release)
+        self.connect_event('motion_notify_event', self._motion)
+        self.connect_event('key_press_event', self._keypress)
+        self.connect_event('resize_event', self._resize)
+
+        self.color = 'lightblue'
+        self.hovercolor = 'skyblue'
+
+        self.capturekeystrokes = False
+
+    @property
+    def text(self):
+        return self.text_disp.get_text()
+
+    def _rendercursor(self):
+        # this is a hack to figure out where the cursor should go.
+        # we draw the text up to where the cursor should go, measure
+        # and save its dimensions, draw the real text, then put the cursor
+        # at the saved dimensions
+
+        # This causes a single extra draw if the figure has never been rendered
+        # yet, which should be fine as we're going to repeatedly re-render the
+        # figure later anyways.
+        fig = self.ax.get_figure(root=True)
+        if fig._get_renderer() is None:
+            fig.canvas.draw()
+
+        text = self.text_disp.get_text()  # Save value before overwriting it.
+        widthtext = text[:self.cursor_index]
+
+        bb_text = self.text_disp.get_window_extent()
+        self.text_disp.set_text(widthtext or ",")
+        bb_widthtext = self.text_disp.get_window_extent()
+
+        if bb_text.y0 == bb_text.y1:  # Restoring the height if no text.
+            bb_text.y0 -= bb_widthtext.height / 2
+            bb_text.y1 += bb_widthtext.height / 2
+        elif not widthtext:  # Keep width to 0.
+            bb_text.x1 = bb_text.x0
+        else:  # Move the cursor using width of bb_widthtext.
+            bb_text.x1 = bb_text.x0 + bb_widthtext.width
+
+        self.cursor.set(
+            segments=[[(bb_text.x1, bb_text.y0), (bb_text.x1, bb_text.y1)]],
+            visible=True)
+        self.text_disp.set_text(text)
+
+        fig.canvas.draw()
+
+    def _release(self, event):
+        if self.ignore(event):
+            return
+        if event.canvas.mouse_grabber != self.ax:
+            return
+        event.canvas.release_mouse(self.ax)
+
+    def _keypress(self, event):
+        if self.ignore(event):
+            return
+        if self.capturekeystrokes:
+            key = event.key
+            text = self.text
+            if len(key) == 1:
+                text = (text[:self.cursor_index] + key +
+                        text[self.cursor_index:])
+                self.cursor_index += 1
+            elif key == "right":
+                if self.cursor_index != len(text):
+                    self.cursor_index += 1
+            elif key == "left":
+                if self.cursor_index != 0:
+                    self.cursor_index -= 1
+            elif key == "home":
+                self.cursor_index = 0
+            elif key == "end":
+                self.cursor_index = len(text)
+            elif key == "backspace":
+                if self.cursor_index != 0:
+                    text = (text[:self.cursor_index - 1] +
+                            text[self.cursor_index:])
+                    self.cursor_index -= 1
+            elif key == "delete":
+                if self.cursor_index != len(self.text):
+                    text = (text[:self.cursor_index] +
+                            text[self.cursor_index + 1:])
+            self.text_disp.set_text(text)
+            self._rendercursor()
+            if self.eventson:
+                self._observers.process('change', self.text)
+                if key in ["enter", "return"]:
+                    self._observers.process('submit', self.text)
+
+    def set_val(self, val):
+        newval = str(val)
+        if self.text == newval:
+            return
+        self.text_disp.set_text(newval)
+        self._rendercursor()
+        if self.eventson:
+            self._observers.process('change', self.text)
+            self._observers.process('submit', self.text)
+
+    def begin_typing(self):
+        self.capturekeystrokes = True
+        # Disable keypress shortcuts, which may otherwise cause the figure to
+        # be saved, closed, etc., until the user stops typing.  The way to
+        # achieve this depends on whether toolmanager is in use.
+        stack = ExitStack()  # Register cleanup actions when user stops typing.
+        self._on_stop_typing = stack.close
+        toolmanager = getattr(
+            self.ax.get_figure(root=True).canvas.manager, "toolmanager", None)
+        if toolmanager is not None:
+            # If using toolmanager, lock keypresses, and plan to release the
+            # lock when typing stops.
+            toolmanager.keypresslock(self)
+            stack.callback(toolmanager.keypresslock.release, self)
+        else:
+            # If not using toolmanager, disable all keypress-related rcParams.
+            # Avoid spurious warnings if keymaps are getting deprecated.
+            with _api.suppress_matplotlib_deprecation_warning():
+                stack.enter_context(mpl.rc_context(  {k: [] for k in mpl.rcParams if k.startswith("keymap.")}))
+
+    def stop_typing(self):
+        if self.capturekeystrokes:
+            self._on_stop_typing()
+            self._on_stop_typing = None
+            notifysubmit = True
+        else:
+            notifysubmit = False
+        self.capturekeystrokes = False
+        self.cursor.set_visible(False)
+        self.ax.get_figure(root=True).canvas.draw()
+        if notifysubmit and self.eventson:
+            # Because process() might throw an error in the user's code, only
+            # call it once we've already done our cleanup.
+            self._observers.process('submit', self.text)
+
+    def _click(self, event):
+        if self.ignore(event):
+            return
+        if not self.ax.contains(event)[0]:
+            self.stop_typing()
+            return
+        if not self.eventson:
+            return
+        if event.canvas.mouse_grabber != self.ax:
+            event.canvas.grab_mouse(self.ax)
+        if not self.capturekeystrokes:
+            self.begin_typing()
+        self.cursor_index = self.text_disp._char_index_at(event.x)
+        self._rendercursor()
+
+    def _resize(self, event):
+        self.stop_typing()
+
+    def _motion(self, event):
+        if self.ignore(event):
+            return
+        c = self.hovercolor if self.ax.contains(event)[0] else self.color
+        if not colors.same_color(c, self.ax.get_facecolor()):
+            self.ax.set_facecolor(c)
+            if self.drawon:
+                self.ax.get_figure(root=True).canvas.draw()
+
+    def on_text_change(self, func):
+        """
+        When the text changes, call this *func* with event.
+
+        A connection id is returned which can be used to disconnect.
+        """
+        return self._observers.connect('change', lambda text: func(text))
+
+    def on_submit(self, func):
+        """
+        When the user hits enter or leaves the submission box, call this
+        *func* with event.
+
+        A connection id is returned which can be used to disconnect.
+        """
+        return self._observers.connect('submit', lambda text: func(text))
+
+    def disconnect(self, cid):
+        """Remove the observer with connection id *cid*."""
+        self._observers.disconnect(cid)
