@@ -1,6 +1,7 @@
 import logging, numpy as np
 from astrotime.util.logging import exception_handled
-from matplotlib.widgets import Slider, Button, RadioButtons, TextBox
+from matplotlib.widgets import Button, RadioButtons, TextBox
+from astrotime.plot.widgets import Slider
 from typing import Dict, List, Tuple, Type, Callable
 
 Number = float | int

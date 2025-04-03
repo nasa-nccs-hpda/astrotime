@@ -67,7 +67,7 @@ class SignalPlot(Parameterized):
 		raise NotImplementedError( "Abstract method" )
 
 
-class SignalPlotFigure(object):
+class SignalPlotFigureExt(object):
 
 	def __init__(self, plots: List[SignalPlot], **kwargs):
 		plt.rc('xtick', labelsize=8)
@@ -150,7 +150,7 @@ class SignalPlotFigure(object):
 		plt.show()
 		log.info(f"SignalPlotFigure.show complete")
 
-class SignalPlotFigureTest(object):
+class SignalPlotFigure(object):
 
 	def __init__(self, plots: List[SignalPlot], **kwargs):
 		plt.rc('xtick', labelsize=8)
