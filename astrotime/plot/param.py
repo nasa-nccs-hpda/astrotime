@@ -170,7 +170,7 @@ class STIntParam(STParam):
 	def set_index(self , val):
 		self.log.info(f"STIntParam.set_index: {str(int(val))}")
 		self.index_box.set_val( str(int(val)) )
-		self.index_box.canvas.draw_idle()
+		self.index_box.ax.figure.canvas.draw_idle()
 
 	def widget(self, ax, callbacks: List[Callable], aux_axes=None ):
 		if self._widget is None:
@@ -185,7 +185,7 @@ class STIntParam(STParam):
 
 			for callback in callbacks:
 				self._widget.on_changed(callback)
-			self._widget.on_changed(self.set_index)
+#			self._widget.on_changed(self.set_index)
 		return self._widget
 
 	def value_selected(self):

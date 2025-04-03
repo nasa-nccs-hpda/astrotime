@@ -50,7 +50,7 @@ class PeriodMarkers:
 		return self.ax.get_figure()
 
 	def refresh(self):
-		self.log.info( f"\n -- --- -- PeriodMarkers({self.name}:{id(self):02X}).refresh( origin={self.origin:.2f}, period={self.period:.2f} ) -- --- -- \n")
+		self.log.info( f" PeriodMarkers({self.name}:{id(self):02X}).refresh( origin={self.origin:.2f}, period={self.period:.2f} ) -- --- -- \n")
 		for pid in range(0,self.npm):
 			tval = self.origin + (pid-self.npm//2) * self.period
 			if pid >= len(self.markers):  self.markers.append( self.ax.axvline( tval, self.yrange[0], self.yrange[1], color=self.color, linestyle=self.linestyle, alpha=self.alpha) )
@@ -133,7 +133,7 @@ class MITDatasetPlot(SignalPlot):
 		self.plot.set_xdata(xdata)
 		self.ax.set_xlim(xdata[0],xdata[-1])
 		pd_origin = xdata[np.argmax(np.abs(ydata))]
-		self.log.info( f"\n ---- DatasetPlot-> update({self.element}:{self.TICS[self.element]}): xlim=({xdata[0]:.3f},{xdata[-1]:.3f}), ylim=({ydata[0]:.3f},{ydata[-1]:.3f}), xdata.shape={self.plot.get_xdata().shape} origin={pd_origin} --- \n" )
+		self.log.info( f" ---- DatasetPlot-> update({self.element}:{self.TICS[self.element]}): xlim=({xdata[0]:.3f},{xdata[-1]:.3f}), ylim=({ydata[0]:.3f},{ydata[-1]:.3f}), xdata.shape={self.plot.get_xdata().shape} origin={pd_origin} --- \n" )
 		self.update_period_markers( id="dataset", origin=pd_origin, period=self.target_period )
 		self.ax.figure.canvas.draw_idle()
 
@@ -196,7 +196,7 @@ class MITTransformPlot(SignalPlot):
 		period: float = series_data.data_vars['y'].attrs['period']
 		for iplot, (tname, transform) in enumerate(self.transforms.items()):
 			tdata: np.ndarray = self.apply_transform(transform,series_data)
-			self.log.info(f"\n ---- MITTransformPlot({iplot}) {tname}[{self.element})] update: tdata{tdata.shape}, mean={tdata.mean():.2f} --- \n")
+			self.log.info(f"---- MITTransformPlot({iplot}) {tname}[{self.element})] update: tdata{tdata.shape}, mean={tdata.mean():.2f} --- \n")
 			self.plots[tname].set_ydata(tdata)
 		freq = 1.0/period
 		self.target_marker.set_xdata([freq,freq])
