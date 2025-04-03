@@ -10,6 +10,7 @@ import logging
 def shp(x): return list(x.shape)
 
 def exception_handled(func):
+    @wraps(func)
     def wrapper( *args, **kwargs ):
         try:
             return func( *args, **kwargs )
