@@ -12,7 +12,7 @@ def periods( cfg, device: device ) -> Tensor:
 	fspace = logspace if (cfg.fscale == "log") else np.linspace
 	nF: np.ndarray = fspace( cfg.base_freq_range[0], cfg.base_freq_range[1], cfg.nfreq )
 	tF: Tensor = torch.FloatTensor( nF ).to(device)
-	return torch.flip(1/tF)
+	return torch.flip(1/tF,[0])
 
 class CorentropyLayer(EmbeddingLayer):
 
@@ -41,21 +41,22 @@ class CorentropyLayer(EmbeddingLayer):
 		if ys.ndim == 1: ys = ys[None, :]
 		L: int =  ys.shape[1]
 		cLn: float = 1.0/L**2
-		T0:  Tensor = ts[:, :, None]
-		T1:  Tensor = ts[:, None, :]
-		Y0:  Tensor = ys[:, :, None]
-		Y1:  Tensor = ys[:, None, :]
-		DY:  Tensor = Y1 - Y0
-		DT:  Tensor = T1 - T0
-		GY:  Tensor = self.cYn * torch.exp( -self.cYs * DY**2  )
-		NGY: Tensor = cLn * torch.sum(GY,dim=(1,2))
-		CGY: Tensor = GY - NGY[:, None, None]
-		UTP: Tensor = torch.sin(  DT * (np.pi/self.P) )**2
-		GT:  Tensor = self.cTn * torch.exp( -self.cTs * UTP )
-		delt:Tensor = ts[:,-1] - ts[:,0]
-		W:   Tensor = 0.54 + 0.46 * torch.cos( np.pi * DT / delt )
-		V:   Tensor = CGY * GT * W
-		return self.ysigma * cLn * torch.sum(V,dim=(1,2))
+		T0:  Tensor = ts[:, :, None]                                        # [B,L,L]
+		T1:  Tensor = ts[:, None, :]                                        # [B,L,L]
+		Y0:  Tensor = ys[:, :, None]                                        # [B,L,L]
+		Y1:  Tensor = ys[:, None, :]                                        # [B,L,L]
+		DY:  Tensor = Y1 - Y0                                               # [B,L,L]
+		DT:  Tensor = T1 - T0                                               # [B,L,L]
+		GY:  Tensor = self.cYn * torch.exp( -self.cYs * DY**2  )            # [B,L,L]
+		NGY: Tensor = cLn * torch.sum(GY,dim=(1,2))                         # [B]
+		CGY: Tensor = GY - NGY[:, None, None]                               # [B,L,L]
+		PP: Tensor = self.P[None,None,None,:]                               # [B,L,L,F]
+		UTP: Tensor = torch.sin(  DT[:,:,:,None] * (np.pi/PP) )**2          # [B,L,L,F]
+		GT:  Tensor = self.cTn * torch.exp( -self.cTs * UTP )               # [B,L,L,F]
+		delt:Tensor = ts[:,-1] - ts[:,0]                                    # [B]
+		W:   Tensor = 0.54 + 0.46*torch.cos( np.pi*DT / delt[:,None,None] ) # [B,L,L]
+		V:   Tensor = CGY[:,:,:,None] * GT * W[:,:,:,None]                  # [B,L,L,F]
+		return self.ysigma * cLn * torch.sum(V,dim=(1,2))                   # [B,F]
 
 	def magnitude(self, embedding: Tensor) -> Tensor:
 		return embedding
