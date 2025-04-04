@@ -115,7 +115,7 @@ class MITDatasetPlot(SignalPlot):
 		self.ax.title.set_fontsize(8)
 		self.ax.title.set_fontweight('bold')
 		self.ax.set_xlim(xs[0],xs[-1])
-		self.ax.set_ylim(-1,1)
+		self.ax.set_ylim( ys.min(), ys.max() )
 		self.update_period_markers(  id="dataset", origin=xs[np.argmax(np.abs(ys))], period=self.target_period )
 
 	@exception_handled
