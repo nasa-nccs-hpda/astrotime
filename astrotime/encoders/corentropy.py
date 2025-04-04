@@ -24,7 +24,7 @@ class CorentropyLayer(EmbeddingLayer):
 
 	def __init__(self, cfg, embedding_space: Tensor, device: device):
 		EmbeddingLayer.__init__(self, cfg, embedding_space, device)
-		self.P: Tensor = torch.flip(1/embedding_space,[0])
+		self.P: Tensor = 1/embedding_space
 		self.ysigma: float = cfg.ysigma
 		self.tsigma: float = cfg.tsigma
 		self.init_log(f"CorentropyLayer: nfreq={self.nfreq} ")
