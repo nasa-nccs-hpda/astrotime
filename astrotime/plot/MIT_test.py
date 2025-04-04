@@ -1,6 +1,6 @@
 import logging, numpy as np
 import xarray as xa
-from .param import STIntParamBase
+from .param import STIntParam
 from astrotime.loaders.MIT import MITLoader
 from torch import nn, optim, Tensor, FloatTensor
 from .base import SignalPlot, bounds
@@ -68,7 +68,7 @@ class MITDatasetPlot(SignalPlot):
 		self.colors = ['blue', 'green'] + [ 'yellow' ] * 16
 		self.ofac = kwargs.get('upsample_factor',1)
 		self.plot: Line2D = None
-		self.add_param( STIntParamBase('element', (0,len(self.TICS))  ) )
+		self.add_param( STIntParam('element', (0,len(self.TICS))))
 		self.period_markers: Dict[str,PeriodMarkers] = {}
 		self.ext_pm_ids: Set[str] = set()
 		self.transax = None

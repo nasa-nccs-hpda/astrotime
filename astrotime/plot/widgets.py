@@ -130,7 +130,7 @@ class Slider(SliderBase):
         self.vline = ax.axvline(valinit, 0, 1, color=initcolor, lw=1,  clip_path=TransformedPatchPath(self.track))
         handleXY = [[valinit], [0.5]]
         self._handle, = ax.plot(  *handleXY,  "o", **marker_props,  clip_on=False )
-        self.valtext = TextBox( ax,1.02, 0.5, self._format(valinit) )
+        self.valtext = TextBox( ax,1.02, 0.5, str(valinit) )
         self.set_val(valinit)
 
     def _value_in_bounds(self, val):

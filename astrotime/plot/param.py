@@ -139,63 +139,10 @@ class FloatValuesSlider(Slider):
 	def value_selected(self):
 		return self.val
 
-
 class STIntParam(STParam):
 
 	def __init__(self, name: str, vrange: Tuple[int,int] = (0,100), **kwargs ) -> None:
-		super(STIntParam, self).__init__( name, kwargs.get('value', vrange[0]) )
-		self.vrange: Tuple[int, int] = vrange
-		self.step: int = kwargs.get( 'step', 1 )
-		self._widget: Slider = None
-		self.aux_sizes = [ .05, .05, .1 ]
-		self.back_button: Button = None
-		self.forward_button: Button = None
-		self.index_box: TextBox = None
-
-	@exception_handled
-	def forward(self, val):
-		self.log.info(f"STIntParam.forward: {val}")
-		self._widget.set_val( self._widget.val + self.step )
-		# self.index_box
-
-	@exception_handled
-	def backward(self, val):
-		self.log.info(f"STIntParam.backward: {val}")
-		self._widget.set_val( self._widget.val - self.step )
-
-	@exception_handled
-	def set_value(self , val):
-		self._widget.set_val( int(val) )
-
-	@exception_handled
-	def set_index(self , val):
-		self.log.info(f"STIntParam.set_index: {str(int(val))}")
-		self.index_box.set_val( str(int(val)) )
-		self.index_box.ax.figure.canvas.draw_idle()
-
-	def widget(self, ax, callbacks: List[Callable], aux_axes=None ):
-		if self._widget is None:
-			self._widget = Slider( ax, self.name, self.vrange[0], self.vrange[1], valinit=self.value, valstep=self.step )
-			if aux_axes is not None:
-				self.back_button    = Button(aux_axes[0], '<-', color='cyan', hovercolor='deepskyblue')
-				self.back_button.on_clicked(self.backward)
-				self.forward_button = Button(aux_axes[1], '->', color='cyan', hovercolor='deepskyblue')
-				self.forward_button.on_clicked(self.forward)
-				self.index_box = TextBox(aux_axes[2], "", initial="0" )
-				self.index_box.on_submit( self.set_value )
-
-			for callback in callbacks:
-				self._widget.on_changed(callback)
-#			self._widget.on_changed(self.set_index)
-		return self._widget
-
-	def value_selected(self):
-		return self.value if (self._widget is None) else self._widget.val
-
-class STIntParamBase(STParam):
-
-	def __init__(self, name: str, vrange: Tuple[int,int] = (0,100), **kwargs ) -> None:
-		super(STIntParamBase, self).__init__( name, kwargs.get('value', vrange[0]) )
+		super(STIntParam, self).__init__( name, kwargs.get('value', vrange[0]))
 		self.vrange: Tuple[int, int] = vrange
 		self.step: int = kwargs.get( 'step', 1 )
 		self._widget: Slider = None
