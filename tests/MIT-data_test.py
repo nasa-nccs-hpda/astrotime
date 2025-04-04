@@ -29,7 +29,7 @@ for TIC in TICS:
 	t: np.ndarray = dset[TIC + ".time"].values
 	y: np.ndarray = dset[TIC + ".y"].values
 	nanmask = np.isnan(y)
-	t, y = t[~nanmask], npnorm(y[~nanmask])
+	t, y = t[~nanmask], npnorm(y[~nanmask],dim=0)
 	dt = np.diff(t)
 	slist.append( [t.size, np.median(np.abs(dt)), np.median(np.abs(np.diff(y))), y.std(), dt.std() ] )
 stats = np.array(slist)
