@@ -159,7 +159,9 @@ class Slider(SliderBase):
 
     def _update(self, event):
         """Update the slider position."""
-        self.log.info( f" *** Slider Event: {event}")
+        if event.name != 'motion_notify_event':
+            self.log.info( f" *** Slider Event: {event}")
+
         if self.ignore(event) or event.button != 1:
             return
 
