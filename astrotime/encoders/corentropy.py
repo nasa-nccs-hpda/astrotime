@@ -42,44 +42,52 @@ class CorentropyLayer(EmbeddingLayer):
 	def cTs(self) -> float: return 2 / self.tsigma**2
 
 	def get_ykernel(self,ys: torch.Tensor) -> Tensor:
-		if ys.ndim == 1: ys = ys[None, :]                                  # [B,L]
-		L: int =  ys.shape[1]
+		L: int =  ys.shape[0]
 		cLn: float = 1.0/L**2
-		Y0:  Tensor = ys[:, :, None]                                        # [B,L,L]
-		Y1:  Tensor = ys[:, None, :]                                        # [B,L,L]
-		DY:  Tensor = Y1 - Y0                                               # [B,L,L]
-		GY:  Tensor = self.cYn * torch.exp( -self.cYs * DY**2  )            # [B,L,L]     Eqn 3
-		NGY: Tensor = cLn * torch.sum(GY,dim=(1,2))                         # [B]         Eqn 5
-		return GY - NGY[:, None, None]                                      # [B,L,L]
+		Y0:  Tensor = ys[:, None]                                        # [L,L]
+		Y1:  Tensor = ys[None, :]                                        # [L,L]
+		DY:  Tensor = Y1 - Y0                                               # [L,L]
+		GY:  Tensor = self.cYn * torch.exp( -self.cYs * DY**2  )            # [L,L]     Eqn 3
+		NGY: Tensor = cLn * torch.sum(GY)                                   #           Eqn 5
+		return GY - NGY                                                     # [L,L]
 
 	def get_tkernel(self,ts: torch.Tensor) -> Tensor:
-		if ts.ndim == 1: ts = ts[None,:]                                   # [B,L]
-		T0:  Tensor = ts[:, :, None]                                        # [B,L,L]
-		T1:  Tensor = ts[:, None, :]                                        # [B,L,L]
-		DT:  Tensor = T1 - T0                                               # [B,L,L]
-		PP: Tensor = self.P[None,None,None,:]                               # [B,L,L,F]
-		UTP: Tensor = torch.sin(  DT[:,:,:,None] * (np.pi/PP) )**2          # [B,L,L,F]
-		GT:  Tensor = self.cTn * torch.exp( -self.cTs * UTP )               # [B,L,L,F]   Eqn 10
+		T0:  Tensor = ts[ :, None]                                        # [L,L]
+		T1:  Tensor = ts[ None, :]                                        # [L,L]
+		DT:  Tensor = T1 - T0                                             # [L,L]
+		PP: Tensor = self.P[None,None,:]                                  # [L,L,F]
+		UTP: Tensor = torch.sin(  DT[:,:,None] * (np.pi/PP) )**2          # [L,L,F]
+		GT:  Tensor = self.cTn * torch.exp( -self.cTs * UTP )             # [L,L,F]   Eqn 10
 		return GT
 
 	def get_W(self, ts: torch.Tensor) -> Tensor:
-		if ts.ndim == 1: ts = ts[None, :]                                       # [B,L]
-		T0: Tensor = ts[:, :, None]                                             # [B,L,L]
-		T1: Tensor = ts[:, None, :]                                             # [B,L,L]
-		DT: Tensor = T1 - T0                                                    # [B,L,L]
-		delt:Tensor = ts[:,-1] - ts[:,0]                                        # [B]
-		W:   Tensor = 0.54 + 0.46*torch.cos( np.pi*DT / delt[:,None,None] )     # [B,L,L]     Eqn 12
+		T0: Tensor = ts[:, None]                                             # [L,L]
+		T1: Tensor = ts[None, :]                                             # [L,L]
+		DT: Tensor = T1 - T0                                                 # [L,L]
+		delt:Tensor = ts[:,-1] - ts[:,0]
+		W:   Tensor = 0.54 + 0.46*torch.cos( np.pi*DT / delt )               # [L,L]     Eqn 12
 		return W
 
-	def embed(self, ts: torch.Tensor, ys: torch.Tensor ) -> Tensor:
+	def embed_series(self, ts: torch.Tensor, ys: torch.Tensor ) -> Tensor:
 		self.init_log(f"CorentropyLayer shapes: ts{list(ts.shape)} ys{list(ys.shape)}")
-		ykernel: Tensor = self.get_ykernel(ys)                               # [B,L,L]
+		self.ysigma = ys.std()
+		self.tsigma = torch.diff(ts).std()
+		ykernel: Tensor = self.get_ykernel(ys)                               # [L,L]
 		L: int = ykernel.shape[1]
 		cLn: float = 1.0 / L ** 2
-		tkernel: Tensor = self.get_tkernel(ts)                               # [B,L,L,F]
+		tkernel: Tensor = self.get_tkernel(ts)                               # [L,L,F]
 		W: Tensor = self.get_W(ts)                                           #  [B]
-		V: Tensor = ykernel[:,:,:,None] * tkernel * W[:,:,:,None]            # [B,L,L,F]
-		return self.ysigma * cLn * torch.sum(V,dim=(1,2))                    # [B,F]       Eqn 11
+		V: Tensor = ykernel[:,:,:,None] * tkernel * W[:,:,:,None]            # [L,L,F]
+		return self.ysigma * cLn * torch.sum(V,dim=(1,2))                    # [F]       Eqn 11
+
+	def embed(self, ts: torch.Tensor, ys: torch.Tensor) -> Tensor:
+		if ys.ndim == 1 and ts.ndim == 1:
+			return self.embed_series(ts,ys)
+		elif ys.ndim == 2 and ts.ndim == 2:
+			series = zip( torch.unbind(ts, dim=0), torch.unbind(ys, dim=0) )
+			return torch.stack([ self.embed_series(t,y) for t,y in series ], dim=0)
+		else:
+			raise Exception( f"Unsupported input shapes: ts{list(ts.shape)} ys{list(ys.shape)}" )
 
 	def magnitude(self, embedding: Tensor) -> Tensor:
 		return embedding
