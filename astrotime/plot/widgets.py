@@ -192,6 +192,9 @@ class Slider(SliderBase):
             # fmt.get_offset is actually the multiplicative factor, if any.
             return s + self._fmt.get_offset()
 
+    def set_text(self, val):
+        return self.set_val(val)
+
     def set_val(self, val):
         """
         Set slider value to *val*.
