@@ -64,7 +64,7 @@ class CorentropyLayer(EmbeddingLayer):
 		T0: Tensor = ts[:, None]                                             # [L,L]
 		T1: Tensor = ts[None, :]                                             # [L,L]
 		DT: Tensor = T1 - T0                                                 # [L,L]
-		delt:Tensor = ts[:,-1] - ts[:,0]
+		delt:float = (ts[-1] - ts[0]).item()
 		W:   Tensor = 0.54 + 0.46*torch.cos( np.pi*DT / delt )               # [L,L]     Eqn 12
 		return W
 
