@@ -10,6 +10,7 @@ class EmbeddingLayer(torch.nn.Module):
 		self.device = device
 		self.cfg = cfg
 		self.series_length = cfg.series_length
+		self.nfreq = embedding_space.shape[0]
 		self.batch_size = cfg.batch_size
 		self.time_scale = self.cfg.time_scale
 		self.log = logging.getLogger()

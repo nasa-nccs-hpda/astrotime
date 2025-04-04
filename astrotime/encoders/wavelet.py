@@ -105,7 +105,6 @@ class WaveletAnalysisLayer(EmbeddingLayer):
 
 	def __init__(self, cfg, embedding_space: Tensor, device: device):
 		EmbeddingLayer.__init__(self, cfg, embedding_space, device)
-		self.nfreq = cfg.nfreq
 		self.C = cfg.decay_factor / (8 * math.pi ** 2)
 		self.init_log(f"WaveletAnalysisLayer: nfreq={self.nfreq} ")
 
@@ -157,7 +156,6 @@ class WaveletProjConvLayer(EmbeddingLayer):
 
 	def __init__(self, cfg, embedding_space: Tensor, device: device):
 		EmbeddingLayer.__init__(self, cfg, embedding_space, device)
-		self.nfreq = cfg.nfreq
 		self._nfeatures = cfg.nfeatures
 		self.nk = cfg.nkernels
 		self.K = cfg.kernel_size
