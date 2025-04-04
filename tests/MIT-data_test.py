@@ -5,6 +5,7 @@ from astrotime.loaders.MIT import MITLoader
 from astrotime.config.context import astrotime_initialize
 from astrotime.encoders.wavelet import embedding_space
 from typing import Any, Dict, List, Optional, Tuple
+from astrotime.util.math import npnorm
 from astrotime.util.math import shp
 import torch, numpy as np
 from hydra import initialize, compose
@@ -28,7 +29,7 @@ for TIC in TICS:
 	t: np.ndarray = dset[TIC + ".time"].values
 	y: np.ndarray = dset[TIC + ".y"].values
 	nanmask = np.isnan(y)
-	t, y = t[~nanmask], y[~nanmask]
+	t, y = t[~nanmask], npnorm(y[~nanmask])
 	dt = np.diff(t)
 	slist.append( [t.size, np.median(np.abs(dt)), np.median(np.abs(np.diff(y))), y.std(), dt.std() ] )
 stats = np.array(slist)
