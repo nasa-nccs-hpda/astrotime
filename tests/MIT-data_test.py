@@ -23,17 +23,16 @@ TICS: List[str] = data_loader.TICS(sector)
 embedding_space_array, embedding_space_tensor = embedding_space( cfg.transform, device )
 data_loader.load_sector( sector )
 dset: xarray.Dataset = data_loader.dataset
-lens, tm, ym = [],[],[]
+slist = []
 for TIC in TICS:
 	t: np.ndarray = dset[TIC + ".time"].values
 	y: np.ndarray = dset[TIC + ".y"].values
-	lens.append( t.size )
-	tm.append( np.diff(t) )
-	ym.append( y )
-nL, nT, nY = np.array(lens), np.stack(tm), np.stack(ym)
-print( f"Length: {nL.min()} -> {nL.max()}, median={np.median(nL)}" )
-print( f"DT: {nT.min():.3f} -> {nT.max():.3f}, median={np.median(nT)}" )
-print( f"Y: {nY.min():.3f} -> {nY.max():.3f}, median range={np.median(nY.max(axis=1)-nY.min(axis=1))}" )
+	slist.append( [t.size, np.diff(t), np.diff(y),  y.max()-y.min()] )
+stats = np.array(slist)
+print( f"stats{shp(stats)}: ")
+# print( f"Length: {nL.min()} -> {nL.max()}, median={np.median(nL)}" )
+# print( f"DT: {nT.min():.3f} -> {nT.max():.3f}, median={np.median(nT)}" )
+# print( f"Y: {nY.min():.3f} -> {nY.max():.3f}, median range={np.median(nY.max(axis=1)-nY.min(axis=1))}" )
 
 
 #print( f" y{shp(y)} t{shp(t)}")
