@@ -1,4 +1,4 @@
-series_length: ${data.series_length}  # Length of subset of input timeseries to process
+series_length: 4096                 # Length of subset of input timeseries to process
 sparsity: 0.0                       # Fraction of observations to drop (randomly)
 batch_size: ${data.batch_size}      # Batch size for training
 nfreq: 512                          # Number of frequency values to compute (spectral resolution)
