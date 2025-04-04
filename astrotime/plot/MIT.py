@@ -142,7 +142,7 @@ class MITDatasetPlot(SignalPlot):
 
 class MITTransformPlot(SignalPlot):
 
-	def __init__(self, name: str, data_loader: MITLoader, transforms: Dict[str,EmbeddingLayer], embedding_space: np.ndarray, tparms: Dict, sector: int, **kwargs):
+	def __init__(self, name: str, data_loader: MITLoader, transforms: Dict[str,EmbeddingLayer], embedding_space: np.ndarray, sector: int, tparms: Dict, **kwargs):
 		SignalPlot.__init__(self, **kwargs)
 		self.name = name
 		self.sector: int = sector
