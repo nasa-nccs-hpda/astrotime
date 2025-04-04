@@ -120,53 +120,17 @@ class Slider(SliderBase):
         defaults = {'facecolor': 'white', 'edgecolor': '.75', 'size': 10}
         handle_style = {} if handle_style is None else handle_style
         marker_props = { f'marker{k}': v for k, v in {**defaults, **handle_style}.items()  }
-
-        if orientation == 'vertical':
-            self.track = Rectangle(
-                (.25, 0), .5, 1,
-                transform=ax.transAxes,
-                facecolor=track_color
-            )
-            ax.add_patch(self.track)
-            self.poly = ax.axhspan(valmin, valinit, .25, .75, **kwargs)
-            # Drawing a longer line and clipping it to the track avoids
-            # pixelation-related asymmetries.
-            self.hline = ax.axhline(valinit, 0, 1, color=initcolor, lw=1, clip_path=TransformedPatchPath(self.track))
-            handleXY = [[0.5], [valinit]]
-        else:
-            self.track = Rectangle(
-                (0, .25), 1, .5,
-                transform=ax.transAxes,
-                facecolor=track_color
-            )
-            ax.add_patch(self.track)
-            self.poly = ax.axvspan(valmin, valinit, .25, .75, **kwargs)
-            self.vline = ax.axvline(valinit, 0, 1, color=initcolor, lw=1,  clip_path=TransformedPatchPath(self.track))
-            handleXY = [[valinit], [0.5]]
+        self.track = Rectangle(
+            (0, .25), 1, .5,
+            transform=ax.transAxes,
+            facecolor=track_color
+        )
+        ax.add_patch(self.track)
+        self.poly = ax.axvspan(valmin, valinit, .25, .75, **kwargs)
+        self.vline = ax.axvline(valinit, 0, 1, color=initcolor, lw=1,  clip_path=TransformedPatchPath(self.track))
+        handleXY = [[valinit], [0.5]]
         self._handle, = ax.plot(  *handleXY,  "o", **marker_props,  clip_on=False )
-
-        if orientation == 'vertical':
-            self.label = ax.text(0.5, 1.02, label, transform=ax.transAxes,
-                                 verticalalignment='bottom',
-                                 horizontalalignment='center')
-
-            self.index_box = TextBox(aux_axes[2], "", initial="0")
-           # self.index_box.on_submit(self.set_value)
-
-            self.valtext = TextBox(ax,"", self._format(valinit),
-                                   transform=ax.transAxes,
-                                   verticalalignment='top',
-                                   horizontalalignment='center')
-        else:
-            self.label = ax.text(-0.02, 0.5, label, transform=ax.transAxes,
-                                 verticalalignment='center',
-                                 horizontalalignment='right')
-
-            self.valtext = ax.text(1.02, 0.5, self._format(valinit),
-                                   transform=ax.transAxes,
-                                   verticalalignment='center',
-                                   horizontalalignment='left')
-
+        self.valtext = TextBox( ax,1.02, 0.5, self._format(valinit) )
         self.set_val(valinit)
 
     def _value_in_bounds(self, val):
@@ -271,10 +235,10 @@ class TextBox(AxesWidget):
     Call `.on_submit` to be updated whenever the user hits enter or leaves the text entry field.
     """
 
-    def __init__(self, ax, initial='' ):
+    def __init__(self, ax, x, y, initial='' ):
 
         super().__init__(ax)
-        self.text_disp = self.ax.text( 1.02, 0.5, initial, transform=self.ax.transAxes, verticalalignment='center', horizontalalignment='left', parse_math=False)
+        self.text_disp = self.ax.text( x, y, initial, transform=self.ax.transAxes, verticalalignment='center', horizontalalignment='left', parse_math=False)
         self._observers = cbook.CallbackRegistry(signals=["change", "submit"])
         #ax.set( xlim=(0, 1), ylim=(0, 1), navigate=False, facecolor="darkturquoise", xticks=[], yticks=[])
 
