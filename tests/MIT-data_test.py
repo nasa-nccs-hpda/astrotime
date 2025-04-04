@@ -1,3 +1,5 @@
+import xarray
+
 from astrotime.util.series import TSet
 from astrotime.loaders.MIT import MITLoader
 from astrotime.config.context import astrotime_initialize
@@ -18,9 +20,9 @@ sector = cfg.data.sector_range[0]
 data_loader = MITLoader( cfg.data )
 data_loader.initialize( TSet.Train, test_mode=False )
 embedding_space_array, embedding_space_tensor = embedding_space( cfg.transform, device )
+data_loader.load_sector( sector )
+dset: xarray.Dataset = data_loader.dataset
+print( list(dset.keys()) )
 
-batch: Dict[str,np.ndarray] = data_loader.get_batch( sector, 0 )
-y: np.ndarray = batch['y']
-t: np.ndarray = batch['t']
 
-print( f" y{shp(y)} t{shp(t)}")
+#print( f" y{shp(y)} t{shp(t)}")
