@@ -25,8 +25,8 @@ class CorentropyLayer(EmbeddingLayer):
 	def __init__(self, cfg, embedding_space: Tensor, device: device):
 		EmbeddingLayer.__init__(self, cfg, embedding_space, device)
 		self.P: Tensor = 1/embedding_space
-		self.ysigma: float = cfg.ysigma
-		self.tsigma: float = cfg.tsigma
+		self.ysigma: float = 1.0
+		self.tsigma: float =1.0
 		self.init_log(f"CorentropyLayer: nfreq={self.nfreq} ")
 
 	@property
@@ -70,8 +70,8 @@ class CorentropyLayer(EmbeddingLayer):
 
 	def embed_series(self, ts: torch.Tensor, ys: torch.Tensor ) -> Tensor:
 		self.init_log(f"CorentropyLayer shapes: ts{list(ts.shape)} ys{list(ys.shape)}")
-		self.ysigma = ys.std()
-		self.tsigma = torch.diff(ts).abs().std()
+		self.ysigma = self.cfg.ysf * ys.std()
+		self.tsigma = self.cfg.tsf * torch.diff(ts).median()
 		ykernel: Tensor = self.get_ykernel(ys)                               # [L,L]
 		L: int = ykernel.shape[0]
 		cLn: float = 1.0 / L ** 2
