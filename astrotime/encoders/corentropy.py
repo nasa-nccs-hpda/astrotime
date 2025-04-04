@@ -70,8 +70,8 @@ class CorentropyLayer(EmbeddingLayer):
 
 	def embed_series(self, ts: torch.Tensor, ys: torch.Tensor ) -> Tensor:
 		self.init_log(f"CorentropyLayer shapes: ts{list(ts.shape)} ys{list(ys.shape)}")
-		self.ysigma = 1.0 # ys.std()
-		self.tsigma = 1.0 # torch.diff(ts).std()
+		self.ysigma = ys.std()
+		self.tsigma = torch.diff(ts).abs().std()
 		ykernel: Tensor = self.get_ykernel(ys)                               # [L,L]
 		L: int = ykernel.shape[0]
 		cLn: float = 1.0 / L ** 2
