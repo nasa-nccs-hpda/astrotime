@@ -9,6 +9,7 @@ from matplotlib.lines import Line2D
 from matplotlib.backend_bases import KeyEvent, MouseEvent, MouseButton
 from astrotime.util.logging import exception_handled
 from astrotime.encoders.embedding import EmbeddingLayer
+from astrotime.util.math import npnorm
 from typing import List, Optional, Dict, Type, Union, Tuple, Any, Set
 from astrotime.util.math import tnorm
 log = logging.getLogger("astrotime")
@@ -121,10 +122,11 @@ class MITDatasetPlot(SignalPlot):
 	def get_element_data(self) -> Tuple[np.ndarray,np.ndarray,float]:
 		element: xa.Dataset = self.data_loader.get_dataset_element(self.sector,self.TICS[self.element])
 		t, y = element.data_vars['time'], element.data_vars['y']
-		ydata: np.ndarray = y.values
+		ydata: np.ndarray = y.values.squeeze()
 		xdata: np.ndarray = t.values
 		target: float = y.attrs['period']
-		return xdata, znorm(ydata.squeeze()), target
+		nan_mask = np.isnan(ydata)
+		return xdata[~nan_mask], npnorm(ydata[~nan_mask]), target
 
 	@exception_handled
 	def update(self, val):
@@ -132,6 +134,7 @@ class MITDatasetPlot(SignalPlot):
 		self.plot.set_ydata(ydata)
 		self.plot.set_xdata(xdata)
 		self.ax.set_xlim(xdata[0],xdata[-1])
+		self.ax.set_ylim( ydata.min(), ydata.max() )
 		pd_origin = xdata[np.argmax(np.abs(ydata))]
 		self.log.info( f" ---- DatasetPlot-> update({self.element}:{self.TICS[self.element]}): xlim=({xdata[0]:.3f},{xdata[-1]:.3f}), ylim=({ydata[0]:.3f},{ydata[-1]:.3f}), xdata.shape={self.plot.get_xdata().shape} origin={pd_origin} ---" )
 		self.update_period_markers( id="dataset", origin=pd_origin, period=self.target_period )
