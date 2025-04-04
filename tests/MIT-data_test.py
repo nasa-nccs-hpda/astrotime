@@ -27,13 +27,15 @@ slist = []
 for TIC in TICS:
 	t: np.ndarray = dset[TIC + ".time"].values
 	y: np.ndarray = dset[TIC + ".y"].values
-	slist.append( [t.size, np.median(np.diff(t)), np.median(np.diff(y)),  y.max()-y.min()] )
+	nanmask = np.isnan(y)
+	t, y = t[~nanmask], y[~nanmask]
+	slist.append( [t.size, np.median(np.diff(t)), np.median(np.diff(y)), y.max()-y.min()] )
 stats = np.array(slist)
 print( f"stats{shp(stats)}: ")
 print( f"Length: {stats[:,0].min()} -> {stats[:,0].max()}, median={np.median(stats[:,0])}" )
-print( f"DT: {stats[:,1].min()} -> {stats[:,1].max()}, median={np.median(stats[:,1])}")
-print( f"DY: {stats[:,2].min()} -> {stats[:,2].max():.5f}, median={np.median(stats[:,2])}" )
-print( f"Yrange: {stats[:,3].min():.3f} -> {stats[:,3].max():.3f}, median={np.median(stats[:,3])}" )
+print( f"DT: {stats[:,1].min():.7f} -> {stats[:,1].max():.7f}, median={np.median(stats[:,1]):.7f}")
+print( f"DY: {stats[:,2].min():.7f} -> {stats[:,2].max():.7f}, median={np.median(stats[:,2]):.7f}" )
+print( f"Yrange: {stats[:,3].min():.7f} -> {stats[:,3].max():.7f}, median={np.median(stats[:,3]):.7f}" )
 
 
 
