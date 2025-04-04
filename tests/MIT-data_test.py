@@ -27,7 +27,7 @@ slist = []
 for TIC in TICS:
 	t: np.ndarray = dset[TIC + ".time"].values
 	y: np.ndarray = dset[TIC + ".y"].values
-	slist.append( [t.size, np.diff(t), np.diff(y),  y.max()-y.min()] )
+	slist.append( [t.size, np.median(np.diff(t)), np.median(np.diff(y)),  y.max()-y.min()] )
 stats = np.array(slist)
 print( f"stats{shp(stats)}: ")
 # print( f"Length: {nL.min()} -> {nL.max()}, median={np.median(nL)}" )
