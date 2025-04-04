@@ -106,7 +106,7 @@ class LogScaleSlider(Slider):
 			self.poly.set_width(val - self.poly.get_x())
 			self._handle.set_xdata([val])
 		lval = 10**val
-		self.valtext.set_text(self._format(lval))
+		self.valtext.set_val(self._format(lval))
 		if self.drawon:
 			self.ax.figure.canvas.draw_idle()
 		self.val = lval
@@ -129,7 +129,7 @@ class FloatValuesSlider(Slider):
 			self.poly.set_width(ival - self.poly.get_x())
 			self._handle.set_xdata([ival])
 		lval = self.values[ival]
-		self.valtext.set_text(self._format(lval))
+		self.valtext.set_val(self._format(lval))
 		if self.drawon:
 			self.ax.figure.canvas.draw_idle()
 		self.val = lval
