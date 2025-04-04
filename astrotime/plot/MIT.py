@@ -1,6 +1,6 @@
 import logging, numpy as np
 import xarray as xa
-from .param import STIntParam
+from .param import STIntParam, STFloatParam
 from astrotime.loaders.MIT import MITLoader
 from torch import nn, optim, Tensor, FloatTensor
 from .base import SignalPlot, bounds
@@ -142,7 +142,7 @@ class MITDatasetPlot(SignalPlot):
 
 class MITTransformPlot(SignalPlot):
 
-	def __init__(self, name: str, data_loader: MITLoader, transforms: Dict[str,EmbeddingLayer], embedding_space: np.ndarray, sector: int, **kwargs):
+	def __init__(self, name: str, data_loader: MITLoader, transforms: Dict[str,EmbeddingLayer], embedding_space: np.ndarray, tparms: Dict, sector: int, **kwargs):
 		SignalPlot.__init__(self, **kwargs)
 		self.name = name
 		self.sector: int = sector
@@ -156,6 +156,8 @@ class MITTransformPlot(SignalPlot):
 		self.plots: Dict[str,Line2D] = {}
 		self.target_marker: Line2D = None
 		self.add_param( STIntParam('element', (0,len(self.TICS))  ) )
+		for k,v in tparms.items():
+			self.add_param( STFloatParam(k, v[:2], log=v[2] ) )
 		self.transax = None
 
 	def set_sector(self, sector: int ):
