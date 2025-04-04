@@ -31,8 +31,8 @@ for TIC in TICS:
 stats = np.array(slist)
 print( f"stats{shp(stats)}: ")
 print( f"Length: {stats[:,0].min()} -> {stats[:,0].max()}, median={np.median(stats[:,0])}" )
-print( f"DT: {stats[:,1].min():.5f} -> {stats[:,1].max():.5f}, median={np.median(stats[:,1]):.5f}" )
-print( f"DY: {stats[:,2].min():.5f} -> {stats[:,2].max():.5f}, median={np.median(stats[:,2]):.5f}" )
+print( f"DT: {stats[:,1].min()} -> {stats[:,1].max()}, median={np.median(stats[:,1])}")
+print( f"DY: {stats[:,2].min()} -> {stats[:,2].max():.5f}, median={np.median(stats[:,2])}" )
 print( f"Yrange: {stats[:,3].min():.3f} -> {stats[:,3].max():.3f}, median={np.median(stats[:,3])}" )
 
 
