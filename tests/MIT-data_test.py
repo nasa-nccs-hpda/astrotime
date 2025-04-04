@@ -19,10 +19,21 @@ sector = cfg.data.sector_range[0]
 
 data_loader = MITLoader( cfg.data )
 data_loader.initialize( TSet.Train, test_mode=False )
+TICS: List[str] = data_loader.TICS(sector)
 embedding_space_array, embedding_space_tensor = embedding_space( cfg.transform, device )
 data_loader.load_sector( sector )
 dset: xarray.Dataset = data_loader.dataset
-print( list(dset.keys()) )
+lens, tm, ym = [],[],[]
+for TIC in TICS:
+	t: np.ndarray = dset[TIC + ".time"].values
+	y: np.ndarray = dset[TIC + ".y"].values
+	lens.append( t.size )
+	tm.append( np.median(t) )
+	ym.append( np.median(y) )
+nL, nT, nY = np.array(lens), np.array(lens), np.array(ym)
+print( f"Length: {nL.min()} -> {nL.max()}, median={np.median(nL)}" )
+print( f"Time: {nT.min():.3f} -> {nT.max():.3f}, median={np.median(nT)}" )
+print( f"Y: {nY.min():.3f} -> {nY.max():.3f}, median={np.median(nY)}" )
 
 
 #print( f" y{shp(y)} t{shp(t)}")
