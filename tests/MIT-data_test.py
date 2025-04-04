@@ -30,9 +30,11 @@ for TIC in TICS:
 	slist.append( [t.size, np.median(np.diff(t)), np.median(np.diff(y)),  y.max()-y.min()] )
 stats = np.array(slist)
 print( f"stats{shp(stats)}: ")
-# print( f"Length: {nL.min()} -> {nL.max()}, median={np.median(nL)}" )
-# print( f"DT: {nT.min():.3f} -> {nT.max():.3f}, median={np.median(nT)}" )
-# print( f"Y: {nY.min():.3f} -> {nY.max():.3f}, median range={np.median(nY.max(axis=1)-nY.min(axis=1))}" )
+print( f"Length: {stats[:,0].min()} -> {stats[:,0].max()}, median={np.median(stats[:,0])}" )
+print( f"DT: {stats[:,1].min():.3f} -> {stats[:,1].max():.3f}, median={np.median(stats[:,1])}" )
+print( f"DY: {stats[:,2].min():.3f} -> {stats[:,2].max():.3f}, median={np.median(stats[:,2])}" )
+print( f"Yrange: {stats[:,3].min():.3f} -> {stats[:,3].max():.3f}, median={np.median(stats[:,3])}" )
+
 
 
 #print( f" y{shp(y)} t{shp(t)}")
