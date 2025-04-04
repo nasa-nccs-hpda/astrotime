@@ -126,7 +126,7 @@ class MITDatasetPlot(SignalPlot):
 		xdata: np.ndarray = t.values
 		target: float = y.attrs['period']
 		nan_mask = np.isnan(ydata)
-		return xdata[~nan_mask], npnorm(ydata[~nan_mask]), target
+		return xdata[~nan_mask], npnorm(ydata[~nan_mask],dim=0), target
 
 	@exception_handled
 	def update(self, val):
