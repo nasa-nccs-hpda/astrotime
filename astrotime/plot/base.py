@@ -176,13 +176,14 @@ class SignalPlotFigure(object):
 		self.callbacks.append(plot.update)
 
 	def key_press(self, event: KeyEvent) -> Any:
-		pass
+		self.log.info(f" SignalPlotFigure.key_press: {event}")
 
 	def key_release(self, event: KeyEvent) -> Any:
 		pass
 
 	def button_press(self, event: MouseEvent) -> Any:
-		self.log.info(f" SignalPlotFigure.button_press: {event}")
+		pass
+
 
 	def button_release(self, event: MouseEvent) -> Any:
 		pass
