@@ -7,6 +7,6 @@ base_freq_range:                    # Base frequency range in computed spectra (
   - 20.0
 time_scale: 1.0                     # Time rescale factor for shifted frequency range
 fscale: "log"                       # Scale of frequency axis
-ysf:     1.0
-tsf:     10.0
+ysf:     0.1
+tsf:     0.1
 

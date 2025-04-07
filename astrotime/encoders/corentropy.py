@@ -25,21 +25,15 @@ class CorentropyLayer(EmbeddingLayer):
 	def __init__(self, cfg, embedding_space: Tensor, device: device):
 		EmbeddingLayer.__init__(self, cfg, embedding_space, device)
 		self.P: Tensor = 1/embedding_space
-		self.ysigma: float = 1.0
-		self.tsigma: float =1.0
+		self.ysf: float = self.cfg.ysf
+		self.tsf: float = self.cfg.tsf
 		self.init_log(f"CorentropyLayer: nfreq={self.nfreq} ")
 
 	@property
-	def cYn(self) -> float: return 1 /( math.sqrt(2*np.pi) * self.ysigma )
+	def cYn(self) -> float: return 1 /( math.sqrt(2*np.pi) * self.ysf )
 
 	@property
-	def cYs(self) -> float: return 1 / 2*self.ysigma**2
-
-	@property
-	def cTn(self) -> float: return 1 /( math.sqrt(2*np.pi) * self.tsigma )
-
-	@property
-	def cTs(self) -> float: return 2 / self.tsigma**2
+	def cYs(self) -> float: return 1 / 2*self.ysf**2
 
 	def get_ykernel(self,ys: torch.Tensor) -> Tensor:
 		L: int =  ys.shape[0]
@@ -56,8 +50,10 @@ class CorentropyLayer(EmbeddingLayer):
 		T1:  Tensor = ts[ None, :]                                        # [L,L]
 		DT:  Tensor = T1 - T0                                             # [L,L]
 		PP: Tensor = self.P[None,None,:]                                  # [L,L,F]
+		tsig = self.tsf * PP                                              # [L,L,F]
 		UTP: Tensor = torch.sin(  DT[:,:,None] * (np.pi/PP) )**2          # [L,L,F]
-		GT:  Tensor = self.cTn * torch.exp( -self.cTs * UTP )             # [L,L,F]   Eqn 10
+		cTn: Tensor = 1 / ( math.sqrt(2 * np.pi) * tsig )                 # [L,L,F]
+		GT:  Tensor = cTn * torch.exp( -tsig * UTP )                      # [L,L,F]   Eqn 10
 		return GT
 
 	def get_W(self, ts: torch.Tensor) -> Tensor:
@@ -70,8 +66,6 @@ class CorentropyLayer(EmbeddingLayer):
 
 	def embed_series(self, ts: torch.Tensor, ys: torch.Tensor ) -> Tensor:
 		self.init_log(f"CorentropyLayer shapes: ts{list(ts.shape)} ys{list(ys.shape)}")
-		self.ysigma = self.cfg.ysf * ys.std()
-		self.tsigma = self.cfg.tsf * torch.diff(ts).median()
 		ykernel: Tensor = self.get_ykernel(ys)                               # [L,L]
 		L: int = ykernel.shape[0]
 		cLn: float = 1.0 / L ** 2
