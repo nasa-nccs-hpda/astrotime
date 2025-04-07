@@ -182,7 +182,7 @@ class SignalPlotFigure(object):
 		pass
 
 	def button_press(self, event: MouseEvent) -> Any:
-		pass
+		self.log.info(f" SignalPlotFigure.button_press: {event}")
 
 	def button_release(self, event: MouseEvent) -> Any:
 		pass
