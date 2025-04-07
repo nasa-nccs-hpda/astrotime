@@ -71,8 +71,8 @@ class CorentropyLayer(EmbeddingLayer):
 		cLn: float = 1.0 / L ** 2
 		tkernel: Tensor = self.get_tkernel(ts)                               # [L,L,F]
 		W: Tensor = self.get_W(ts)                                           #  [L,L]
-		V: Tensor = ykernel[:,:,None] * tkernel * W[:,:,None]            # [L,L,F]
-		return self.ysigma * cLn * torch.sum(V,dim=(0,1))                    # [F]       Eqn 11
+		V: Tensor = ykernel[:,:,None] * tkernel * W[:,:,None]                # [L,L,F]
+		return self.ysf * cLn * torch.sum(V,dim=(0,1))                       # [F]       Eqn 11
 
 	def embed(self, ts: torch.Tensor, ys: torch.Tensor) -> Tensor:
 		if ys.ndim == 1 and ts.ndim == 1:
