@@ -177,14 +177,14 @@ class SignalPlotFigure(object):
 
 	def key_press(self, event: KeyEvent) -> Any:
 		ke: KeyEvent = event
-		self.log.info(f" SignalPlotFigure.key_press: {ke.key}")
+		for sn, sp in self.sparms.items():
+			sp.process_key_press(ke.key)
 
 	def key_release(self, event: KeyEvent) -> Any:
 		pass
 
 	def button_press(self, event: MouseEvent) -> Any:
 		pass
-
 
 	def button_release(self, event: MouseEvent) -> Any:
 		pass

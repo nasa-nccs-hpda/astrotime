@@ -24,6 +24,9 @@ class STParam:
 	def value_selected(self):
 		return self.value
 
+	def process_key_press(self, key: str ):
+		pass
+
 	def __repr__(self) -> str:
 		val = f"{self.value:.3f}" if type(self.value) is float else f"{self.value}"
 		return f"{self.name}: {val}"
@@ -147,9 +150,16 @@ class STIntParam(STParam):
 		self.step: int = kwargs.get( 'step', 1 )
 		self._widget: Slider = None
 
+	def process_key_press(self, key: str ):
+		if key == "right":
+			self.set_value( self.value + self.step )
+		if key == "left":
+			self.set_value( self.value - self.step )
+
 	@exception_handled
 	def set_value(self , val):
 		self._widget.set_val( int(val) )
+		self._widget.canvas.draw_idle()
 
 	def widget(self, ax, callbacks: List[Callable], aux_axes=None ):
 		if self._widget is None:
