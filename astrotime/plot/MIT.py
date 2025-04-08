@@ -36,23 +36,23 @@ class PeriodMarkers:
 		self.period: float = None
 		self.markers: List[Line2D] = []
 		self.yrange = kwargs.get('yrange', (-1,1) )
-		self.npm: int = kwargs.get('npm', 7 )
+		self.npm: int = kwargs.get('npm', 12 )
 		self.color: str = kwargs.get('color', 'green' )
 		self.alpha: float = kwargs.get('alpha', 0.5 )
 		self.linestyle: str = kwargs.get('linestyle', '-')
 
-	def update(self, origin: float, period: float, color: str, ax: Axes = None ):
+	def update(self, origin: float, period: float = None ):
 		self.origin = origin
-		self.period = period
-		self.color = color
-		self.refresh(ax)
+		if period is not None:
+			self.period = period
+		self.refresh()
 
 	@property
 	def fig(self):
 		return self.ax.get_figure()
 
-	def refresh( self, ax: Axes = None ):
-		self.log.info( f"\n PeriodMarkers({self.name}:{id(self):02X}).refresh( origin={self.origin:.2f}, period={self.period:.2f}, ax={id(ax):02X} ) -- --- -- \n")
+	def refresh( self ):
+		self.log.info( f"\n PeriodMarkers({self.name}:{id(self):02X}).refresh( origin={self.origin:.2f}, period={self.period:.2f} ) -- --- -- \n")
 		for pid in range(0,self.npm):
 			tval = self.origin + (pid-self.npm//2) * self.period
 			if pid >= len(self.markers):  self.markers.append( self.ax.axvline( tval, self.yrange[0], self.yrange[1], color=self.color, linestyle=self.linestyle, alpha=self.alpha) )
@@ -79,7 +79,9 @@ class MITDatasetPlot(SignalPlot):
 	def update_period_markers(self, **marker_data ) -> str:
 		pm_name=  marker_data['id']
 		pm = self.period_markers.setdefault( pm_name, PeriodMarkers( pm_name, self.ax, color=marker_data['color'] ) )
-		pm.update( marker_data['origin'], marker_data['period'],  marker_data['color'], marker_data['axes']  )
+		for pm in self.period_markers.values():
+			period = marker_data.get('period',None) if (pm.name == pm_name) else None
+			pm.update( marker_data['origin'], period )
 		return pm_name
 
 	@exception_handled
@@ -87,6 +89,7 @@ class MITDatasetPlot(SignalPlot):
 		pass
 	#	if event_data['type'] == 'period_grid':
 	#		self.ext_pm_ids.add(  self.update_period_markers(**event_data)  )
+
 
 	@exception_handled
 	def button_press(self, event: MouseEvent) -> Any:
@@ -99,7 +102,7 @@ class MITDatasetPlot(SignalPlot):
 				else:
 					event_data: Dict = self._shared_params.get(id(event.inaxes))
 					if event_data is not None:
-						self.update_period_markers(id=event_data['id'], origin=self.origin, period=event_data['period'], axes=event_data['axes'], color="yellow" )
+						self.update_period_markers(id=event_data['id'], origin=self.origin, period=event_data['period'], axes=event_data['axes'], color="darkviolet" )
 
 	#		if "ctrl" in event.modifiers:
 	#			self.update_period_markers(id=list(self.ext_pm_ids)[0], origin=event.xdata, period=self.target_period)
