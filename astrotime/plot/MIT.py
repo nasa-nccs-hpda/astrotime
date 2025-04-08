@@ -67,7 +67,6 @@ class MITDatasetPlot(SignalPlot):
 		self.data_loader: MITLoader = data_loader
 		self.TICS: List[str] = data_loader.TICS(sector)
 		self.annotations: List[str] = tolower( kwargs.get('annotations',None) )
-		self.colors = ['blue', 'green'] + [ 'yellow' ] * 16
 		self.ofac = kwargs.get('upsample_factor',1)
 		self.plot: Line2D = None
 		self.add_param( STIntParam('element', (0,len(self.TICS))  ) )
@@ -79,9 +78,8 @@ class MITDatasetPlot(SignalPlot):
 	@exception_handled
 	def update_period_markers(self, **marker_data ) -> str:
 		pm_name=  marker_data['id']
-		color = marker_data['color']
-		pm = self.period_markers.setdefault( pm_name, PeriodMarkers( pm_name, self.ax, color=color ) )
-		pm.update( marker_data['origin'], marker_data['period'],  marker_data['axes']  )
+		pm = self.period_markers.setdefault( pm_name, PeriodMarkers( pm_name, self.ax, color=marker_data['color'] ) )
+		pm.update( marker_data['origin'], marker_data['period'],  marker_data['color'], marker_data['axes']  )
 		return pm_name
 
 	@exception_handled
