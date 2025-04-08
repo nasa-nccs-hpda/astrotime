@@ -41,9 +41,10 @@ class PeriodMarkers:
 		self.alpha: float = kwargs.get('alpha', 0.5 )
 		self.linestyle: str = kwargs.get('linestyle', '-')
 
-	def update(self, origin: float, period: float, ax: Axes = None ):
+	def update(self, origin: float, period: float, color: str, ax: Axes = None ):
 		self.origin = origin
 		self.period = period
+		self.color = color
 		self.refresh(ax)
 
 	@property
@@ -73,11 +74,13 @@ class MITDatasetPlot(SignalPlot):
 		self.period_markers: Dict[str,PeriodMarkers] = {}
 		self.ext_pm_ids: Set[str] = set()
 		self.transax = None
+		self.origin = None
 
 	@exception_handled
 	def update_period_markers(self, **marker_data ) -> str:
 		pm_name=  marker_data['id']
-		pm = self.period_markers.setdefault( pm_name, PeriodMarkers( pm_name, self.ax ) )
+		color = marker_data['color']
+		pm = self.period_markers.setdefault( pm_name, PeriodMarkers( pm_name, self.ax, color=color ) )
 		pm.update( marker_data['origin'], marker_data['period'],  marker_data['axes']  )
 		return pm_name
 
@@ -92,7 +95,14 @@ class MITDatasetPlot(SignalPlot):
 		if event.button == MouseButton.RIGHT:
 			self.log.info( f" ---- button_press: dataset modifiers: {event.modifiers}")
 			if "shift" in event.modifiers:
-				self.update_period_markers(id="dataset", origin=event.xdata, period=self.target_period, axes=event.inaxes )
+				if event.inaxes == self.ax:
+					self.origin = event.xdata
+					self.update_period_markers(id="dataset", origin=self.origin, period=self.target_period, axes=event.inaxes, color="green" )
+				else:
+					event_data: Dict = self._shared_params.get(id(event.inaxes))
+					if event_data is not None:
+						self.update_period_markers(id=event_data['id'], origin=self.origin, period=event_data['period'], axes=event_data['axes'], color="yellow" )
+
 	#		if "ctrl" in event.modifiers:
 	#			self.update_period_markers(id=list(self.ext_pm_ids)[0], origin=event.xdata, period=self.target_period)
 
@@ -117,7 +127,8 @@ class MITDatasetPlot(SignalPlot):
 		self.ax.title.set_fontweight('bold')
 		self.ax.set_xlim(xs[0],xs[-1])
 		self.ax.set_ylim( ys.min(), ys.max() )
-		self.update_period_markers(  id="dataset", origin=xs[np.argmax(np.abs(ys))], period=self.target_period, axes=self.ax )
+		self.origin = xs[np.argmax(np.abs(ys))]
+		self.update_period_markers(  id="dataset", origin=self.origin, period=self.target_period, axes=self.ax )
 
 	@exception_handled
 	def get_element_data(self) -> Tuple[np.ndarray,np.ndarray,float]:
@@ -182,10 +193,7 @@ class MITTransformPlot(SignalPlot):
 	@exception_handled
 	def button_press(self, event: MouseEvent) -> Any:
 		if ("shift" in event.modifiers) and (event.button == MouseButton.RIGHT):
-			self.log.info( f" ---- button_press: ww_analysis modifiers: {event.modifiers}")
-			event_data = dict(type='period_grid', id='ww_analysis', origin=event.xdata, period=1/event.ydata, color='yellow')
-			for listener in self.listeners:
-				listener(event_data)
+			self._shared_params[id(self.ax)] = dict(id="transform", period=1/event.xdata, axes=self.ax)
 
 	@exception_handled
 	def apply_transform( self, transform: EmbeddingLayer, series_data: xa.Dataset ) -> np.ndarray:
