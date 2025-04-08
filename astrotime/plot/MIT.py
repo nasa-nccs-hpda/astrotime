@@ -51,7 +51,7 @@ class PeriodMarkers:
 		return self.ax.get_figure()
 
 	def refresh(self):
-		self.log.info( f" PeriodMarkers({self.name}:{id(self):02X}).refresh( origin={self.origin:.2f}, period={self.period:.2f} ) -- --- -- ")
+		self.log.info( f"\n PeriodMarkers({self.name}:{id(self):02X}).refresh( origin={self.origin:.2f}, period={self.period:.2f} ) -- --- -- \n")
 		for pid in range(0,self.npm):
 			tval = self.origin + (pid-self.npm//2) * self.period
 			if pid >= len(self.markers):  self.markers.append( self.ax.axvline( tval, self.yrange[0], self.yrange[1], color=self.color, linestyle=self.linestyle, alpha=self.alpha) )
@@ -83,8 +83,9 @@ class MITDatasetPlot(SignalPlot):
 
 	@exception_handled
 	def process_external_event(self, event_data: Dict[str,Any] ) -> None:
-		if event_data['type'] == 'period_grid':
-			self.ext_pm_ids.add(  self.update_period_markers(**event_data)  )
+		pass
+	#	if event_data['type'] == 'period_grid':
+	#		self.ext_pm_ids.add(  self.update_period_markers(**event_data)  )
 
 	@exception_handled
 	def button_press(self, event: MouseEvent) -> Any:
@@ -92,8 +93,8 @@ class MITDatasetPlot(SignalPlot):
 			self.log.info( f" ---- button_press: dataset modifiers: {event.modifiers}")
 			if "shift" in event.modifiers:
 				self.update_period_markers(id="dataset", origin=event.xdata, period=self.target_period)
-			if "ctrl" in event.modifiers:
-				self.update_period_markers(id=list(self.ext_pm_ids)[0], origin=event.xdata, period=self.target_period)
+	#		if "ctrl" in event.modifiers:
+	#			self.update_period_markers(id=list(self.ext_pm_ids)[0], origin=event.xdata, period=self.target_period)
 
 	@exception_handled
 	def button_release(self, event: MouseEvent) -> Any:

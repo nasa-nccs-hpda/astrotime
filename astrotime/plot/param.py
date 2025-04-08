@@ -151,10 +151,10 @@ class STIntParam(STParam):
 		self._widget: Slider = None
 
 	def process_key_press(self, key: str ):
-		if key == "right":
-			self.set_value( self.value_selected() + self.step )
-		if key == "left":
-			self.set_value( self.value_selected() - self.step )
+		if   key == "right": self.set_value( self.value_selected() + 1 )
+		elif key == "left":  self.set_value( self.value_selected() - 1 )
+		elif key == "up":    self.set_value( self.value_selected() + 10 )
+		elif key == "down":  self.set_value( self.value_selected() - 10 )
 
 	@exception_handled
 	def set_value(self , val):
