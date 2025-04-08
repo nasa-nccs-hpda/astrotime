@@ -152,9 +152,9 @@ class STIntParam(STParam):
 
 	def process_key_press(self, key: str ):
 		if key == "right":
-			self.set_value( self.value + self.step )
+			self.set_value( self.value_selected() + self.step )
 		if key == "left":
-			self.set_value( self.value - self.step )
+			self.set_value( self.value_selected() - self.step )
 
 	@exception_handled
 	def set_value(self , val):
