@@ -41,6 +41,10 @@ class PeriodMarkers:
 		self.alpha: float = kwargs.get('alpha', 0.5 )
 		self.linestyle: str = kwargs.get('linestyle', '-')
 
+	def set_visible(self, b: bool):
+		for m in self.markers:
+			m.set_visible(b)
+
 	def update(self, origin: float, period: float = None ):
 		self.origin = origin
 		if period is not None:
@@ -71,6 +75,7 @@ class MITDatasetPlot(SignalPlot):
 		self.plot: Line2D = None
 		self.add_param( STIntParam('element', (0,len(self.TICS))  ) )
 		self.period_markers: Dict[str,PeriodMarkers] = {}
+		self.target_period = None
 		self.ext_pm_ids: Set[str] = set()
 		self.transax = None
 		self.origin = None
@@ -83,6 +88,10 @@ class MITDatasetPlot(SignalPlot):
 			period = marker_data.get('period',None) if (pm.name == pm_name) else None
 			pm.update( marker_data['origin'], period )
 		return pm_name
+
+	def set_markers_visible(self, b: bool):
+		for pm in self.period_markers.values():
+			pm.set_visible(b)
 
 	@exception_handled
 	def process_external_event(self, event_data: Dict[str,Any] ) -> None:
@@ -146,6 +155,7 @@ class MITDatasetPlot(SignalPlot):
 		xdata, ydata, target = self.get_element_data()
 		self.plot.set_ydata(ydata)
 		self.plot.set_xdata(xdata)
+		self.target_period = target
 		self.ax.set_xlim(xdata[0],xdata[-1])
 		self.ax.set_ylim( ydata.min(), ydata.max() )
 		pd_origin = xdata[np.argmax(np.abs(ydata))]
@@ -164,7 +174,7 @@ class MITTransformPlot(SignalPlot):
 		self.embedding_space: np.ndarray = embedding_space
 		self.TICS: List[str] = data_loader.TICS(sector)
 		self.annotations: List[str] = tolower( kwargs.get('annotations',None) )
-		self.colors = ['blue', 'green', 'red', 'cyan', 'magenta', 'orange', 'sienna', 'yellow']
+		self.colors = ['darkviolet', 'darkorange', 'saddlebrown', 'darkturquoise', 'magenta' ]
 		self.ofac = kwargs.get('upsample_factor',1)
 		self.plots: Dict[str,Line2D] = {}
 		self.target_marker: Line2D = None
@@ -182,7 +192,7 @@ class MITTransformPlot(SignalPlot):
 		for iplot, (tname, transform) in enumerate(self.transforms.items()):
 			tdata: np.ndarray = self.apply_transform(transform,series_data)
 			self.plots[tname] = self.ax.plot(self.embedding_space, tdata.squeeze(), label=tname, color=self.colors[iplot], marker=".", linewidth=1, markersize=2, alpha=0.5)[0]
-		self.target_marker: Line2D = self.ax.axvline( freq, 0.0, 1.0, color='grey', linestyle='-')
+		self.target_marker: Line2D = self.ax.axvline( freq, 0.0, 1.0, color='green', linestyle='-')
 		self.ax.title.set_text(self.name)
 		self.ax.title.set_fontsize(8)
 		self.ax.title.set_fontweight('bold')
