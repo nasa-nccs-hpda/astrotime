@@ -41,17 +41,17 @@ class PeriodMarkers:
 		self.alpha: float = kwargs.get('alpha', 0.5 )
 		self.linestyle: str = kwargs.get('linestyle', '-')
 
-	def update(self, origin: float, period: float ):
+	def update(self, origin: float, period: float, ax: Axes = None ):
 		self.origin = origin
 		self.period = period
-		self.refresh()
+		self.refresh(ax)
 
 	@property
 	def fig(self):
 		return self.ax.get_figure()
 
-	def refresh(self):
-		self.log.info( f"\n PeriodMarkers({self.name}:{id(self):02X}).refresh( origin={self.origin:.2f}, period={self.period:.2f} ) -- --- -- \n")
+	def refresh( self, ax: Axes = None ):
+		self.log.info( f"\n PeriodMarkers({self.name}:{id(self):02X}).refresh( origin={self.origin:.2f}, period={self.period:.2f}, ax={id(ax):02X} ) -- --- -- \n")
 		for pid in range(0,self.npm):
 			tval = self.origin + (pid-self.npm//2) * self.period
 			if pid >= len(self.markers):  self.markers.append( self.ax.axvline( tval, self.yrange[0], self.yrange[1], color=self.color, linestyle=self.linestyle, alpha=self.alpha) )
@@ -78,7 +78,7 @@ class MITDatasetPlot(SignalPlot):
 	def update_period_markers(self, **marker_data ) -> str:
 		pm_name=  marker_data['id']
 		pm = self.period_markers.setdefault( pm_name, PeriodMarkers( pm_name, self.ax ) )
-		pm.update( marker_data['origin'], marker_data['period'] )
+		pm.update( marker_data['origin'], marker_data['period'],  marker_data['axes']  )
 		return pm_name
 
 	@exception_handled
@@ -92,7 +92,7 @@ class MITDatasetPlot(SignalPlot):
 		if event.button == MouseButton.RIGHT:
 			self.log.info( f" ---- button_press: dataset modifiers: {event.modifiers}")
 			if "shift" in event.modifiers:
-				self.update_period_markers(id="dataset", origin=event.xdata, period=self.target_period)
+				self.update_period_markers(id="dataset", origin=event.xdata, period=self.target_period, axes=event.inaxes )
 	#		if "ctrl" in event.modifiers:
 	#			self.update_period_markers(id=list(self.ext_pm_ids)[0], origin=event.xdata, period=self.target_period)
 
