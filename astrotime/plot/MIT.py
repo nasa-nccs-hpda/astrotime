@@ -218,11 +218,17 @@ class MITTransformPlot(SignalPlot):
 	def update(self, val):
 		series_data: xa.Dataset = self.data_loader.get_dataset_element(self.sector, self.TICS[self.element])
 		period: float = series_data.data_vars['y'].attrs['period']
+		transform_peak = None
 		for iplot, (tname, transform) in enumerate(self.transforms.items()):
 			tdata: np.ndarray = self.apply_transform(transform,series_data)
 			self.log.info(f"---- MITTransformPlot({iplot}) {tname}[{self.element})] update: tdata{tdata.shape}, mean={tdata.mean():.2f} --- ")
 			self.plots[tname].set_ydata(tdata)
+			if iplot == 0:
+				freq_data = transform.embedding_space.cpu().numpy()
+				transform_peak =  freq_data[ np.argmax(tdata) ]
 		freq = 1.0/period
 		self.target_marker.set_xdata([freq,freq])
+		period = 1.0/transform_peak if (transform_peak is not None) else 1.0/freq
+		self._shared_params[id(self.ax)] = dict(id="transform", period=period, axes=self.ax)
 		self.ax.figure.canvas.draw_idle()
 
