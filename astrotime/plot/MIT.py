@@ -128,7 +128,7 @@ class MITDatasetPlot(SignalPlot):
 		self.ax.set_xlim(xs[0],xs[-1])
 		self.ax.set_ylim( ys.min(), ys.max() )
 		self.origin = xs[np.argmax(np.abs(ys))]
-		self.update_period_markers(  id="dataset", origin=self.origin, period=self.target_period, axes=self.ax )
+		self.update_period_markers(  id="dataset", origin=self.origin, period=self.target_period, axes=self.ax, color="green" )
 
 	@exception_handled
 	def get_element_data(self) -> Tuple[np.ndarray,np.ndarray,float]:
@@ -149,7 +149,7 @@ class MITDatasetPlot(SignalPlot):
 		self.ax.set_ylim( ydata.min(), ydata.max() )
 		pd_origin = xdata[np.argmax(np.abs(ydata))]
 		self.log.info( f" ---- DatasetPlot-> update({self.element}:{self.TICS[self.element]}): xlim=({xdata[0]:.3f},{xdata[-1]:.3f}), ylim=({ydata[0]:.3f},{ydata[-1]:.3f}), xdata.shape={self.plot.get_xdata().shape} origin={pd_origin} ---" )
-		self.update_period_markers( id="dataset", origin=pd_origin, period=self.target_period, axes=self.ax )
+		self.update_period_markers( id="dataset", origin=pd_origin, period=self.target_period, axes=self.ax, color="green" )
 		self.ax.figure.canvas.draw_idle()
 
 class MITTransformPlot(SignalPlot):
