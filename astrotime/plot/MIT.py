@@ -118,8 +118,9 @@ class MITDatasetPlot(SignalPlot):
 		self.ax.title.set_fontsize(8)
 		self.ax.title.set_fontweight('bold')
 		self.ax.set_xlim(xs[0],xs[-1])
-		self.ax.set_ylim(ys.min(),ys.max())
 		self.update_period_marker()
+		self.ax.set_ylim(ys.min(),ys.max())
+
 
 	@exception_handled
 	def get_element_data(self) -> Tuple[np.ndarray,np.ndarray,float]:
@@ -137,9 +138,9 @@ class MITDatasetPlot(SignalPlot):
 		self.plot.set_ydata(ydata)
 		self.plot.set_xdata(xdata)
 		self.ax.set_xlim(xdata[0],xdata[-1])
-		self.ax.set_ylim(ydata.min(),ydata.max())
 		self.log.info( f" ---- DatasetPlot-> update({self.element}:{self.TICS[self.element]}): xlim=({xdata[0]:.3f},{xdata[-1]:.3f}), ylim=({ydata[0]:.3f},{ydata[-1]:.3f}), xdata.shape={self.plot.get_xdata().shape} origin={pd_origin} ---" )
 		self.update_period_marker()
+		self.ax.set_ylim(ydata.min(),ydata.max())
 		self.ax.figure.canvas.draw_idle()
 
 class MITTransformPlot(SignalPlot):
