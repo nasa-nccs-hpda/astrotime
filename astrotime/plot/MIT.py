@@ -86,7 +86,7 @@ class MITDatasetPlot(SignalPlot):
 		pm = self.period_markers.setdefault( pm_name, PeriodMarkers( pm_name, self.ax, color=marker_data['color'] ) )
 		for pm in self.period_markers.values():
 			period = marker_data.get('period',None) if (pm.name == pm_name) else None
-			pm.update( marker_data['origin'], period )
+			pm.update( self.origin, period )
 		return pm_name
 
 	def set_markers_visible(self, b: bool):
@@ -107,11 +107,11 @@ class MITDatasetPlot(SignalPlot):
 			if "shift" in event.modifiers:
 				if event.inaxes == self.ax:
 					self.origin = event.xdata
-					self.update_period_markers(id="dataset", origin=self.origin, period=self.target_period, axes=event.inaxes, color="green" )
+					self.update_period_markers(id="dataset", period=self.target_period, axes=event.inaxes, color="green" )
 				else:
 					event_data: Dict = self._shared_params.get(id(event.inaxes))
 					if event_data is not None:
-						self.update_period_markers(id=event_data['id'], origin=self.origin, period=event_data['period'], axes=event_data['axes'], color="darkviolet" )
+						self.update_period_markers(id=event_data['id'], period=event_data['period'], axes=event_data['axes'], color="darkviolet" )
 
 	#		if "ctrl" in event.modifiers:
 	#			self.update_period_markers(id=list(self.ext_pm_ids)[0], origin=event.xdata, period=self.target_period)
@@ -158,9 +158,9 @@ class MITDatasetPlot(SignalPlot):
 		self.target_period = target
 		self.ax.set_xlim(xdata[0],xdata[-1])
 		self.ax.set_ylim( ydata.min(), ydata.max() )
-		pd_origin = xdata[np.argmax(np.abs(ydata))]
+		self.origin = xdata[np.argmax(np.abs(ydata))]
 		self.log.info( f" ---- DatasetPlot-> update({self.element}:{self.TICS[self.element]}): xlim=({xdata[0]:.3f},{xdata[-1]:.3f}), ylim=({ydata[0]:.3f},{ydata[-1]:.3f}), xdata.shape={self.plot.get_xdata().shape} origin={pd_origin} ---" )
-		self.update_period_markers( id="dataset", origin=pd_origin, period=self.target_period, axes=self.ax, color="green" )
+		self.update_period_markers( id="dataset", period=self.target_period, axes=self.ax, color="green" )
 		self.ax.title.set_text(f"{self.name}: TP={target:.3f} (F={1/target:.3f})")
 		self.ax.figure.canvas.draw_idle()
 
