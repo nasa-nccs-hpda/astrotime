@@ -206,9 +206,10 @@ class MITTransformPlot(SignalPlot):
 	@exception_handled
 	def button_press(self, event: MouseEvent) -> Any:
 		if ("shift" in event.modifiers) and (event.button == MouseButton.RIGHT) and(event.inaxes == self.ax):
-			freq = event.xdata
-			self._shared_params[id(self.ax)] = dict(id="transform", period=1/freq, axes=self.ax)
-			self.log.info(f"---- MITTransformPlot.button_press: selected freq={freq:.2f}, period={1/freq:.2f} --- ")
+			freq, period = event.xdata, 1/event.xdata
+			self._shared_params[id(self.ax)] = dict(id="transform", period=period, axes=self.ax)
+			self.log.info(f"---- MITTransformPlot.button_press: selected freq={freq:.2f}, period={period:.2f} --- ")
+			self.ax.title.set_text(f"{self.name}: TP={period:.3f} (F={freq:.3f})")
 			self.selection_marker.set_xdata([freq, freq])
 
 	@exception_handled
