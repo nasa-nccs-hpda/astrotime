@@ -117,10 +117,10 @@ class MITDatasetPlot(SignalPlot):
 
 	@exception_handled
 	def _setup(self):
-		xs, ys, self.period = self.get_element_data()
+		xs, ys, period = self.get_element_data()
 		self.origin = xs[np.argmax(np.abs(ys))]
 		self.plot: Line2D = self.ax.plot(xs, ys, label='y', color='blue', marker=".", linewidth=1, markersize=2, alpha=0.5)[0]
-		self.ax.title.set_text(self.name)
+		self.ax.title.set_text(f"{self.name}: TP={self.period:.3f} (F={1/self.period:.3f})")
 		self.ax.title.set_fontsize(8)
 		self.ax.title.set_fontweight('bold')
 		self.ax.set_xlim(xs[0],xs[-1])
@@ -143,6 +143,7 @@ class MITDatasetPlot(SignalPlot):
 		self.origin = xdata[np.argmax(np.abs(ydata))]
 		self.plot.set_ydata(ydata)
 		self.plot.set_xdata(xdata)
+		self.ax.title.set_text(f"{self.name}: TP={self.period:.3f} (F={1 / self.period:.3f})")
 		self.ax.set_xlim(xdata[0],xdata[-1])
 		self.log.info( f" ---- DatasetPlot-> update({self.element}:{self.TICS[self.element]}): xlim=({xdata[0]:.3f},{xdata[-1]:.3f}), ylim=({ydata[0]:.3f},{ydata[-1]:.3f}), xdata.shape={self.plot.get_xdata().shape} origin={self.origin} ---" )
 		self.update_period_marker()
@@ -181,7 +182,7 @@ class MITTransformPlot(SignalPlot):
 			self.plots[tname] = self.ax.plot(self.embedding_space, tdata.squeeze(), label=tname, color=self.colors[iplot], marker=".", linewidth=1, markersize=2, alpha=0.5)[0]
 		self.target_marker: Line2D = self.ax.axvline( freq, 0.0, 1.0, color='green', linestyle='-')
 		self.selection_marker: Line2D = self.ax.axvline( 0, 0.0, 1.0, color=self.colors[0], linestyle='-', linewidth=2)
-		self.ax.title.set_text(self.name)
+		self.ax.title.set_text(f"{self.name}: TP={period:.3f} (F={freq:.3f})")
 		self.ax.title.set_fontsize(8)
 		self.ax.title.set_fontweight('bold')
 		self.ax.set_xlim( self.embedding_space[0], self.embedding_space[-1] )
