@@ -40,9 +40,10 @@ class PeriodMarkers:
 		self.alpha: float = kwargs.get('alpha', 0.5 )
 		self.linestyle: str = kwargs.get('linestyle', '-')
 
-	def update(self, origin: float, period: float ):
+	def update(self, origin: float, period: float = None ):
 		self.origin = origin
-		self.period = period
+		if period is not None:
+			self.period = period
 		self.refresh()
 
 	@property
@@ -84,11 +85,16 @@ class MITDatasetPlot(SignalPlot):
 		return pm_name
 
 	@exception_handled
+	def update_pm_origins(self) :
+		for pm in self.period_markers.values():
+			pm.update( self.origin )
+
+	@exception_handled
 	def button_press(self, event: MouseEvent) -> Any:
 		if event.button == MouseButton.RIGHT:
 			if ("shift" in event.modifiers) and (event.inaxes == self.ax):
 				self.origin = event.xdata
-				self.update_period_marker()
+				self.update_pm_origins()
 
 	def process_ext_event(self, **event_data):
 		if event_data['id'] == 'period-update':
