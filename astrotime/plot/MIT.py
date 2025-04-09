@@ -110,7 +110,9 @@ class MITDatasetPlot(SignalPlot):
 				else:
 					event_data: Dict = self._shared_params.get(id(event.inaxes))
 					if event_data is not None:
-						self.update_period_markers(id=event_data['id'], period=event_data['period'], axes=event_data['axes'], color="darkviolet" )
+						period = event_data['period']
+						self.log.info(f"           *** ---- MITDatasetPlot.button_press: selected freq={1/period:.2f}, period={period:.2f} --- ")
+						self.update_period_markers(id=event_data['id'], period=period, axes=event_data['axes'], color="darkviolet" )
 
 	#		if "ctrl" in event.modifiers:
 	#			self.update_period_markers(id=list(self.ext_pm_ids)[0], origin=event.xdata, period=self.target_period)
@@ -208,7 +210,7 @@ class MITTransformPlot(SignalPlot):
 		if ("shift" in event.modifiers) and (event.button == MouseButton.RIGHT) and(event.inaxes == self.ax):
 			freq, period = event.xdata, 1/event.xdata
 			self._shared_params[id(self.ax)] = dict(id="transform", period=period, axes=self.ax)
-			self.log.info(f"---- MITTransformPlot.button_press: selected freq={freq:.2f}, period={period:.2f} --- ")
+			self.log.info(f"           *** ---- MITTransformPlot.button_press: selected freq={freq:.2f}, period={period:.2f} --- ")
 			self.ax.title.set_text(f"{self.name}: TP={period:.3f} (F={freq:.3f})")
 			self.selection_marker.set_xdata([freq, freq])
 
