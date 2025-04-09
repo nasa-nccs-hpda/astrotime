@@ -1,6 +1,6 @@
 import logging, numpy as np
 import xarray as xa
-from .param import STIntParam, STFloatParam
+from .param import STIntParam
 from astrotime.loaders.MIT import MITLoader
 from torch import nn, optim, Tensor, FloatTensor
 from .base import SignalPlot, bounds
@@ -9,7 +9,6 @@ from matplotlib.lines import Line2D
 from matplotlib.backend_bases import KeyEvent, MouseEvent, MouseButton
 from astrotime.util.logging import exception_handled
 from astrotime.encoders.embedding import EmbeddingLayer
-from astrotime.util.math import npnorm
 from typing import List, Optional, Dict, Type, Union, Tuple, Any, Set
 from astrotime.util.math import tnorm
 log = logging.getLogger("astrotime")
@@ -36,31 +35,26 @@ class PeriodMarkers:
 		self.period: float = None
 		self.markers: List[Line2D] = []
 		self.yrange = kwargs.get('yrange', (-1,1) )
-		self.npm: int = kwargs.get('npm', 25 )
+		self.npm: int = kwargs.get('npm', 7 )
 		self.color: str = kwargs.get('color', 'green' )
 		self.alpha: float = kwargs.get('alpha', 0.5 )
 		self.linestyle: str = kwargs.get('linestyle', '-')
 
-	def set_visible(self, b: bool):
-		for m in self.markers:
-			m.set_visible(b)
-
-	def update(self, origin: float, period: float = None ):
+	def update(self, origin: float, period: float ):
 		self.origin = origin
-		if period is not None:
-			self.period = period
+		self.period = period
 		self.refresh()
 
 	@property
 	def fig(self):
 		return self.ax.get_figure()
 
-	def refresh( self ):
+	def refresh(self):
+		self.log.info( f" PeriodMarkers({self.name}:{id(self):02X}).refresh( origin={self.origin:.2f}, period={self.period:.2f} ) -- --- -- ")
 		for pid in range(0,self.npm):
 			tval = self.origin + (pid-self.npm//2) * self.period
 			if pid >= len(self.markers):  self.markers.append( self.ax.axvline( tval, self.yrange[0], self.yrange[1], color=self.color, linestyle=self.linestyle, alpha=self.alpha) )
 			else:                         self.markers[pid].set_xdata([tval,tval])
-		self.log.info( f"  PeriodMarkers({self.name}:{id(self):02X}).refresh( origin={self.origin:.2f}, period={self.period:.2f} ), #markers = {len(self.markers)} -- --- -- ")
 
 class MITDatasetPlot(SignalPlot):
 
@@ -71,51 +65,37 @@ class MITDatasetPlot(SignalPlot):
 		self.data_loader: MITLoader = data_loader
 		self.TICS: List[str] = data_loader.TICS(sector)
 		self.annotations: List[str] = tolower( kwargs.get('annotations',None) )
+		self.colors = ['blue', 'green'] + [ 'yellow' ] * 16
 		self.ofac = kwargs.get('upsample_factor',1)
 		self.plot: Line2D = None
-		self.add_param( STIntParam('element', (0,len(self.TICS))  ) )
+		self.add_param( STIntParam('element', (0,len(self.TICS))))
 		self.period_markers: Dict[str,PeriodMarkers] = {}
-		self.target_period = None
 		self.ext_pm_ids: Set[str] = set()
 		self.transax = None
 		self.origin = None
+		self.period = None
 
 	@exception_handled
-	def update_period_markers(self, **marker_data ) -> str:
-		pm_name=  marker_data['id']
-		pm = self.period_markers.setdefault( pm_name, PeriodMarkers( pm_name, self.ax, color=marker_data['color'] ) )
-		for pm in self.period_markers.values():
-			period = marker_data.get('period',None) if (pm.name == pm_name) else None
-			pm.update( self.origin, period )
+	def update_period_marker(self) -> str:
+		pm_name= f"pm-{id(self.ax)}"
+		pm = self.period_markers.setdefault( pm_name, PeriodMarkers( pm_name, self.ax ) )
+		pm.update( self.origin, self.period )
 		return pm_name
-
-	def set_markers_visible(self, b: bool):
-		for pm in self.period_markers.values():
-			pm.set_visible(b)
-
-	@exception_handled
-	def process_external_event(self, event_data: Dict[str,Any] ) -> None:
-		pass
-	#	if event_data['type'] == 'period_grid':
-	#		self.ext_pm_ids.add(  self.update_period_markers(**event_data)  )
-
 
 	@exception_handled
 	def button_press(self, event: MouseEvent) -> Any:
 		if event.button == MouseButton.RIGHT:
-			if "shift" in event.modifiers:
-				if event.inaxes == self.ax:
-					self.origin = event.xdata
-					self.update_period_markers(id="dataset", period=self.target_period, axes=event.inaxes, color="green" )
-				else:
-					event_data: Dict = self._shared_params.get(id(event.inaxes))
-					if event_data is not None:
-						period = event_data['period']
-						self.log.info(f"           *** ---- MITDatasetPlot.button_press: selected freq={1/period:.2f}, period={period:.2f} --- ")
-						self.update_period_markers(id=event_data['id'], period=period, axes=event_data['axes'], color="darkviolet" )
+			if ("shift" in event.modifiers) and (event.inaxes == self.ax):
+				self.origin = event.xdata
+				self.update_period_marker()
 
-	#		if "ctrl" in event.modifiers:
-	#			self.update_period_markers(id=list(self.ext_pm_ids)[0], origin=event.xdata, period=self.target_period)
+	def process_ext_event(self, **event_data):
+		if event_data['id'] == 'period-update':
+			pm_name = event_data['ax']
+			if pm_name != id(self.ax):
+				period = event_data['period']
+				pm = self.period_markers.setdefault(pm_name, PeriodMarkers(pm_name, self.ax, color=event_data['color']))
+				pm.update( self.origin, period )
 
 	@exception_handled
 	def button_release(self, event: MouseEvent) -> Any:
@@ -130,39 +110,34 @@ class MITDatasetPlot(SignalPlot):
 
 	@exception_handled
 	def _setup(self):
-		xs, ys, target = self.get_element_data()
-		self.target_period = target
+		xs, ys, self.period = self.get_element_data()
+		self.origin = xs[np.argmax(np.abs(ys))]
 		self.plot: Line2D = self.ax.plot(xs, ys, label='y', color='blue', marker=".", linewidth=1, markersize=2, alpha=0.5)[0]
-		self.ax.title.set_text( f"{self.name}: TP={target:.3f} (F={1/target:.3f})")
+		self.ax.title.set_text(self.name)
 		self.ax.title.set_fontsize(8)
 		self.ax.title.set_fontweight('bold')
 		self.ax.set_xlim(xs[0],xs[-1])
-		self.ax.set_ylim( ys.min(), ys.max() )
-		self.origin = xs[np.argmax(np.abs(ys))]
-		self.update_period_markers(  id="dataset", origin=self.origin, period=self.target_period, axes=self.ax, color="green" )
+		self.ax.set_ylim(-1,1)
+		self.update_period_marker()
 
 	@exception_handled
 	def get_element_data(self) -> Tuple[np.ndarray,np.ndarray,float]:
 		element: xa.Dataset = self.data_loader.get_dataset_element(self.sector,self.TICS[self.element])
 		t, y = element.data_vars['time'], element.data_vars['y']
-		ydata: np.ndarray = y.values.squeeze()
+		ydata: np.ndarray = y.values
 		xdata: np.ndarray = t.values
 		target: float = y.attrs['period']
-		nan_mask = np.isnan(ydata)
-		return xdata[~nan_mask], npnorm(ydata[~nan_mask],dim=0), target
+		return xdata, znorm(ydata.squeeze()), target
 
 	@exception_handled
 	def update(self, val):
-		xdata, ydata, target = self.get_element_data()
+		xdata, ydata, self.period = self.get_element_data()
+		self.origin = xdata[np.argmax(np.abs(ydata))]
 		self.plot.set_ydata(ydata)
 		self.plot.set_xdata(xdata)
-		self.target_period = target
 		self.ax.set_xlim(xdata[0],xdata[-1])
-		self.ax.set_ylim( ydata.min(), ydata.max() )
-		self.origin = xdata[np.argmax(np.abs(ydata))]
-		self.log.info( f" ---- DatasetPlot-> update({self.element}:{self.TICS[self.element]}):  xlim=({xdata[0]:.3f},{xdata[-1]:.3f}), ylim=({ydata[0]:.3f},{ydata[-1]:.3f}), xdata.shape={self.plot.get_xdata().shape} origin={self.origin} ---" )
-		self.update_period_markers( id="dataset", period=self.target_period, axes=self.ax, color="green" )
-		self.ax.title.set_text(f"{self.name}: TP={target:.3f} (F={1/target:.3f})")
+		self.log.info( f" ---- DatasetPlot-> update({self.element}:{self.TICS[self.element]}): xlim=({xdata[0]:.3f},{xdata[-1]:.3f}), ylim=({ydata[0]:.3f},{ydata[-1]:.3f}), xdata.shape={self.plot.get_xdata().shape} origin={pd_origin} ---" )
+		self.update_period_marker()
 		self.ax.figure.canvas.draw_idle()
 
 class MITTransformPlot(SignalPlot):
@@ -209,10 +184,10 @@ class MITTransformPlot(SignalPlot):
 	def button_press(self, event: MouseEvent) -> Any:
 		if ("shift" in event.modifiers) and (event.button == MouseButton.RIGHT) and(event.inaxes == self.ax):
 			freq, period = event.xdata, 1/event.xdata
-			self._shared_params[id(self.ax)] = dict(id="transform", period=period, axes=self.ax)
 			self.log.info(f"           *** ---- MITTransformPlot.button_press: selected freq={freq:.2f}, period={period:.2f} --- ")
 			self.ax.title.set_text(f"{self.name}: TP={period:.3f} (F={freq:.3f})")
 			self.selection_marker.set_xdata([freq, freq])
+			self.process_event( id="period-update", period=period, ax=id(self.ax), color=self.colors[0] )
 
 	@exception_handled
 	def apply_transform( self, transform: EmbeddingLayer, series_data: xa.Dataset ) -> np.ndarray:

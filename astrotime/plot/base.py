@@ -16,16 +16,14 @@ def bounds( y: np.ndarray ) -> Tuple[float,float]:
 
 class SignalPlot(Parameterized):
 	_shared_params: Dict[int,Dict[str,Any]] = {}
+	_instances = []
 
 	def __init__(self, **kwargs):
 		Parameterized.__init__(self)
 		self.ax: Axes = None
 		self.log = logging.getLogger()
 		self.annotation: Annotation = None
-		self.listeners: List[Callable] = []
-
-	def add_event_listener(self, listener: Callable):
-		self.listeners.append(listener)
+		SignalPlot._instances.append( self)
 
 	@classmethod
 	def add_shared_params(cls, ax: Axes, params: Dict[str,Any] ):
@@ -71,6 +69,14 @@ class SignalPlot(Parameterized):
 
 	def update(self, val):
 		raise NotImplementedError( "Abstract method" )
+
+	@classmethod
+	def process_event(cls, **event_data ):
+		for splot in cls._instances:
+			splot.process_ext_event(**event_data)
+
+	def process_ext_event(self, **event_data):
+		pass
 
 	def _setup(self):
 		raise NotImplementedError( "Abstract method" )
