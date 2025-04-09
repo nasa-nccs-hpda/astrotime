@@ -111,7 +111,6 @@ class MITDatasetPlot(SignalPlot):
 				else:
 					event_data: Dict = self._shared_params.get(id(event.inaxes))
 					if event_data is not None:
-						self.log.info( f" button_press-> extern update_period_markers: event_data={event_data}")
 						self.update_period_markers(id=event_data['id'], origin=self.origin, period=event_data['period'], axes=event_data['axes'], color="darkviolet" )
 
 	#		if "ctrl" in event.modifiers:
@@ -180,6 +179,7 @@ class MITTransformPlot(SignalPlot):
 		self.ofac = kwargs.get('upsample_factor',1)
 		self.plots: Dict[str,Line2D] = {}
 		self.target_marker: Line2D = None
+		self.selection_marker: Line2D = None
 		self.add_param( STIntParam('element', (0,len(self.TICS))  ) )
 		self.transax = None
 
@@ -195,6 +195,7 @@ class MITTransformPlot(SignalPlot):
 			tdata: np.ndarray = self.apply_transform(transform,series_data)
 			self.plots[tname] = self.ax.plot(self.embedding_space, tdata.squeeze(), label=tname, color=self.colors[iplot], marker=".", linewidth=1, markersize=2, alpha=0.5)[0]
 		self.target_marker: Line2D = self.ax.axvline( freq, 0.0, 1.0, color='green', linestyle='-')
+		self.selection_marker: Line2D = self.ax.axvline( 0, 0.0, 1.0, color=self.colors[0], linestyle='-', linewidth=2)
 		self.ax.title.set_text(self.name)
 		self.ax.title.set_fontsize(8)
 		self.ax.title.set_fontweight('bold')
@@ -205,8 +206,10 @@ class MITTransformPlot(SignalPlot):
 
 	@exception_handled
 	def button_press(self, event: MouseEvent) -> Any:
-		if ("shift" in event.modifiers) and (event.button == MouseButton.RIGHT):
-			self._shared_params[id(self.ax)] = dict(id="transform", period=1/event.xdata, axes=self.ax)
+		if ("shift" in event.modifiers) and (event.button == MouseButton.RIGHT) and(event.inaxes == self.ax):
+			freq = event.xdata
+			self._shared_params[id(self.ax)] = dict(id="transform", period=1/freq, axes=self.ax)
+			self.target_marker.set_xdata([freq, freq])
 
 	@exception_handled
 	def apply_transform( self, transform: EmbeddingLayer, series_data: xa.Dataset ) -> np.ndarray:
