@@ -209,7 +209,7 @@ class MITTransformPlot(SignalPlot):
 		if ("shift" in event.modifiers) and (event.button == MouseButton.RIGHT) and(event.inaxes == self.ax):
 			freq = event.xdata
 			self._shared_params[id(self.ax)] = dict(id="transform", period=1/freq, axes=self.ax)
-			self.target_marker.set_xdata([freq, freq])
+			self.selection_marker.set_xdata([freq, freq])
 
 	@exception_handled
 	def apply_transform( self, transform: EmbeddingLayer, series_data: xa.Dataset ) -> np.ndarray:
