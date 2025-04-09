@@ -208,6 +208,7 @@ class MITTransformPlot(SignalPlot):
 		if ("shift" in event.modifiers) and (event.button == MouseButton.RIGHT) and(event.inaxes == self.ax):
 			freq = event.xdata
 			self._shared_params[id(self.ax)] = dict(id="transform", period=1/freq, axes=self.ax)
+			self.log.info(f"---- MITTransformPlot.button_press: selected freq={freq:.2f}, period={1/freq:.2f} --- ")
 			self.selection_marker.set_xdata([freq, freq])
 
 	@exception_handled
