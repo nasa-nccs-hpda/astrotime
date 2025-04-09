@@ -111,7 +111,7 @@ class MITDatasetPlot(SignalPlot):
 				else:
 					event_data: Dict = self._shared_params.get(id(event.inaxes))
 					if event_data is not None:
-						self.log.info( f" button_press-> extern update_period_markers: event_data={event_data}}")
+						self.log.info( f" button_press-> extern update_period_markers: event_data={event_data}")
 						self.update_period_markers(id=event_data['id'], origin=self.origin, period=event_data['period'], axes=event_data['axes'], color="darkviolet" )
 
 	#		if "ctrl" in event.modifiers:
