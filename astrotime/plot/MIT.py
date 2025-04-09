@@ -208,23 +208,27 @@ class MITTransformPlot(SignalPlot):
 		embedding: np.ndarray = transform.magnitude( transformed ).to('cpu').numpy()
 		return znorm(embedding)
 
+	def update_selection_marker(self, freq ) -> float:
+		period = 1/freq
+		self.selection_marker.set_xdata([freq, freq])
+		self.process_event(id="period-update", period=period, ax=id(self.ax), color=self.colors[0])
+		return period
+
 	@exception_handled
 	def update(self, val):
 		series_data: xa.Dataset = self.data_loader.get_dataset_element(self.sector, self.TICS[self.element])
 		target_period: float = series_data.data_vars['y'].attrs['period']
-		transform_peak = None
+		transform_peak_freq = None
 		for iplot, (tname, transform) in enumerate(self.transforms.items()):
 			tdata: np.ndarray = self.apply_transform(transform,series_data)
 			self.log.info(f"---- MITTransformPlot({iplot}) {tname}[{self.element})] update: tdata{tdata.shape}, mean={tdata.mean():.2f} --- ")
 			self.plots[tname].set_ydata(tdata)
 			if iplot == 0:
 				freq_data = transform.embedding_space.cpu().numpy()
-				transform_peak =  freq_data[ np.argmax(tdata) ]
+				transform_peak_freq =  freq_data[ np.argmax(tdata) ]
 		target_freq = 1.0/target_period
 		self.target_marker.set_xdata([target_freq,target_freq])
-		transform_period = 1.0/transform_peak
-		self.selection_marker.set_xdata([transform_peak,transform_peak])
-		self._shared_params[id(self.ax)] = dict(id="transform", period=transform_period, axes=self.ax)
-		self.ax.title.set_text(f"{self.name}: TP={transform_period:.3f} (F={transform_peak:.3f})")
+		transform_period = self.update_selection_marker(transform_peak_freq)
+		self.ax.title.set_text(f"{self.name}: TP={transform_period:.3f} (F={transform_peak_freq:.3f})")
 		self.ax.figure.canvas.draw_idle()
 

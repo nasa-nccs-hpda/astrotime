@@ -15,7 +15,6 @@ def bounds( y: np.ndarray ) -> Tuple[float,float]:
 	return ymin-buff, ymax+buff
 
 class SignalPlot(Parameterized):
-	_shared_params: Dict[int,Dict[str,Any]] = {}
 	_instances = []
 
 	def __init__(self, **kwargs):
@@ -24,14 +23,6 @@ class SignalPlot(Parameterized):
 		self.log = logging.getLogger()
 		self.annotation: Annotation = None
 		SignalPlot._instances.append( self)
-
-	@classmethod
-	def add_shared_params(cls, ax: Axes, params: Dict[str,Any] ):
-		cls._shared_params[id(ax)] = params
-
-	@classmethod
-	def get_shared_params(cls, ax: Axes ) -> Optional[Dict[str,Any]]:
-		return cls._shared_params.get(id(ax),None)
 
 	@property
 	def fig(self):
