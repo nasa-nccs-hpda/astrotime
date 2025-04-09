@@ -36,7 +36,7 @@ class PeriodMarkers:
 		self.period: float = None
 		self.markers: List[Line2D] = []
 		self.yrange = kwargs.get('yrange', (-1,1) )
-		self.npm: int = kwargs.get('npm', 12 )
+		self.npm: int = kwargs.get('npm', 25 )
 		self.color: str = kwargs.get('color', 'green' )
 		self.alpha: float = kwargs.get('alpha', 0.5 )
 		self.linestyle: str = kwargs.get('linestyle', '-')
@@ -111,6 +111,7 @@ class MITDatasetPlot(SignalPlot):
 				else:
 					event_data: Dict = self._shared_params.get(id(event.inaxes))
 					if event_data is not None:
+						self.log.info( f" button_press-> extern update_period_markers: event_data={event_data}}")
 						self.update_period_markers(id=event_data['id'], origin=self.origin, period=event_data['period'], axes=event_data['axes'], color="darkviolet" )
 
 	#		if "ctrl" in event.modifiers:
@@ -132,7 +133,7 @@ class MITDatasetPlot(SignalPlot):
 		xs, ys, target = self.get_element_data()
 		self.target_period = target
 		self.plot: Line2D = self.ax.plot(xs, ys, label='y', color='blue', marker=".", linewidth=1, markersize=2, alpha=0.5)[0]
-		self.ax.title.set_text(self.name)
+		self.ax.title.set_text( f"{self.name}: TP={target:.3f} (F={1/target:.3f})")
 		self.ax.title.set_fontsize(8)
 		self.ax.title.set_fontweight('bold')
 		self.ax.set_xlim(xs[0],xs[-1])
@@ -161,6 +162,7 @@ class MITDatasetPlot(SignalPlot):
 		pd_origin = xdata[np.argmax(np.abs(ydata))]
 		self.log.info( f" ---- DatasetPlot-> update({self.element}:{self.TICS[self.element]}): xlim=({xdata[0]:.3f},{xdata[-1]:.3f}), ylim=({ydata[0]:.3f},{ydata[-1]:.3f}), xdata.shape={self.plot.get_xdata().shape} origin={pd_origin} ---" )
 		self.update_period_markers( id="dataset", origin=pd_origin, period=self.target_period, axes=self.ax, color="green" )
+		self.ax.title.set_text(f"{self.name}: TP={target:.3f} (F={1/target:.3f})")
 		self.ax.figure.canvas.draw_idle()
 
 class MITTransformPlot(SignalPlot):
