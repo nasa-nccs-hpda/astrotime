@@ -80,6 +80,7 @@ class MITDatasetPlot(SignalPlot):
 		pm_name= f"pm-{id(self.ax)}"
 		pm = self.period_markers.setdefault( pm_name, PeriodMarkers( pm_name, self.ax ) )
 		pm.update( self.origin, self.period )
+		self.log.info( f" ---- DatasetPlot-> update_period_marker origin={self.origin:.3f} period={self.period:.3f} ---")
 		return pm_name
 
 	@exception_handled
@@ -136,6 +137,7 @@ class MITDatasetPlot(SignalPlot):
 		self.plot.set_ydata(ydata)
 		self.plot.set_xdata(xdata)
 		self.ax.set_xlim(xdata[0],xdata[-1])
+		self.ax.set_ylim(ydata[0],ydata[-1])
 		self.log.info( f" ---- DatasetPlot-> update({self.element}:{self.TICS[self.element]}): xlim=({xdata[0]:.3f},{xdata[-1]:.3f}), ylim=({ydata[0]:.3f},{ydata[-1]:.3f}), xdata.shape={self.plot.get_xdata().shape} origin={pd_origin} ---" )
 		self.update_period_marker()
 		self.ax.figure.canvas.draw_idle()
