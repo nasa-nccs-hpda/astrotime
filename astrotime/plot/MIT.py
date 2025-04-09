@@ -118,7 +118,7 @@ class MITDatasetPlot(SignalPlot):
 
 	@exception_handled
 	def _setup(self):
-		xs, ys, period = self.get_element_data()
+		xs, ys, self.period = self.get_element_data()
 		self.origin = xs[np.argmax(np.abs(ys))]
 		self.plot: Line2D = self.ax.plot(xs, ys, label='y', color='blue', marker=".", linewidth=1, markersize=2, alpha=0.5)[0]
 		self.ax.title.set_text(f"{self.name}: TP={self.period:.3f} (F={1/self.period:.3f})")
