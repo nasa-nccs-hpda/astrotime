@@ -159,7 +159,7 @@ class MITDatasetPlot(SignalPlot):
 		self.ax.set_xlim(xdata[0],xdata[-1])
 		self.ax.set_ylim( ydata.min(), ydata.max() )
 		self.origin = xdata[np.argmax(np.abs(ydata))]
-		self.log.info( f" ---- DatasetPlot-> update({self.element}:{self.TICS[self.element]}): xlim=({xdata[0]:.3f},{xdata[-1]:.3f}), ylim=({ydata[0]:.3f},{ydata[-1]:.3f}), xdata.shape={self.plot.get_xdata().shape} origin={self.origin} ---" )
+		self.log.info( f" ---- DatasetPlot-> update({self.element}:{self.TICS[self.element]}):  xlim=({xdata[0]:.3f},{xdata[-1]:.3f}), ylim=({ydata[0]:.3f},{ydata[-1]:.3f}), xdata.shape={self.plot.get_xdata().shape} origin={self.origin} ---" )
 		self.update_period_markers( id="dataset", period=self.target_period, axes=self.ax, color="green" )
 		self.ax.title.set_text(f"{self.name}: TP={target:.3f} (F={1/target:.3f})")
 		self.ax.figure.canvas.draw_idle()
