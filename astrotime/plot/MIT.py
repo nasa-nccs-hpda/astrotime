@@ -82,6 +82,7 @@ class MITDatasetPlot(SignalPlot):
 		pm = self.period_markers.setdefault( pm_name, PeriodMarkers( pm_name, self.ax ) )
 		pm.update( self.origin, self.period )
 		self.log.info( f" ---- DatasetPlot-> update_period_marker origin={self.origin:.3f} period={self.period:.3f} ---")
+		self.update_pm_origins()
 		return pm_name
 
 	@exception_handled
