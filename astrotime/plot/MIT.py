@@ -116,7 +116,7 @@ class MITDatasetPlot(SignalPlot):
 
 	def get_ext_period(self) -> float:
 		for pm in self.period_markers.values():
-			if pm.name != id(self.ax):
+			if not str(id(self.ax)) in pm.name:
 				return pm.period
 
 	@exception_handled
