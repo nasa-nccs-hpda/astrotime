@@ -79,7 +79,7 @@ class MITDatasetPlot(SignalPlot):
 
 	@exception_handled
 	def update_period_marker(self) -> str:
-		pm_name= f"pm-{id(self.ax)}"
+		pm_name= str(id(self.ax))
 		pm = self.period_markers.setdefault( pm_name, PeriodMarkers( pm_name, self.ax ) )
 		pm.update( self.origin, self.period )
 		self.log.info( f" ---- DatasetPlot-> update_period_marker origin={self.origin:.3f} period={self.period:.3f} ---")
@@ -110,7 +110,7 @@ class MITDatasetPlot(SignalPlot):
 	def process_ext_event(self, **event_data):
 		if event_data['id'] == 'period-update':
 			pm_name = event_data['ax']
-			if pm_name != id(self.ax):
+			if pm_name != str(id(self.ax)):
 				period = event_data['period']
 				pm = self.period_markers.setdefault(pm_name, PeriodMarkers(pm_name, self.ax, color=event_data['color']))
 				pm.update( self.origin, period )
@@ -118,7 +118,7 @@ class MITDatasetPlot(SignalPlot):
 	@exception_handled
 	def get_ext_period(self) -> float:
 		for pm in self.period_markers.values():
-			if not str(id(self.ax)) in pm.name:
+			if str(id(self.ax)) != pm.name:
 				return pm.period
 
 	@exception_handled
@@ -220,7 +220,7 @@ class MITTransformPlot(SignalPlot):
 			self.log.info(f"           *** ---- MITTransformPlot.button_press: selected freq={freq:.2f}, period={period:.2f} --- ")
 			self.ax.title.set_text(f"{self.name}: TP={period:.3f} (F={freq:.3f})")
 			self.selection_marker.set_xdata([freq, freq])
-			self.process_event( id="period-update", period=period, ax=id(self.ax), color=self.colors[0] )
+			self.process_event( id="period-update", period=period, ax=str(id(self.ax)), color=self.colors[0] )
 
 	@exception_handled
 	def apply_transform( self, transform: EmbeddingLayer, series_data: xa.Dataset ) -> np.ndarray:
@@ -233,7 +233,7 @@ class MITTransformPlot(SignalPlot):
 	def update_selection_marker(self, freq ) -> float:
 		period = 1/freq
 		self.selection_marker.set_xdata([freq, freq])
-		self.process_event(id="period-update", period=period, ax=id(self.ax), color=self.colors[0])
+		self.process_event(id="period-update", period=period, ax=str(id(self.ax)), color=self.colors[0])
 		return period
 
 	@exception_handled
