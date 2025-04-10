@@ -75,6 +75,7 @@ class MITDatasetPlot(SignalPlot):
 		self.transax = None
 		self.origin = None
 		self.period = None
+		self.fold_period: float = None
 
 	@exception_handled
 	def update_period_marker(self) -> str:
@@ -96,6 +97,14 @@ class MITDatasetPlot(SignalPlot):
 			if ("shift" in event.modifiers) and (event.inaxes == self.ax):
 				self.origin = event.xdata
 				self.update_pm_origins()
+
+	def key_press(self, event: KeyEvent) -> Any:
+		ke: KeyEvent = event
+		self.log.info( f" ---- DatasetPlot-> key_press({ke.key}), mods= {ke.modifiers} ---")
+		if ke.key == 'f' and ("ctrl" in ke.modifiers):
+			if self.fold_period is None:    self.fold_period = self.period
+			else :                          self.fold_period = None
+			self.update()
 
 	def process_ext_event(self, **event_data):
 		if event_data['id'] == 'period-update':
@@ -136,6 +145,8 @@ class MITDatasetPlot(SignalPlot):
 		ydata: np.ndarray = y.values
 		xdata: np.ndarray = t.values
 		target: float = y.attrs['period']
+		if self.fold_period is not None:
+			xdata = np.mod( xdata, self.fold_period)
 		return xdata, znorm(ydata.squeeze()), target
 
 	@exception_handled
@@ -150,6 +161,7 @@ class MITDatasetPlot(SignalPlot):
 		self.update_period_marker()
 		self.ax.set_ylim(ydata.min(),ydata.max())
 		self.ax.figure.canvas.draw_idle()
+
 
 class MITTransformPlot(SignalPlot):
 
