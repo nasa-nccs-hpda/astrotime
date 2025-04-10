@@ -100,11 +100,11 @@ class MITDatasetPlot(SignalPlot):
 
 	@exception_handled
 	def key_press(self, event: KeyEvent) -> Any:
-		self.log.info(f" ---- MITDatasetPlot-> key_press({event.key})")
 		if event.key in ['ctrl+f','alt+ƒ']:
 			if self.fold_period is None:    self.fold_period = self.period if (event.key == 'ctrl+f') else self.get_ext_period()
 			else :                          self.fold_period = None
-			self.update()
+			self.log.info(f" ---- MITDatasetPlot-> key_press({event.key}), fold period = {self.fold_period} ---")
+			self.update(period=self.fold_period)
 
 	def process_ext_event(self, **event_data):
 		if event_data['id'] == 'period-update':
@@ -155,13 +155,15 @@ class MITDatasetPlot(SignalPlot):
 		return xdata, znorm(ydata.squeeze()), target
 
 	@exception_handled
-	def update(self, val=0):
+	def update(self, val, **kwargs ):
 		xdata, ydata, self.period = self.get_element_data()
 		self.origin = xdata[np.argmax(np.abs(ydata))]
 		self.plot.set_ydata(ydata)
 		self.plot.set_xdata(xdata)
 		self.plot.set_linewidth( 1 if (self.fold_period is None) else 0)
-		self.ax.title.set_text(f"{self.name}: TP={self.period:.3f} (F={1 / self.period:.3f})")
+		active_period = kwargs.get('period',self.period)
+		title = f"{self.name}: TP={active_period:.3f} (F={1/active_period:.3f})"
+		self.ax.title.set_text(title)
 		self.update_period_marker()
 		self.ax.set_xlim(xdata.min(),xdata.max())
 		self.ax.set_ylim(ydata.min(),ydata.max())
