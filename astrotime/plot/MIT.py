@@ -249,6 +249,7 @@ class MITTransformPlot(SignalPlot):
 				freq_data = transform.freq_space.cpu().numpy()
 				transform_peak_freq =  freq_data[ np.argmax(tdata) ]
 				target_freq = transform.get_target_freq( target_period )
+				self.log.info(f"            ->>> target_freq = {target_freq:.4f}  ")
 				self.target_marker.set_xdata([target_freq,target_freq])
 		transform_period = self.update_selection_marker(transform_peak_freq)
 		self.ax.title.set_text(f"{self.name}: TP={transform_period:.3f} (F={transform_peak_freq:.3f})")
