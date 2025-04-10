@@ -29,6 +29,9 @@ class EmbeddingLayer(torch.nn.Module):
 		self.init_state = False
 		return result
 
+	def get_target_freq( self, target_period: float ) -> float:
+		return 1/target_period
+
 	def embed(self, xs: Tensor, ys: Tensor ) -> Tensor:
 		raise NotImplementedError("EmbeddingLayer.embed() not implemented")
 

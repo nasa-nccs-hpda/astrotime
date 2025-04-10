@@ -61,6 +61,11 @@ class OctaveAnalysisLayer(EmbeddingLayer):
 		if fold: mag = mag.reshape( mag.shape[0], self.cfg.nfreq, -1 ).sum(axis=2)
 		return mag
 
+	def get_target_freq( self, target_period: float ) -> float:
+		f0 = 1/target_period
+		octave = math.floor(f0/self.cfg.base_freq)
+		return f0/octave
+
 	@property
 	def nfeatures(self) -> int:
 		return 3
