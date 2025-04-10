@@ -160,7 +160,8 @@ class MITDatasetPlot(SignalPlot):
 		self.plot.set_ydata(ydata)
 		self.plot.set_xdata(xdata)
 		self.plot.set_linewidth( 1 if (self.fold_period is None) else 0)
-		active_period = kwargs.get('period',self.period)
+		fold_period = kwargs.get('period')
+		active_period = self.period if (fold_period is None) else fold_period
 		title = f"{self.name}: TP={active_period:.3f} (F={1/active_period:.3f})"
 		self.ax.title.set_text(title)
 		self.update_period_marker()
