@@ -175,13 +175,13 @@ class MITDatasetPlot(SignalPlot):
 
 class MITTransformPlot(SignalPlot):
 
-	def __init__(self, name: str, data_loader: MITLoader, transforms: Dict[str,EmbeddingLayer], embedding_space: np.ndarray, sector: int, **kwargs):
+	def __init__(self, name: str, data_loader: MITLoader, transforms: Dict[str,EmbeddingLayer], freq_space: np.ndarray, sector: int, **kwargs):
 		SignalPlot.__init__(self, **kwargs)
 		self.name = name
 		self.sector: int = sector
 		self.transforms: Dict[str,EmbeddingLayer] = transforms
 		self.data_loader: MITLoader = data_loader
-		self.embedding_space: np.ndarray = embedding_space
+		self.freq_space: np.ndarray = freq_space
 		self.TICS: List[str] = data_loader.TICS(sector)
 		self.annotations: List[str] = tolower( kwargs.get('annotations',None) )
 		self.colors = ['darkviolet', 'darkorange', 'saddlebrown', 'darkturquoise', 'magenta' ]
@@ -202,13 +202,13 @@ class MITTransformPlot(SignalPlot):
 		freq = 1.0 / period
 		for iplot, (tname, transform) in enumerate(self.transforms.items()):
 			tdata: np.ndarray = self.apply_transform(transform,series_data)
-			self.plots[tname] = self.ax.plot(self.embedding_space, tdata.squeeze(), label=tname, color=self.colors[iplot], marker=".", linewidth=1, markersize=2, alpha=0.5)[0]
+			self.plots[tname] = self.ax.plot(self.freq_space, tdata.squeeze(), label=tname, color=self.colors[iplot], marker=".", linewidth=1, markersize=2, alpha=0.5)[0]
 		self.target_marker: Line2D = self.ax.axvline( freq, 0.0, 1.0, color='green', linestyle='-')
 		self.selection_marker: Line2D = self.ax.axvline( 0, 0.0, 1.0, color=self.colors[0], linestyle='-', linewidth=2)
 		self.ax.title.set_text(f"{self.name}: TP={period:.3f} (F={freq:.3f})")
 		self.ax.title.set_fontsize(8)
 		self.ax.title.set_fontweight('bold')
-		self.ax.set_xlim( self.embedding_space[0], self.embedding_space[-1] )
+		self.ax.set_xlim( self.freq_space.min(), self.freq_space.max() )
 		self.ax.set_ylim( 0.0, 1.0 )
 		self.ax.set_xscale('log')
 		self.ax.legend(loc="upper left")
@@ -246,7 +246,7 @@ class MITTransformPlot(SignalPlot):
 			self.log.info(f"---- MITTransformPlot({iplot}) {tname}[{self.element})] update: tdata{tdata.shape}, mean={tdata.mean():.2f} --- ")
 			self.plots[tname].set_ydata(tdata)
 			if iplot == 0:
-				freq_data = transform.embedding_space.cpu().numpy()
+				freq_data = transform.freq_space.cpu().numpy()
 				transform_peak_freq =  freq_data[ np.argmax(tdata) ]
 		target_freq = 1.0/target_period
 		self.target_marker.set_xdata([target_freq,target_freq])

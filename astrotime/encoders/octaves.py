@@ -12,7 +12,7 @@ def embedding_space( cfg, device: device ) -> Tuple[np.ndarray,Tensor]:
 	lspace = log2space( cfg.base_freq, cfg.base_freq*2, cfg.nfreq )
 	ospace: np.ndarray =  np.stack( [ lspace*ioct for ioct in range(1,cfg.noctaves+1) ], 1 )
 	tspace = torch.FloatTensor( ospace.flatten() ).to(device)
-	return ospace, tspace
+	return ospace[0], tspace
 
 class OctaveAnalysisLayer(EmbeddingLayer):
 
@@ -57,7 +57,7 @@ class OctaveAnalysisLayer(EmbeddingLayer):
 	def magnitude(self, embedding: Tensor, **kwargs) -> Tensor:
 		fold: bool = kwargs.get("fold", True)
 		rv = torch.sqrt( torch.sum( embedding**2, dim=1 ) )
-		self.init_log(f"    OctaveAnalysisLayer magnitude shape={list(rv.shape)}")
+		self.init_log(f"    OctaveAnalysisLayer magnitude shapes: {list(embedding.shape)} -> {list(rv.shape)}")
 		return rv
 
 	@property
