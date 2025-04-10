@@ -103,9 +103,10 @@ class MITDatasetPlot(SignalPlot):
 		if event.key in ['ctrl+f','alt+ƒ']:
 			if self.fold_period is None:    self.fold_period = self.period if (event.key == 'ctrl+f') else self.get_ext_period()
 			else :                          self.fold_period = None
-			self.log.info(f" ---- MITDatasetPlot-> key_press({event.key}), fold period = {self.fold_period} ---")
+			self.log.info(f"                 MITDatasetPlot-> key_press({event.key}), fold period = {self.fold_period} ")
 			self.update(period=self.fold_period)
 
+	@exception_handled
 	def process_ext_event(self, **event_data):
 		if event_data['id'] == 'period-update':
 			pm_name = event_data['ax']
@@ -114,6 +115,7 @@ class MITDatasetPlot(SignalPlot):
 				pm = self.period_markers.setdefault(pm_name, PeriodMarkers(pm_name, self.ax, color=event_data['color']))
 				pm.update( self.origin, period )
 
+	@exception_handled
 	def get_ext_period(self) -> float:
 		for pm in self.period_markers.values():
 			if not str(id(self.ax)) in pm.name:
