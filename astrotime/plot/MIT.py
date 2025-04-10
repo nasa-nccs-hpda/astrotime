@@ -147,7 +147,7 @@ class MITDatasetPlot(SignalPlot):
 		xdata: np.ndarray = t.values
 		target: float = y.attrs['period']
 		if self.fold_period is not None:
-			xdata = np.mod( xdata, self.fold_period)
+			xdata = xdata - np.floor(xdata/self.fold_period)*self.fold_period
 		return xdata, znorm(ydata.squeeze()), target
 
 	@exception_handled
