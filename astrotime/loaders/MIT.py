@@ -14,7 +14,7 @@ class MITLoader(IterativeDataLoader):
 		self.cfg = cfg
 		self.sector_range = cfg.sector_range
 		self.series_length = cfg.series_length
-		self.max_period = cfg.max_period
+		self.period_range: Optional[Tuple[float,float]] = None
 		self.current_sector = None
 		self.sector_batch_offset = None
 		self.dataset: Optional[xa.Dataset] = None
@@ -28,10 +28,20 @@ class MITLoader(IterativeDataLoader):
 	def initialize(self, tset: TSet, **kwargs ):
 		self.tset = tset
 		self.test_mode = kwargs.get('test_mode',False)
+		self.period_range = self.get_period_range()
 		self.sector_batch_offset = 0
 		self.current_sector = self.sector_range[0] if tset == TSet.Train else self.sector_range[1]
 		self._nbatches = -1
 		self._read_TICS(self.current_sector)
+
+	def get_period_range(self) -> Optional[Tuple[float,float]]:
+		max_period = self.cfg.get('max_period',None)
+		if max_period is not None:
+			return 0, max_period
+		base_freq = self.cfg.get('base_freq',None)
+		if base_freq is not None:
+			f0, f1 = base_freq, base_freq * 2 * self.cfg.noctaves
+			return 1/f1, 1/f0
 
 	@property
 	def ndsets(self) -> int:
@@ -99,17 +109,6 @@ class MITLoader(IterativeDataLoader):
 	def batch_size(self) -> int:
 		return self.cfg.batch_size
 
-	def get_period_range(self, sector_index: int ) -> Tuple[float,float]:
-		self.load_sector(sector_index)
-		periods: List[float] = []
-		for elem, TIC in enumerate( self.TICS(sector_index) ):
-			dvar: xa.DataArray = self.dataset.data_vars[TIC + ".y"]
-			periods.append(dvar.attrs["period"])
-		period = np.array(periods)
-		pmin, pmax = period.min(), period.max()
-		print(f"\n ** periods: range=({pmin:.2f},{pmax:.2f}) median={np.median(period):.2f}")
-		return pmin, pmax
-
 	@property
 	def dset_idx(self) -> int:
 		return self.current_sector
@@ -170,14 +169,15 @@ class MITLoader(IterativeDataLoader):
 					dfbls = pd.read_csv( data_file, header=None, names=['Header', 'Data'] )
 					dfbls = dfbls.set_index('Header').T
 					period: float = np.float64(dfbls['per'].values[0])
-					sn: float = np.float64(dfbls['sn'].values[0])
-					dflc = pd.read_csv( self.lc_file_path(sector,TIC), header=None, sep='\s+')
-					nan_mask = ~np.isnan(dflc[1].values)
-					t, y = dflc[0].values[nan_mask], dflc[1].values[nan_mask]
-					ym = y.max()
-					if ym > ymax: ymax = ym
-					xarrays[ TIC + ".time" ] = xa.DataArray( t, dims=TIC+".obs" )
-					xarrays[ TIC + ".y" ]    = xa.DataArray( y, dims=TIC+".obs", attrs=dict(sn=sn,period=period) )
+					if self.in_range(period):
+						sn: float = np.float64(dfbls['sn'].values[0])
+						dflc = pd.read_csv( self.lc_file_path(sector,TIC), header=None, sep='\s+')
+						nan_mask = ~np.isnan(dflc[1].values)
+						t, y = dflc[0].values[nan_mask], dflc[1].values[nan_mask]
+						ym = y.max()
+						if ym > ymax: ymax = ym
+						xarrays[ TIC + ".time" ] = xa.DataArray( t, dims=TIC+".obs" )
+						xarrays[ TIC + ".y" ]    = xa.DataArray( y, dims=TIC+".obs", attrs=dict(sn=sn,period=period) )
 				self.dataset = xa.Dataset( xarrays, attrs=dict(ymax=ymax) )
 				t1 = time.time()
 				print(f" Loaded files in {t1-t0:.3f} sec")
@@ -186,7 +186,6 @@ class MITLoader(IterativeDataLoader):
 			self.ymax = self.dataset.attrs["ymax"]
 			return True
 		return False
-
 
 	def get_largest_block( self, TIC: str ) -> np.ndarray:
 		threshold = self.cfg.block_gap_threshold
@@ -211,13 +210,17 @@ class MITLoader(IterativeDataLoader):
 		bdata = bz[:,center-self.series_length//2:center+self.series_length//2]
 		return bdata
 
+	def in_range(self, p: float) -> bool:
+		if self.period_range is None: return True
+		return (p >= self.period_range[0]) and (p <= self.period_range[1])
+
 	def update_training_data(self):
 		elems = []
 		periods = []
 		for TIC in self._TICS:
 			cy: xa.DataArray = self.dataset[TIC + ".y"]
 			p = cy.attrs["period"]
-			if p <= self.max_period:
+			if self.in_range(p):
 				bz: np.ndarray = self.get_largest_block(TIC)
 				if bz.shape[1] >= self.series_length:
 					elems.append( self.get_batch_element(bz) )

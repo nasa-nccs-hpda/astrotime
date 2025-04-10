@@ -1,0 +1,11 @@
+source: MIT                                                     # Dataset type
+dataset_root:  "/explore/nobackup/people/bppowel1/mit_lcs/"    # Location of processed netcdf files
+cache_path:  "${platform.project_root}/cache/data/MIT"
+sector_range:
+  - 59
+  - 83
+batch_size: 50
+block_gap_threshold: 0.01
+base_freq:  0.1                   # Start frequency of base octave
+noctaves: 5                       # Number of octaves in frequency space
+series_length: -1                 # Length of subset of input timeseries to process (-1 means no subsetting)

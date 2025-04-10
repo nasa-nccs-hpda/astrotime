@@ -3,16 +3,16 @@ import torch, math
 from typing import List, Tuple, Mapping
 from torch import Tensor, device, nn
 from .embedding import EmbeddingLayer
-from astrotime.util.math import logspace, tnorm
+from astrotime.util.math import log2space, tnorm
 from astrotime.util.logging import elapsed
 
 def clamp( idx: int ) -> int: return max( 0, idx )
 
 def embedding_space( cfg, device: device ) -> Tuple[np.ndarray,Tensor]:
-	fspace = logspace if (cfg.fscale == "log") else np.linspace
-	nspace = fspace( cfg.base_freq_range[0], cfg.base_freq_range[1], cfg.nfreq )
-	tspace = torch.FloatTensor( nspace ).to(device)
-	return nspace, tspace
+	lspace = log2space( cfg.base_freq, cfg.base_freq*2, cfg.nfreq )
+	ospace: np.ndarray =  np.stack( [ lspace*ioct for ioct in range(1,cfg.noctaves+1) ], 1 )
+	tspace = torch.FloatTensor( ospace.flatten() ).to(device)
+	return ospace, tspace
 
 class OctaveAnalysisLayer(EmbeddingLayer):
 
@@ -21,7 +21,7 @@ class OctaveAnalysisLayer(EmbeddingLayer):
 		self.C = cfg.decay_factor / (8 * math.pi ** 2)
 		self.init_log(f"WaveletAnalysisLayer: nfreq={self.nfreq} ")
 
-	def embed(self, ts: torch.Tensor, ys: torch.Tensor ) -> Tensor:
+	def embed(self, ts: torch.Tensor, ys: torch.Tensor, **kwargs ) -> Tensor:
 		t0 = time.time()
 		self.init_log(f"WaveletAnalysisLayer shapes: ts{list(ts.shape)} ys{list(ys.shape)}")
 		slen: int = self.series_length if (self.series_length > 0) else ys.shape[1]
@@ -54,8 +54,11 @@ class OctaveAnalysisLayer(EmbeddingLayer):
 		self.init_state = False
 		return rv
 
-	def magnitude(self, embedding: Tensor) -> Tensor:
-		return torch.sqrt( torch.sum( embedding**2, dim=1 ) )
+	def magnitude(self, embedding: Tensor, **kwargs) -> Tensor:
+		fold: bool = kwargs.get("fold", True)
+		rv = torch.sqrt( torch.sum( embedding**2, dim=1 ) )
+		self.init_log(f"    OctaveAnalysisLayer magnitude shape={list(rv.shape)}")
+		return rv
 
 	@property
 	def nfeatures(self) -> int:
