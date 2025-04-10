@@ -247,7 +247,7 @@ class MITTransformPlot(SignalPlot):
 			self.plots[tname].set_ydata(tdata)
 			if iplot == 0:
 				target_freq = transform.get_target_freq( target_period )
-				self.log.info(f"            ->>> target_freq = {target_freq:.4f}  ")
+				self.log.info(f"            ->>> target_freq = {target_freq:.4f},  target_period = {target_period:.4f}")
 				self.target_marker.set_xdata([target_freq,target_freq])
 				transform_peak_freq = self.freq_space[np.argmax(tdata)]
 		transform_period = self.update_selection_marker(transform_peak_freq)

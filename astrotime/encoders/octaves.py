@@ -64,7 +64,7 @@ class OctaveAnalysisLayer(EmbeddingLayer):
 	def get_target_freq( self, target_period: float ) -> float:
 		f0 = 1/target_period
 		octave = math.floor(f0/self.cfg.base_freq)
-		return f0/octave
+		return f0/octave if (octave>1) else f0
 
 	@property
 	def nfeatures(self) -> int:
