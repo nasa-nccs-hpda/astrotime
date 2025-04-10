@@ -10,9 +10,9 @@ def clamp( idx: int ) -> int: return max( 0, idx )
 
 def embedding_space( cfg, device: device ) -> Tuple[np.ndarray,Tensor]:
 	lspace = log2space( cfg.base_freq, cfg.base_freq*2, cfg.nfreq )
-	ospace: np.ndarray =  np.stack( [ lspace*ioct for ioct in range(1,cfg.noctaves+1) ], 1 )
+	ospace: np.ndarray =  np.stack( [ lspace*ioct for ioct in range(1,cfg.noctaves+1) ], 0 )
 	tspace = torch.FloatTensor( ospace.flatten() ).to(device)
-	return ospace[0], tspace
+	return ospace, tspace
 
 class OctaveAnalysisLayer(EmbeddingLayer):
 
@@ -57,7 +57,7 @@ class OctaveAnalysisLayer(EmbeddingLayer):
 	def magnitude(self, embedding: Tensor, **kwargs) -> Tensor:
 		fold: bool = kwargs.get("fold", True)
 		rv = torch.sqrt( torch.sum( embedding**2, dim=1 ) )
-		self.init_log(f"    OctaveAnalysisLayer magnitude shapes: {list(embedding.shape)} -> {list(rv.shape)}")
+		self.log.info(f"    OctaveAnalysisLayer magnitude shapes: {list(embedding.shape)} -> {list(rv.shape)}")
 		return rv
 
 	@property
