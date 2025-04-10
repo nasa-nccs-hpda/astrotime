@@ -101,7 +101,7 @@ class MITDatasetPlot(SignalPlot):
 	@exception_handled
 	def key_press(self, event: KeyEvent) -> Any:
 		self.log.info(f" ---- MITDatasetPlot-> key_press({event.key})")
-		if event.key in ['ctrl+f','alt+f']:
+		if event.key in ['ctrl+f','alt+ƒ']:
 			if self.fold_period is None:    self.fold_period = self.period if (event.key == 'ctrl+f') else self.get_ext_period()
 			else :                          self.fold_period = None
 			self.update()
