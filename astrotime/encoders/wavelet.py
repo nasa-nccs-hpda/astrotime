@@ -30,7 +30,7 @@ class WaveletSynthesisLayer(EmbeddingLayer):
 		tau = 0.5 * (ts[:, self.series_length // 2] + ts[:, self.series_length // 2 + 1])
 		self.init_log(f" ys{list(ys.shape)} ts{list(ts.shape)} tau{list(tau.shape)}")
 		tau: Tensor = tau[:, None, None]
-		omega = self.embedding_space * 2.0 * math.pi
+		omega = self._embedding_space * 2.0 * math.pi
 		omega_: Tensor = omega[None, :, None]  # broadcast-to(self.batch_size,self.nfreq,self.series_length)
 		ts: Tensor = ts[:, None, :]  # broadcast-to(self.batch_size,self.nfreq,self.series_length)
 		dt: Tensor = (ts - tau)
@@ -115,7 +115,7 @@ class WaveletAnalysisLayer(EmbeddingLayer):
 		ones: Tensor = torch.ones( ys.shape[0], self.nfreq, slen, device=self.device)
 		tau = 0.5 * (ts[:, slen // 2] + ts[:, slen // 2 + 1])
 		tau: Tensor = tau[:, None, None]
-		omega = self.embedding_space * 2.0 * math.pi
+		omega = self._embedding_space * 2.0 * math.pi
 		omega_: Tensor = omega[None, :, None]  # broadcast-to(self.batch_size,self.nfreq,slen)
 		ts: Tensor = ts[:, None, :]  # broadcast-to(self.batch_size,self.nfreq,slen)
 		dt: Tensor = (ts - tau)
@@ -181,7 +181,7 @@ class WaveletProjConvLayer(EmbeddingLayer):
 		kernel_inputs = torch.stack( [ torch.stack( [ tys[ ib, :, tidx[ib,kidx]-self.K//2 : tidx[ib,kidx]+self.K//2+1 ] for kidx in range(self.nk) ] ) for ib in range(ys.shape[0]) ] )
 		dt: Tensor = kernel_inputs[:,:,0:1,:] - tau[:,:,None,None]
 		yk: Tensor = kernel_inputs[:,:,0:1,:]
-		omega = (self.embedding_space * 2.0 * math.pi)
+		omega = (self._embedding_space * 2.0 * math.pi)
 		z: Tensor = omega[None,None,:,None] * dt
 		self.init_log(f" dt{list(dt.shape)} yk{list(yk.shape)} omega{list(omega.shape)} z{list(z.shape)}")
 		sdt: Tensor = 2*dt/self.ktime_spacing

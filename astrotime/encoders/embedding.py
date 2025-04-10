@@ -14,7 +14,7 @@ class EmbeddingLayer(torch.nn.Module):
 		self.batch_size = cfg.batch_size
 		self.time_scale = self.cfg.time_scale
 		self.log = logging.getLogger()
-		self.embedding_space: Tensor = embedding_space
+		self._embedding_space: Tensor = embedding_space
 		self.log.info(f"EmbeddingLayer: series_length={self.series_length} batch_size={self.batch_size} ")
 		self.init_state = True
 
@@ -36,7 +36,7 @@ class EmbeddingLayer(torch.nn.Module):
 		raise NotImplementedError("EmbeddingLayer.embed() not implemented")
 
 	def xdata(self) -> Tensor:
-		return self.embedding_space
+		return self._embedding_space
 
 	@property
 	def projection_dim(self) -> int:

@@ -28,7 +28,7 @@ class OctaveAnalysisLayer(EmbeddingLayer):
 		ones: Tensor = torch.ones( ys.shape[0], self.nfreq, slen, device=self.device)
 		tau = 0.5 * (ts[:, slen // 2] + ts[:, slen // 2 + 1])
 		tau: Tensor = tau[:, None, None]
-		omega = self.embedding_space * 2.0 * math.pi
+		omega = self._embedding_space * 2.0 * math.pi
 		omega_: Tensor = omega[None, :, None]  # broadcast-to(self.batch_size,self.nfreq,slen)
 		ts: Tensor = ts[:, None, :]  # broadcast-to(self.batch_size,self.nfreq,slen)
 		dt: Tensor = (ts - tau)
