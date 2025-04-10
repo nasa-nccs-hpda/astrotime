@@ -158,10 +158,10 @@ class MITDatasetPlot(SignalPlot):
 		self.plot.set_xdata(xdata)
 		self.plot.set_linewidth( 1 if (self.fold_period is None) else 0)
 		self.ax.title.set_text(f"{self.name}: TP={self.period:.3f} (F={1 / self.period:.3f})")
-		self.ax.set_xlim(xdata[0],xdata[-1])
-		self.log.info( f" ---- DatasetPlot-> update({self.element}:{self.TICS[self.element]}): xlim=({xdata[0]:.3f},{xdata[-1]:.3f}), ylim=({ydata[0]:.3f},{ydata[-1]:.3f}), xdata.shape={self.plot.get_xdata().shape} origin={self.origin} ---" )
 		self.update_period_marker()
+		self.ax.set_xlim(xdata[0],xdata[-1])
 		self.ax.set_ylim(ydata.min(),ydata.max())
+		self.log.info( f" ---- MITDatasetPlot-> update({self.element}:{self.TICS[self.element]}): xlim=({xdata[0]:.3f},{xdata[-1]:.3f}), ylim=({ydata.min():.3f},{ydata.max():.3f}), xdata.shape={self.plot.get_xdata().shape} origin={self.origin} ---" )
 		self.ax.figure.canvas.draw_idle()
 
 
