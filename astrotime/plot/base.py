@@ -107,7 +107,8 @@ class SignalPlotFigure(object):
 		pass
 
 	def button_press(self, event: MouseEvent) -> Any:
-		self.log.info(f" ------- SignalPlotFigure: button-press event: {event} ---------" )
+		pass
+		#self.log.info(f" ------- SignalPlotFigure: button-press event: {event} ---------" )
 		# for plot in self.plots:
 		# 	plot.process_button_press( event )
 		# self.log.info(f" ------- SignalPlotFigure: button-press complete ---------")
