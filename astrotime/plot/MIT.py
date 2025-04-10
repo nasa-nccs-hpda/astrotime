@@ -246,11 +246,10 @@ class MITTransformPlot(SignalPlot):
 			self.log.info(f"---- MITTransformPlot({iplot}) {tname}[{self.element})] update: tdata{tdata.shape}, mean={tdata.mean():.2f} --- ")
 			self.plots[tname].set_ydata(tdata)
 			if iplot == 0:
-				freq_data = transform.freq_space.cpu().numpy()
-				transform_peak_freq =  freq_data[ np.argmax(tdata) ]
 				target_freq = transform.get_target_freq( target_period )
 				self.log.info(f"            ->>> target_freq = {target_freq:.4f}  ")
 				self.target_marker.set_xdata([target_freq,target_freq])
+				transform_peak_freq = self.freq_space[np.argmax(tdata)]
 		transform_period = self.update_selection_marker(transform_peak_freq)
 		self.ax.title.set_text(f"{self.name}: TP={transform_period:.3f} (F={transform_peak_freq:.3f})")
 		self.ax.figure.canvas.draw_idle()
