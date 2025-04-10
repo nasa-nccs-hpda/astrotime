@@ -2,7 +2,7 @@ defaults:
   - platform: "explore"
   - train: "MIT_cnn"
   - transform: "octaves-MIT"
-  - data: "MIT.csv"
+  - data: "MIT.octaves"
   - model: "wp_cnn"
   - _self_
   - override hydra/hydra_logging: disabled
