@@ -142,7 +142,6 @@ class MITDatasetPlot(SignalPlot):
 		self.update_period_marker()
 		self.ax.set_ylim(ys.min(),ys.max())
 
-
 	@exception_handled
 	def get_element_data(self) -> Tuple[np.ndarray,np.ndarray,float]:
 		element: xa.Dataset = self.data_loader.get_dataset_element(self.sector,self.TICS[self.element])
@@ -155,7 +154,7 @@ class MITDatasetPlot(SignalPlot):
 		return xdata, znorm(ydata.squeeze()), target
 
 	@exception_handled
-	def update(self, val, **kwargs ):
+	def update(self, val=0, **kwargs ):
 		xdata, ydata, self.period = self.get_element_data()
 		self.origin = xdata[np.argmax(np.abs(ydata))]
 		self.plot.set_ydata(ydata)
