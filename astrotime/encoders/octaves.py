@@ -54,11 +54,12 @@ class OctaveAnalysisLayer(EmbeddingLayer):
 		self.init_state = False
 		return rv
 
-	def magnitude(self, embedding: Tensor, **kwargs) -> Tensor:
+	def magnitude(self, embedding: Tensor, **kwargs) -> np.ndarray:
 		fold: bool = kwargs.get("fold", True)
-		rv = torch.sqrt( torch.sum( embedding**2, dim=1 ) )
-		self.log.info(f"    OctaveAnalysisLayer magnitude shapes: {list(embedding.shape)} -> {list(rv.shape)}")
-		return rv
+		mag: np.ndarray = torch.sqrt( torch.sum( embedding**2, dim=1 ) ).to('cpu').numpy()
+		self.log.info(f"    OctaveAnalysisLayer magnitude shapes: {list(embedding.shape)} -> {list(mag.shape)}")
+		if fold: mag = mag.reshape( mag.shape[0], self.cfg.nfreq, -1 ).sum(axis=2)
+		return mag
 
 	@property
 	def nfeatures(self) -> int:

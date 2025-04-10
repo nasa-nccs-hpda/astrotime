@@ -227,7 +227,7 @@ class MITTransformPlot(SignalPlot):
 		slen = transform.cfg.series_length
 		ts_tensors: Dict[str,Tensor] =  { k: FloatTensor(series_data.data_vars[k].values[:slen]).to(transform.device) for k in ['time','y'] }
 		transformed: Tensor = transform.embed( ts_tensors['time'][None,:], tnorm(ts_tensors['y'][None,:],dim=1) )
-		embedding: np.ndarray = transform.magnitude( transformed ).to('cpu').numpy()
+		embedding: np.ndarray = transform.magnitude( transformed )
 		return znorm(embedding)
 
 	def update_selection_marker(self, freq ) -> float:
