@@ -98,6 +98,7 @@ class MITDatasetPlot(SignalPlot):
 				self.origin = event.xdata
 				self.update_pm_origins()
 
+	@exception_handled
 	def key_press(self, event: KeyEvent) -> Any:
 		ke: KeyEvent = event
 		self.log.info( f" ---- DatasetPlot-> key_press({ke.key})")
@@ -150,7 +151,7 @@ class MITDatasetPlot(SignalPlot):
 		return xdata, znorm(ydata.squeeze()), target
 
 	@exception_handled
-	def update(self, val):
+	def update(self, val=0):
 		xdata, ydata, self.period = self.get_element_data()
 		self.origin = xdata[np.argmax(np.abs(ydata))]
 		self.plot.set_ydata(ydata)
@@ -227,7 +228,7 @@ class MITTransformPlot(SignalPlot):
 		return period
 
 	@exception_handled
-	def update(self, val):
+	def update(self, val=0):
 		series_data: xa.Dataset = self.data_loader.get_dataset_element(self.sector, self.TICS[self.element])
 		target_period: float = series_data.data_vars['y'].attrs['period']
 		transform_peak_freq = None
