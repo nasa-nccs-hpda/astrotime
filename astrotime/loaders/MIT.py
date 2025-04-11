@@ -242,11 +242,11 @@ class MITOctavesLoader(MITLoader):
 		super().__init__(cfg)
 		self.nfreq: int = cfg.series_length
 		self.base_freq: float = cfg.base_freq
-		self.n_octaves: int = cfg.n_octaves
+		self.noctaves: int = cfg.noctaves
 
 	def get_period_range(self) -> Optional[Tuple[float,float]]:
 		f0 = self.base_freq
-		f1 = f0 * pow(2,self.n_octaves)
+		f1 = f0 * pow(2,self.noctaves)
 		return 1/f1, 1/f0
 
 
