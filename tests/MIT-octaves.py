@@ -23,6 +23,6 @@ octave_analysis  = OctaveAnalysisLayer( cfg.transform, embedding_space_tensor, d
 
 dplot = MITDatasetPlot("MIT lightcurves", data_loader, sector, refresh=refresh )
 transforms = dict( octave_analysis_transform=octave_analysis )
-wplot = MITTransformPlot("WWAnalysis Transform", data_loader, transforms, plot_freq_space[0], sector )
+wplot = MITTransformPlot("WWAnalysis Transform", data_loader, transforms, plot_freq_space, sector )
 fig = SignalPlotFigure([dplot,wplot])
 wplot.update()
