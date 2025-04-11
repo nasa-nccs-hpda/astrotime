@@ -9,7 +9,7 @@ from astrotime.util.logging import elapsed
 def clamp( idx: int ) -> int: return max( 0, idx )
 
 def embedding_space( cfg, device: device ) -> Tuple[np.ndarray,Tensor]:
-	lspace = log2space( cfg.base_freq, cfg.base_freq*pow(2,cfg.noctaves), cfg.nfreq*cfg.noctaves )
+	lspace = log2space( cfg.base_freq, cfg.base_freq*pow(2,cfg.noctaves), cfg.nfreq_oct*cfg.noctaves )
 	tspace = torch.FloatTensor( lspace ).to(device)
 	return lspace, tspace
 
