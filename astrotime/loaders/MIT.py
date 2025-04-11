@@ -38,10 +38,7 @@ class MITLoader(IterativeDataLoader):
 		max_period = self.cfg.get('max_period',None)
 		if max_period is not None:
 			return 0, max_period
-		base_freq = self.cfg.get('base_freq',None)
-		if base_freq is not None:
-			f0, f1 = base_freq, base_freq * 2 * self.cfg.noctaves
-			return 1/f1, 1/f0
+		return 0, float('nan')
 
 	@property
 	def ndsets(self) -> int:
@@ -80,13 +77,13 @@ class MITLoader(IterativeDataLoader):
 		result = { k: self.train_data[k][element_index] for k in ['t','y','p'] }
 		return result
 
-	def get_dataset_element( self, sector_index: int, TIC: str ) -> xa.Dataset:
-		self.load_sector(sector_index)
+	def get_dataset_element( self, sector_index: int, TIC: str, **kwargs ) -> xa.Dataset:
+		self.load_sector(sector_index, **kwargs)
 		if self.test_mode:  return self.get_sinusoid_element(sector_index,TIC)
 		else:               return xa.Dataset( { k: self.dataset.data_vars[TIC+"."+k] for k in ['time','y'] } )
 
-	def get_sinusoid_element( self, sector_index: int, TIC: str ) -> xa.Dataset:
-		self.load_sector(sector_index)
+	def get_sinusoid_element( self, sector_index: int, TIC: str, **kwargs ) -> xa.Dataset:
+		self.load_sector(sector_index, **kwargs)
 		time: xa.DataArray = self.dataset.data_vars[TIC+".time"]
 		y: xa.DataArray = self.dataset.data_vars[TIC+".y"]
 		sinusoid: np.ndarray = np.sin( 2*np.pi*time.values / y.attrs["period"] )
@@ -154,12 +151,14 @@ class MITLoader(IterativeDataLoader):
 		self.load_sector(dset_idx)
 		return self.dataset
 
-	def load_sector( self, sector: int ) -> bool:
+	def load_sector( self, sector: int, **kwargs ) -> bool:
 		t0 = time.time()
+		refresh = kwargs.get('refresh',False)
 		if (self.current_sector != sector) or (self.dataset is None):
 			print(f"Loading sector {sector}")
 			self._read_TICS(sector)
-			self._load_cache_dataset(sector)
+			if refresh: self.refresh()
+			else:       self._load_cache_dataset(sector)
 			if self.dataset is None:
 				xarrays: Dict[str,xa.DataArray] = {}
 				ymax = 0.0
@@ -235,4 +234,19 @@ class MITLoader(IterativeDataLoader):
 
 	def refresh(self):
 		self.dataset = None
+
+
+class MITOctavesLoader(MITLoader):
+
+	def __init__(self, cfg: DictConfig ):
+		super().__init__(cfg)
+		self.nfreq: int = cfg.series_length
+		self.base_freq: float = cfg.base_freq
+		self.n_octaves: int = cfg.n_octaves
+
+	def get_period_range(self) -> Optional[Tuple[float,float]]:
+		f0 = self.base_freq
+		f1 = f0 * pow(2,self.n_octaves)
+		return 1/f1, 1/f0
+
 

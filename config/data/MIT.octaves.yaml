@@ -6,6 +6,9 @@ sector_range:
   - 83
 batch_size: 50
 block_gap_threshold: 0.01
-base_freq:  0.1                   # Start frequency of base octave
-noctaves: 5                       # Number of octaves in frequency space
-series_length: -1                 # Length of subset of input timeseries to process (-1 means no subsetting)
+nfreq: 128                         # Number of frequency values (log2 spaced) in each octave
+base_freq:  0.05                   # Start frequency of full freq range
+n_octaves: 10                      # Number of octaves in full freq range
+series_length: -1                  # Length of subset of input timeseries to process (-1 means no subsetting)
+
+

@@ -36,7 +36,7 @@ class IterativeDataLoader:
 	def __init__(self):
 		self.log = logging.getLogger("astrotime")
 
-	def get_dataset( self, dset_idx: int ) -> xa.Dataset:
+	def get_dataset( self, *args ) -> xa.Dataset:
 		raise NotImplementedError(f"The class '{self.__class__.__name__}' does not implement the 'get_dataset' method")
 
 	def initialize(self, tset: TSet) -> xa.Dataset:
@@ -45,11 +45,14 @@ class IterativeDataLoader:
 	def get_next_batch(self) -> Optional[Dict[str,np.ndarray]]:
 		raise NotImplementedError(f"The class '{self.__class__.__name__}' does not implement the 'get_next_batch' method")
 
-	def get_batch( self, dset_idx: int, batch_index: int ) -> Optional[Dict[str,np.ndarray]]:
+	def get_batch( self, dset_idx: int, batch_index ) -> Optional[Dict[str,np.ndarray]]:
 		raise NotImplementedError(f"The class '{self.__class__.__name__}' does not implement the 'get_batch' method")
 
 	def get_element(self, dset_idx: int, element_index) -> Optional[Dict[str,Union[np.ndarray,float]]]:
 		raise NotImplementedError(f"The class '{self.__class__.__name__}' does not implement the 'get_element' method")
+
+	def get_dataset_element(self, dset_idx: int, element_index, **kwargs) -> xa.Dataset:
+		raise NotImplementedError(f"The class '{self.__class__.__name__}' does not implement the 'get_dataset_element' method")
 
 	@property
 	def batch_size(self) -> int:

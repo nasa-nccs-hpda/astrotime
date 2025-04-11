@@ -2,12 +2,12 @@ import logging, numpy as np
 import xarray as xa
 from .param import STIntParam
 from matplotlib import ticker
-from astrotime.loaders.MIT import MITLoader
 from torch import nn, optim, Tensor, FloatTensor
 from .base import SignalPlot, bounds
 from matplotlib.axes import Axes
 from matplotlib.lines import Line2D
 from matplotlib.backend_bases import KeyEvent, MouseEvent, MouseButton
+from astrotime.loaders.base import IterativeDataLoader
 from astrotime.util.logging import exception_handled
 from astrotime.encoders.embedding import EmbeddingLayer
 from typing import List, Optional, Dict, Type, Union, Tuple, Any, Set
@@ -60,11 +60,12 @@ class PeriodMarkers:
 
 class MITDatasetPlot(SignalPlot):
 
-	def __init__(self, name: str, data_loader: MITLoader, sector: int, **kwargs):
+	def __init__(self, name: str, data_loader: IterativeDataLoader, sector: int, **kwargs):
 		SignalPlot.__init__(self, **kwargs)
 		self.name = name
 		self.sector: int = sector
-		self.data_loader: MITLoader = data_loader
+		self.data_loader: IterativeDataLoader = data_loader
+		self.refresh = kwargs.get('refresh', False)
 		self.TICS: List[str] = data_loader.TICS(sector)
 		self.annotations: List[str] = tolower( kwargs.get('annotations',None) )
 		self.colors = ['blue', 'green'] + [ 'yellow' ] * 16
@@ -147,7 +148,7 @@ class MITDatasetPlot(SignalPlot):
 
 	@exception_handled
 	def get_element_data(self) -> Tuple[np.ndarray,np.ndarray,float]:
-		element: xa.Dataset = self.data_loader.get_dataset_element(self.sector,self.TICS[self.element])
+		element: xa.Dataset = self.data_loader.get_dataset_element(self.sector,self.TICS[self.element], refresh=self.refresh )
 		t, y = element.data_vars['time'], element.data_vars['y']
 		ydata: np.ndarray = y.values
 		xdata: np.ndarray = t.values
@@ -176,12 +177,12 @@ class MITDatasetPlot(SignalPlot):
 
 class MITTransformPlot(SignalPlot):
 
-	def __init__(self, name: str, data_loader: MITLoader, transforms: Dict[str,EmbeddingLayer], freq_space: np.ndarray, sector: int, **kwargs):
+	def __init__(self, name: str, data_loader: IterativeDataLoader, transforms: Dict[str,EmbeddingLayer], freq_space: np.ndarray, sector: int, **kwargs):
 		SignalPlot.__init__(self, **kwargs)
 		self.name = name
 		self.sector: int = sector
 		self.transforms: Dict[str,EmbeddingLayer] = transforms
-		self.data_loader: MITLoader = data_loader
+		self.data_loader: IterativeDataLoader = data_loader
 		self.freq_space: np.ndarray = freq_space
 		self.TICS: List[str] = data_loader.TICS(sector)
 		self.annotations: List[str] = tolower( kwargs.get('annotations',None) )

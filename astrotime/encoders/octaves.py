@@ -9,10 +9,9 @@ from astrotime.util.logging import elapsed
 def clamp( idx: int ) -> int: return max( 0, idx )
 
 def embedding_space( cfg, device: device ) -> Tuple[np.ndarray,Tensor]:
-	lspace = log2space( cfg.base_freq, cfg.base_freq*2, cfg.nfreq )
-	ospace: np.ndarray =  np.stack( [ lspace*ioct for ioct in range(1,cfg.noctaves+1) ], 0 )
-	tspace = torch.FloatTensor( ospace.flatten() ).to(device)
-	return ospace, tspace
+	lspace = log2space( cfg.base_freq, cfg.base_freq*pow(2,cfg.noctaves), cfg.nfreq*cfg.noctaves )
+	tspace = torch.FloatTensor( lspace ).to(device)
+	return lspace, tspace
 
 class OctaveAnalysisLayer(EmbeddingLayer):
 
@@ -20,6 +19,9 @@ class OctaveAnalysisLayer(EmbeddingLayer):
 		EmbeddingLayer.__init__(self, cfg, embedding_space, device)
 		self.C = cfg.decay_factor / (8 * math.pi ** 2)
 		self.init_log(f"WaveletAnalysisLayer: nfreq={self.nfreq} ")
+		self.nfreq: int       = cfg.nfreq
+		self.base_freq: float = cfg.base_freq
+		self.noctaves: int    = cfg.noctaves
 
 	def embed(self, ts: torch.Tensor, ys: torch.Tensor, **kwargs ) -> Tensor:
 		t0 = time.time()
@@ -57,8 +59,12 @@ class OctaveAnalysisLayer(EmbeddingLayer):
 	def magnitude(self, embedding: Tensor, **kwargs) -> np.ndarray:
 		fold: bool = kwargs.get("fold", True)
 		mag: np.ndarray = torch.sqrt( torch.sum( embedding**2, dim=1 ) ).to('cpu').numpy()
-		self.log.info(f"    OctaveAnalysisLayer magnitude shapes: {list(embedding.shape)} -> {list(mag.shape)}")
-		if fold: mag = mag.reshape( mag.shape[0], self.cfg.nfreq, -1 ).sum(axis=2)
+		self.log.info(f"magnitude: mag{list(mag.shape)}")
+		if fold:
+			N = np.zeros( (mag.shape[0],1) )
+			for i in range(1,self.noctaves):
+				octave = mag[:,i*self.nfreq:]
+				mag[:,:len(octave)] += octave
 		return mag
 
 	def get_target_freq( self, target_period: float ) -> float:
