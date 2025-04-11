@@ -1,6 +1,7 @@
 import logging, numpy as np
 import xarray as xa
 from .param import STIntParam
+from matplotlib import ticker
 from astrotime.loaders.MIT import MITLoader
 from torch import nn, optim, Tensor, FloatTensor
 from .base import SignalPlot, bounds
@@ -211,6 +212,8 @@ class MITTransformPlot(SignalPlot):
 		self.ax.set_xlim( self.freq_space.min(), self.freq_space.max() )
 		self.ax.set_ylim( 0.0, 1.0 )
 		self.ax.set_xscale('log')
+		self.ax.xaxis.set_major_formatter(ticker.StrMethodFormatter("{x:.2f}"))
+		self.ax.xaxis.set_major_locator(ticker.IndexLocator(base=0.1, offset=0))
 		self.ax.legend(loc="upper left")
 
 	@exception_handled
