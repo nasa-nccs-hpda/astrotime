@@ -204,6 +204,7 @@ class MITTransformPlot(SignalPlot):
 		freq = 1.0 / period
 		for iplot, (tname, transform) in enumerate(self.transforms.items()):
 			tdata: np.ndarray = self.apply_transform(transform,series_data)
+			print( f" plot[{tname}]: tdata{tdata.squeeze().shape},freq_space{self.freq_space.shape}")
 			self.plots[tname] = self.ax.plot(self.freq_space, tdata.squeeze(), label=tname, color=self.colors[iplot], marker=".", linewidth=1, markersize=2, alpha=0.5)[0]
 		self.target_marker: Line2D = self.ax.axvline( freq, 0.0, 1.0, color='green', linestyle='-')
 		self.selection_marker: Line2D = self.ax.axvline( 0, 0.0, 1.0, color=self.colors[0], linestyle='-', linewidth=2)
