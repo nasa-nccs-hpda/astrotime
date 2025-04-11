@@ -60,11 +60,11 @@ class OctaveAnalysisLayer(EmbeddingLayer):
 	def magnitude(self, embedding: Tensor, **kwargs) -> np.ndarray:
 		fold: bool = kwargs.get("fold", True)
 		mag: np.ndarray = torch.sqrt( torch.sum( embedding**2, dim=1 ) ).to('cpu').numpy()
-		print(f"magnitude: mag{list(mag.shape)}")
+		self.log.info(f"magnitude: mag{list(mag.shape)}")
 		if fold:
 			for i in range(1,self.noctaves):
 				octave = mag[:,i*self.nfreq_oct:]
-				print(f" *** {i}: mag{list(mag[:,:octave.shape[1]].shape)} += octave{list(octave.shape)}")
+				self.log.info(f" *** {i}: mag{list(mag[:,:octave.shape[1]].shape)} += octave{list(octave.shape)}")
 				mag[:,:octave.shape[1]] += octave
 		return mag
 
