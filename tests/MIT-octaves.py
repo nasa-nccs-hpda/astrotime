@@ -3,6 +3,7 @@ from astrotime.loaders.MIT import MITOctavesLoader
 from astrotime.encoders.octaves import OctaveAnalysisLayer, embedding_space
 from astrotime.plot.MIT import MITDatasetPlot, MITTransformPlot
 from astrotime.config.context import astrotime_initialize
+from astrotime.plot.base import SignalPlotFigure
 
 import torch
 from hydra import initialize, compose
@@ -23,4 +24,5 @@ octave_analysis  = OctaveAnalysisLayer( cfg.transform, embedding_space_tensor, d
 dplot = MITDatasetPlot("MIT lightcurves", data_loader, sector, refresh=refresh )
 transforms = dict( octave_analysis_transform=octave_analysis )
 wplot = MITTransformPlot("WWAnalysis Transform", data_loader, transforms, plot_freq_space[0], sector )
+fig = SignalPlotFigure([dplot,wplot])
 wplot.update()
