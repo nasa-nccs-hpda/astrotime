@@ -64,8 +64,8 @@ class OctaveAnalysisLayer(EmbeddingLayer):
 		if fold:
 			for i in range(1,self.noctaves):
 				octave = mag[:,i*self.nfreq_oct:]
-				print(f" *** {i}: mag{list(mag[:,:len(octave)].shape)} += octave{list(octave.shape)}")
-				mag[:,:len(octave)] += octave
+				print(f" *** {i}: mag{list(mag[:,:octave.shape[1]].shape)} += octave{list(octave.shape)}")
+				mag[:,:octave.shape[1]] += octave
 		return mag
 
 	def get_target_freq( self, target_period: float ) -> float:
