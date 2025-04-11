@@ -68,7 +68,7 @@ class OctaveAnalysisLayer(EmbeddingLayer):
 				self.log.info(f" *** {i}: mag{list(mag[:,:octave.shape[1]].shape)} += octave{list(octave.shape)}")
 				mag[:,:octave.shape[1]] += octave
 				norm[:octave.shape[1]] += 1
-			mag = mag/norm[None,:]
+			# mag = mag/norm[None,:]
 		return mag
 
 	def get_target_freq( self, target_period: float ) -> float:
