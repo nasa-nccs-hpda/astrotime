@@ -19,9 +19,10 @@ class OctaveAnalysisLayer(EmbeddingLayer):
 		EmbeddingLayer.__init__(self, cfg, embedding_space, device)
 		self.C = cfg.decay_factor / (8 * math.pi ** 2)
 		self.init_log(f"WaveletAnalysisLayer: nfreq={self.nfreq} ")
-		self.nfreq: int       = cfg.nfreq
+		self.nfreq_oct: int   = cfg.nfreq_oct
 		self.base_freq: float = cfg.base_freq
 		self.noctaves: int    = cfg.noctaves
+		self.nfreq: int       = self.nfreq_oct * self.noctaves
 
 	def embed(self, ts: torch.Tensor, ys: torch.Tensor, **kwargs ) -> Tensor:
 		t0 = time.time()
@@ -63,14 +64,13 @@ class OctaveAnalysisLayer(EmbeddingLayer):
 		if fold:
 			N = np.zeros( (mag.shape[0],1) )
 			for i in range(1,self.noctaves):
-				octave = mag[:,i*self.nfreq:]
+				octave = mag[:,i*self.nfreq_oct:]
 				mag[:,:len(octave)] += octave
 		return mag
 
 	def get_target_freq( self, target_period: float ) -> float:
 		f0 = 1/target_period
-		octave = math.floor(f0/self.cfg.base_freq)
-		return f0/octave if (octave>1) else f0
+		return f0
 
 	@property
 	def nfeatures(self) -> int:
