@@ -206,14 +206,14 @@ class MITTransformPlot(SignalPlot):
 			self.plots[tname] = self.ax.plot(self.freq_space, tdata.squeeze(), label=tname, color=self.colors[iplot], marker=".", linewidth=1, markersize=2, alpha=0.5)[0]
 		self.target_marker: Line2D = self.ax.axvline( freq, 0.0, 1.0, color='green', linestyle='-')
 		self.selection_marker: Line2D = self.ax.axvline( 0, 0.0, 1.0, color=self.colors[0], linestyle='-', linewidth=2)
-		self.ax.title.set_text(f"{self.name}: TP={period:.3f} (F={freq:.3f})")
+		self.ax.title.set_text(f"{self.name}: TPeriod={period:.3f} (Freq={freq:.3f})")
 		self.ax.title.set_fontsize(8)
 		self.ax.title.set_fontweight('bold')
 		self.ax.set_xlim( self.freq_space.min(), self.freq_space.max() )
 		self.ax.set_ylim( 0.0, 1.0 )
 		self.ax.set_xscale('log')
 		self.ax.xaxis.set_major_formatter(ticker.StrMethodFormatter("{x:.2f}"))
-		self.ax.xaxis.set_major_locator(ticker.IndexLocator(base=0.1, offset=0))
+		self.ax.xaxis.set_major_locator(ticker.LogLocator(base=2, numticks=8))
 		self.ax.legend(loc="upper left")
 
 	@exception_handled
