@@ -40,7 +40,7 @@ class FunctionPlot(SignalPlot):
 	@exception_handled
 	def setup(self, domain: Tuple[float,float], **kwargs ):
 		figure, ax = plt.subplots(1, 1, figsize=kwargs.get('figsize', (15, 9)))
-		self.initialize( self.ax )
+		self.initialize( ax )
 
 		self.xs = np.linspace(domain[0],domain[1], self.npts)
 		ys = self.function(self.xs)
