@@ -17,6 +17,7 @@ class FunctionPlot(SignalPlot):
 		self.xs = None
 		self.npts = kwargs.get('npts', 1000)
 		self.plot: Line2D = None
+		self.domain = kwargs.get('domain', (-1,1) )
 
 	@exception_handled
 	def button_press(self, event: MouseEvent) -> Any:
@@ -38,11 +39,8 @@ class FunctionPlot(SignalPlot):
 		pass
 
 	@exception_handled
-	def setup(self, domain: Tuple[float,float], **kwargs ):
-		figure, ax = plt.subplots(1, 1, figsize=kwargs.get('figsize', (15, 9)))
-		self.initialize( ax )
-
-		self.xs = np.linspace(domain[0],domain[1], self.npts)
+	def _setup(self ):
+		self.xs = np.linspace( self.domain[0], self.domain[1], self.npts)
 		ys = self.function(self.xs)
 		self.plot = self.ax.plot(self.xs, ys, label='y', color='blue', marker=".", linewidth=1, markersize=2, alpha=0.5)[0]
 		self.ax.title.set_text(f"{self.name}")
