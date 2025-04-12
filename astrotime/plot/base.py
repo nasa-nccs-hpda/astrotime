@@ -32,8 +32,7 @@ class SignalPlot(Parameterized):
 	def initialize(self, ax: Axes):
 		self.ax = ax
 		self.annotation: Annotation = self.ax.annotate("", (0.75, 0.95), xycoords='axes fraction')
-		with plt.ioff():
-			self._setup()
+		self._setup()
 		self.fig.canvas.mpl_connect('button_press_event', self.button_press)
 		self.fig.canvas.mpl_connect('button_release_event', self.button_release)
 		self.fig.canvas.mpl_connect('key_press_event', self.key_press)
