@@ -3,6 +3,7 @@ from matplotlib import ticker
 from .base import SignalPlot, bounds
 from matplotlib.axes import Axes
 from matplotlib.lines import Line2D
+import matplotlib.pyplot as plt
 from matplotlib.backend_bases import KeyEvent, MouseEvent, MouseButton
 from astrotime.util.logging import exception_handled
 from typing import List, Optional, Dict, Type, Union, Tuple, Any, Set, Callable
@@ -15,7 +16,7 @@ class FunctionPlot(SignalPlot):
 		self.function = function
 		self.xs = None
 		self.npts = kwargs.get('npts', 1000)
-		self.bounds = kwargs.get('bounds', [-1.0,1.0])
+		self.plot: Line2D = None
 
 	@exception_handled
 	def button_press(self, event: MouseEvent) -> Any:
@@ -37,10 +38,10 @@ class FunctionPlot(SignalPlot):
 		pass
 
 	@exception_handled
-	def _setup(self):
-		self.xs = np.linspace(self.bounds[0],self.bounds[1], self.npts)
+	def setup(self, domain: Tuple[float,float] ):
+		self.xs = np.linspace(domain[0],domain[1], self.npts)
 		ys = self.function(self.xs)
-		self.plot: Line2D = self.ax.plot(self.xs, ys, label='y', color='blue', marker=".", linewidth=1, markersize=2, alpha=0.5)[0]
+		self.plot = self.ax.plot(self.xs, ys, label='y', color='blue', marker=".", linewidth=1, markersize=2, alpha=0.5)[0]
 		self.ax.title.set_text(f"{self.name}")
 		self.ax.title.set_fontsize(8)
 		self.ax.title.set_fontweight('bold')
@@ -62,4 +63,8 @@ class FunctionPlot(SignalPlot):
 		self.ax.set_xlim(xdata.min(),xdata.max())
 		self.ax.set_ylim(ydata.min(),ydata.max())
 		self.ax.figure.canvas.draw_idle()
+
+	@exception_handled
+	def show(self):
+		plt.show()
 
