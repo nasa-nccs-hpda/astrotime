@@ -22,6 +22,7 @@ class PlanetCrossingDataGenerator:
 		time_values: np.ndarray = time.values
 		taus: np.ndarray = np.arange( phase+time_values.min(), time_values.max(), period )
 		crossing: np.ndarray = h * np.exp(-(a * (time_values[:,None] - taus[None,:])) ** 2)
+		print( f" yheight{yheight.shape} noise{noise.shape} crossing{crossing.shape} taus{taus.shape} time_values{time_values.shape} " )
 		crossings: np.ndarray =  yheight - crossing.sum(axis=1) + noise
 		signal: xa.DataArray = y.copy( data= 2*self.hrange[1] - crossings )
 		signal.attrs.update( width=a, mag=h, phase=phase )
