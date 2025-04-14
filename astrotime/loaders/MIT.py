@@ -1,5 +1,6 @@
 import time, os, numpy as np, xarray as xa
 from astrotime.loaders.base import IterativeDataLoader
+from astrotime.loaders.synthetic import PlanetCrossingDataGenerator
 from typing import List, Optional, Dict, Type, Union, Tuple
 import pandas as pd
 from glob import glob
@@ -19,15 +20,16 @@ class MITLoader(IterativeDataLoader):
 		self.sector_batch_offset = None
 		self.dataset: Optional[xa.Dataset] = None
 		self.train_data: Dict[str,np.ndarray] = {}
+		self.synthetic = PlanetCrossingDataGenerator(cfg)
 		self.tset: TSet = None
 		self._nbatches = -1
-		self.test_mode: bool = False
+		self.test_mode: str = None
 		self.ymax = None
 		self._TICS = None
 
 	def initialize(self, tset: TSet, **kwargs ):
 		self.tset = tset
-		self.test_mode = kwargs.get('test_mode',False)
+		self.test_mode = kwargs.get('test_mode')
 		self.period_range = self.get_period_range()
 		self.sector_batch_offset = 0
 		self.current_sector = self.sector_range[0] if tset == TSet.Train else self.sector_range[1]
@@ -79,8 +81,9 @@ class MITLoader(IterativeDataLoader):
 
 	def get_dataset_element( self, sector_index: int, TIC: str, **kwargs ) -> xa.Dataset:
 		self.load_sector(sector_index, **kwargs)
-		if self.test_mode:  return self.get_sinusoid_element(sector_index,TIC)
-		else:               return xa.Dataset( { k: self.dataset.data_vars[TIC+"."+k] for k in ['time','y'] } )
+		if   self.test_mode == "sinusoid":   return self.get_sinusoid_element(sector_index,TIC)
+		elif self.test_mode == "synthetic":  return self.get_synthetic_element(sector_index, TIC)
+		else:                                return xa.Dataset( { k: self.dataset.data_vars[TIC+"."+k] for k in ['time','y'] } )
 
 	def get_sinusoid_element( self, sector_index: int, TIC: str, **kwargs ) -> xa.Dataset:
 		self.load_sector(sector_index, **kwargs)
@@ -88,6 +91,13 @@ class MITLoader(IterativeDataLoader):
 		y: xa.DataArray = self.dataset.data_vars[TIC+".y"]
 		sinusoid: np.ndarray = np.sin( 2*np.pi*time.values / y.attrs["period"] )
 		return xa.Dataset( dict(  time=time, y=y.copy( data=sinusoid ) ) )
+
+	def get_synthetic_element( self, sector_index: int, TIC: str, **kwargs ) -> xa.Dataset:
+		self.load_sector(sector_index, **kwargs)
+		time: xa.DataArray = self.dataset.data_vars[TIC+".time"]
+		y: xa.DataArray = self.dataset.data_vars[TIC + ".y"]
+		signal: xa.DataArray = self.synthetic.get_element( time, y )
+		return xa.Dataset( dict( time=time, y=signal ) )
 
 	@property
 	def nbatches(self) -> int:
