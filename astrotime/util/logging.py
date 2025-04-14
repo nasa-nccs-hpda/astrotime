@@ -36,5 +36,6 @@ def log_timing(f):
     return wrap
 
 def elapsed(t0: float) -> float:
-    torch.cuda.synchronize()
+    try: torch.cuda.synchronize()
+    except: pass
     return time.time() - t0
