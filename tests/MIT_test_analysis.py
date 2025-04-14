@@ -1,10 +1,10 @@
-
 from astrotime.util.series import TSet
-from astrotime.loaders.MIT import MITLoader
-from astrotime.encoders.wavelet import WaveletAnalysisLayer, embedding_space
+from astrotime.loaders.MIT import MITOctavesLoader
+from astrotime.encoders.octaves import OctaveAnalysisLayer, embedding_space
 from astrotime.plot.MIT import MITDatasetPlot, MITTransformPlot
 from astrotime.config.context import astrotime_initialize
 from astrotime.plot.base import SignalPlotFigure
+
 import torch
 from hydra import initialize, compose
 
@@ -18,14 +18,15 @@ test_mode = "synthetic"
 cfg.data['arange'] = (0.01,0.1)
 cfg.data['hrange'] = (0.1,0.5)
 cfg.data['noise'] = 0.1
+refresh = True
 
-data_loader = MITLoader( cfg.data )
+data_loader = MITOctavesLoader( cfg.data )
 data_loader.initialize( TSet.Train, test_mode=test_mode )
-embedding_space_array, embedding_space_tensor = embedding_space( cfg.transform, device )
+plot_freq_space, embedding_space_tensor = embedding_space( cfg.transform, device )
+octave_analysis  = OctaveAnalysisLayer( cfg.transform, embedding_space_tensor, device )
 
-dplot = MITDatasetPlot("MIT lightcurves", data_loader, sector )
-transforms = dict( analysis  = WaveletAnalysisLayer( cfg.transform, embedding_space_tensor, device ) )
-wplot = MITTransformPlot("WWAnalysis Transform", data_loader, transforms, embedding_space_array, sector )
-
+dplot = MITDatasetPlot("MIT lightcurves", data_loader, sector, refresh=refresh )
+transforms = dict( octave_analysis_transform=octave_analysis )
+wplot = MITTransformPlot("WWAnalysis Transform", data_loader, transforms, plot_freq_space, sector )
 fig = SignalPlotFigure([dplot,wplot])
-dplot.update()
+wplot.update()
