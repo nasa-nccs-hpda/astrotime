@@ -8,7 +8,7 @@ from astrotime.plot.base import SignalPlotFigure
 import torch
 from hydra import initialize, compose
 
-version = "MIT_period.wp"
+version = "MIT_period.octaves"
 overrides = []
 initialize(version_base=None, config_path="../config" )
 cfg = compose( config_name=version, overrides=overrides )
