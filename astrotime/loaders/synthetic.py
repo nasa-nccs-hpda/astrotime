@@ -32,7 +32,7 @@ class PlanetCrossingDataGenerator:
 		signal: xa.DataArray = y.copy( data= 2*self.hrange[1] - crossings  + noise )
 		signal.attrs.update( width=a, mag=h, phase=phase )
 		self.log.info(f"PlanetCrossingDataGenerator.get_element:\n ----> time{time.shape} y{y.shape} period={period:.2f} trange={tvals.max()-tvals.min():.2f} yheight={yheight:.2f} a={a:.2f} h={h:.2f} "
-		              f"phase={phase:.2f} taus{taus.shape} dt{dt.shape}({dt.mean():.2f},{dt.std():.2f}) crossing{crossing.shape}  z{z.shape}({z.min():.2f}->{z.max():.2f}) "
+		              f"phase={phase:.2f} taus{taus.shape} dt{dt.shape}({dt.mean():.2f},{dt.std():.2f}) crossing{crossing.shape}  z{z.shape}({np.abs(z).min():.2f}) "
 		              f"crossings{crossings.shape}({crossings.mean():.2f},{crossings.std():.2f}) signal{signal.shape}")
 		return signal
 
