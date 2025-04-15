@@ -173,7 +173,8 @@ class MITDatasetPlot(SignalPlot):
 		self.ax.title.set_text(title)
 		self.update_period_marker()
 		self.ax.set_xlim(xdata.min(),xdata.max())
-		self.ax.set_ylim(ydata.min(),ydata.max())
+		try:  self.ax.set_ylim(ydata.min(),ydata.max())
+		except: self.log.info( f" ------------------ Error in y bounds: {ydata.min()} -> {ydata.max()}" )
 		self.log.info( f" ---- MITDatasetPlot-> update({self.element}:{self.TICS[self.element]}): xlim=({xdata.min():.3f},{xdata.max():.3f}), ylim=({ydata.min():.3f},{ydata.max():.3f}), xdata.shape={self.plot.get_xdata().shape} origin={self.origin} ---" )
 		self.ax.figure.canvas.draw_idle()
 
