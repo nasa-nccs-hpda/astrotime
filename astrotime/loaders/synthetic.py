@@ -20,7 +20,8 @@ class PlanetCrossingDataGenerator:
 		h: float =     random.uniform( self.hrange[0], self.hrange[1] ) * yheight
 		phase: float = random.uniform(0, period )
 		tvals: np.ndarray = time.values
-		taus: np.ndarray = np.arange( phase+tvals.min(), tvals.max(), period )
+#		taus: np.ndarray = np.arange( phase+tvals.min(), tvals.max(), period )
+		taus: np.ndarray =  np.ndarray( [tvals.min()+(tvals.max()-tvals.min())*0.3, tvals.min()+(tvals.max()-tvals.min())*0.6] )
 		dt : np.ndarray = (tvals[:,None] - taus[None,:])/period
 		crossing: np.ndarray = h * np.exp(-(a*dt) ** 2)
 		noise: np.ndarray = np.random.normal(0.0, self.noise*yheight, crossing.shape[0])
