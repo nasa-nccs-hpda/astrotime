@@ -54,6 +54,9 @@ class IterativeDataLoader:
 	def get_dataset_element(self, dset_idx: int, element_index, **kwargs) -> xa.Dataset:
 		raise NotImplementedError(f"The class '{self.__class__.__name__}' does not implement the 'get_dataset_element' method")
 
+	def update_test_mode(self):
+		pass
+
 	@property
 	def batch_size(self) -> int:
 		raise NotImplementedError(f"The class '{self.__class__.__name__}' does not implement the 'batch_size' property")

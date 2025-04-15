@@ -3,12 +3,15 @@ from astrotime.loaders.base import IterativeDataLoader
 from astrotime.loaders.synthetic import PlanetCrossingDataGenerator
 from typing import List, Optional, Dict, Type, Union, Tuple
 import pandas as pd
+from enum import Enum
 from glob import glob
 from omegaconf import DictConfig, OmegaConf
 from astrotime.util.series import TSet
-import logging
+
 
 class MITLoader(IterativeDataLoader):
+
+	TestModes: List = [ "default", 'sinusoid', 'planet_crossing' ]
 
 	def __init__(self, cfg: DictConfig ):
 		super().__init__()
@@ -23,18 +26,21 @@ class MITLoader(IterativeDataLoader):
 		self.synthetic = PlanetCrossingDataGenerator(cfg)
 		self.tset: TSet = None
 		self._nbatches = -1
-		self.test_mode: str = None
+		self.test_mode_index = 0
 		self.ymax = None
 		self._TICS = None
 
 	def initialize(self, tset: TSet, **kwargs ):
 		self.tset = tset
-		self.test_mode = kwargs.get('test_mode')
-		self.period_range = self.get_period_range()
+		self.test_mode_index = self.TestModes.index( kwargs.get('test_mode',"default") )
+		self.period_range =  self.get_period_range()
 		self.sector_batch_offset = 0
 		self.current_sector = self.sector_range[0] if tset == TSet.Train else self.sector_range[1]
 		self._nbatches = -1
 		self._read_TICS(self.current_sector)
+
+	def update_test_mode(self):
+		self.test_mode_index = (self.test_mode_index + 1) % len(self.TestModes)
 
 	def get_period_range(self) -> Optional[Tuple[float,float]]:
 		max_period = self.cfg.get('max_period',None)
@@ -81,9 +87,10 @@ class MITLoader(IterativeDataLoader):
 
 	def get_dataset_element( self, sector_index: int, TIC: str, **kwargs ) -> xa.Dataset:
 		self.load_sector(sector_index, **kwargs)
-		if   self.test_mode == "sinusoid":   return self.get_sinusoid_element(sector_index,TIC)
-		elif self.test_mode == "synthetic":  return self.get_synthetic_element(sector_index, TIC)
-		else:                                return xa.Dataset( { k: self.dataset.data_vars[TIC+"."+k] for k in ['time','y'] } )
+		if     self.test_mode_index == 0: return xa.Dataset( { k: self.dataset.data_vars[TIC+"."+k] for k in ['time','y'] } )
+		elif   self.test_mode_index == 1: return self.get_sinusoid_element(sector_index,TIC)
+		elif   self.test_mode_index == 2: return self.get_synthetic_element(sector_index, TIC)
+		else: raise Exception(f"Unknown test mode {self.test_mode_index}")
 
 	def get_sinusoid_element( self, sector_index: int, TIC: str, **kwargs ) -> xa.Dataset:
 		self.load_sector(sector_index, **kwargs)

@@ -107,6 +107,9 @@ class MITDatasetPlot(SignalPlot):
 			else :                          self.fold_period = None
 			self.log.info(f"                 MITDatasetPlot-> key_press({event.key}), fold period = {self.fold_period} ")
 			self.update(period=self.fold_period)
+		elif event.key in ['ctrl+t']:
+			self.data_loader.update_test_mode()
+			self.update()
 
 	@exception_handled
 	def process_ext_event(self, **event_data):
