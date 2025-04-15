@@ -1,14 +1,14 @@
-from astrotime.encoders.expansion import Expansion
 import random, time, torch, numpy as np
 from typing import Any, Dict, List, Optional, Tuple
 from torch import Tensor, device
-from .embedding import EmbeddingLayer
 from omegaconf import DictConfig, OmegaConf
 from astrotime.util.math import shp
 from .embedding import EmbeddingLayer
 from astrotime.util.math import tnorm
+from astrotime.util.logging import elapsed
 from torch import Tensor
 import logging
+from .wavelet import WaveletAnalysisLayer
 log = logging.getLogger("astrotime")
 
 class PolyEmbeddingLayer(EmbeddingLayer):
@@ -55,6 +55,26 @@ class CorrelationEmbedding(EmbeddingLayer):
 			itmax: int = (ts<tmax).nonzero()[0].item()
 			T, Y = ts[:itmax],ys[:itmax]
 			T1 = T + lag
+
+class CorrelationAnalysisLayer(WaveletAnalysisLayer):
+
+	def __init__(self, cfg, embedding_space: Tensor, device: device):
+		WaveletAnalysisLayer.__init__(self, cfg, embedding_space, device)
+		self.nfreq_oct: int   = cfg.nfreq_oct
+		self.base_freq: float = cfg.base_freq
+		self.noctaves: int    = cfg.noctaves
+		self.nfreq: int       = self.nfreq_oct * self.noctaves
+
+	def magnitude(self, embedding: Tensor, **kwargs) -> np.ndarray:
+		t0 = time.time()
+		mag: Tensor = torch.sqrt( torch.sum( embedding**2, dim=1 ) )
+		cmag: np.ndarray = torch.corrcoef(mag).to('cpu').numpy()
+		self.log.info(f"Completed folding magnitude in {elapsed(t0):.5f} sec: mag{list(cmag.shape)}")
+		return cmag
+
+	def get_target_freq( self, target_period: float ) -> float:
+		f0 = 1/target_period
+		return f0
 
 
 

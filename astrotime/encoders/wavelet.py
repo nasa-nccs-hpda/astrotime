@@ -142,7 +142,10 @@ class WaveletAnalysisLayer(EmbeddingLayer):
 		return rv
 
 	def magnitude(self, embedding: Tensor) -> Tensor:
-		return torch.sqrt( torch.sum( embedding**2, dim=1 ) )
+		mag = torch.sqrt( torch.sum( embedding**2, dim=1 ) )
+		cmag: Tensor = torch.corrcoef(mag)
+		self.log( f"WaveletAnalysisLayer: cmag{list(cmag.shape)}({torch.mean(cmag):.2f},{torch.std(cmag):.2f})")
+		return mag
 
 	@property
 	def nfeatures(self) -> int:

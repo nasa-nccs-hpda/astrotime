@@ -5,6 +5,7 @@ from torch import Tensor, device, nn
 from .embedding import EmbeddingLayer
 from astrotime.util.math import log2space, tnorm
 from astrotime.util.logging import elapsed
+from .wavelet import WaveletAnalysisLayer
 
 def clamp( idx: int ) -> int: return max( 0, idx )
 
@@ -13,61 +14,25 @@ def embedding_space( cfg, device: device ) -> Tuple[np.ndarray,Tensor]:
 	tspace = torch.FloatTensor( lspace ).to(device)
 	return lspace, tspace
 
-class FoldingAnalysisLayer(EmbeddingLayer):
+class FoldingAnalysisLayer(WaveletAnalysisLayer):
 
 	def __init__(self, cfg, embedding_space: Tensor, device: device):
-		EmbeddingLayer.__init__(self, cfg, embedding_space, device)
-		self.C = cfg.decay_factor / (8 * math.pi ** 2)
-		self.init_log(f"WaveletAnalysisLayer: nfreq={self.nfreq} ")
+		WaveletAnalysisLayer.__init__(self, cfg, embedding_space, device)
 		self.nfreq_oct: int   = cfg.nfreq_oct
 		self.base_freq: float = cfg.base_freq
 		self.noctaves: int    = cfg.noctaves
 		self.nfreq: int       = self.nfreq_oct * self.noctaves
 
-	def embed(self, ts: torch.Tensor, ys: torch.Tensor, **kwargs ) -> Tensor:
-		t0 = time.time()
-		self.init_log(f"WaveletAnalysisLayer shapes: ts{list(ts.shape)} ys{list(ys.shape)}")
-		slen: int = self.series_length if (self.series_length > 0) else ys.shape[1]
-		ones: Tensor = torch.ones( ys.shape[0], self.nfreq, slen, device=self.device)
-		tau = 0.5 * (ts[:, slen // 2] + ts[:, slen // 2 + 1])
-		tau: Tensor = tau[:, None, None]
-		omega = self._embedding_space * 2.0 * math.pi
-		omega_: Tensor = omega[None, :, None]  # broadcast-to(self.batch_size,self.nfreq,slen)
-		ts: Tensor = ts[:, None, :]  # broadcast-to(self.batch_size,self.nfreq,slen)
-		dt: Tensor = (ts - tau)
-		self.init_log(f" tau{list(tau.shape)} dt{list(dt.shape)} ones{list(ones.shape)}")
-		dz: Tensor = omega_ * dt
-		weights: Tensor = torch.exp(-self.C * dz ** 2) if (self.cfg.decay_factor > 0.0) else 1.0
-		sum_w: Tensor = torch.sum(weights, dim=-1) if (self.cfg.decay_factor > 0.0) else 1.0
-
-		def w_prod( x0: Tensor, x1: Tensor) -> Tensor:
-			return torch.sum(weights * x0 * x1, dim=-1) / sum_w
-
-		pw1: Tensor = torch.sin(dz)
-		pw2: Tensor = torch.cos(dz)
-		self.init_log(f" --> pw0{list(ones.shape)} pw1{list(pw1.shape)} pw2{list(pw2.shape)}  ")
-
-		p0: Tensor = w_prod(ys, ones)
-		p1: Tensor = w_prod(ys, pw1)
-		p2: Tensor = w_prod(ys, pw2)
-		self.init_log(f" --> p0{list(p0.shape)} p1{list(p1.shape)} p2{list(p2.shape)}")
-
-		rv: Tensor = torch.concat( (p0[:, None, :], p1[:, None, :], p2[:, None, :]), dim=1)
-		self.init_log(f" Completed embedding in {elapsed(t0):.5f} sec: result{list(rv.shape)}")
-		self.init_state = False
-		return rv
-
 	def magnitude(self, embedding: Tensor, **kwargs) -> np.ndarray:
 		t0 = time.time()
 		mag: np.ndarray = torch.sqrt( torch.sum( embedding**2, dim=1 ) ).to('cpu').numpy()
 		norm: np.ndarray = np.ones(mag.shape[1])
-		for j in range(0,1):   # self.cfg.nfreq_oct):
-			for i in range(1,self.noctaves):
-				idx_fold = i*(self.nfreq_oct+j)
-				if idx_fold < mag.shape[1]:
-					octave = mag[:,idx_fold:]
-					mag[:,:octave.shape[1]] += octave
-					norm[:octave.shape[1]] += 1
+		for i in range(1,self.noctaves):
+			idx_fold = i*self.nfreq_oct
+			if idx_fold < mag.shape[1]:
+				octave = mag[:,idx_fold:]
+				mag[:,:octave.shape[1]] += octave
+				norm[:octave.shape[1]] += 1
 		mag = mag/norm[None,:]
 		self.log.info(f"Completed folding magnitude in {elapsed(t0):.5f} sec: mag{list(mag.shape)}")
 		return mag
@@ -75,11 +40,3 @@ class FoldingAnalysisLayer(EmbeddingLayer):
 	def get_target_freq( self, target_period: float ) -> float:
 		f0 = 1/target_period
 		return f0
-
-	@property
-	def nfeatures(self) -> int:
-		return 3
-
-	@property
-	def output_series_length(self):
-		return self.cfg.nfreq
