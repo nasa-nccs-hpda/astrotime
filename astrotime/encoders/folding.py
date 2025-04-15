@@ -60,9 +60,8 @@ class FoldingAnalysisLayer(EmbeddingLayer):
 	def magnitude(self, embedding: Tensor, **kwargs) -> np.ndarray:
 		t0 = time.time()
 		mag: np.ndarray = torch.sqrt( torch.sum( embedding**2, dim=1 ) ).to('cpu').numpy()
-		self.log.info(f"magnitude: mag{list(mag.shape)}")
 		norm: np.ndarray = np.ones(mag.shape[1])
-		for j in range(0,self.cfg.nfreq_oct):
+		for j in range(0,1):   # self.cfg.nfreq_oct):
 			for i in range(1,self.noctaves):
 				idx_fold = i*(self.nfreq_oct+j)
 				if idx_fold < mag.shape[1]:
@@ -70,7 +69,7 @@ class FoldingAnalysisLayer(EmbeddingLayer):
 					mag[:,:octave.shape[1]] += octave
 					norm[:octave.shape[1]] += 1
 		mag = mag/norm[None,:]
-		self.log.info(f"Completed magnitude in {elapsed(t0):.5f} sec: mag{list(mag.shape)}")
+		self.log.info(f"Completed folding magnitude in {elapsed(t0):.5f} sec: mag{list(mag.shape)}")
 		return mag
 
 	def get_target_freq( self, target_period: float ) -> float:
