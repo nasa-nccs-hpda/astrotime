@@ -227,6 +227,12 @@ class MITTransformPlot(SignalPlot):
 			self.selection_marker.set_xdata([freq, freq])
 			self.process_event( id="period-update", period=period, ax=str(id(self.ax)), color=self.colors[0] )
 
+	def key_press(self, event: KeyEvent) -> Any:
+		if event.key.startswith( 'ctrl+'):
+			for t in self.transforms.values():
+				t.process_event( id="KeyEvent", key=event.key, ax=event.inaxes )
+			self.update()
+
 	@exception_handled
 	def apply_transform( self, transform: EmbeddingLayer, series_data: xa.Dataset ) -> np.ndarray:
 		slen = transform.cfg.series_length

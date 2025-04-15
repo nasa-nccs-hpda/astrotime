@@ -18,6 +18,9 @@ class EmbeddingLayer(torch.nn.Module):
 		self.log.info(f"EmbeddingLayer: series_length={self.series_length} batch_size={self.batch_size} ")
 		self.init_state = True
 
+	def process_event(self, **kwargs ):
+		pass
+
 	def init_log(self, msg: str):
 		if self.init_state: self.log.info(msg)
 
