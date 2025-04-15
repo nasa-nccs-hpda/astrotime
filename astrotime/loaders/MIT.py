@@ -32,7 +32,6 @@ class MITLoader(IterativeDataLoader):
 
 	def initialize(self, tset: TSet, **kwargs ):
 		self.tset = tset
-		self.test_mode_index = self.TestModes.index( kwargs.get('test_mode',"default") )
 		self.period_range =  self.get_period_range()
 		self.sector_batch_offset = 0
 		self.current_sector = self.sector_range[0] if tset == TSet.Train else self.sector_range[1]
