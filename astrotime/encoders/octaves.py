@@ -26,6 +26,7 @@ class OctaveAnalysisLayer(EmbeddingLayer):
 		self.fold: bool = False
 
 	def process_event(self, **kwargs):
+		self.log.info(f"OctaveAnalysisLayer.process_event: event={kwargs}")
 		if (kwargs["id"] == "KeyEvent") and (kwargs["key"] == "ctrl+o"):
 			self.fold = not self.fold
 
@@ -66,7 +67,6 @@ class OctaveAnalysisLayer(EmbeddingLayer):
 		norm: np.ndarray = np.ones(mag.shape[1])
 		for i in range(1, self.noctaves):
 			octave = mag[:, i * self.nfreq_oct:]
-			self.log.info(f" *** {i}: mag{list(mag[:, :octave.shape[1]].shape)} += octave{list(octave.shape)}")
 			mag[:, :octave.shape[1]] += octave
 			norm[:octave.shape[1]] += 1
 		mag = mag / norm[None, :]
@@ -74,7 +74,7 @@ class OctaveAnalysisLayer(EmbeddingLayer):
 
 	def magnitude(self, embedding: Tensor, **kwargs) -> np.ndarray:
 		mag: np.ndarray = torch.sqrt( torch.sum( embedding**2, dim=1 ) ).to('cpu').numpy()
-		self.log.info(f"magnitude: mag{list(mag.shape)}")
+		self.log.info(f"magnitude: mag{list(mag.shape)}, fold={self.fold}")
 		return self.fold_op(mag) if self.fold else mag
 
 	def get_target_freq( self, target_period: float ) -> float:
