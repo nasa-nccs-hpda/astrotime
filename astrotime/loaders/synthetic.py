@@ -25,12 +25,14 @@ class PlanetCrossingDataGenerator:
 #		taus: np.ndarray = np.arange( phase+tvals.min(), tvals.max(), period )
 		taus: np.ndarray =  np.array( [tvals.min()+(tvals.max()-tvals.min())*0.3, tvals.min()+(tvals.max()-tvals.min())*0.6] )
 		dt : np.ndarray = tvals[:,None] - taus[None,:]
-		crossing: np.ndarray = h * np.exp(-(alpha*dt) ** 2)
+		z: np.ndarray = alpha*dt
+		crossing: np.ndarray = h * np.exp( -z**2 )
 		noise: np.ndarray = np.random.normal(0.0, self.noise*yheight, crossing.shape[0])
 		crossings: np.ndarray =  crossing.sum(axis=1)
 		signal: xa.DataArray = y.copy( data= 2*self.hrange[1] - crossings  + noise )
 		signal.attrs.update( width=a, mag=h, phase=phase )
 		self.log.info(f"PlanetCrossingDataGenerator.get_element:\n ----> time{time.shape} y{y.shape} period={period:.2f} trange={tvals.max()-tvals.min():.2f} yheight={yheight:.2f} a={a:.2f} h={h:.2f} "
-		              f"phase={phase:.2f} taus{taus.shape} dt{dt.shape}({dt.mean():.2f},{dt.std():.2f}) crossing{crossing.shape}  noise{noise.shape} crossings{crossings.shape} signal{signal.shape}")
+		              f"phase={phase:.2f} taus{taus.shape} dt{dt.shape}({dt.mean():.2f},{dt.std():.2f}) crossing{crossing.shape}  z{z.shape}({z.min():.2f}->{z.max():.2f}) "
+		              f"crossings{crossings.shape}({crossings.mean():.2f},{crossings.std():.2f}) signal{signal.shape}")
 		return signal
 
