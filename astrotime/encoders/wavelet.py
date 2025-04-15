@@ -141,11 +141,11 @@ class WaveletAnalysisLayer(EmbeddingLayer):
 		self.init_state = False
 		return rv
 
-	def magnitude(self, embedding: Tensor) -> Tensor:
+	def magnitude(self, embedding: Tensor) -> np.ndarray:
 		mag = torch.sqrt( torch.sum( embedding**2, dim=1 ) )
 		cmag: Tensor = torch.corrcoef(mag)
 		self.log.info( f"WaveletAnalysisLayer: cmag{list(cmag.shape)}({torch.mean(cmag):.2f},{torch.std(cmag):.2f})")
-		return mag
+		return mag.cpu().numpy()
 
 	@property
 	def nfeatures(self) -> int:

@@ -68,9 +68,9 @@ class CorrelationAnalysisLayer(WaveletAnalysisLayer):
 	def magnitude(self, embedding: Tensor, **kwargs) -> np.ndarray:
 		t0 = time.time()
 		mag: Tensor = torch.sqrt( torch.sum( embedding**2, dim=1 ) )
-		cmag: np.ndarray = torch.corrcoef(mag).to('cpu').numpy()
+		cmag: Tensor = torch.corrcoef(mag)
 		self.log.info(f"Completed folding magnitude in {elapsed(t0):.5f} sec: mag{list(cmag.shape)}")
-		return cmag
+		return cmag.to('cpu').numpy()
 
 	def get_target_freq( self, target_period: float ) -> float:
 		f0 = 1/target_period
