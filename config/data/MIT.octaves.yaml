@@ -16,6 +16,6 @@ arange:
 hrange:
   - 0.05
   - 0.5
-noise: 0.05
+noise: 0.0
 
 
