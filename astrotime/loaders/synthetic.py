@@ -16,12 +16,12 @@ class PlanetCrossingDataGenerator:
 	def get_element(  self, time: xa.DataArray, y: xa.DataArray ) -> xa.DataArray:
 		period: float  = y.attrs['period']
 		yheight  = np.median( y.values )
-		a: float =     random.uniform( self.arange[0], self.arange[1] ) * period
+		a: float =     random.uniform( self.arange[0], self.arange[1] )
 		h: float =     random.uniform( self.hrange[0], self.hrange[1] ) * yheight
 		phase: float = random.uniform(0, period )
 		time_values: np.ndarray = time.values
 		taus: np.ndarray = np.arange( phase+time_values.min(), time_values.max(), period )
-		dt : np.ndarray = time_values[:,None] - taus[None,:]
+		dt : np.ndarray = (time_values[:,None] - taus[None,:])/period
 		crossing: np.ndarray = h * np.exp(-(a*dt) ** 2)
 		noise: np.ndarray = np.random.normal(0.0, self.noise*yheight, crossing.shape[0])
 		crossings: np.ndarray =  yheight - crossing.sum(axis=1) + noise
