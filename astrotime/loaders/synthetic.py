@@ -7,6 +7,7 @@ class PlanetCrossingDataGenerator:
 
 	def __init__(self, cfg: DictConfig ):
 		super().__init__()
+		self.log = logging.getLogger()
 		self.cfg = cfg
 		self.arange: Tuple[float,float] = cfg.arange
 		self.hrange: Tuple[float, float] = cfg.hrange
