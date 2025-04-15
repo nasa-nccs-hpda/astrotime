@@ -1,4 +1,4 @@
-import time, os, numpy as np, xarray as xa
+import time, os, math, numpy as np, xarray as xa
 from typing import List, Optional, Dict, Type, Union, Tuple
 from omegaconf import DictConfig
 import logging, random
@@ -12,6 +12,7 @@ class PlanetCrossingDataGenerator:
 		self.arange: Tuple[float,float] = cfg.arange
 		self.hrange: Tuple[float, float] = cfg.hrange
 		self.noise = cfg.noise
+		self.q2 = math.sqrt(math.log(2))
 
 	def get_element(  self, time: xa.DataArray, y: xa.DataArray ) -> xa.DataArray:
 		period: float  = y.attrs['period']
@@ -20,10 +21,11 @@ class PlanetCrossingDataGenerator:
 		h: float =     random.uniform( self.hrange[0], self.hrange[1] ) * yheight
 		phase: float = random.uniform(0, period )
 		tvals: np.ndarray = time.values
+		alpha = self.q2/(a*period)
 #		taus: np.ndarray = np.arange( phase+tvals.min(), tvals.max(), period )
 		taus: np.ndarray =  np.array( [tvals.min()+(tvals.max()-tvals.min())*0.3, tvals.min()+(tvals.max()-tvals.min())*0.6] )
-		dt : np.ndarray = (tvals[:,None] - taus[None,:])/period
-		crossing: np.ndarray = h * np.exp(-(a*dt) ** 2)
+		dt : np.ndarray = tvals[:,None] - taus[None,:]
+		crossing: np.ndarray = h * np.exp(-(alpha*dt) ** 2)
 		noise: np.ndarray = np.random.normal(0.0, self.noise*yheight, crossing.shape[0])
 		crossings: np.ndarray =  crossing.sum(axis=1)
 		signal: xa.DataArray = y.copy( data= 2*self.hrange[1] - crossings  + noise )
