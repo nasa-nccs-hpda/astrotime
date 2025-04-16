@@ -16,16 +16,18 @@ nts: int = 10000
 ntaus: int = 50
 ntp: int = 5
 rwin: int = 3
+
 trange: float = tbounds[1] - tbounds[0]
 tstep: float = trange / nts
+twbnds = ( tbounds[0]+(rwin+1)*tstep, tbounds[1]-(rwin+1)*tstep )
 noise: np.ndarray = np.random.normal(0.0, noise_std, nts )
 t: np.ndarray = np.linspace( tbounds[0], tbounds[1], nts )
-taus: np.ndarray = np.linspace( tbounds[0], tbounds[1], ntaus )
+taus: np.ndarray = np.linspace( twbnds[0], twbnds[1], ntaus )
 ys: np.ndarray = np.sin( pi2*ntp*(t/trange) ) + noise
 itaus: np.ndarray = np.searchsorted( t, taus )
 yt: np.ndarray = np.stack( [ys,t], axis=1 )
 #yw: np.ndarray = np.stack( [ yt[itaus[i]-rwin:itaus[i]+rwin+1,:] for i in range(itaus.shape[0]) ] )
-ywt: np.ndarray = yt[itaus]
+ywt: np.ndarray = yt[itaus-rwin:itaus+rwin+1]
 
 print( f"ys{ys.shape}, t{t.shape} yt{yt.shape} taus{taus.shape} itaus{itaus.shape} ywt{ywt.shape}" )
 
