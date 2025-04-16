@@ -26,9 +26,12 @@ taus: np.ndarray = np.linspace( twbnds[0], twbnds[1], ntaus )
 ys: np.ndarray = np.sin( pi2*ntp*(t/trange) ) + noise
 itaus: np.ndarray = np.searchsorted( t, taus )
 yt: np.ndarray = np.stack( [ys,t], axis=1 )
-#yw: np.ndarray = np.stack( [ yt[itaus[i]-rwin:itaus[i]+rwin+1,:] for i in range(itaus.shape[0]) ] )
-ywt: np.ndarray = yt[itaus-rwin:itaus+rwin+1]
+ywt: np.ndarray = np.stack( [ yt[itaus[i]-rwin:itaus[i]+rwin+1,:] for i in range(itaus.shape[0]) ] )
+yw: np.ndarray = ywt[:,:,0]
+tw: np.ndarray = ywt[:,:,1]
+dtw: np.ndarray = np.abs(tw-taus[:,None])
 
-print( f"ys{ys.shape}, t{t.shape} yt{yt.shape} taus{taus.shape} itaus{itaus.shape} ywt{ywt.shape}" )
+print( f"ys{ys.shape}, t{t.shape} yt{yt.shape} taus{taus.shape} itaus{itaus.shape} ywt{ywt.shape} yw{yw.shape} tw{tw.shape} dtw{dtw.shape}" )
+print( f" dtw range = {dtw.min():.2f} -> {dtw.max():.2f}" )
 
 
