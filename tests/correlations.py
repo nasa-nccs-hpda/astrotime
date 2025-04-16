@@ -30,8 +30,10 @@ ywt: np.ndarray = np.stack( [ yt[itaus[i]-rwin:itaus[i]+rwin+1,:] for i in range
 yw: np.ndarray = ywt[:,:,0]
 tw: np.ndarray = ywt[:,:,1]
 dtw: np.ndarray = np.abs(tw-taus[:,None])
+alpha = rwin/tstep
+w = np.exp( -(alpha*dtw)**2 )
 
 print( f"ys{ys.shape}, t{t.shape} yt{yt.shape} taus{taus.shape} itaus{itaus.shape} ywt{ywt.shape} yw{yw.shape} tw{tw.shape} dtw{dtw.shape}" )
-print( f" dtw range = {dtw.min():.2f} -> {dtw.max():.2f}" )
+print( f" tstep={tstep:.4f}, 1/tstep={1/tstep:.4f}, dtw range = {dtw.min():.4f} -> {dtw.max():.4f}, w range = {w.min():.5f} -> {w.max():.5f}" )
 
 
