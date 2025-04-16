@@ -2,7 +2,7 @@
 from astrotime.config.context import astrotime_initialize
 from typing import List, Optional, Dict, Type, Union, Tuple
 import matplotlib.pyplot as plt
-import torch, numpy as np
+import torch, numpy as np, math
 from hydra import initialize, compose
 
 def znorm(ydata: np.ndarray) -> np.ndarray:
@@ -28,10 +28,12 @@ ntaus: int = 100
 ntper: int = 5
 rwin: int = 8
 alpha = 0.6 # 0.8
+sparsity = 0.5
+sfactor = math.ceil( 1/sparsity )
 
 trange: float = tbounds[1] - tbounds[0]
 tstep: float = trange / nts
-twbnds = ( tbounds[0]+(rwin+1)*tstep, tbounds[1]-(rwin+1)*tstep )
+twbnds = ( tbounds[0]+(rwin+1)*sfactor*tstep, tbounds[1]-(rwin+1)*sfactor*tstep )
 noise: np.ndarray = np.random.normal(0.0, noise_std, nts )
 t: np.ndarray = np.linspace( tbounds[0], tbounds[1], nts )
 taus: np.ndarray = np.linspace( twbnds[0], twbnds[1], ntaus )
@@ -40,6 +42,7 @@ t, ys = downsample( t, ys, 0.5)
 
 itaus: np.ndarray = np.searchsorted( t, taus )
 yt: np.ndarray = np.stack( [ys,t], axis=1 )
+
 ywt: np.ndarray = np.stack( [ yt[itaus[i]-rwin:itaus[i]+rwin+1,:] for i in range(itaus.shape[0]) ] )
 yw: np.ndarray = ywt[:,:,0]
 tw: np.ndarray = ywt[:,:,1]
