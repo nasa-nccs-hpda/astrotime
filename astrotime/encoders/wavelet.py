@@ -1,6 +1,7 @@
 import random, time, numpy as np
 import torch, math
 from typing import List, Tuple, Mapping
+from omegaconf import DictConfig, OmegaConf
 from torch import Tensor, device, nn
 from .embedding import EmbeddingLayer
 from astrotime.util.math import logspace, tnorm
@@ -8,15 +9,23 @@ from astrotime.util.logging import elapsed
 
 def clamp( idx: int ) -> int: return max( 0, idx )
 
-def embedding_space( cfg, device: device ) -> Tuple[np.ndarray,Tensor]:
+def embedding_space( cfg: DictConfig, device: device ) -> Tuple[np.ndarray,Tensor]:
 	fspace = logspace if (cfg.fscale == "log") else np.linspace
 	nspace = fspace( cfg.base_freq_range[0], cfg.base_freq_range[1], cfg.nfreq )
 	tspace = torch.FloatTensor( nspace ).to(device)
 	return nspace, tspace
 
+def wavelet_analysis_projection( ts: np.ndarray, ys: np.ndarray, fspace: np.ndarray, cfg: DictConfig, device ) -> np.ndarray:
+	t: Tensor = torch.from_numpy( ts[None,:] if ts.ndim == 1 else ts )
+	y: Tensor = torch.from_numpy( ys[None,:] if ys.ndim == 1 else ys )
+	embedding_space: Tensor = torch.from_numpy(fspace)
+	proj = WaveletAnalysisLayer( cfg, embedding_space, device )
+	embedding = proj.embed( t, y )
+	return proj.magnitude( embedding )
+
 class WaveletSynthesisLayer(EmbeddingLayer):
 
-	def __init__(self, cfg, embedding_space: Tensor, device: device):
+	def __init__(self, cfg: DictConfig, embedding_space: Tensor, device: device):
 		EmbeddingLayer.__init__(self, cfg, embedding_space, device)
 		self.nfreq = cfg.nfreq
 		self.C = cfg.decay_factor / (8 * math.pi ** 2)
