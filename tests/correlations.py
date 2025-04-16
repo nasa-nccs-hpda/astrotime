@@ -27,6 +27,6 @@ yt: np.ndarray = np.stack( [ys,t], axis=1 )
 #yw: np.ndarray = np.stack( [ yt[itaus[i]-rwin:itaus[i]+rwin+1,:] for i in range(itaus.shape[0]) ] )
 ywt: np.ndarray = yt[itaus]
 
-print( f"ywt{ywt.shape}" )
+print( f"ys{ys.shape}, t{t.shape} yt{yt.shape} taus{taus.shape} itaus{itaus.shape} ywt{ywt.shape}" )
 
 
