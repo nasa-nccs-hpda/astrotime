@@ -23,6 +23,8 @@ class PlanetCrossingDataGenerator:
 		tvals: np.ndarray = time.values
 		dt = np.mod(tvals,period) - period/2
 
+		print( f"PlanetCrossingDataGenerator.get_element: a={a:.2f} h={h:.2f} phase={phase:.2f} dt={dt.shape}({dt.min():.3f},{dt.max():.3f})")
+
 
 
 
@@ -39,5 +41,5 @@ class PlanetCrossingDataGenerator:
 # 		self.log.info(f"PlanetCrossingDataGenerator.get_element:\n ----> time{time.shape} y{y.shape} period={period:.2f} trange={tvals.max()-tvals.min():.2f} yheight={yheight:.2f} a={a:.2f} h={h:.2f} "
 # 		              f"phase={phase:.2f} taus{taus.shape} dt{dt.shape}({dt.mean():.2f},{dt.std():.2f}) crossing{crossing.shape}  z{z.shape}({np.abs(z).min():.2f}) "
 # 		              f"crossings{crossings.shape}({crossings.mean():.2f},{crossings.std():.2f}) signal{signal.shape}")
-		return signal
+		return y
 
