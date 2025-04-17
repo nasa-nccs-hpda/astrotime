@@ -52,6 +52,7 @@ class MITLoader(IterativeDataLoader):
 		return self.sector_range[1]-self.sector_range[0] + 1
 
 	def get_next_batch( self ) -> Optional[Dict[str,np.ndarray]]:
+		self.log.info(f"MITLoader.get_next_batch: sector = {self.current_sector}")
 		if (self._nbatches > 0) and (self.sector_batch_offset > self._nbatches-self.cfg.batch_size):
 			if self.tset == TSet.Validation:
 				self.current_sector = -1
@@ -67,7 +68,7 @@ class MITLoader(IterativeDataLoader):
 			batch_start = self.sector_batch_offset
 			batch_end   = batch_start+self.cfg.batch_size
 			result = { k: self.train_data[k][batch_start:batch_end] for k in ['t','y','p'] }
-			self.log.info( f"MITLoader.get_next_batch: batch({batch_start}->{batch_end}), t{self.train_data['t'].shape}->bt{result['t'].shape}, y{self.train_data['y'].shape}->by{result['y'].shape}, p{self.train_data['p'].shape}->bp{result['p'].shape}  ")
+			self.log.info( f"  *** get_next_batch: batch({batch_start}->{batch_end}), t{self.train_data['t'].shape}->bt{result['t'].shape}, y{self.train_data['y'].shape}->by{result['y'].shape}, p{self.train_data['p'].shape}->bp{result['p'].shape}  ")
 			self.sector_batch_offset = batch_end
 			if self.test_mode_index == 2:
 				result = self.synthetic.process_batch( result )
