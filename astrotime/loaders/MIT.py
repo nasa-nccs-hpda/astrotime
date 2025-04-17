@@ -68,8 +68,8 @@ class MITLoader(IterativeDataLoader):
 			batch_start = self.sector_batch_offset
 			batch_end   = batch_start+self.cfg.batch_size
 			result = { k: self.train_data[k][batch_start:batch_end] for k in ['t','y','p'] }
-			self.log.info( f"  *** get_next_batch: batch({batch_start}->{batch_end}), t{self.train_data['t'].shape}->bt{result['t'].shape}, y{self.train_data['y'].shape}->by{result['y'].shape}, p{self.train_data['p'].shape}->bp{result['p'].shape}  ")
 			self.sector_batch_offset = batch_end
+			self.log.info( f"  *** get_next_batch: batch({batch_start}->{batch_end}), t{self.train_data['t'].shape}->bt{result['t'].shape}, y{self.train_data['y'].shape}->by{result['y'].shape}, p{self.train_data['p'].shape}->bp{result['p'].shape}  ")
 			if self.test_mode_index == 2:
 				result = self.synthetic.process_batch( result )
 			return result
@@ -201,9 +201,8 @@ class MITLoader(IterativeDataLoader):
 						xarrays[ TIC + ".y" ]    = xa.DataArray( y, dims=TIC+".obs", attrs=dict(sn=sn,period=period) )
 				self.dataset = xa.Dataset( xarrays, attrs=dict(ymax=ymax) )
 				t1 = time.time()
-				print(f" Loaded files in {t1-t0:.3f} sec")
+				self.log.info(f" Loaded sector {sector} files in {t1-t0:.3f} sec")
 				self.dataset.to_netcdf( self.cache_path(sector), engine="netcdf4" )
-				print(f" Saved files in {time.time()-t1:.3f} sec")
 			self.ymax = self.dataset.attrs["ymax"]
 			return True
 		return False
@@ -243,6 +242,7 @@ class MITLoader(IterativeDataLoader):
 		return (p >= self.period_range[0]) and (p <= self.period_range[1])
 
 	def update_training_data(self):
+		self.log.info("\nupdate_training_data\n")
 		elems = []
 		periods = []
 		for TIC in self._TICS:
@@ -263,7 +263,7 @@ class MITLoader(IterativeDataLoader):
 		self.train_data['p'] = np.array(periods)
 		fdropped = (len(self._TICS)-z.shape[0])/len(self._TICS)
 		self._nbatches = self.train_data['t'].shape[0] // self.cfg.batch_size
-		print( f"get_training_data: nbatches={self._nbatches}, t{self.train_data['t'].shape}, y{self.train_data['y'].shape}, p{self.train_data['p'].shape}, dropped {fdropped*100:.2f}%")
+		self.log.info( f"get_training_data: nbatches={self._nbatches}, t{self.train_data['t'].shape}, y{self.train_data['y'].shape}, p{self.train_data['p'].shape}, dropped {fdropped*100:.2f}%")
 
 	def refresh(self):
 		self.dataset = None
