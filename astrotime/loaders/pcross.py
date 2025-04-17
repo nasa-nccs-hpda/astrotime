@@ -19,11 +19,13 @@ class PlanetCrossingDataGenerator:
 		yheight  = np.median( y.values )
 		a: float =     random.uniform( self.arange[0], self.arange[1] )
 		h: float =     random.uniform( self.hrange[0], self.hrange[1] ) * yheight
-		phase: float = random.uniform(0, period )
 		tvals: np.ndarray = time.values
 		dt = np.mod(tvals,period) - period/2
 
-		print( f"PlanetCrossingDataGenerator.get_element: a={a:.2f} h={h:.2f} phase={phase:.2f} dt={dt.shape}({dt.min():.3f},{dt.max():.3f})")
+		pcross: np.ndarray = 1.0 - h * np.exp(-(a*dt/period) ** 2)
+
+		print( f"PlanetCrossingDataGenerator.get_element: a={a:.2f} h={h:.2f} period={period:.2f} dt{dt.shape}({dt.min():.3f},{dt.max():.3f})")
+		print(f" -->  pcross{pcross.shape}({pcross.min():.3f},{pcross.max():.3f})")
 
 
 
