@@ -250,7 +250,7 @@ class MITLoader(IterativeDataLoader):
 		self.train_data['p'] = np.array(periods)
 		fdropped = (len(self._TICS)-z.shape[0])/len(self._TICS)
 		self._nbatches = self.train_data['t'].shape[0] // self.cfg.batch_size
-		print( f"get_training_data: nbatches={self._nbatches}, t{self.train_data['t'].shape}, y{self.train_data['y'].shape}, p{self.train_data['p'].shape}, max_period={self.max_period:.2f}, dropped {fdropped*100:.2f}%")
+		print( f"get_training_data: nbatches={self._nbatches}, t{self.train_data['t'].shape}, y{self.train_data['y'].shape}, p{self.train_data['p'].shape}, dropped {fdropped*100:.2f}%")
 
 	def refresh(self):
 		self.dataset = None
