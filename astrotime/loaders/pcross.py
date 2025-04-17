@@ -23,11 +23,11 @@ class PlanetCrossingDataGenerator:
 		tvals: np.ndarray = time.values
 		dt = np.mod(tvals,period) - period/2
 		pcross: np.ndarray = yheight * (1 - h * np.exp(-(a*dt/period) ** 2)) + noise
+		signal: xa.DataArray = y.copy( data=pcross )
+		signal.attrs.update(width=a, mag=h, noise=self.noise)
 
 		self.log.info( f"PlanetCrossingDataGenerator.get_element: a={a:.2f} h={h:.2f} period={period:.2f} dt{dt.shape}({dt.min():.3f},{dt.max():.3f})")
 		self.log.info(f" **** ( time{time.shape} y{y.shape} ) -> pcross{pcross.shape}({pcross.min():.3f},{pcross.max():.3f})")
 
-		signal: xa.DataArray = y.copy( data=pcross )
-		signal.attrs.update(width=a, mag=h, noise=self.noise)
 		return signal
 
