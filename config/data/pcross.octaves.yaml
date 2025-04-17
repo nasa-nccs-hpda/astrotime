@@ -9,7 +9,7 @@ block_gap_threshold: 0.01
 nfreq_oct: 512                     # Number of frequency values (log2 spaced) in each octave
 base_freq:  0.05                   # Start frequency of full freq range
 noctaves: 10                       # Number of octaves in full freq range
-series_length: -1                  # Length of subset of input timeseries to process (-1 means no subsetting)
+series_length: 4096                # Length of subset of input timeseries to process (-1 means no subsetting)
 arange:
   - 40
   - 80
