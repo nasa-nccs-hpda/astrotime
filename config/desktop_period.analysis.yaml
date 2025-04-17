@@ -1,0 +1,15 @@
+defaults:
+  - platform: "desktop1"
+  - train: "MIT_cnn"
+  - transform: "wp-MIT"
+  - data: "MIT.csv"
+  - model: "wp_cnn"
+  - _self_
+  - override hydra/hydra_logging: disabled
+  - override hydra/job_logging: disabled
+
+hydra:
+  output_subdir: null
+  run:
+    dir: .
+

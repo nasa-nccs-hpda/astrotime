@@ -19,7 +19,7 @@ def downsample( x: np.ndarray, y: np.ndarray, sparsity: float, dim:int=0 ) -> Tu
 	mask = np.random.rand(x.shape[dim]) > sparsity
 	return np.compress(mask, x, dim), np.compress(mask, y, dim)
 
-version = "test.desktop"
+version = "desktop_period.analysis"
 overrides = []
 initialize(version_base=None, config_path="../config")
 cfg = compose(config_name=version, overrides=overrides)
@@ -60,6 +60,7 @@ yss = (yw*w).sum(axis=1) /  w.sum(axis=1)
 ysscf = rnorm( fftconvolve( yss, yss, mode='same'))
 
 yssfft = znorm( np.absolute( np.fft.rfft(yss) ) )
+print( f"yss.size={yss.size}, dtau={dtau}")
 yfftfreq = np.fft.rfftfreq(yss.size,dtau)
 yfftper = 1 / yfftfreq
 

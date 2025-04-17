@@ -9,4 +9,5 @@ time_scale: 1.0                     # Time rescale factor for shifted frequency 
 fscale: "log"                       # Scale of frequency axis
 ysf:     0.1
 tsf:     0.1
+decay_factor: 0.0                   # Time envelope decay factor
 
