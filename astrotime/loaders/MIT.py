@@ -208,11 +208,12 @@ class MITLoader(IterativeDataLoader):
 			return True
 		return False
 
-	def get_batch_slice(self,TIC: str):
+	def get_elem_slice(self,TIC: str):
 		ctime: np.ndarray = self.dataset[TIC+".time"].values.squeeze()
 		cy: np.ndarray = self.dataset[TIC+".y"].values.squeeze()
 		cz = np.stack([ctime,cy],axis=0)
-		return cz[:self.series_length]
+		if cz.shape[1] <= self.series_length:
+			return cz[:,self.series_length]
 
 	def get_largest_block( self, TIC: str ) -> np.ndarray:
 		threshold = self.cfg.block_gap_threshold
@@ -252,8 +253,10 @@ class MITLoader(IterativeDataLoader):
 				# if bz.shape[1] >= self.series_length:
 				# 	elems.append( self.get_batch_element(bz) )
 				# 	periods.append(p)
-				elems.append(self.get_batch_slice(TIC))
-				periods.append(p)
+				eslice = self.get_elem_slice(TIC)
+				if eslice is not None:
+					elems.append(eslice)
+					periods.append(p)
 		z = np.stack(elems,axis=0)
 		self.train_data['t'] = z[:,0,:]
 		self.train_data['y'] = z[:,1,:]
