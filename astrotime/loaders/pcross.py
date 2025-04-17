@@ -19,33 +19,19 @@ class PlanetCrossingDataGenerator:
 		yheight  = np.median( y.values )
 		# a: float =     random.uniform( self.arange[0], self.arange[1] )
 		# h: float =     random.uniform( self.hrange[0], self.hrange[1] )
+		noise: np.ndarray = np.random.normal(0.0, self.noise * yheight, time.shape[0])
 
 		a = 30.0
 		h = 0.3
 
 		tvals: np.ndarray = time.values
 		dt = np.mod(tvals,period) - period/2
-
-		pcross: np.ndarray = yheight * (1 - h * np.exp(-(a*dt/period) ** 2))
+		pcross: np.ndarray = yheight * (1 - h * np.exp(-(a*dt/period) ** 2)) + noise
 
 		print( f"PlanetCrossingDataGenerator.get_element: a={a:.2f} h={h:.2f} period={period:.2f} dt{dt.shape}({dt.min():.3f},{dt.max():.3f})")
-		print(f" -->  pcross{pcross.shape}({pcross.min():.3f},{pcross.max():.3f})")
+		print(f" **** ( time{time.shape} y{y.shape} ) -> pcross{pcross.shape}({pcross.min():.3f},{pcross.max():.3f})")
 
-
-
-
-# 		alpha = self.q2/(a*period)
-# #		taus: np.ndarray = np.arange( phase+tvals.min(), tvals.max(), period )
-# 		taus: np.ndarray =  np.array( [tvals.min()+(tvals.max()-tvals.min())*0.3, tvals.min()+(tvals.max()-tvals.min())*0.6] )
-# 		dt : np.ndarray = tvals[:,None] - taus[None,:]
-# 		z: np.ndarray = alpha*dt
-# 		crossing: np.ndarray = h * np.exp( -z**2 )
-# 		noise: np.ndarray = np.random.normal(0.0, self.noise*yheight, crossing.shape[0])
-# 		crossings: np.ndarray =  crossing.sum(axis=1)
-# 		signal: xa.DataArray = y.copy( data= 2*self.hrange[1] - crossings  + noise )
-# 		signal.attrs.update( width=a, mag=h, phase=phase )
-# 		self.log.info(f"PlanetCrossingDataGenerator.get_element:\n ----> time{time.shape} y{y.shape} period={period:.2f} trange={tvals.max()-tvals.min():.2f} yheight={yheight:.2f} a={a:.2f} h={h:.2f} "
-# 		              f"phase={phase:.2f} taus{taus.shape} dt{dt.shape}({dt.mean():.2f},{dt.std():.2f}) crossing{crossing.shape}  z{z.shape}({np.abs(z).min():.2f}) "
-# 		              f"crossings{crossings.shape}({crossings.mean():.2f},{crossings.std():.2f}) signal{signal.shape}")
-		return y
+		signal: xa.DataArray = y.copy( data=pcross )
+		signal.attrs.update(width=a, mag=h, noise=self.noise)
+		return signal
 
