@@ -7,7 +7,7 @@ from omegaconf import DictConfig, OmegaConf
 from numpy.polynomial.polynomial import Polynomial
 from astrotime.util.math import shp
 import logging
-log = logging.getLogger("astrotime")
+log = logging.getLogger()
 
 class PolyEmbeddingLayer(EmbeddingLayer):
 

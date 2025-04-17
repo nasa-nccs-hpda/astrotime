@@ -15,7 +15,7 @@ def exception_handled(func):
         try:
             return func( *args, **kwargs )
         except:
-            log = logging.getLogger("astrotime")
+            log = logging.getLogger()
             log.error( f" Error in {func}:" )
             log.error( traceback.format_exc(100) )
     return wrapper
@@ -23,7 +23,7 @@ def exception_handled(func):
 def log_timing(f):
     @wraps(f)
     def wrap(*args, **kw):
-        log = logging.getLogger("astrotime")
+        log = logging.getLogger()
         try:
             ts = time.time()
             result = f(*args, **kw)

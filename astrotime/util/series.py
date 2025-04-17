@@ -3,7 +3,7 @@ from typing import Any, Dict, List, Tuple, Type, Optional, Union
 from scipy.interpolate import CubicSpline, PchipInterpolator
 import logging
 from enum import Enum
-log = logging.getLogger("astrotime")
+log = logging.getLogger()
 
 class TSet(Enum):
 	Train = 'train'

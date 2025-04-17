@@ -7,7 +7,7 @@ from typing import Any, Dict, List, Tuple, Type, Optional, Callable
 from astrotime.util.logging import exception_handled, log_timing
 from .param import Number, Parameter, STParam, STFloatParam, STFloatValuesParam, Parameterized
 import logging
-log = logging.getLogger("astrotime")
+log = logging.getLogger()
 
 def bounds( y: np.ndarray ) -> Tuple[float,float]:
 	ymin, ymax = y.min(), y.max()

@@ -12,7 +12,7 @@ from astrotime.encoders.embedding import EmbeddingLayer
 from astrotime.util.math import npnorm
 from typing import List, Optional, Dict, Type, Union, Tuple, Any, Set
 from astrotime.util.math import tnorm
-log = logging.getLogger("astrotime")
+log = logging.getLogger()
 
 def tolower(ls: Optional[List[str]]) -> List[str]:
 	return [a.lower() for a in ls] if (ls is not None) else []
@@ -30,7 +30,7 @@ class PeriodMarkers:
 
 	def __init__(self, name: str, ax: Axes, **kwargs):
 		self.name = name
-		self.log = logging.getLogger("astrotime")
+		self.log = logging.getLogger()
 		self.ax: Axes = ax
 		self.origin: float = None
 		self.period: float = None

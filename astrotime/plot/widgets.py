@@ -104,7 +104,7 @@ class Slider(SliderBase):
         ``edgecolor``, ``alpha``, etc.).
         """
         super().__init__(ax, orientation, closedmin, closedmax, valmin, valmax, valfmt, dragging, valstep)
-        self.log = logging.getLogger("astrotime")
+        self.log = logging.getLogger()
         if slidermin is not None and not hasattr(slidermin, 'val'):
             raise ValueError( f"Argument slidermin ({type(slidermin)}) has no 'val'")
         if slidermax is not None and not hasattr(slidermax, 'val'):

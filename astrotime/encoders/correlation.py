@@ -9,7 +9,7 @@ from astrotime.util.logging import elapsed
 from torch import Tensor
 import logging
 from .wavelet import WaveletAnalysisLayer
-log = logging.getLogger("astrotime")
+log = logging.getLogger()
 
 class PolyEmbeddingLayer(EmbeddingLayer):
 

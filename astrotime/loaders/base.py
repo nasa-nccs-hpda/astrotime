@@ -6,7 +6,7 @@ import logging
 class DataLoader:
 
 	def __init__(self):
-		self.log = logging.getLogger("astrotime")
+		self.log = logging.getLogger()
 
 	def get_dataset( self, dset_idx: int ) -> xa.Dataset:
 		raise NotImplementedError(f"The class '{self.__class__.__name__}' does not implement the 'get_dataset' method")
@@ -34,7 +34,7 @@ class DataLoader:
 class IterativeDataLoader:
 
 	def __init__(self):
-		self.log = logging.getLogger("astrotime")
+		self.log = logging.getLogger()
 
 	def get_dataset( self, *args ) -> xa.Dataset:
 		raise NotImplementedError(f"The class '{self.__class__.__name__}' does not implement the 'get_dataset' method")

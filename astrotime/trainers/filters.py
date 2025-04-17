@@ -4,7 +4,7 @@ import time, numpy as np, xarray as xa, torch
 from astrotime.util.math import Array
 from torch import Tensor
 import logging
-log = logging.getLogger("astrotime")
+log = logging.getLogger()
 
 class TrainingFilter(object):
 

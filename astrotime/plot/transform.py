@@ -7,7 +7,7 @@ from matplotlib.lines import Line2D
 from astrotime.util.logging import exception_handled
 from astrotime.encoders.embedding import EmbeddingLayer
 from typing import List, Optional, Dict, Type, Union, Tuple
-log = logging.getLogger("astrotime")
+log = logging.getLogger()
 
 def tolower(ls: Optional[List[str]]) -> List[str]:
 	return [a.lower() for a in ls] if (ls is not None) else []
