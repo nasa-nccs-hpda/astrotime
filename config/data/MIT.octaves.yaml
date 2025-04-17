@@ -11,11 +11,11 @@ base_freq:  0.05                   # Start frequency of full freq range
 noctaves: 10                       # Number of octaves in full freq range
 series_length: -1                  # Length of subset of input timeseries to process (-1 means no subsetting)
 arange:
-  - 20
-  - 50
+  - 40
+  - 80
 hrange:
   - 0.05
-  - 0.4
+  - 0.3
 noise: 0.05
 
 
