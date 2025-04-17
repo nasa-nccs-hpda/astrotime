@@ -212,6 +212,7 @@ class MITLoader(IterativeDataLoader):
 		ctime: np.ndarray = self.dataset[TIC+".time"].values.squeeze()
 		cy: np.ndarray = self.dataset[TIC+".y"].values.squeeze()
 		cz = np.stack([ctime,cy],axis=0)
+		print( f"get_elem_slice: cz{cz.shape}, series_length={self.series_length}")
 		if cz.shape[1] <= self.series_length:
 			return cz[:,self.series_length]
 
