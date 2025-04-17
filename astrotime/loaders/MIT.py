@@ -53,7 +53,7 @@ class MITLoader(IterativeDataLoader):
 
 	def get_next_batch( self ) -> Optional[Dict[str,np.ndarray]]:
 		self.log.info(f"MITLoader.get_next_batch: sector = {self.current_sector}, nbatches={self._nbatches}, sector_batch_offset={self.sector_batch_offset}, batch_size={self.cfg.batch_size}")
-		if (self._nbatches > 0) and (self.sector_batch_offset > self._nbatches-self.cfg.batch_size):
+		if (self._nbatches > 0) and (self.sector_batch_offset//self.cfg.batch_size >= self._nbatches-1):
 			if self.tset == TSet.Validation:
 				self.current_sector = -1
 			else:
