@@ -45,7 +45,7 @@ class MITLoader(IterativeDataLoader):
 		max_period = self.cfg.get('max_period',None)
 		if max_period is not None:
 			return 0, max_period
-		return 0, float('nan')
+		return 0, float('inf')
 
 	@property
 	def ndsets(self) -> int:
