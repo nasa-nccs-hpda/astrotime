@@ -17,13 +17,9 @@ class PlanetCrossingDataGenerator:
 	def get_element(  self, time: xa.DataArray, y: xa.DataArray ) -> xa.DataArray:
 		period: float  = y.attrs['period']
 		yheight  = np.median( y.values )
-		# a: float =     random.uniform( self.arange[0], self.arange[1] )
-		# h: float =     random.uniform( self.hrange[0], self.hrange[1] )
+		a: float =     random.uniform( self.arange[0], self.arange[1] )
+		h: float =     random.uniform( self.hrange[0], self.hrange[1] )
 		noise: np.ndarray = np.random.normal(0.0, self.noise * yheight, time.shape[0])
-
-		a = 30.0
-		h = 0.3
-
 		tvals: np.ndarray = time.values
 		dt = np.mod(tvals,period) - period/2
 		pcross: np.ndarray = yheight * (1 - h * np.exp(-(a*dt/period) ** 2)) + noise
