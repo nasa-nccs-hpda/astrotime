@@ -42,6 +42,9 @@ class IterativeDataLoader:
 	def initialize(self, tset: TSet) -> xa.Dataset:
 		raise NotImplementedError(f"The class '{self.__class__.__name__}' does not implement the 'initialize' method")
 
+	def init_epoch(self):
+		raise NotImplementedError(f"The class '{self.__class__.__name__}' does not implement the 'init_epoch' method")
+
 	def get_next_batch(self) -> Optional[Dict[str,np.ndarray]]:
 		raise NotImplementedError(f"The class '{self.__class__.__name__}' does not implement the 'get_next_batch' method")
 

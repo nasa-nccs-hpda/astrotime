@@ -33,10 +33,13 @@ class MITLoader(IterativeDataLoader):
 	def initialize(self, tset: TSet, **kwargs ):
 		self.tset = tset
 		self.period_range =  self.get_period_range()
-		self.sector_batch_offset = 0
-		self.current_sector = self.sector_range[0] if tset == TSet.Train else self.sector_range[1]
-		self._nbatches = -1
 		self._read_TICS(self.current_sector)
+		self.init_epoch()
+
+	def init_epoch(self):
+		self.sector_batch_offset = 0
+		self.current_sector = self.sector_range[0] if self.tset == TSet.Train else self.sector_range[1]
+		self._nbatches = -1
 
 	def update_test_mode(self):
 		self.test_mode_index = (self.test_mode_index + 1) % len(self.TestModes)
@@ -60,7 +63,7 @@ class MITLoader(IterativeDataLoader):
 				self.current_sector = self.current_sector + 1
 				if self.current_sector == self.sector_range[1]:
 					self.current_sector = -1
-				self.log.info( f"Init Dataset: sector={self.current_sector}, nbatches={self._nbatches} sector_batch_offset={self.sector_batch_offset}")
+				self.log.info( f"Init Dataset: sector={self.current_sector}, sector_range={self.sector_range}, nbatches={self._nbatches} sector_batch_offset={self.sector_batch_offset}")
 				self.sector_batch_offset = 0
 		if self.current_sector >= 0:
 			if self.load_sector(self.current_sector):

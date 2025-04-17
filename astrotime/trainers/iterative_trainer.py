@@ -118,24 +118,28 @@ class IterativeTrainer(object):
     def compute(self):
         print(f"SignalTrainer[{self.mode}]: , {self.nepochs} epochs, device={self.device}")
         with self.device:
+            batch_idx_end = 1000000
             for epoch in range(*self.epoch_range):
                 self.set_train_status()
+                self.loader.init_epoch()
                 losses, log_interval = [], 200
-                for ibatch in range(0,1000000):
+                for ibatch in range(0,batch_idx_end):
                     t0 = time.time()
                     batch = self.get_next_batch()
-                    if batch is None: break
-                    self.global_time = time.time()
-                    self.log.info( f"BATCH-{ibatch}: input={shp(batch['z'])}, target={shp(batch['target'])}")
-                    result: Tensor = self.model( batch['z'] )
-                    loss: Tensor = self.loss_function( result.squeeze(), batch['target'].squeeze() )
-                    self.conditionally_update_weights(loss)
-                    losses.append(loss.item())
-                    if (self.mode == TSet.Train) and ((ibatch % log_interval == 0) or ((ibatch < 5) and (epoch==0))):
-                        aloss = np.array(losses)
-                        mean_loss = aloss.mean()
-                        print(f"E-{epoch} B-{ibatch} S-{self.loader.dset_idx} loss={mean_loss:.3f} (unscaled: {mean_loss/self.time_scale:.3f}), range=({aloss.min():.3f} -> {aloss.max():.3f}), dt={elapsed(t0):.5f} sec")
-                        losses = []
+                    if batch is None:
+                        ibatch = batch_idx_end
+                    else:
+                        self.global_time = time.time()
+                        self.log.info( f"BATCH-{ibatch}: input={shp(batch['z'])}, target={shp(batch['target'])}")
+                        result: Tensor = self.model( batch['z'] )
+                        loss: Tensor = self.loss_function( result.squeeze(), batch['target'].squeeze() )
+                        self.conditionally_update_weights(loss)
+                        losses.append(loss.item())
+                        if (self.mode == TSet.Train) and ((ibatch % log_interval == 0) or ((ibatch < 5) and (epoch==0))):
+                            aloss = np.array(losses)
+                            mean_loss = aloss.mean()
+                            print(f"E-{epoch} B-{ibatch} S-{self.loader.dset_idx} loss={mean_loss:.3f} (unscaled: {mean_loss/self.time_scale:.3f}), range=({aloss.min():.3f} -> {aloss.max():.3f}), dt={elapsed(t0):.5f} sec")
+                            losses = []
 
                 if self.mode == TSet.Train:
                     self._checkpoint_manager.save_checkpoint( epoch, 0 )
