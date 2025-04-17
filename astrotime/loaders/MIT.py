@@ -26,7 +26,7 @@ class MITLoader(IterativeDataLoader):
 		self.synthetic = PlanetCrossingDataGenerator(cfg)
 		self.tset: TSet = None
 		self._nbatches = -1
-		self.test_mode_index = self.TestModes.index( kwargs.get('test_mode','default') )
+		self.test_mode_index = self.TestModes.index( cfg.test_mode )
 		self.ymax = None
 		self._TICS = None
 

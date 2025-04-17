@@ -17,6 +17,6 @@ hrange:
   - 0.05
   - 0.3
 noise: 0.05
-test_mode: default
+test_mode: planet_crossing
 
 
