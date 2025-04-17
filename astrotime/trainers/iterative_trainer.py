@@ -88,8 +88,8 @@ class IterativeTrainer(object):
         if dset is not None:
             return self.encode_batch(dset)
 
-    def get_batch(self, ibatch: int) -> Optional[Dict[str,torch.Tensor]]:
-        dset: Optional[Dict[str,np.ndarray]] = self.loader.get_batch(ibatch)
+    def get_batch(self, dset_idx: int, ibatch: int) -> Optional[Dict[str,torch.Tensor]]:
+        dset: Optional[Dict[str,np.ndarray]] = self.loader.get_batch(dset_idx,ibatch)
         if dset is not None:
             return self.encode_batch(dset)
 

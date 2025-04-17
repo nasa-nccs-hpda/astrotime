@@ -13,7 +13,7 @@ class MITLoader(IterativeDataLoader):
 
 	TestModes: List = [ "default", 'sinusoid', 'planet_crossing' ]
 
-	def __init__(self, cfg: DictConfig ):
+	def __init__(self, cfg: DictConfig, **kwargs ):
 		super().__init__()
 		self.cfg = cfg
 		self.sector_range = cfg.sector_range
@@ -26,7 +26,7 @@ class MITLoader(IterativeDataLoader):
 		self.synthetic = PlanetCrossingDataGenerator(cfg)
 		self.tset: TSet = None
 		self._nbatches = -1
-		self.test_mode_index = 0
+		self.test_mode_index = self.TestModes.index( kwargs.get('test_mode','default') )
 		self.ymax = None
 		self._TICS = None
 
@@ -68,6 +68,8 @@ class MITLoader(IterativeDataLoader):
 			batch_end   = batch_start+self.cfg.batch_size
 			result = { k: self.train_data[k][batch_start:batch_end] for k in ['t','y','p'] }
 			self.sector_batch_offset = batch_end
+			if self.test_mode_index == 2:
+				result = self.synthetic.process_batch( result )
 			return result
 
 	def get_batch( self, sector_index: int, batch_index: int ) -> Optional[Dict[str,np.ndarray]]:
@@ -76,6 +78,8 @@ class MITLoader(IterativeDataLoader):
 		batch_start = self.sector_batch_offset*batch_index
 		batch_end   = batch_start+self.cfg.batch_size
 		result = { k: self.train_data[k][batch_start:batch_end] for k in ['t','y','p'] }
+		if self.test_mode_index == 2:
+			result = self.synthetic.process_batch(result)
 		return result
 
 	def get_element( self, sector_index: int, element_index: int ) -> Optional[Dict[str,Union[np.ndarray,float]]]:
@@ -254,8 +258,8 @@ class MITLoader(IterativeDataLoader):
 
 class MITOctavesLoader(MITLoader):
 
-	def __init__(self, cfg: DictConfig ):
-		super().__init__(cfg)
+	def __init__(self, cfg: DictConfig, **kwargs ):
+		super().__init__(cfg, **kwargs)
 		self.nfreq: int = cfg.series_length
 		self.base_freq: float = cfg.base_freq
 		self.noctaves: int = cfg.noctaves

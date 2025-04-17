@@ -4,6 +4,7 @@ from .param import STIntParam
 from matplotlib import ticker
 from torch import nn, optim, Tensor, FloatTensor
 from .base import SignalPlot, bounds
+from astrotime.loaders.MIT import MITLoader
 from matplotlib.axes import Axes
 from matplotlib.lines import Line2D
 from matplotlib.backend_bases import KeyEvent, MouseEvent, MouseButton
@@ -64,7 +65,7 @@ class MITDatasetPlot(SignalPlot):
 		SignalPlot.__init__(self, **kwargs)
 		self.name = name
 		self.sector: int = sector
-		self.data_loader: IterativeDataLoader = data_loader
+		self.data_loader: MITLoader = data_loader
 		self.refresh = kwargs.get('refresh', False)
 		self.TICS: List[str] = data_loader.TICS(sector)
 		self.annotations: List[str] = tolower( kwargs.get('annotations',None) )

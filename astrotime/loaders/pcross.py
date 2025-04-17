@@ -24,9 +24,15 @@ class PlanetCrossingDataGenerator:
 		pcross: np.ndarray =  (1 - h * np.exp(-(a*dt/period) ** 2)) + noise
 		signal: xa.DataArray = y.copy( data=pcross )
 		signal.attrs.update(width=a, mag=h, noise=self.noise)
-
-		self.log.info( f"PlanetCrossingDataGenerator.get_element: a={a:.2f} h={h:.2f} period={period:.2f} dt{dt.shape}({dt.min():.3f},{dt.max():.3f})")
-		self.log.info(f" **** ( time{time.shape} y{y.shape} ) -> pcross{pcross.shape}({pcross.min():.3f},{pcross.max():.3f})")
-
 		return signal
+
+	def process_batch(self, batch: Dict[str, np.ndarray]) -> Dict[str, np.ndarray]:
+		tvals, y, p = batch['t'], batch['y'], batch['p']
+		a: float =     random.uniform( self.arange[0], self.arange[1] )
+		h: float =     random.uniform( self.hrange[0], self.hrange[1] )
+		period = p[None,:]
+		noise: np.ndarray = np.random.normal(0.0, self.noise, tvals.shape)
+		dt = np.mod(tvals,period) - period
+		pcross: np.ndarray =  (1 - h * np.exp(-(a*dt/period) ** 2)) + noise
+		return dict( t=tvals, y=pcross, p=p )
 
