@@ -1,6 +1,6 @@
 import time, os, numpy as np, xarray as xa
 from astrotime.loaders.base import IterativeDataLoader
-from astrotime.loaders.synthetic import PlanetCrossingDataGenerator
+from astrotime.loaders.pcross import PlanetCrossingDataGenerator
 from typing import List, Optional, Dict, Type, Union, Tuple
 import pandas as pd
 from enum import Enum
@@ -88,7 +88,7 @@ class MITLoader(IterativeDataLoader):
 		self.load_sector(sector_index, **kwargs)
 		if     self.test_mode_index == 0: return xa.Dataset( { k: self.dataset.data_vars[TIC+"."+k] for k in ['time','y'] } )
 		elif   self.test_mode_index == 1: return self.get_sinusoid_element(sector_index,TIC)
-		elif   self.test_mode_index == 2: return self.get_synthetic_element(sector_index, TIC)
+		elif   self.test_mode_index == 2: return self.get_pcross_element(sector_index, TIC)
 		else: raise Exception(f"Unknown test mode {self.test_mode_index}")
 
 	def get_sinusoid_element( self, sector_index: int, TIC: str, **kwargs ) -> xa.Dataset:
@@ -98,7 +98,7 @@ class MITLoader(IterativeDataLoader):
 		sinusoid: np.ndarray = np.sin( 2*np.pi*time.values / y.attrs["period"] )
 		return xa.Dataset( dict(  time=time, y=y.copy( data=sinusoid ) ) )
 
-	def get_synthetic_element( self, sector_index: int, TIC: str, **kwargs ) -> xa.Dataset:
+	def get_pcross_element( self, sector_index: int, TIC: str, **kwargs ) -> xa.Dataset:
 		self.load_sector(sector_index, **kwargs)
 		time: xa.DataArray = self.dataset.data_vars[TIC+".time"]
 		y: xa.DataArray = self.dataset.data_vars[TIC + ".y"]
