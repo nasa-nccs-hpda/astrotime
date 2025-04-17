@@ -34,6 +34,14 @@ class OctaveAnalysisLayer(EmbeddingLayer):
 		self.nfreq: int       = self.nfreq_oct * self.noctaves
 		self.fold: bool = False
 
+	@property
+	def nfeatures(self) -> int:
+		return 3
+
+	@property
+	def output_series_length(self):
+		return self.nfreq
+
 	def process_event(self, **kwargs):
 		self.log.info(f"OctaveAnalysisLayer.process_event: event={kwargs}")
 		if (kwargs["id"] == "KeyEvent") and (kwargs["key"] == "ctrl+o"):
@@ -90,10 +98,3 @@ class OctaveAnalysisLayer(EmbeddingLayer):
 		f0 = 1/target_period
 		return f0
 
-	@property
-	def nfeatures(self) -> int:
-		return 3
-
-	@property
-	def output_series_length(self):
-		return self.cfg.nfreq
