@@ -30,8 +30,9 @@ class PlanetCrossingDataGenerator:
 		tvals, y, p = batch['t'], batch['y'], batch['p']
 		a: float =     random.uniform( self.arange[0], self.arange[1] )
 		h: float =     random.uniform( self.hrange[0], self.hrange[1] )
-		period = p[None,:]
+		period = p[:,None]
 		noise: np.ndarray = np.random.normal(0.0, self.noise, tvals.shape)
+		self.log.info( f"PlanetCrossingDataGenerator.process_batch: a={a}, h={h}, period{period.shape}, tvals{tvals.shape}, y{y.shape}")
 		dt = np.mod(tvals,period) - period
 		pcross: np.ndarray =  (1 - h * np.exp(-(a*dt/period) ** 2)) + noise
 		return dict( t=tvals, y=pcross, p=p )
