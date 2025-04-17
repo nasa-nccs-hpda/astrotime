@@ -23,7 +23,7 @@ class IterativeEncoder(Encoder):
 			X: Tensor = torch.FloatTensor(x).to(self.device)
 			Y = tnorm(Y, dim=1)
 			if Y.ndim == 2: Y = torch.unsqueeze( Y, dim=2)
-			self.log.debug( f" ** ENCODED BATCH: x{list(x0.shape)} y{list(y0.shape)} -> T{list(X.shape)} Y{list(Y.shape)} Yrange={Y.max().item()-Y.min().item():.4f}")
+		#	self.log.debug( f" ** ENCODED BATCH: x{list(x0.shape)} y{list(y0.shape)} -> T{list(X.shape)} Y{list(Y.shape)}")
 			if self.chan_first: Y = Y.transpose(1,2)
 			return X, Y
 
