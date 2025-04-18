@@ -74,7 +74,7 @@ class ncSinusoidLoader(DataLoader):
 		print( f" get_element: {list(self.dataset.data_vars.keys())}")
 		y: np.ndarray = self.dataset['y'].isel(elem=element_index).values
 		t: np.ndarray = self.dataset['t'].isel(elem=element_index).values
-		period: float = float(self.dataset['period'][element_index])
+		period: float = float(self.dataset['p'][element_index])
 		return  dict( y=y, t=t, period=period )
 
 	def get_dataset_element(self, dset_idx: int, element_index, **kwargs) -> xa.Dataset:
@@ -82,7 +82,7 @@ class ncSinusoidLoader(DataLoader):
 		print(f" get_dataset_element: {list(self.dataset.data_vars.keys())}")
 		y: np.ndarray = self.dataset['y'].isel(elem=element_index).values
 		t: np.ndarray = self.dataset['t'].isel(elem=element_index).values
-		period: float = float(self.dataset['period'][element_index])
+		period: float = float(self.dataset['p'][element_index])
 		return xa.Dataset( dict( y=y, t=t ), attrs=dict( period=period ) )
 
 	@exception_handled
