@@ -1,5 +1,6 @@
 import torch
 from torch import Tensor, device
+import numpy as np
 import logging
 
 class EmbeddingLayer(torch.nn.Module):
@@ -38,7 +39,7 @@ class EmbeddingLayer(torch.nn.Module):
 	def embed(self, xs: Tensor, ys: Tensor ) -> Tensor:
 		raise NotImplementedError("EmbeddingLayer.embed() not implemented")
 
-	def magnitude(self, embedding: Tensor) -> Tensor:
+	def magnitude(self, embedding: Tensor) -> np.ndarray:
 		raise NotImplementedError("EmbeddingLayer.embed() not implemented")
 
 	def xdata(self) -> Tensor:

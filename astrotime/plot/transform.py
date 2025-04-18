@@ -61,8 +61,9 @@ class SignalTransformPlot(SignalPlot):
 		yt: torch.Tensor = torch.from_numpy(element['y']).to(self.device)
 		xt: torch.Tensor = torch.from_numpy(t).to(self.device)
 		p: float = element['p']
-		embedding: np.ndarray = self.transform.embed(xt[None,:],yt[None,:]).cpu().numpy().squeeze()
-		return t, embedding, p
+		embedding: torch.Tensor = self.transform.embed(xt[None,:],yt[None,:])
+		f: np.ndarray = self.transform.xdata().cpu().numpy()
+		return f, self.transform.magnitude(embedding), p
 
 	@exception_handled
 	def update_peak_interp(self, xp: np.ndarray, yp: np.ndarray):
