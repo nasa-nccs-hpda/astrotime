@@ -70,7 +70,7 @@ class ncSinusoidLoader(DataLoader):
 			return None
 
 	@classmethod
-	def get_elem(cls, dset: xa.Dataset, elem: int) -> xa.DataArray:
+	def get_element(cls, dset: xa.Dataset, elem: int) -> xa.DataArray:
 		slen: int = int(dset['slen'][elem])
 		y: np.ndarray = dset['y'].isel(elem=elem).values[:slen]
 		t: np.ndarray = dset['t'].isel(elem=elem).values[:slen]
