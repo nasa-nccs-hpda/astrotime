@@ -69,13 +69,21 @@ class ncSinusoidLoader(DataLoader):
 		except IndexError:
 			return None
 
-	@classmethod
-	def get_element(cls, dset: xa.Dataset, elem: int) -> xa.DataArray:
-		slen: int = int(dset['slen'][elem])
-		y: np.ndarray = dset['y'].isel(elem=elem).values[:slen]
-		t: np.ndarray = dset['t'].isel(elem=elem).values[:slen]
-		p: float = float(dset['p'][elem])
-		return xa.DataArray( y, dict( t=t ), ['t'], attrs=dict( period=p ) )
+	def get_element(self, dset_idx: int, element_index) -> Optional[Dict[str,Union[np.ndarray,float]]]:
+		self.load_file(dset_idx)
+		slen: int = int(self.dataset['slen'][element_index])
+		y: np.ndarray = self.dataset['y'].isel(elem=element_index).values[:slen]
+		t: np.ndarray = self.dataset['t'].isel(elem=element_index).values[:slen]
+		p: float = float(self.dataset['p'][element_index])
+		return  dict( y=y, t=t, period=p )
+
+	def get_dataset_element(self, dset_idx: int, element_index, **kwargs) -> xa.Dataset:
+		self.load_file(dset_idx)
+		slen: int = int(self.dataset['slen'][element_index])
+		y: np.ndarray = self.dataset['y'].isel(elem=element_index).values[:slen]
+		t: np.ndarray = self.dataset['t'].isel(elem=element_index).values[:slen]
+		p: float = float(self.dataset['p'][element_index])
+		return xa.Dataset( dict( y=y, t=t ), attrs=dict( period=p ) )
 
 	@exception_handled
 	def load_file( self, file_index: int ) -> bool:
