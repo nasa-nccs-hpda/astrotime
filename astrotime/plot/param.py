@@ -163,6 +163,7 @@ class STIntParam(STParam):
 
 	def widget(self, ax, callbacks: List[Callable], aux_axes=None ):
 		if self._widget is None:
+			print( [ self.name, self.vrange[0], self.vrange[1], self.value, self.step ] )
 			self._widget = Slider( ax, self.name, self.vrange[0], self.vrange[1], valinit=self.value, valstep=self.step )
 			for callback in callbacks:
 				self._widget.on_changed(callback)
