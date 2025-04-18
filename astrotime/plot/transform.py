@@ -1,5 +1,6 @@
 import logging, numpy as np
 import xarray as xa
+import torch
 from .param import STIntParam
 from astrotime.loaders.base import DataLoader, IterativeDataLoader
 from .base import SignalPlot, bounds
@@ -55,10 +56,12 @@ class SignalTransformPlot(SignalPlot):
 
 	def get_element_data(self) -> Tuple[np.ndarray,np.ndarray,float]:
 		element: Dict[str,Union[np.ndarray,float]] = self.data_loader.get_element(self.dset_idx,self.element)
-		ydata: np.ndarray = element['y']
-		xdata: np.ndarray = element['t']
-		target: float = element['p']
-		return xdata, ydata, target
+		t: np.ndarray = element['t']
+		yt: torch.Tensor = torch.from_numpy(element['y'])
+		xt: torch.Tensor = torch.from_numpy(t)
+		p: float = element['p']
+		embedding: np.ndarray = self.transform.embed(xt,yt).cpu().numpy()
+		return t, embedding, p
 
 	@exception_handled
 	def update_peak_interp(self, xp: np.ndarray, yp: np.ndarray):

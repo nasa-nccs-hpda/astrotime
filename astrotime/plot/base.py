@@ -140,8 +140,6 @@ class SignalPlotFigure(object):
 			sp.widget(sax, self.callbacks )
 		log.info(f"SignalPlotFigure._setup complete")
 
-
-
 	@exception_handled
 	def update(self, val: Any = None, **kwargs):
 		self.log.info(f" ------- SignalPlotFigure: widget-generated update({val}) ---------")
