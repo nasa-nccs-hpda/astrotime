@@ -71,17 +71,17 @@ class ncSinusoidLoader(DataLoader):
 
 	def get_element(self, dset_idx: int, element_index) -> Optional[Dict[str,Union[np.ndarray,float]]]:
 		self.load_file(dset_idx)
-		slen: int = int(self.dataset['slen'][element_index])
-		y: np.ndarray = self.dataset['y'].isel(elem=element_index).values[:slen]
-		t: np.ndarray = self.dataset['t'].isel(elem=element_index).values[:slen]
+		print( f" get_element: {list(self.dataset.data_vars.keys())}")
+		y: np.ndarray = self.dataset['y'].isel(elem=element_index).values
+		t: np.ndarray = self.dataset['t'].isel(elem=element_index).values
 		p: float = float(self.dataset['p'][element_index])
 		return  dict( y=y, t=t, period=p )
 
 	def get_dataset_element(self, dset_idx: int, element_index, **kwargs) -> xa.Dataset:
 		self.load_file(dset_idx)
-		slen: int = int(self.dataset['slen'][element_index])
-		y: np.ndarray = self.dataset['y'].isel(elem=element_index).values[:slen]
-		t: np.ndarray = self.dataset['t'].isel(elem=element_index).values[:slen]
+		print(f" get_dataset_element: {list(self.dataset.data_vars.keys())}")
+		y: np.ndarray = self.dataset['y'].isel(elem=element_index).values
+		t: np.ndarray = self.dataset['t'].isel(elem=element_index).values
 		p: float = float(self.dataset['p'][element_index])
 		return xa.Dataset( dict( y=y, t=t ), attrs=dict( period=p ) )
 
