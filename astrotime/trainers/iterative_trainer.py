@@ -85,8 +85,8 @@ class IterativeTrainer(object):
 
     def get_next_batch(self) -> Optional[Dict[str,torch.Tensor]]:
         dset: Optional[Dict[str,np.ndarray]] = self.loader.get_next_batch()
-        if dset is not None:
-            return self.encode_batch(dset)
+        if dset is None: return None
+        return self.encode_batch(dset)
 
     def get_batch(self, dset_idx: int, ibatch: int) -> Optional[Dict[str,torch.Tensor]]:
         dset: Optional[Dict[str,np.ndarray]] = self.loader.get_batch(dset_idx,ibatch)
@@ -127,7 +127,7 @@ class IterativeTrainer(object):
                     t0 = time.time()
                     batch = self.get_next_batch()
                     if batch is None:
-                        ibatch = batch_idx_end
+                        break
                     else:
                         self.global_time = time.time()
                         self.log.info( f"BATCH-{ibatch}: input={shp(batch['z'])}, target={shp(batch['target'])}")
