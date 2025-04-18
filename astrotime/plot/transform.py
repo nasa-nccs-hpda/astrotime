@@ -60,7 +60,7 @@ class SignalTransformPlot(SignalPlot):
 		yt: torch.Tensor = torch.from_numpy(element['y'])
 		xt: torch.Tensor = torch.from_numpy(t)
 		p: float = element['p']
-		embedding: np.ndarray = self.transform.embed(xt,yt).cpu().numpy()
+		embedding: np.ndarray = self.transform.embed(xt[None,:],yt[None,:]).cpu().numpy().squeeze()
 		return t, embedding, p
 
 	@exception_handled
