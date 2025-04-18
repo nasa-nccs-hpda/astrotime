@@ -57,8 +57,8 @@ class SignalTransformPlot(SignalPlot):
 	def get_element_data(self) -> Tuple[np.ndarray,np.ndarray,float]:
 		element: Dict[str,Union[np.ndarray,float]] = self.data_loader.get_element(self.dset_idx,self.element)
 		t: np.ndarray = element['t']
-		yt: torch.Tensor = torch.from_numpy(element['y'])
-		xt: torch.Tensor = torch.from_numpy(t)
+		yt: torch.Tensor = torch.from_numpy(element['y']).to(self.device)
+		xt: torch.Tensor = torch.from_numpy(t).to(self.device)
 		p: float = element['p']
 		embedding: np.ndarray = self.transform.embed(xt[None,:],yt[None,:]).cpu().numpy().squeeze()
 		return t, embedding, p

@@ -14,7 +14,7 @@ class EmbeddingLayer(torch.nn.Module):
 		self.batch_size = cfg.batch_size
 		self.time_scale = self.cfg.time_scale
 		self.log = logging.getLogger()
-		self._embedding_space: Tensor = embedding_space
+		self._embedding_space: Tensor = embedding_space.to(self.device)
 		self.log.info(f"EmbeddingLayer: series_length={self.series_length} batch_size={self.batch_size} ")
 		self.init_state = True
 
