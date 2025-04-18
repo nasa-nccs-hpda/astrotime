@@ -119,7 +119,8 @@ class WaveletAnalysisLayer(EmbeddingLayer):
 	def embed(self, ts: torch.Tensor, ys: torch.Tensor ) -> Tensor:
 		t0 = time.time()
 		self.init_log(f"WaveletAnalysisLayer shapes: ts{list(ts.shape)} ys{list(ys.shape)}")
-		slen: int = self.series_length if (self.series_length > 0) else ys.shape[1]
+	#	slen: int = self.series_length if (self.series_length > 0) else ys.shape[1]
+		slen: int = ys.shape[1]
 		ones: Tensor = torch.ones( ys.shape[0], self.nfreq, slen, device=self.device)
 		tau = 0.5 * (ts[:, slen // 2] + ts[:, slen // 2 + 1])
 		tau: Tensor = tau[:, None, None]
