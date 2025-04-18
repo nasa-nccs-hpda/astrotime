@@ -29,6 +29,9 @@ class ncSinusoidLoader(DataLoader):
 		self.batches_per_file = self.cfg.file_size // self.cfg.batch_size
 		self.log = logging.getLogger()
 
+	def dset_idx(self) -> int:
+		return self.current_file
+
 
 	@property
 	def file_paths( self ) -> List[str]:
