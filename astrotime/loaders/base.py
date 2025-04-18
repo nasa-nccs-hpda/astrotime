@@ -31,8 +31,8 @@ class DataLoader:
 	def dset_idx(self) -> int:
 		raise NotImplementedError(f"The class '{self.__class__.__name__}' does not implement the 'dset_idx' property")
 
-	def nelements( self, tset: TSet=TSet.Train ) -> int:
-		return self.nbatches(tset) * self.batch_size
+	def nelements( self ) -> int:
+		return self.nbatches(TSet.Train) * self.batch_size
 
 class IterativeDataLoader:
 
