@@ -110,7 +110,8 @@ class MITDatasetPlot(SignalPlot):
 			self.update(period=self.fold_period)
 		elif event.key in ['ctrl+t']:
 			self.data_loader.update_test_mode()
-			self.update()
+			args = dict(title="Synthetic Sinusoids") if (self.data_loader.test_mode_index == 1) else {}
+			self.update(**args)
 
 	@exception_handled
 	def process_ext_event(self, **event_data):
@@ -171,7 +172,7 @@ class MITDatasetPlot(SignalPlot):
 		fold_period = kwargs.get('period')
 		active_period = self.period if (fold_period is None) else fold_period
 		title = f"{self.name}: TP={active_period:.3f} (F={1/active_period:.3f})"
-		self.ax.title.set_text(title)
+		self.ax.title.set_text( kwargs.get('title',title) )
 		self.update_period_marker()
 		self.ax.set_xlim(xdata.min(),xdata.max())
 		try:  self.ax.set_ylim(ydata.min(),ydata.max())
