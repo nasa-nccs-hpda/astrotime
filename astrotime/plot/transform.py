@@ -28,9 +28,10 @@ def tolower(ls: Optional[List[str]]) -> List[str]:
 
 class SignalTransformPlot(SignalPlot):
 
-	def __init__(self, name: str, data_loader: DataLoader, transform: EmbeddingLayer, **kwargs):
+	def __init__(self, name: str, data_loader: DataLoader, transform: EmbeddingLayer, device: torch.device, **kwargs):
 		SignalPlot.__init__(self, **kwargs)
 		self.name = name
+		self.device = device
 		self.transform = transform
 		self.data_loader: DataLoader = data_loader
 		self.dset_idx = data_loader.dset_idx
