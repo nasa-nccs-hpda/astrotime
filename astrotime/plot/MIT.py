@@ -260,7 +260,7 @@ class MITTransformPlot(SignalPlot):
 		transform_peak_freq = None
 		for iplot, (tname, transform) in enumerate(self.transforms.items()):
 			tdata: np.ndarray = self.apply_transform(transform,series_data)
-			self.log.info(f"---- MITTransformPlot({iplot}) {tname}[{self.element})] update: tdata{tdata.shape}, mean={tdata.mean():.2f} --- ")
+			self.log.info(f"---- MITTransformPlot({iplot}) {tname}[{self.element})] update: tdata{tdata.shape}, mean={tdata.mean():.2f}, #nan={np.count_nonzero(np.isnan(tdata))} --- ")
 			self.plots[tname].set_ydata(tdata)
 			if iplot == 0:
 				target_freq = transform.get_target_freq( target_period )
