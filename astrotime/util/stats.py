@@ -120,7 +120,9 @@ def autocorrelation( input: torch.Tensor, dim=0 ):
     autocorr[constant] = 1
 
     # transpose back to original shape
-    return autocorr.transpose(dim, -1)
+    ac = autocorr.transpose(dim, -1)
+    print(f"autocorr{ac.shape}")
+    return ac
 
 
 def autocovariance(input, dim=0):
