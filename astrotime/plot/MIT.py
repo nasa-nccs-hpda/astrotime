@@ -245,7 +245,7 @@ class MITTransformPlot(SignalPlot):
 		ts_tensors: Dict[str,Tensor] =  { k: FloatTensor(series_data.data_vars[k].values[:slen]).to(transform.device) for k in ['time','y'] }
 		transformed: Tensor = transform.embed( ts_tensors['time'][None,:], tnorm(ts_tensors['y'][None,:],dim=1) )
 		embedding: np.ndarray = transform.magnitude( transformed )
-		self.log.info( f"MITTransformPlot.apply_transform: embedding{embedding.shape} --- min={embedding.min()}, max={embedding.min()}, mean={embedding.mean():.2f}, #nan={np.count_nonzero(np.isnan(embedding))} ---")
+		self.log.info( f"MITTransformPlot.apply_transform: embedding{embedding.shape} ---> min={embedding.min():.3f}, max={embedding.max():.3f}, mean={embedding.mean():.3f} ---")
 		return znorm(embedding)
 
 	def update_selection_marker(self, freq ) -> float:
@@ -261,7 +261,7 @@ class MITTransformPlot(SignalPlot):
 		transform_peak_freq = None
 		for iplot, (tname, transform) in enumerate(self.transforms.items()):
 			tdata: np.ndarray = self.apply_transform(transform,series_data)
-			self.log.info(f"---- MITTransformPlot({iplot}) {tname}[{self.element})] update: tdata{tdata.shape}, mean={tdata.mean():.2f}, #nan={np.count_nonzero(np.isnan(tdata))} --- ")
+			self.log.info(f"---- MITTransformPlot({iplot}) {tname}[{self.element})] update: tdata{tdata.shape}, mean={tdata.mean():.3f} --- ")
 			self.plots[tname].set_ydata(tdata)
 			if iplot == 0:
 				target_freq = transform.get_target_freq( target_period )
