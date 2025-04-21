@@ -183,13 +183,12 @@ class MITDatasetPlot(SignalPlot):
 
 class MITTransformPlot(SignalPlot):
 
-	def __init__(self, name: str, data_loader: IterativeDataLoader, transforms: Dict[str,EmbeddingLayer], freq_space: np.ndarray, sector: int, **kwargs):
+	def __init__(self, name: str, data_loader: IterativeDataLoader, transforms: Dict[str,EmbeddingLayer], sector: int, **kwargs):
 		SignalPlot.__init__(self, **kwargs)
 		self.name = name
 		self.sector: int = sector
 		self.transforms: Dict[str,EmbeddingLayer] = transforms
 		self.data_loader: IterativeDataLoader = data_loader
-		self.freq_space: np.ndarray = freq_space
 		self.TICS: List[str] = data_loader.TICS(sector)
 		self.annotations: List[str] = tolower( kwargs.get('annotations',None) )
 		self.colors = ['darkviolet', 'darkorange', 'saddlebrown', 'darkturquoise', 'magenta' ]
@@ -210,14 +209,14 @@ class MITTransformPlot(SignalPlot):
 		freq = 1.0 / period
 		for iplot, (tname, transform) in enumerate(self.transforms.items()):
 			tdata: np.ndarray = self.apply_transform(transform,series_data)
-			print( f" plot[{tname}]: tdata{tdata.squeeze().shape},freq_space{self.freq_space.shape}")
-			self.plots[tname] = self.ax.plot(self.freq_space, tdata.squeeze(), label=tname, color=self.colors[iplot], marker=".", linewidth=1, markersize=2, alpha=0.5)[0]
+			print( f" plot[{tname}]: tdata{tdata.squeeze().shape},xdata{transform.xdata.shape}")
+			self.plots[tname] = self.ax.plot(transform.xdata, tdata.squeeze(), label=tname, color=self.colors[iplot], marker=".", linewidth=1, markersize=2, alpha=0.5)[0]
+			self.ax.set_xlim(transform.xdata.min(), transform.xdata.max())
 		self.target_marker: Line2D = self.ax.axvline( freq, 0.0, 1.0, color='green', linestyle='-')
 		self.selection_marker: Line2D = self.ax.axvline( 0, 0.0, 1.0, color=self.colors[0], linestyle='-', linewidth=2)
 		self.ax.title.set_text(f"{self.name}: TPeriod={period:.3f} (Freq={freq:.3f})")
 		self.ax.title.set_fontsize(8)
 		self.ax.title.set_fontweight('bold')
-		self.ax.set_xlim( self.freq_space.min(), self.freq_space.max() )
 		self.ax.set_ylim( 0.0, 1.0 )
 		self.ax.set_xscale('log')
 		self.ax.xaxis.set_major_formatter(ticker.StrMethodFormatter("{x:.2f}"))
@@ -267,7 +266,7 @@ class MITTransformPlot(SignalPlot):
 				target_freq = transform.get_target_freq( target_period )
 				self.log.info(f"            ->>> target_freq = {target_freq:.4f},  target_period = {target_period:.4f}")
 				self.target_marker.set_xdata([target_freq,target_freq])
-				transform_peak_freq = self.freq_space[np.argmax(tdata)]
+				transform_peak_freq = transform.xdata[np.argmax(tdata)]
 		transform_period = self.update_selection_marker(transform_peak_freq)
 		self.ax.title.set_text(f"{self.name}: TP={transform_period:.3f} (F={transform_peak_freq:.3f})")
 		self.ax.figure.canvas.draw_idle()

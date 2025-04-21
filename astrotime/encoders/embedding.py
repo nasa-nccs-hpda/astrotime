@@ -42,6 +42,7 @@ class EmbeddingLayer(torch.nn.Module):
 	def magnitude(self, embedding: Tensor) -> np.ndarray:
 		raise NotImplementedError("EmbeddingLayer.embed() not implemented")
 
+	@property
 	def xdata(self) -> Tensor:
 		return self._embedding_space
 
