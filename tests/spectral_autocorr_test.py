@@ -21,4 +21,6 @@ plot_freq_space, embedding_space_tensor = embedding_space( cfg.transform, device
 dplot = MITDatasetPlot("Lightcurves", data_loader, sector )
 transforms = dict( analysis  = SpectralAutocorrelationLayer( cfg.transform, embedding_space_tensor, device ) )
 wplot = MITTransformPlot("Spectral Autocorrelation", data_loader, transforms, plot_freq_space, sector )
+
+fig = SignalPlotFigure([dplot,wplot])
 wplot.update()
