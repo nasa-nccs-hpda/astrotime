@@ -37,7 +37,7 @@ class SpectralAutocorrelationLayer(OctaveAnalysisLayer):
 		return sa
 
 	def magnitude(self, embedding: Tensor, **kwargs) -> np.ndarray:
-		mag: np.ndarray = embedding.to('cpu').numpy()
+		mag: np.ndarray = embedding.cpu().numpy()
 		return mag.squeeze()
 
 
