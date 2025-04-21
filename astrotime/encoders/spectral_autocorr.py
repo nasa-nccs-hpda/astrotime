@@ -33,7 +33,7 @@ class SpectralAutocorrelationLayer(OctaveAnalysisLayer):
 		spectral_features: torch.Tensor = super(SpectralAutocorrelationLayer, self).embed( ts, ys, **kwargs)
 		spectral_projection: torch.Tensor = torch.sqrt(torch.sum(spectral_features ** 2, dim=1))
 		sa: torch.Tensor = autocorrelation( spectral_projection )
-		self.log.info(f"---- SpectralAutocorrelationLayer: sp{spectral_projection.shape}, mean={spectral_projection.mean():.2f} -> sa{sa.shape}, mean={sa.mean():.2f}, #nan={np.count_nonzero(np.isnan(sa))} --- ")
+		self.log.info(f"---- SpectralAutocorrelationLayer: sp{spectral_projection.shape}, mean={spectral_projection.mean():.2f} -> sa{sa.shape}, mean={sa.mean():.2f}, #nan = {np.count_nonzero(np.isnan(sa.cpu().numpy()))} --- ")
 		return sa
 
 	def magnitude(self, embedding: Tensor, **kwargs) -> np.ndarray:
