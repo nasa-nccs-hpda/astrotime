@@ -43,4 +43,8 @@ class SpectralAutocorrelationLayer(OctaveAnalysisLayer):
 		mag: np.ndarray = embedding.cpu().numpy()
 		return mag.squeeze()
 
+	@property
+	def xdata(self) -> np.ndarray:
+		return spectral_space(self.cfg, self.device)[0]
+
 
