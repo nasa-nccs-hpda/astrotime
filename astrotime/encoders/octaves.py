@@ -31,7 +31,7 @@ class OctaveAnalysisLayer(EmbeddingLayer):
 		self.nfreq_oct: int   = cfg.nfreq_oct
 		self.base_freq: float = cfg.base_freq
 		self.noctaves: int    = cfg.noctaves
-		self.nfreq: int       = self.nfreq_oct * self.noctaves
+		self.nfreq: int       = embedding_space.shape[0]
 		self.fold: bool = False
 
 	@property
