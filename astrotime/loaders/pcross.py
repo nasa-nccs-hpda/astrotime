@@ -37,3 +37,5 @@ class PlanetCrossingDataGenerator:
 		self.log.info( f"PlanetCrossingDataGenerator.process_batch: a={a}, h={h}, period{period.shape}, tvals{tvals.shape}, y{y.shape}, dt{dt.shape}, pcross{pcross.shape}")
 		return dict( t=tvals, y=pcross, p=p )
 
+
+
