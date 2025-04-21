@@ -35,4 +35,8 @@ class SpectralAutocorrelationLayer(OctaveAnalysisLayer):
 		sa: torch.Tensor = autocorrelation( spectral_projection )
 		return sa
 
+	def magnitude(self, embedding: Tensor, **kwargs) -> np.ndarray:
+		mag: np.ndarray = embedding.to('cpu').numpy()
+		return mag.squeeze()
+
 
