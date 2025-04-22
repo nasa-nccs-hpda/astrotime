@@ -21,27 +21,28 @@ def harmonics_space( cfg, device: device ) -> Tuple[np.ndarray,Tensor]:
 	tspace = torch.FloatTensor( lspace ).to(device)
 	return lspace, tspace
 
-def spectral_autocorrelation( ts: np.ndarray, ys: np.ndarray, fspace: np.ndarray, cfg: DictConfig, device ) -> np.ndarray:
+def harmonics_filter( ts: np.ndarray, ys: np.ndarray, cfg: DictConfig, device ) -> np.ndarray:
 	t: Tensor = torch.from_numpy( ts[None,:] if ts.ndim == 1 else ts )
 	y: Tensor = torch.from_numpy( ys[None,:] if ys.ndim == 1 else ys )
-	proj = SpectralAutocorrelationLayer( cfg, device )
+	proj = HarmonicsFilterLayer( cfg, device )
 	embedding = proj.embed( t, y )
 	return proj.magnitude( embedding )
 
-class SpectralAutocorrelationLayer(OctaveAnalysisLayer):
+class HarmonicsFilterLayer(OctaveAnalysisLayer):
 
 	def __init__(self, cfg, device: device):
 		OctaveAnalysisLayer.__init__(self, cfg, harmonics_space(cfg, device)[1], device)
 
 	def embed(self, ts: torch.Tensor, ys: torch.Tensor, **kwargs ) -> Tensor:
 		alpha = 0.01
-		spectral_features: torch.Tensor = super(SpectralAutocorrelationLayer, self).embed( ts, ys, **kwargs)
+		spectral_features: torch.Tensor = super(HarmonicsFilterLayer, self).embed( ts, ys, **kwargs)
 		spectral_projection: torch.Tensor = torch.sqrt(torch.sum(spectral_features ** 2, dim=1))
 		sspace: torch.Tensor = spectral_space(self.cfg, self.device)[1]
 		harmonics: torch.Tensor = torch.stack( [sspace*ih for ih in range(1,6)], dim=1)
 		df: torch.Tensor = (self._embedding_space[:,None,None] - harmonics[None,:,:])/harmonics[None,:,:]
 		W: torch.Tensor = torch.exp(-alpha*df**2).sum(dim=2)
-		print( f"SpectralAutocorrelationLayer: harmonics{list(harmonics.shape)} sspace{list(sspace.shape)}, hspace{list(self._embedding_space.shape)}, W{list(W.shape)} ")
+		# hfilter = W*spectral_projection[:,None]
+		print( f"SpectralAutocorrelationLayer: harmonics{list(harmonics.shape)} spectral_projection{list(spectral_projection.shape)}  sspace{list(sspace.shape)}, hspace{list(self._embedding_space.shape)}, W{list(W.shape)} ")
 		return spectral_projection
 
 	def magnitude(self, embedding: Tensor, **kwargs) -> np.ndarray:
