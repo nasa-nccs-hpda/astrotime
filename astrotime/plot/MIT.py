@@ -239,7 +239,6 @@ class MITTransformPlot(SignalPlot):
 				self.update()
 
 	def key_press(self, event: KeyEvent) -> Any:
-		self.log.info(f"           *** ---- MITTransformPlot.key_press: selected key={event.key} event={event} --- ")
 		if event.key.startswith( 'ctrl+'):
 			for t in self.transforms.values():
 				t.process_event( id="KeyEvent", key=event.key, ax=event.inaxes )

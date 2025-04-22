@@ -89,8 +89,10 @@ class HarmonicsFilterLayer(OctaveAnalysisLayer):
 
 #	"crtl-mouse-press", x = event.xdata, y = event.ydata, ax = event.inaxes
 	def process_event(self, **kwargs ):
+		self.log.info(f"           *** ---- HarmonicsFilterLayer.process_event: {kwargs} ")
 		if kwargs["id"] == "crtl-mouse-press":
 			self.f0 = kwargs["x"]
+			self.log.info(f"           *** ---- set f0 = {self.f0} ")
 
 	def magnitude(self, embedding: Tensor, **kwargs) -> np.ndarray:
 		mag: np.ndarray = embedding.cpu().numpy()
