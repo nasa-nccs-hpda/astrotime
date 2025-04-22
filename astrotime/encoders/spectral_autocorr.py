@@ -36,7 +36,9 @@ class SpectralAutocorrelationLayer(OctaveAnalysisLayer):
 	def embed(self, ts: torch.Tensor, ys: torch.Tensor, **kwargs ) -> Tensor:
 		spectral_features: torch.Tensor = super(SpectralAutocorrelationLayer, self).embed( ts, ys, **kwargs)
 		spectral_projection: torch.Tensor = torch.sqrt(torch.sum(spectral_features ** 2, dim=1))
-		print(f"---- SpectralAutocorrelationLayer: sp{list(spectral_projection.shape)}, mean={spectral_projection.mean():.2f} std={spectral_projection.std():.5f} ")
+		sspace: torch.Tensor = spectral_space(self.cfg, self.device)[1]
+		harmonics: torch.Tensor = torch.stack( [sspace*ih for ih in range(1,6)], dim=1)
+		print( f"SpectralAutocorrelationLayer: harmonics{list(harmonics.shape)} sspace{list(sspace.shape)}, hspace{list(self._embedding_space.shape)}")
 		return spectral_projection
 
 	def magnitude(self, embedding: Tensor, **kwargs) -> np.ndarray:
