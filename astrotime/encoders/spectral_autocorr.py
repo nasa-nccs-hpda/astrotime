@@ -70,7 +70,7 @@ class HarmonicsFilterLayer(OctaveAnalysisLayer):
 		df = (self._embedding_space[None,:,None] - harmonics[:,None,:])
 		W: torch.Tensor = torch.exp(-(df*alpha)**2/harmonics[:,None,:]).sum(dim=2)
 		self.fspace, sspace = spectral_space(self.cfg, self.device)
-		hfilter: torch.Tensor = matmul(spectral_projection,W) / self._embedding_space.shape[0]
+		hfilter: torch.Tensor = matmul(spectral_projection,W.transpose(0,1)) / self._embedding_space.shape[0]
 
 		self.log.info(f" ----- embedding_space{list(self._embedding_space.shape)}: {self._embedding_space.min():.3f} -> {self._embedding_space.max():.3f}")
 		self.log.info(f" ----- fh: {fh}")
