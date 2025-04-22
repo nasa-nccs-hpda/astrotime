@@ -233,7 +233,7 @@ class MITTransformPlot(SignalPlot):
 				self.ax.title.set_text(f"{self.name}: TP={period:.3f} (F={freq:.3f})")
 				self.selection_marker.set_xdata([freq, freq])
 				self.process_event( id="period-update", period=period, ax=str(id(self.ax)), color=self.colors[0] )
-			elif "crtl" in event.modifiers:
+			elif "ctrl" in event.modifiers:
 				for t in self.transforms.values():
 					t.process_event( id="crtl-mouse-press", x=event.xdata, y=event.ydata, ax=event.inaxes )
 				self.update()
