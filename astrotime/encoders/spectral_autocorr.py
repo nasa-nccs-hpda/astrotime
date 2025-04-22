@@ -33,23 +33,8 @@ class HarmonicsFilterLayer(OctaveAnalysisLayer):
 		OctaveAnalysisLayer.__init__(self, cfg, harmonics_space(cfg, device)[1], device)
 		self.fspace: np.ndarray = None
 
-	def embed1(self, ts: torch.Tensor, ys: torch.Tensor, **kwargs ) -> Tensor:
-		alpha = 0.01
-		spectral_features: torch.Tensor = super(HarmonicsFilterLayer, self).embed( ts, ys, **kwargs)
-		spectral_projection: torch.Tensor = torch.sqrt(torch.sum(spectral_features ** 2, dim=1))
-		self.fspace, sspace = spectral_space(self.cfg, self.device)
-		harmonics: torch.Tensor = torch.stack( [sspace*ih for ih in range(1,6)], dim=1)
-		df: torch.Tensor = (self._embedding_space[:,None,None] - harmonics[None,:,:]) # /harmonics[None,:,:]
-		tdf = df[:,0,2][:df.shape[1]]
-		W: torch.Tensor = torch.exp(-alpha*df**2).sum(dim=2)
-		tW = W[:,0][:W.shape[1]]
-		hfilter: torch.Tensor = matmul(spectral_projection,W)/self._embedding_space.shape[0]
-		print( f"SpectralAutocorrelationLayer: harmonics{list(harmonics.shape)} df{list(df.shape)}  spectral_projection{list(spectral_projection.shape)}  sspace{list(sspace.shape)}, hspace{list(self._embedding_space.shape)}, W{list(W.shape)}  hfilter{list(hfilter.shape)} ")
-		print(f"harmonics[0]: {harmonics[0].cpu().tolist()}")
-		return tdf # tW # hfilter
-
 	def embed(self, ts: torch.Tensor, ys: torch.Tensor, **kwargs ) -> Tensor:
-		alpha = 10.0
+		alpha = 100.0
 		print(f"SpectralAutocorrelationLayer:")
 		spectral_features: torch.Tensor = super(HarmonicsFilterLayer, self).embed( ts, ys, **kwargs)
 		spectral_projection: torch.Tensor = torch.sqrt(torch.sum(spectral_features ** 2, dim=1))
