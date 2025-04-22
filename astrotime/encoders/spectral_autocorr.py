@@ -59,7 +59,7 @@ class HarmonicsFilterLayer(OctaveAnalysisLayer):
 
 		print(f" ----- embedding_space{list(self._embedding_space.shape)}: {self._embedding_space.min():.3f} -> {self._embedding_space.max():.3f}, f0 = {f0:.3f}")
 		print(f" ----- df{list(df.shape)}: {df.min():.3f} -> {df.max():.3f}")
-		print(f" ----- W{list(W.shape)}: {W.min():.3f} -> {W.max():.3f}")
+		print(f" ----- W{list(W.shape)}: {W.min():.5f} -> {W.max():.5f}")
 
 		self.fspace, sspace = spectral_space(self.cfg, self.device)
 		# harmonics: torch.Tensor = torch.stack( [sspace*ih for ih in range(1,6)], dim=1)
@@ -70,7 +70,7 @@ class HarmonicsFilterLayer(OctaveAnalysisLayer):
 		# hfilter: torch.Tensor = matmul(spectral_projection,W)/self._embedding_space.shape[0]
 		# print( f"SpectralAutocorrelationLayer: harmonics{list(harmonics.shape)} df{list(df.shape)}  spectral_projection{list(spectral_projection.shape)}  sspace{list(sspace.shape)}, hspace{list(self._embedding_space.shape)}, W{list(W.shape)}  hfilter{list(hfilter.shape)} ")
 		# print(f"harmonics[0]: {harmonics[0].cpu().tolist()}")
-		return df[:sspace.shape[0]] # tW # hfilter
+		return W[:sspace.shape[0]] # tW # hfilter
 
 	def magnitude(self, embedding: Tensor, **kwargs) -> np.ndarray:
 		mag: np.ndarray = embedding.cpu().numpy()
