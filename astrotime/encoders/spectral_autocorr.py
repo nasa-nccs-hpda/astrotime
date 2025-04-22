@@ -45,6 +45,6 @@ class SpectralAutocorrelationLayer(OctaveAnalysisLayer):
 
 	@property
 	def xdata(self) -> np.ndarray:
-		return spectral_space(self.cfg, self.device)[0]
+		return harmonics_space(self.cfg, self.device)[0]
 
 
