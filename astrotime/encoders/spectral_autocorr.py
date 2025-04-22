@@ -68,7 +68,7 @@ class HarmonicsFilterLayer(OctaveAnalysisLayer):
 		print(f" ----- sspace{list(sspace.shape)}: {sspace.min():.5f} -> {sspace.max():.5f}")
 		print(f" ----- hfilter{list(hfilter.shape)}: {hfilter.min():.5f} -> {hfilter.max():.5f}")
 
-		return hfilter
+		return hfilter[:,:sspace.shape[0]]
 
 	def magnitude(self, embedding: Tensor, **kwargs) -> np.ndarray:
 		mag: np.ndarray = embedding.cpu().numpy()
