@@ -31,12 +31,13 @@ class HarmonicsFilterLayer(OctaveAnalysisLayer):
 
 	def __init__(self, cfg, device: device):
 		OctaveAnalysisLayer.__init__(self, cfg, harmonics_space(cfg, device)[1], device)
+		self.fspace: np.ndarray = None
 
 	def embed(self, ts: torch.Tensor, ys: torch.Tensor, **kwargs ) -> Tensor:
 		alpha = 0.01
 		spectral_features: torch.Tensor = super(HarmonicsFilterLayer, self).embed( ts, ys, **kwargs)
 		spectral_projection: torch.Tensor = torch.sqrt(torch.sum(spectral_features ** 2, dim=1))
-		sspace: torch.Tensor = spectral_space(self.cfg, self.device)[1]
+		self.fspace, sspace = spectral_space(self.cfg, self.device)
 		harmonics: torch.Tensor = torch.stack( [sspace*ih for ih in range(1,6)], dim=1)
 		df: torch.Tensor = (self._embedding_space[:,None,None] - harmonics[None,:,:])/harmonics[None,:,:]
 		W: torch.Tensor = torch.exp(-alpha*df**2).sum(dim=2)
@@ -48,8 +49,8 @@ class HarmonicsFilterLayer(OctaveAnalysisLayer):
 		mag: np.ndarray = embedding.cpu().numpy()
 		return mag.squeeze()
 
-#	@property
-#	def xdata(self) -> np.ndarray:
-#		return spectral_space(self.cfg, self.device)[0]
+	@property
+	def xdata(self) -> np.ndarray:
+		return self.fspace
 
 
