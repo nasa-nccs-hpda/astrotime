@@ -49,14 +49,14 @@ class HarmonicsFilterLayer(OctaveAnalysisLayer):
 		return tdf # tW # hfilter
 
 	def embed(self, ts: torch.Tensor, ys: torch.Tensor, **kwargs ) -> Tensor:
-		alpha = 500.0
+		alpha = 100.0
 		print(f"SpectralAutocorrelationLayer:")
 		spectral_features: torch.Tensor = super(HarmonicsFilterLayer, self).embed( ts, ys, **kwargs)
 		spectral_projection: torch.Tensor = torch.sqrt(torch.sum(spectral_features ** 2, dim=1))
 		f0 = self._embedding_space[1000]
 		harmonics: torch.Tensor = torch.Tensor( [f0 * ih for ih in range(1, 6)]).to(ts.device)
 		df = (self._embedding_space[:,None] - harmonics[None,:])/self._embedding_space[:,None]
-		W: torch.Tensor = torch.exp(-alpha * df ** 2).sum(dim=1)
+		W: torch.Tensor = torch.exp(-(alpha*df)**2).sum(dim=1)
 
 		print(f" ----- embedding_space{list(self._embedding_space.shape)}: {self._embedding_space.min():.3f} -> {self._embedding_space.max():.3f}, f0 = {f0:.3f}")
 		print(f" ----- df{list(df.shape)}: {df.min():.3f} -> {df.max():.3f}")
