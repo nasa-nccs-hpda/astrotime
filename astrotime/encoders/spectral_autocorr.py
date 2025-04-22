@@ -65,7 +65,7 @@ class HarmonicsFilterLayer(OctaveAnalysisLayer):
 		spectral_features: torch.Tensor = super(HarmonicsFilterLayer, self).embed( ts, ys, **kwargs)
 		spectral_projection: torch.Tensor = torch.sqrt(torch.sum(spectral_features ** 2, dim=1))
 		if self.f0 is None:
-			self.f0 = spectral_projection[ 100 ]
+			self.f0 = spectral_projection[ 0, 100 ]
 		# f: torch.Tensor = self._embedding_space
 		harmonics: torch.Tensor = torch.Tensor( [self.f0 * ih for ih in range(1, nharmonics+1)] ).to(self.device)
 		df = (self._embedding_space[:,None] - harmonics[None,:])
