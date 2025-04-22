@@ -2,11 +2,10 @@
 import random, time, numpy as np
 import torch, math
 from typing import List, Tuple, Mapping
-from torch import Tensor, device, nn
+from torch import Tensor, device, nn, matmul
 from omegaconf import DictConfig, OmegaConf
 from astrotime.util.math import log2space, tnorm
 from astrotime.util.logging import elapsed
-from astrotime.util.stats import autocorrelation
 from astrotime.encoders.octaves import OctaveAnalysisLayer
 
 def clamp( idx: int ) -> int: return max( 0, idx )
@@ -41,9 +40,9 @@ class HarmonicsFilterLayer(OctaveAnalysisLayer):
 		harmonics: torch.Tensor = torch.stack( [sspace*ih for ih in range(1,6)], dim=1)
 		df: torch.Tensor = (self._embedding_space[:,None,None] - harmonics[None,:,:])/harmonics[None,:,:]
 		W: torch.Tensor = torch.exp(-alpha*df**2).sum(dim=2)
-		# hfilter = W*spectral_projection[:,None]
-		print( f"SpectralAutocorrelationLayer: harmonics{list(harmonics.shape)} spectral_projection{list(spectral_projection.shape)}  sspace{list(sspace.shape)}, hspace{list(self._embedding_space.shape)}, W{list(W.shape)} ")
-		return spectral_projection
+		hfilter: torch.Tensor = matmul(W,spectral_projection)
+		print( f"SpectralAutocorrelationLayer: harmonics{list(harmonics.shape)} spectral_projection{list(spectral_projection.shape)}  sspace{list(sspace.shape)}, hspace{list(self._embedding_space.shape)}, W{list(W.shape)}  hfilter{list(hfilter.shape)} ")
+		return hfilter
 
 	def magnitude(self, embedding: Tensor, **kwargs) -> np.ndarray:
 		mag: np.ndarray = embedding.cpu().numpy()
