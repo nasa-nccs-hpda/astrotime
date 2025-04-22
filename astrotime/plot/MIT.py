@@ -226,6 +226,7 @@ class MITTransformPlot(SignalPlot):
 	@exception_handled
 	def button_press(self, event: MouseEvent) -> Any:
 		if event.inaxes == self.ax and (event.button == MouseButton.RIGHT):
+			self.log.info(f"           *** ---- MITTransformPlot.button_press: selected freq={event.xdata:.2f} mods={event.modifiers} --- ")
 			if "shift" in event.modifiers:
 				freq, period = event.xdata, 1/event.xdata
 				self.log.info(f"           *** ---- MITTransformPlot.button_press: selected freq={freq:.2f}, period={period:.2f} --- ")
@@ -238,6 +239,7 @@ class MITTransformPlot(SignalPlot):
 				self.update()
 
 	def key_press(self, event: KeyEvent) -> Any:
+		self.log.info(f"           *** ---- MITTransformPlot.key_press: selected key={event.key} event={event} --- ")
 		if event.key.startswith( 'ctrl+'):
 			for t in self.transforms.values():
 				t.process_event( id="KeyEvent", key=event.key, ax=event.inaxes )
