@@ -244,7 +244,7 @@ class MITTransformPlot(SignalPlot):
 		ts_tensors: Dict[str,Tensor] =  { k: FloatTensor(series_data.data_vars[k].values[:slen]).to(transform.device) for k in ['time','y'] }
 		transformed: Tensor = transform.embed( ts_tensors['time'][None,:], tnorm(ts_tensors['y'][None,:],dim=1) )
 		embedding: np.ndarray = transform.magnitude( transformed )
-		self.log.info( f"MITTransformPlot.apply_transform: embedding{embedding.shape} ---> min={embedding.min():.3f}, max={embedding.max():.3f}, mean={embedding.mean():.3f} ---")
+		print( f"MITTransformPlot.apply_transform: y{list(ts_tensors['y'].shape)} -> embedding{embedding.shape} ---> min={embedding.min():.3f}, max={embedding.max():.3f}, mean={embedding.mean():.3f} ---")
 		return znorm(embedding)
 
 	def update_selection_marker(self, freq ) -> float:
