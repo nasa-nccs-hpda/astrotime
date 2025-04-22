@@ -39,7 +39,7 @@ class HarmonicsFilterLayer(OctaveAnalysisLayer):
 		spectral_projection: torch.Tensor = torch.sqrt(torch.sum(spectral_features ** 2, dim=1))
 		self.fspace, sspace = spectral_space(self.cfg, self.device)
 		harmonics: torch.Tensor = torch.stack( [sspace*ih for ih in range(1,6)], dim=1)
-		df: torch.Tensor = (self._embedding_space[:,None,None] - harmonics[None,:,:])/harmonics[None,:,:]
+		df: torch.Tensor = (self._embedding_space[:,None,None] - harmonics[None,:,:]) # /harmonics[None,:,:]
 		tdf = df[:,0,2][:df.shape[1]]
 		W: torch.Tensor = torch.exp(-alpha*df**2).sum(dim=2)
 		tW = W[:,0][:W.shape[1]]
