@@ -35,7 +35,7 @@ class HarmonicsFilterLayer(OctaveAnalysisLayer):
 		self.f0 = None
 
 	def embed1(self, ts: torch.Tensor, ys: torch.Tensor, **kwargs ) -> Tensor:
-		alpha = 100.0
+		alpha = 500.0
 		nharmonics = 6
 		if self.f0 is None: self.f0 = ts[0].item()
 		print(f"SpectralAutocorrelationLayer:")
