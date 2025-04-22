@@ -67,14 +67,16 @@ class HarmonicsFilterLayer(OctaveAnalysisLayer):
 		if self.f0 is None:
 			self.f0 = spectral_projection[ 0, 100 ]
 		# f: torch.Tensor = self._embedding_space
-		harmonics: torch.Tensor = torch.Tensor( [self.f0 * ih for ih in range(1, nharmonics+1)] ).to(self.device)
+		fh = [self.f0 * ih for ih in range(1, nharmonics+1)]
+		harmonics: torch.Tensor = torch.Tensor(fh).to(self.device)
 		df = (self._embedding_space[:,None] - harmonics[None,:])
 		W: torch.Tensor = torch.exp(-(df*alpha)**2).sum(dim=1)
 		self.fspace, sspace = spectral_space(self.cfg, self.device)
 		hfilter: torch.Tensor = matmul(spectral_projection, W) / self._embedding_space.shape[0]
 		rv = W[:sspace.shape[0]]
 
-		self.log.info(f" ----- embedding_space{list(self._embedding_space.shape)}: {self._embedding_space.min():.3f} -> {self._embedding_space.max():.3f}")
+		self.log.info(f" ----- f0={self.f0:.3f}, embedding_space{list(self._embedding_space.shape)}: {self._embedding_space.min():.3f} -> {self._embedding_space.max():.3f}")
+		self.log.info(f" ----- fh: {fh}")
 		self.log.info(f" ----- df{list(df.shape)}: {df.min():.3f} -> {df.max():.3f}")
 		self.log.info(f" ----- W{list(W.shape)}: {W.min():.5f} -> {W.max():.5f}")
 		self.log.info(f" ----- spectral_projection{list(spectral_projection.shape)}: {spectral_projection.min():.5f} -> {spectral_projection.max():.5f}")
