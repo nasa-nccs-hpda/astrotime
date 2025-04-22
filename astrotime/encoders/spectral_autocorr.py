@@ -55,6 +55,8 @@ class HarmonicsFilterLayer(OctaveAnalysisLayer):
 		f0 = self._embedding_space[100]
 		df = self._embedding_space - f0
 
+		print(f"SpectralAutocorrelationLayer: embedding_space{list(self._embedding_space.shape)}: {self._embedding_space.min()} -> {self._embedding_space.max()}, f0 = {f0}")
+
 		self.fspace, sspace = spectral_space(self.cfg, self.device)
 		# harmonics: torch.Tensor = torch.stack( [sspace*ih for ih in range(1,6)], dim=1)
 		# df: torch.Tensor = (self._embedding_space[:,None,None] - harmonics[None,:,:]) # /harmonics[None,:,:]
