@@ -72,7 +72,7 @@ class HarmonicsFilterLayer(OctaveAnalysisLayer):
 		self.fspace, sspace = spectral_space(self.cfg, self.device)
 		hfilter: torch.Tensor = matmul(spectral_projection,W) / self._embedding_space.shape[0]
 
-		self.log.info(f" ----- f0={self.f0:.3f}, embedding_space{list(self._embedding_space.shape)}: {self._embedding_space.min():.3f} -> {self._embedding_space.max():.3f}")
+		self.log.info(f" ----- embedding_space{list(self._embedding_space.shape)}: {self._embedding_space.min():.3f} -> {self._embedding_space.max():.3f}")
 		self.log.info(f" ----- fh: {fh}")
 		self.log.info(f" ----- df{list(df.shape)}: {df.min():.3f} -> {df.max():.3f}")
 		self.log.info(f" ----- W{list(W.shape)}: {W.min():.5f} -> {W.max():.5f}")
