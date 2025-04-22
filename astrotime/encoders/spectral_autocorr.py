@@ -32,10 +32,12 @@ class HarmonicsFilterLayer(OctaveAnalysisLayer):
 	def __init__(self, cfg, device: device):
 		OctaveAnalysisLayer.__init__(self, cfg, harmonics_space(cfg, device)[1], device)
 		self.fspace: np.ndarray = None
+		self.f0 = None
 
-	def embed(self, ts: torch.Tensor, ys: torch.Tensor, **kwargs ) -> Tensor:
+	def embed1(self, ts: torch.Tensor, ys: torch.Tensor, **kwargs ) -> Tensor:
 		alpha = 100.0
-		nharmonics = 8
+		nharmonics = 6
+		if self.f0 is None: self.f0 = ts[0].item()
 		print(f"SpectralAutocorrelationLayer:")
 		spectral_features: torch.Tensor = super(HarmonicsFilterLayer, self).embed( ts, ys, **kwargs)
 		spectral_projection: torch.Tensor = torch.sqrt(torch.sum(spectral_features ** 2, dim=1))
@@ -55,6 +57,36 @@ class HarmonicsFilterLayer(OctaveAnalysisLayer):
 		# print(f" ----- hfilter{list(hfilter.shape)}: {hfilter.min():.5f} -> {hfilter.max():.5f}")
 
 		return hfilter[:,:sspace.shape[0]]
+
+	def embed(self, ts: torch.Tensor, ys: torch.Tensor, **kwargs ) -> Tensor:
+		alpha = 100.0
+		nharmonics = 6
+		print(f"SpectralAutocorrelationLayer:")
+		spectral_features: torch.Tensor = super(HarmonicsFilterLayer, self).embed( ts, ys, **kwargs)
+		spectral_projection: torch.Tensor = torch.sqrt(torch.sum(spectral_features ** 2, dim=1))
+		if self.f0 is None:
+			self.f0 = spectral_projection[ 100 ]
+		# f: torch.Tensor = self._embedding_space
+		harmonics: torch.Tensor = torch.Tensor( [self.f0 * ih for ih in range(1, nharmonics+1)] ).to(self.device)
+		df = (self._embedding_space[:,None] - harmonics[None,:])
+		W: torch.Tensor = torch.exp(-(df*alpha)**2).sum(dim=1)
+		self.fspace, sspace = spectral_space(self.cfg, self.device)
+		hfilter: torch.Tensor = matmul(spectral_projection, W) / self._embedding_space.shape[0]
+
+		# print(f" ----- embedding_space{list(self._embedding_space.shape)}: {self._embedding_space.min():.3f} -> {self._embedding_space.max():.3f}")
+		# print(f" ----- df{list(df.shape)}: {df.min():.3f} -> {df.max():.3f}")
+		# print(f" ----- W{list(W.shape)}: {W.min():.5f} -> {W.max():.5f}")
+		# print(f" ----- spectral_projection{list(spectral_projection.shape)}: {spectral_projection.min():.5f} -> {spectral_projection.max():.5f}")
+		# #print(f" ----- f{list(f.shape)}: {f.min():.5f} -> {f.max():.5f}")
+		# print(f" ----- sspace{list(sspace.shape)}: {sspace.min():.5f} -> {sspace.max():.5f}")
+		# print(f" ----- hfilter{list(hfilter.shape)}: {hfilter.min():.5f} -> {hfilter.max():.5f}")
+
+		return W[:sspace.shape[0]]
+
+#	"crtl-mouse-press", x = event.xdata, y = event.ydata, ax = event.inaxes
+	def process_event(self, **kwargs ):
+		if kwargs["id"] == "crtl-mouse-press":
+			self.f0 = kwargs["x"]
 
 	def magnitude(self, embedding: Tensor, **kwargs) -> np.ndarray:
 		mag: np.ndarray = embedding.cpu().numpy()

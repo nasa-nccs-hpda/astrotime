@@ -225,12 +225,17 @@ class MITTransformPlot(SignalPlot):
 
 	@exception_handled
 	def button_press(self, event: MouseEvent) -> Any:
-		if ("shift" in event.modifiers) and (event.button == MouseButton.RIGHT) and(event.inaxes == self.ax):
-			freq, period = event.xdata, 1/event.xdata
-			self.log.info(f"           *** ---- MITTransformPlot.button_press: selected freq={freq:.2f}, period={period:.2f} --- ")
-			self.ax.title.set_text(f"{self.name}: TP={period:.3f} (F={freq:.3f})")
-			self.selection_marker.set_xdata([freq, freq])
-			self.process_event( id="period-update", period=period, ax=str(id(self.ax)), color=self.colors[0] )
+		if event.inaxes == self.ax and (event.button == MouseButton.RIGHT):
+			if "shift" in event.modifiers:
+				freq, period = event.xdata, 1/event.xdata
+				self.log.info(f"           *** ---- MITTransformPlot.button_press: selected freq={freq:.2f}, period={period:.2f} --- ")
+				self.ax.title.set_text(f"{self.name}: TP={period:.3f} (F={freq:.3f})")
+				self.selection_marker.set_xdata([freq, freq])
+				self.process_event( id="period-update", period=period, ax=str(id(self.ax)), color=self.colors[0] )
+			elif "crtl" in event.modifiers:
+				for t in self.transforms.values():
+					t.process_event( id="crtl-mouse-press", x=event.xdata, y=event.ydata, ax=event.inaxes )
+				self.update()
 
 	def key_press(self, event: KeyEvent) -> Any:
 		if event.key.startswith( 'ctrl+'):
