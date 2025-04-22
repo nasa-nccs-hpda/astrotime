@@ -221,7 +221,7 @@ class MITTransformPlot(SignalPlot):
 		self.ax.set_xscale('log')
 		self.ax.xaxis.set_major_formatter(ticker.StrMethodFormatter("{x:.2f}"))
 		self.ax.xaxis.set_major_locator(ticker.LogLocator(base=2, numticks=8))
-		self.ax.legend(loc="upper left")
+		self.ax.legend(loc="upper right", fontsize=8)
 
 	@exception_handled
 	def button_press(self, event: MouseEvent) -> Any:
