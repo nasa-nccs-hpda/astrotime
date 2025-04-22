@@ -78,7 +78,7 @@ class HarmonicsFilterLayer(OctaveAnalysisLayer):
 		self.log.info(f" ----- W{list(W.shape)}: {W.min():.5f} -> {W.max():.5f}")
 		self.log.info(f" ----- spectral_projection{list(spectral_projection.shape)}: {spectral_projection.min():.5f} -> {spectral_projection.max():.5f}")
 
-		return hfilter
+		return hfilter[:,:sspace.shape[0]]
 
 #	"crtl-mouse-press", x = event.xdata, y = event.ydata, ax = event.inaxes
 	def process_event(self, **kwargs ):
