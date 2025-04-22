@@ -41,9 +41,10 @@ class HarmonicsFilterLayer(OctaveAnalysisLayer):
 		harmonics: torch.Tensor = torch.stack( [sspace*ih for ih in range(1,6)], dim=1)
 		df: torch.Tensor = (self._embedding_space[:,None,None] - harmonics[None,:,:])/harmonics[None,:,:]
 		W: torch.Tensor = torch.exp(-alpha*df**2).sum(dim=2)
+		tW = W[:,0][:W.shape[1]]
 		hfilter: torch.Tensor = matmul(spectral_projection,W)/self._embedding_space.shape[0]
 		print( f"SpectralAutocorrelationLayer: harmonics{list(harmonics.shape)} spectral_projection{list(spectral_projection.shape)}  sspace{list(sspace.shape)}, hspace{list(self._embedding_space.shape)}, W{list(W.shape)}  hfilter{list(hfilter.shape)} ")
-		return hfilter
+		return tW # hfilter
 
 	def magnitude(self, embedding: Tensor, **kwargs) -> np.ndarray:
 		mag: np.ndarray = embedding.cpu().numpy()
