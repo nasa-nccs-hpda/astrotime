@@ -61,7 +61,7 @@ class HarmonicsFilterLayer(OctaveAnalysisLayer):
 
 		return hfilter[:,:sspace.shape[0]]
 
-	def embed1(self, ts: torch.Tensor, ys: torch.Tensor, **kwargs ) -> Tensor:
+	def embed11(self, ts: torch.Tensor, ys: torch.Tensor, **kwargs ) -> Tensor:
 		alpha = 200.0
 		nharmonics = 6
 		self.log.info(f"SpectralAutocorrelationLayer:")
@@ -105,7 +105,7 @@ class HarmonicsFilterLayer(OctaveAnalysisLayer):
 
 		return hfilter[:,:sspace.shape[0]]
 
-	def get_harmonic_weights(self, f ):
+	def get_harmonic_weights1(self, f ) -> torch.Tensor:
 		hw = []
 		for ih in range(1, self.nharmonics + 1):
 			df: torch.Tensor = self.alpha*(self._embedding_space-f*ih)/f
@@ -113,7 +113,15 @@ class HarmonicsFilterLayer(OctaveAnalysisLayer):
 		W = torch.stack(hw,dim=1).sum(dim=1)
 		return W
 
+	def get_harmonic_weights(self, f ):
+		espace: torch.Tensor = self._embedding_space[:,None]
+		harmonics =  torch.FloatTensor( [f * ih for ih in range(1, self.nharmonics+1)] ).to(self.device)
+		df = self.alpha*(espace - harmonics[None,:])/espace
+		W: torch.Tensor = torch.exp(-df**2).sum(dim=1)
+		return W
+
 	def embed0(self, ts: torch.Tensor, ys: torch.Tensor, **kwargs ) -> Tensor:
+
 		self.log.info(f"SpectralAutocorrelationLayer:")
 		spectral_features: torch.Tensor = super(HarmonicsFilterLayer, self).embed( ts, ys, **kwargs)
 		spectral_projection: torch.Tensor = torch.sqrt(torch.sum(spectral_features ** 2, dim=1)).squeeze()
@@ -131,7 +139,7 @@ class HarmonicsFilterLayer(OctaveAnalysisLayer):
 		if self.fspace is None:
 			self.fspace, self.ftspace = spectral_space(self.cfg, self.device)
 		f = self.fspace[ self.fspace.shape[0] // 2 ]
-		W = self.get_harmonic_weights(f)
+		W: torch.Tensor = self.get_harmonic_weights(f)
 		return W[:self.fspace.shape[0]]
 
 #	"crtl-mouse-press", x = event.xdata, y = event.ydata, ax = event.inaxes
