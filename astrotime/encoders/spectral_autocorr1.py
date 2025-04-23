@@ -113,15 +113,20 @@ class HarmonicsFilterLayer(OctaveAnalysisLayer):
 		W = torch.stack(hw,dim=1).sum(dim=1)
 		return W
 
-	def get_harmonic_weights(self, f ):
-		espace: torch.Tensor = self._embedding_space[:,None]
-		harmonics =  torch.FloatTensor( [f * ih for ih in range(1, self.nharmonics+1)] ).to(self.device)
-		df = self.alpha*(espace - harmonics[None,:])/espace
+	def gaussian_harmonics(self, espace: torch.Tensor, harmonics: torch.Tensor ) -> torch.Tensor:
+		df = self.alpha*(espace-harmonics[None,:])/espace
 		W: torch.Tensor = torch.exp(-df**2).sum(dim=1)
 		return W
 
-	def embed(self, ts: torch.Tensor, ys: torch.Tensor, **kwargs ) -> Tensor:
+	def get_harmonic_weights(self, f ):
+		espace: torch.Tensor = self._embedding_space[:,None]
+		forward_harmonics =  torch.FloatTensor( [f * ih for ih in range(1, self.nharmonics+1)] ).to(self.device)
+		W1: torch.Tensor = self.gaussian_harmonics(espace, forward_harmonics )
+		backward_harmonics =  torch.FloatTensor( [f/ih for ih in range(1, self.nharmonics+1)] ).to(self.device)
+		W2: torch.Tensor = self.gaussian_harmonics(espace, backward_harmonics)
+		return W1 # - W2
 
+	def embed(self, ts: torch.Tensor, ys: torch.Tensor, **kwargs ) -> Tensor:
 		self.log.info(f"SpectralAutocorrelationLayer:")
 		spectral_features: torch.Tensor = super(HarmonicsFilterLayer, self).embed( ts, ys, **kwargs)
 		spectral_projection: torch.Tensor = torch.sqrt(torch.sum(spectral_features ** 2, dim=1)).squeeze()
@@ -129,19 +134,20 @@ class HarmonicsFilterLayer(OctaveAnalysisLayer):
 		self.fspace, sspace = spectral_space(self.cfg, self.device)
 		hfilter = []
 		for f in self.fspace:
-			W = self.get_harmonic_weights(f)
-			hfilter.append( torch.dot(W,spectral_projection) )
+			W = self.get_harmonic_weights1(f)
+			hfilter.append( torch.dot(W,espace) )
 		return torch.FloatTensor(hfilter).to(self.device)
 
 	def embed0(self, ts: torch.Tensor, ys: torch.Tensor, **kwargs ) -> Tensor:
 		self.log.info(f"SpectralAutocorrelationLayer:")
 		spectral_features: torch.Tensor = super(HarmonicsFilterLayer, self).embed( ts, ys, **kwargs)
-		if self.fspace is None:
-			self.fspace, self.ftspace = spectral_space(self.cfg, self.device)
-		f = self.fspace[ self.fspace.shape[0] // 2 ]
-		W: torch.Tensor = self.get_harmonic_weights(f)
-		return W[:self.fspace.shape[0]]
-
+		spectral_projection: torch.Tensor = torch.sqrt(torch.sum(spectral_features ** 2, dim=1)).squeeze()
+		espace: torch.Tensor = self._embedding_space
+		self.fspace, sspace = spectral_space(self.cfg, self.device)
+		hfilter = []
+		f = self.fspace[self.fspace.shape[0]//2]
+		W = self.get_harmonic_weights(f)
+		return W[:sspace.shape[0]]
 
 #	"crtl-mouse-press", x = event.xdata, y = event.ydata, ax = event.inaxes
 	def process_event(self, **kwargs ):
