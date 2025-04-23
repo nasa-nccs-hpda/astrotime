@@ -147,7 +147,7 @@ class HarmonicsFilterLayer(OctaveAnalysisLayer):
 		hfilter = []
 		f = self.fspace[self.fspace.shape[0]//2]
 		W = self.get_harmonic_weights(f)
-		return W
+		return W[:sspace.shape[0]]
 
 #	"crtl-mouse-press", x = event.xdata, y = event.ydata, ax = event.inaxes
 	def process_event(self, **kwargs ):
