@@ -58,7 +58,7 @@ class HarmonicsFilterLayer(OctaveAnalysisLayer):
 
 		return hfilter[:,:sspace.shape[0]]
 
-	def embed(self, ts: torch.Tensor, ys: torch.Tensor, **kwargs ) -> Tensor:
+	def embed1(self, ts: torch.Tensor, ys: torch.Tensor, **kwargs ) -> Tensor:
 		alpha = 200.0
 		nharmonics = 6
 		self.log.info(f"SpectralAutocorrelationLayer:")
@@ -68,7 +68,7 @@ class HarmonicsFilterLayer(OctaveAnalysisLayer):
 		fh = [f * ih for ih in range(1, nharmonics+1)]
 		harmonics: torch.Tensor = torch.stack(fh,dim=1)
 		df = (self._embedding_space[None,:,None] - harmonics[:,None,:])
-		W: torch.Tensor = torch.exp(-(df*alpha)**2).sum(dim=2)
+		W: torch.Tensor = torch.exp(-(df*alpha)**2/self._embedding_space[None,:,None]).sum(dim=2)
 		self.fspace, sspace = spectral_space(self.cfg, self.device)
 		hfilter: torch.Tensor = matmul(spectral_projection,W) / self._embedding_space.shape[0]
 
@@ -79,6 +79,24 @@ class HarmonicsFilterLayer(OctaveAnalysisLayer):
 		self.log.info(f" ----- spectral_projection{list(spectral_projection.shape)}: {spectral_projection.min():.5f} -> {spectral_projection.max():.5f}")
 
 		return hfilter[:,:sspace.shape[0]]
+
+	def embed(self, ts: torch.Tensor, ys: torch.Tensor, **kwargs ) -> Tensor:
+		alpha = 200.0
+		nharmonics = 6
+		self.log.info(f"SpectralAutocorrelationLayer:")
+		spectral_features: torch.Tensor = super(HarmonicsFilterLayer, self).embed( ts, ys, **kwargs)
+		spectral_projection: torch.Tensor = torch.sqrt(torch.sum(spectral_features ** 2, dim=1))
+		espace: torch.Tensor = self._embedding_space
+		self.fspace, sspace = spectral_space(self.cfg, self.device)
+		hfilter = []
+		for f in self.fspace:
+			hw = []
+			for ih in range(1, nharmonics + 1):
+				df: torch.Tensor = espace - f*ih
+				hw.append( torch.exp(-(df*alpha)**2 ) )
+			W = torch.stack(hw,dim=1).sum(dim=1)
+			hfilter.append( W*spectral_projection )
+		return torch.Tensor(hfilter).to(self.device)
 
 #	"crtl-mouse-press", x = event.xdata, y = event.ydata, ax = event.inaxes
 	def process_event(self, **kwargs ):
