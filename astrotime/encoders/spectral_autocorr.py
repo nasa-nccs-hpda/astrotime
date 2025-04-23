@@ -102,6 +102,11 @@ class HarmonicsFilterLayer(OctaveAnalysisLayer):
 
 		return hfilter[:,:sspace.shape[0]]
 
+	def gaussian_harmonics(self, espace: torch.Tensor, harmonics: torch.Tensor ) -> torch.Tensor:
+		df = self.alpha*(espace-harmonics[None,:])/espace
+		W: torch.Tensor = torch.exp(-df**2).sum(dim=1)
+		return W
+
 	def embed(self, ts: torch.Tensor, ys: torch.Tensor, **kwargs ) -> Tensor:
 		alpha = 200.0
 		nharmonics = 6
@@ -112,11 +117,8 @@ class HarmonicsFilterLayer(OctaveAnalysisLayer):
 		self.fspace, sspace = spectral_space(self.cfg, self.device)
 		hfilter = []
 		for f in self.fspace:
-			hw = []
-			for ih in range(1, nharmonics + 1):
-				df: torch.Tensor = alpha*(espace-f*ih)/f
-				hw.append( torch.exp(-df**2 ) )
-			W = torch.stack(hw,dim=1).sum(dim=1)
+			forward_harmonics = torch.FloatTensor([f * ih for ih in range(1, self.nharmonics + 1)]).to(self.device)
+			W = self.gaussian_harmonics( espace, forward_harmonics )
 			hfilter.append( torch.dot(W,spectral_projection) )
 		return torch.FloatTensor(hfilter).to(self.device) / espace.shape[0]
 
