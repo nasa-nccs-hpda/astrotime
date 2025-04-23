@@ -134,7 +134,7 @@ class HarmonicsFilterLayer(OctaveAnalysisLayer):
 		self.fspace, sspace = spectral_space(self.cfg, self.device)
 		hfilter = []
 		for f in self.fspace:
-			W = self.get_harmonic_weights(f)
+			W = self.get_harmonic_weights1(f)
 			hfilter.append( torch.dot(W,espace) )
 		return torch.FloatTensor(hfilter).to(self.device)
 
