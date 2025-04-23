@@ -33,6 +33,8 @@ class HarmonicsFilterLayer(OctaveAnalysisLayer):
 		OctaveAnalysisLayer.__init__(self, cfg, harmonics_space(cfg, device)[1], device)
 		self.fspace: np.ndarray = None
 		self.f0 = None
+		self.alpha = 200.0
+		self.nharmonics = 6
 
 	def embed1(self, ts: torch.Tensor, ys: torch.Tensor, **kwargs ) -> Tensor:
 		alpha = 500.0
@@ -108,8 +110,7 @@ class HarmonicsFilterLayer(OctaveAnalysisLayer):
 		return W
 
 	def embed(self, ts: torch.Tensor, ys: torch.Tensor, **kwargs ) -> Tensor:
-		alpha = 200.0
-		nharmonics = 6
+
 		self.log.info(f"SpectralAutocorrelationLayer:")
 		spectral_features: torch.Tensor = super(HarmonicsFilterLayer, self).embed( ts, ys, **kwargs)
 		spectral_projection: torch.Tensor = torch.sqrt(torch.sum(spectral_features ** 2, dim=1)).squeeze()
