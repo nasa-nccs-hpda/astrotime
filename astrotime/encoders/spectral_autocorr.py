@@ -134,8 +134,8 @@ class HarmonicsFilterLayer(OctaveAnalysisLayer):
 			for ih in range(1, self.nharmonics + 1):
 				df: torch.Tensor = self.alpha*(espace-f*ih)/f
 				hw.append( torch.exp(-df**2 ) )
-			# df: torch.Tensor = self.alpha * (espace-f/2)/f
-			# hw.append( -torch.exp(-df**2) )
+			df: torch.Tensor = self.alpha * (espace-f/2)/f
+			hw.append( -torch.exp(-df**2) )
 			W = torch.stack(hw,dim=1).sum(dim=1)
 			hfilter.append( torch.dot(W,spectral_projection) )
 		return torch.FloatTensor(hfilter).to(self.device) / espace.shape[0]
