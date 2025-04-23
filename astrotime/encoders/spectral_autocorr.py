@@ -135,7 +135,7 @@ class HarmonicsFilterLayer(OctaveAnalysisLayer):
 			df: torch.Tensor = alpha*(espace-f*ih)/f
 			hw.append( torch.exp(-df**2 ) )
 		W = torch.stack(hw,dim=1).sum(dim=1)
-		return W
+		return W[:self.fspace.shape[0]]
 
 #	"crtl-mouse-press", x = event.xdata, y = event.ydata, ax = event.inaxes
 	def process_event(self, **kwargs ):
