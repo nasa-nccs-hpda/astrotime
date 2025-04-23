@@ -96,7 +96,7 @@ class HarmonicsFilterLayer(OctaveAnalysisLayer):
 				hw.append( torch.exp(-(df*alpha)**2 ) )
 			W = torch.stack(hw,dim=1).sum(dim=1)
 			hfilter.append( W*spectral_projection )
-		return torch.Tensor( np.array(hfilter) ).to(self.device)
+		return hfilter
 
 #	"crtl-mouse-press", x = event.xdata, y = event.ydata, ax = event.inaxes
 	def process_event(self, **kwargs ):
