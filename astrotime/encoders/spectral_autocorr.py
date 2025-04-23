@@ -145,7 +145,7 @@ class HarmonicsFilterLayer(OctaveAnalysisLayer):
 		espace: torch.Tensor = self._embedding_space
 		self.fspace, sspace = spectral_space(self.cfg, self.device)
 		hfilter = []
-		f = self.fspace[self.fspace.shape[0//2]]
+		f = self.fspace[self.fspace.shape[0]//2]
 		W = self.get_harmonic_weights(f)
 		return W
 
