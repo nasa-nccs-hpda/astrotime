@@ -47,7 +47,7 @@ class OctaveAnalysisLayer(EmbeddingLayer):
 		if (kwargs["id"] == "KeyEvent") and (kwargs["key"] == "ctrl+o"):
 			self.fold = not self.fold
 
-	def embed(self, ts: torch.Tensor, ys: torch.Tensor, **kwargs ) -> Tensor:
+	def embed(self, ts: torch.Tensor, ys: torch.Tensor, **kwargs) -> Tensor:
 		t0 = time.time()
 		self.init_log(f"WaveletAnalysisLayer shapes: ts{list(ts.shape)} ys{list(ys.shape)}")
 		slen: int = self.series_length if (self.series_length > 0) else ys.shape[1]

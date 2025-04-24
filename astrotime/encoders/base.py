@@ -1,9 +1,27 @@
 from typing import List, Tuple, Mapping
-import logging, numpy as np
+import logging, torch, numpy as np
 from omegaconf import DictConfig
 from torch import Tensor, device
 from astrotime.trainers.filters import TrainingFilter
 from astrotime.trainers.filters import RandomDownsample
+
+class Transform(torch.nn.Module):
+
+	def __init__(self, cfg, device: device):
+		torch.nn.Module.__init__(self)
+		self.requires_grad_(False)
+		self.device = device
+		self.cfg = cfg
+		self.log = logging.getLogger()
+
+	def process_event(self, **kwargs ):
+		pass
+
+	def embed(self, xs: Tensor, ys: Tensor) -> Tensor:
+		raise NotImplementedError("EmbeddingLayer.embed() not implemented")
+
+	def magnitude(self, embedding: Tensor) -> np.ndarray:
+		raise NotImplementedError("EmbeddingLayer.embed() not implemented")
 
 class Encoder:
 

@@ -36,126 +36,39 @@ class HarmonicsFilterLayer(OctaveAnalysisLayer):
 		self.alpha = 200.0
 		self.nharmonics = 6
 
-	def embed1(self, ts: torch.Tensor, ys: torch.Tensor, **kwargs ) -> Tensor:
-		alpha = 500.0
-		nharmonics = 6
-		if self.f0 is None: self.f0 = ts[0].item()
-		print(f"SpectralAutocorrelationLayer:")
-		spectral_features: torch.Tensor = super(HarmonicsFilterLayer, self).embed( ts, ys, **kwargs)
-		spectral_projection: torch.Tensor = torch.sqrt(torch.sum(spectral_features ** 2, dim=1))
-		f: torch.Tensor = self._embedding_space
-		harmonics: torch.Tensor = torch.stack( [f * ih for ih in range(1, nharmonics+1)], dim=1)
-		df = (self._embedding_space[:,None,None] - harmonics[None,:,:])/self._embedding_space[:,None]
-		W: torch.Tensor = torch.exp(-(df*alpha)**2).sum(dim=2)
-		self.fspace, sspace = spectral_space(self.cfg, self.device)
-		hfilter: torch.Tensor = matmul(spectral_projection, W) / self._embedding_space.shape[0]
-
-		# print(f" ----- embedding_space{list(self._embedding_space.shape)}: {self._embedding_space.min():.3f} -> {self._embedding_space.max():.3f}")
-		# print(f" ----- df{list(df.shape)}: {df.min():.3f} -> {df.max():.3f}")
-		# print(f" ----- W{list(W.shape)}: {W.min():.5f} -> {W.max():.5f}")
-		# print(f" ----- spectral_projection{list(spectral_projection.shape)}: {spectral_projection.min():.5f} -> {spectral_projection.max():.5f}")
-		# print(f" ----- f{list(f.shape)}: {f.min():.5f} -> {f.max():.5f}")
-		# print(f" ----- sspace{list(sspace.shape)}: {sspace.min():.5f} -> {sspace.max():.5f}")
-		# print(f" ----- hfilter{list(hfilter.shape)}: {hfilter.min():.5f} -> {hfilter.max():.5f}")
-
-		return hfilter[:,:sspace.shape[0]]
-
-	def embed1(self, ts: torch.Tensor, ys: torch.Tensor, **kwargs ) -> Tensor:
-		alpha = 200.0
-		nharmonics = 6
-		self.log.info(f"SpectralAutocorrelationLayer:")
-		spectral_features: torch.Tensor = super(HarmonicsFilterLayer, self).embed( ts, ys, **kwargs)
-		spectral_projection: torch.Tensor = torch.sqrt(torch.sum(spectral_features ** 2, dim=1))
-		f: torch.Tensor = self._embedding_space
-		fh = [f * ih for ih in range(1, nharmonics+1)]
-		harmonics: torch.Tensor = torch.stack(fh,dim=1)
-		df = (self._embedding_space[None,:,None] - harmonics[:,None,:])
-		W: torch.Tensor = torch.exp(-(df*alpha)**2/self._embedding_space[None,:,None]).sum(dim=2)
-		self.fspace, sspace = spectral_space(self.cfg, self.device)
-		hfilter: torch.Tensor = matmul(spectral_projection,W) / self._embedding_space.shape[0]
-
-		self.log.info(f" ----- embedding_space{list(self._embedding_space.shape)}: {self._embedding_space.min():.3f} -> {self._embedding_space.max():.3f}")
-		self.log.info(f" ----- fh: {fh}")
-		self.log.info(f" ----- df{list(df.shape)}: {df.min():.3f} -> {df.max():.3f}")
-		self.log.info(f" ----- W{list(W.shape)}: {W.min():.5f} -> {W.max():.5f}")
-		self.log.info(f" ----- spectral_projection{list(spectral_projection.shape)}: {spectral_projection.min():.5f} -> {spectral_projection.max():.5f}")
-
-		return hfilter[:,:sspace.shape[0]]
-
-	def embed2(self, ts: torch.Tensor, ys: torch.Tensor, **kwargs ) -> Tensor:
-		alpha = 200.0
-		nharmonics = 6
-		self.log.info(f"SpectralAutocorrelationLayer:")
-		spectral_features: torch.Tensor = super(HarmonicsFilterLayer, self).embed( ts, ys, **kwargs)
-		spectral_projection: torch.Tensor = torch.sqrt(torch.sum(spectral_features ** 2, dim=1))
-		f: torch.Tensor = self._embedding_space
-		fh = [f * ih for ih in range(1, nharmonics+1)]
-		harmonics: torch.Tensor = torch.stack(fh,dim=1)
-		df = (self._embedding_space[None,:,None] - harmonics[:,None,:])
-		W: torch.Tensor = torch.exp(-(df*alpha)**2).sum(dim=2)
-		self.fspace, sspace = spectral_space(self.cfg, self.device)
-		hfilter: torch.Tensor = matmul(spectral_projection,W) / self._embedding_space.shape[0]
-
-		self.log.info(f" ----- embedding_space{list(self._embedding_space.shape)}: {self._embedding_space.min():.3f} -> {self._embedding_space.max():.3f}")
-		self.log.info(f" ----- fh: {fh}")
-		self.log.info(f" ----- df{list(df.shape)}: {df.min():.3f} -> {df.max():.3f}")
-		self.log.info(f" ----- W{list(W.shape)}: {W.min():.5f} -> {W.max():.5f}")
-		self.log.info(f" ----- spectral_projection{list(spectral_projection.shape)}: {spectral_projection.min():.5f} -> {spectral_projection.max():.5f}")
-
-		return hfilter[:,:sspace.shape[0]]
-
-	def gaussian_harmonics(self, espace: torch.Tensor, f: float ) -> torch.Tensor:
+	def gaussian_harmonics0(self, f: float ) -> torch.Tensor:
+		espace: torch.Tensor = self._embedding_space[:,None]
 		harmonics = torch.FloatTensor([f * ih for ih in range(1, self.nharmonics + 1)]).to(self.device)
 		df = self.alpha*(espace-harmonics)/f
 		W: torch.Tensor = torch.exp(-df**2).sum(dim=1)
 		return W
 
-	def embed(self, ts: torch.Tensor, ys: torch.Tensor, **kwargs ) -> Tensor:
+	def gaussian_harmonics1(self, f: torch.Tensor ) -> torch.Tensor:
+		espace: torch.Tensor = self._embedding_space
+		harmonics = torch.stack([f * ih for ih in range(1, self.nharmonics + 1)])
+		df = self.alpha*(espace-harmonics)/f
+		W: torch.Tensor = torch.exp(-df**2).sum(dim=1)
+		return W
+
+	def embed1(self, ts: torch.Tensor, ys: torch.Tensor, **kwargs ) -> Tensor:
 		self.log.info(f"SpectralAutocorrelationLayer:")
 		spectral_features: torch.Tensor = super(HarmonicsFilterLayer, self).embed( ts, ys, **kwargs)
 		spectral_projection: torch.Tensor = torch.sqrt(torch.sum(spectral_features ** 2, dim=1)).squeeze()
-		espace: torch.Tensor = self._embedding_space
+		self.fspace, sspace = spectral_space(self.cfg, self.device)
+		W = self.gaussian_harmonics1( sspace )
+		hfilter = torch.dot(W,spectral_projection)
+		return hfilter[:self.fspace.shape[0]]
+
+	def embed(self, ts: torch.Tensor, ys: torch.Tensor, **kwargs) -> Tensor:
+		self.log.info(f"SpectralAutocorrelationLayer:")
+		spectral_features: torch.Tensor = super(HarmonicsFilterLayer, self).embed( ts, ys, **kwargs)
+		spectral_projection: torch.Tensor = torch.sqrt(torch.sum(spectral_features ** 2, dim=1)).squeeze()
 		self.fspace, sspace = spectral_space(self.cfg, self.device)
 		hfilter = []
 		for f in self.fspace:
-			W = self.gaussian_harmonics( espace[:,None], f )
+			W = self.gaussian_harmonics0( f )
 			hfilter.append( torch.dot(W,spectral_projection) )
 		return torch.FloatTensor(hfilter[:self.fspace.shape[0]]).to(self.device)
-
-	def embed00(self, ts: torch.Tensor, ys: torch.Tensor, **kwargs ) -> Tensor:
-		self.log.info(f"SpectralAutocorrelationLayer:")
-		spectral_features: torch.Tensor = super(HarmonicsFilterLayer, self).embed( ts, ys, **kwargs)
-		spectral_projection: torch.Tensor = torch.sqrt(torch.sum(spectral_features ** 2, dim=1)).squeeze()
-		espace: torch.Tensor = self._embedding_space
-		self.fspace, sspace = spectral_space(self.cfg, self.device)
-		hfilter = []
-		for f in self.fspace:
-			hw = []
-			for ih in range(1, self.nharmonics + 1):
-				df: torch.Tensor = self.alpha*(espace-f*ih)/f
-				hw.append( torch.exp(-df**2 ) )
-			df: torch.Tensor = 2 * self.alpha * (espace-f/2)/f
-			hw.append( -torch.exp(-df**2) )
-			W = torch.stack(hw,dim=1).sum(dim=1)
-			hfilter.append( torch.dot(W,spectral_projection) )
-		return torch.FloatTensor(hfilter).to(self.device) / espace.shape[0]
-
-	def embed0(self, ts: torch.Tensor, ys: torch.Tensor, **kwargs ) -> Tensor:
-		alpha = 200.0
-		nharmonics = 6
-		self.log.info(f"SpectralAutocorrelationLayer:")
-		spectral_features: torch.Tensor = super(HarmonicsFilterLayer, self).embed( ts, ys, **kwargs)
-		spectral_projection: torch.Tensor = torch.sqrt(torch.sum(spectral_features ** 2, dim=1)).squeeze()
-		espace: torch.Tensor = self._embedding_space
-		self.fspace, sspace = spectral_space(self.cfg, self.device)
-		hfilter = []
-		f = self.fspace[ self.fspace.shape[0] // 2 ]
-		hw = []
-		for ih in range(1, nharmonics + 1):
-			df: torch.Tensor = alpha*(espace-f*ih)/f
-			hw.append( torch.exp(-df**2 ) )
-		W = torch.stack(hw,dim=1).sum(dim=1)
-		return W[:self.fspace.shape[0]]
 
 #	"crtl-mouse-press", x = event.xdata, y = event.ydata, ax = event.inaxes
 	def process_event(self, **kwargs ):

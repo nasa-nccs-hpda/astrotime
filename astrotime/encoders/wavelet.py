@@ -30,7 +30,7 @@ class WaveletSynthesisLayer(EmbeddingLayer):
 		self.C = cfg.decay_factor / (8 * math.pi ** 2)
 		self.init_log(f"WaveletSynthesisLayer: nfreq={self.nfreq} ")
 
-	def embed(self, ts: torch.Tensor, ys: torch.Tensor ) -> Tensor:
+	def embed(self, ts: torch.Tensor, ys: torch.Tensor) -> Tensor:
 		t0 = time.time()
 		self.init_log(f"WaveletSynthesisLayer shapes:")
 		slen: int = self.series_length if (self.series_length > 0) else ys.shape[1]
@@ -116,7 +116,7 @@ class WaveletAnalysisLayer(EmbeddingLayer):
 		self.C = cfg.decay_factor / (8 * math.pi ** 2)
 		self.init_log(f"WaveletAnalysisLayer: nfreq={self.nfreq} ")
 
-	def embed(self, ts: torch.Tensor, ys: torch.Tensor ) -> Tensor:
+	def embed(self, ts: torch.Tensor, ys: torch.Tensor) -> Tensor:
 		t0 = time.time()
 		self.init_log(f"WaveletAnalysisLayer shapes: ts{list(ts.shape)} ys{list(ys.shape)}")
 	#	slen: int = self.series_length if (self.series_length > 0) else ys.shape[1]
@@ -182,7 +182,7 @@ class WaveletProjConvLayer(EmbeddingLayer):
 		time_indices: torch.Tensor = torch.argmin(diff, dim=2)
 		return taus, time_indices
 
-	def embed(self, ts: torch.Tensor, ys: torch.Tensor ) -> Tensor:
+	def embed(self, ts: torch.Tensor, ys: torch.Tensor) -> Tensor:
 		t0 = time.time()
 		self.init_log(f"WaveletProjConvLayer shapes:")
 		self.init_log(f" ys{list(ys.shape)} ts{list(ts.shape)}")

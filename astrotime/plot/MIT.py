@@ -10,7 +10,7 @@ from matplotlib.lines import Line2D
 from matplotlib.backend_bases import KeyEvent, MouseEvent, MouseButton
 from astrotime.loaders.base import IterativeDataLoader
 from astrotime.util.logging import exception_handled
-from astrotime.encoders.embedding import EmbeddingLayer
+from astrotime.encoders.embedding import Transform, EmbeddingLayer
 from typing import List, Optional, Dict, Type, Union, Tuple, Any, Set
 from astrotime.util.math import tnorm
 log = logging.getLogger()
@@ -183,11 +183,11 @@ class MITDatasetPlot(SignalPlot):
 
 class MITTransformPlot(SignalPlot):
 
-	def __init__(self, name: str, data_loader: IterativeDataLoader, transforms: Dict[str,EmbeddingLayer], sector: int, **kwargs):
+	def __init__(self, name: str, data_loader: IterativeDataLoader, transforms: Dict[str,Transform], sector: int, **kwargs):
 		SignalPlot.__init__(self, **kwargs)
 		self.name = name
 		self.sector: int = sector
-		self.transforms: Dict[str,EmbeddingLayer] = transforms
+		self.transforms: Dict[str,Transform] = transforms
 		self.data_loader: IterativeDataLoader = data_loader
 		self.TICS: List[str] = data_loader.TICS(sector)
 		self.annotations: List[str] = tolower( kwargs.get('annotations',None) )
@@ -245,7 +245,7 @@ class MITTransformPlot(SignalPlot):
 			self.update()
 
 	@exception_handled
-	def apply_transform( self, transform: EmbeddingLayer, series_data: xa.Dataset ) -> np.ndarray:
+	def apply_transform( self, transform: Transform, series_data: xa.Dataset ) -> np.ndarray:
 		slen = transform.cfg.series_length
 		ts_tensors: Dict[str,Tensor] =  { k: FloatTensor(series_data.data_vars[k].values[:slen]).to(transform.device) for k in ['time','y'] }
 		transformed: Tensor = transform.embed( ts_tensors['time'][None,:], tnorm(ts_tensors['y'][None,:],dim=1) )

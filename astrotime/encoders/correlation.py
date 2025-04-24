@@ -16,7 +16,7 @@ class PolyEmbeddingLayer(EmbeddingLayer):
 	def __init__(self, cfg, device: device):
 		EmbeddingLayer.__init__(self,cfg,device)
 
-	def embed(self, ts: torch.Tensor, ys: torch.Tensor ) -> Tensor:
+	def embed(self, ts: torch.Tensor, ys: torch.Tensor) -> Tensor:
 		print(f"     MODEL INPUT T: ts{list(ts.shape)}: ({ts.min().item():.2f}, {ts.max().item():.2f}, {ts.mean().item():.2f}, {ts.std().item():.2f}) ")
 		print(f"     MODEL INPUT Y: ys{list(ys.shape)}: ({ys.min().item():.4f}, {ys.max().item():.4f}, {ys.mean().item():.4f}, {ys.std().item():.4f}) ")
 		return ys
