@@ -301,8 +301,6 @@ def flatten(
     #     trend_lc[mask_nans[idx]] = trend_flux[idx]
     # trend_lc[trend_lc == 0] = np.nan  # avoid division by zero
 
-    print( f"flatten: trend_flux{trend_flux.shape}({nnan(trend_flux)}) inan={inan(trend_flux)}")
-
     nanmask = ~np.isnan(trend_flux)
     time, flux = time[nanmask], flux[nanmask]
     trend_lc = trend_flux[nanmask]
