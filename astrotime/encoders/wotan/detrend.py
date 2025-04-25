@@ -9,7 +9,7 @@ from astrotime.encoders.wotan.flatten import flatten
 def clamp( idx: int ) -> int: return max( 0, idx )
 
 def detrend( ts: np.ndarray, ys: np.ndarray, cfg: DictConfig ) -> np.ndarray:
-	return flatten( ts.flatten(), ys.flatten(), window_length=cfg.detrend_window_length, method=cfg.detrend_method, return_trend=True)
+	return flatten( ts.flatten(), ys.flatten(), window_length=cfg.detrend_window_length, method=cfg.detrend_method )
 
 class DetrendTransform(Transform):
 
@@ -20,7 +20,7 @@ class DetrendTransform(Transform):
 	def embed(self, ts: torch.Tensor, ys: torch.Tensor) -> Tensor:
 		self._xdata = ts
 		x,y = ts.cpu().numpy().flatten(), ys.cpu().numpy().flatten()
-		flatten_lc, trend_lc = flatten(x,y, window_length=self.cfg.detrend_window_length, method=self.cfg.detrend_method, return_trend=True)
+		flatten_lc, trend_lc = flatten(x,y, window_length=self.cfg.detrend_window_length, method=self.cfg.detrend_method )
 		return torch.from_numpy(flatten_lc) # torch.stack( [torch.from_numpy(flatten_lc), torch.from_numpy(trend_lc)],  dim=1 )
 
 	def magnitude(self, embedding: Tensor) -> np.ndarray:
