@@ -26,7 +26,7 @@ def tstd(x: Tensor) -> float:
 def tmag(x: Tensor) -> float:
 	return torch.max(x).item()
 
-def tnorm(x: Tensor, dim: int) -> Tensor:
+def tnorm(x: Tensor, dim: int=0) -> Tensor:
 	m: Tensor = x.mean( dim=dim, keepdim=True)
 	s: Tensor = torch.std( x, dim=dim, keepdim=True)
 	return (x - m) / s

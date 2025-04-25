@@ -210,7 +210,7 @@ class MITTransformPlot(SignalPlot):
 		for iplot, (tname, transform) in enumerate(self.transforms.items()):
 			tdata: np.ndarray = self.apply_transform(transform,series_data)
 			print( f" plot[{tname}]: tdata{tdata.squeeze().shape}, xdata{transform.xdata.shape}")
-			self.plots[tname] = self.ax.plot(transform.xdata, tdata.squeeze(), label=tname, color=self.colors[iplot], marker=".", linewidth=1, markersize=2, alpha=0.5)[0]
+			self.plots[tname] = self.ax.plot(transform.xdata.squeeze(), tdata.squeeze(), label=tname, color=self.colors[iplot], marker=".", linewidth=1, markersize=2, alpha=0.5)[0]
 			self.ax.set_xlim(transform.xdata.min(), transform.xdata.max())
 		self.target_marker: Line2D = self.ax.axvline( freq, 0.0, 1.0, color='green', linestyle='-')
 		self.selection_marker: Line2D = self.ax.axvline( 0, 0.0, 1.0, color=self.colors[0], linestyle='-', linewidth=2)
@@ -248,9 +248,10 @@ class MITTransformPlot(SignalPlot):
 	def apply_transform( self, transform: Transform, series_data: xa.Dataset ) -> np.ndarray:
 		slen = transform.cfg.series_length
 		ts_tensors: Dict[str,Tensor] =  { k: FloatTensor(series_data.data_vars[k].values[:slen]).to(transform.device) for k in ['time','y'] }
-		transformed: Tensor = transform.embed( ts_tensors['time'][None,:], tnorm(ts_tensors['y'][None,:],dim=1) )
+		x,y = ts_tensors['time'].squeeze(), tnorm(ts_tensors['y'].squeeze())
+		transformed: Tensor = transform.embed( x, y )
 		embedding: np.ndarray = transform.magnitude( transformed )
-		print( f"MITTransformPlot.apply_transform: y{list(ts_tensors['y'].shape)} -> embedding{embedding.shape} ---> min={embedding.min():.3f}, max={embedding.max():.3f}, mean={embedding.mean():.3f} ---")
+		print( f"MITTransformPlot.apply_transform: x{list(x.shape)}, y{list(y.shape)} -> embedding{list(embedding.shape)} ---> min={embedding.min():.3f}, max={embedding.max():.3f}, mean={embedding.mean():.3f} ---")
 		return znorm(embedding)
 
 	def update_selection_marker(self, freq ) -> float:
