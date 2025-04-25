@@ -16,6 +16,9 @@ from wotan.lowess import lowess
 def nnan(x: np.ndarray) -> int:
 	return np.sum(np.isnan(x))
 
+def inan(x: np.ndarray) -> np.ndarray:
+	return np.where( np.isnan(x) )
+
 def flatten(
     time,
     flux,
@@ -298,7 +301,7 @@ def flatten(
     #     trend_lc[mask_nans[idx]] = trend_flux[idx]
     # trend_lc[trend_lc == 0] = np.nan  # avoid division by zero
 
-    print( f"flatten: time{time.shape}({nnan(time)}) flux{flux.shape}({nnan(flux)}) trend_flux{trend_flux.shape}({nnan(trend_flux)}) ")
+    print( f"flatten: trend_flux{trend_flux.shape}({nnan(trend_flux)}) inan={inan(trend_flux)}")
     trend_lc = trend_flux
     flatten_lc = flux / trend_lc
 
