@@ -13,6 +13,9 @@ from wotan.iter_spline import iter_spline
 from wotan.regression import regression
 from wotan.lowess import lowess
 
+def nnan(x: np.ndarray) -> int:
+	return np.sum(np.isnan(x))
+
 def flatten(
     time,
     flux,
@@ -295,8 +298,9 @@ def flatten(
     #     trend_lc[mask_nans[idx]] = trend_flux[idx]
     # trend_lc[trend_lc == 0] = np.nan  # avoid division by zero
 
+    print( f"flatten: time{time.shape}({nnan(time)}) flux{flux.shape}({nnan(flux)}) trend_flux{trend_flux.shape}({nnan(trend_flux)}) ")
     trend_lc = trend_flux
-    flatten_lc = flux / trend_flux
+    flatten_lc = flux / trend_lc
 
     return flatten_lc, trend_lc
 
