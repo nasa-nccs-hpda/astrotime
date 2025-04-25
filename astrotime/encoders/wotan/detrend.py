@@ -24,7 +24,7 @@ class DetrendTransform(Transform):
 		return torch.from_numpy( np.stack(fvals, axis=1) )
 
 	def magnitude(self, embedding: Tensor) -> np.ndarray:
-		return embedding[:,3].cpu().numpy()
+		return embedding[:,2].cpu().numpy()
 
 	@property
 	def xdata(self) -> np.ndarray:
