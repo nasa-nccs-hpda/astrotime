@@ -1,11 +1,10 @@
 import random, time, numpy as np
 import torch, math
 from typing import List, Tuple, Mapping
-from omegaconf import DictConfig, OmegaConf
-from torch import Tensor, device, nn
-from .base import Transform
-from wotan import flatten
-from astrotime.util.logging import elapsed
+from omegaconf import DictConfig
+from torch import Tensor, device
+from astrotime.encoders.base import Transform
+from astrotime.encoders.wotan.flatten import flatten
 
 def clamp( idx: int ) -> int: return max( 0, idx )
 

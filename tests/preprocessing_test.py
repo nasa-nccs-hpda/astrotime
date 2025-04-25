@@ -33,5 +33,5 @@ for element in range(10):
 	x, y = ts_tensors['time'].squeeze(), tnorm(ts_tensors['y'].squeeze())
 	transformed: torch.Tensor = transform.embed(x, y)
 	embedding: np.ndarray = transform.magnitude(transformed)
-	print(f"MITTransformPlot.apply_transform: x{list(x.shape)} ({x.min():.3f}->max={x.max():.3f}), y{list(y.shape)} ({y.min():.3f}->max={y.max():.3f}) ---> embedding{list(embedding.shape)} ---> min={embedding.min():.3f}, max={embedding.max():.3f}, mean={embedding.mean():.3f} ---")
+	print(f"MITTransformPlot.apply_transform: x{list(x.shape)} ({x.min():.1f}->max={x.max():.1f}), y{list(y.shape)} ({y.min():.1f}->max={y.max():.1f}) ---> embedding{list(embedding.shape)} ---> min={embedding.min():.2f}, max={embedding.max():.2f}, mean={embedding.mean():.2f} ---")
 
