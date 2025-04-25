@@ -209,7 +209,6 @@ class MITTransformPlot(SignalPlot):
 		freq = 1.0 / period
 		for iplot, (tname, transform) in enumerate(self.transforms.items()):
 			tdata: np.ndarray = self.apply_transform(transform,series_data)
-			print( f" plot[{tname}]: tdata{tdata.squeeze().shape}, xdata{transform.xdata.shape}")
 			self.plots[tname] = self.ax.plot(transform.xdata.squeeze(), tdata.squeeze(), label=tname, color=self.colors[iplot], marker=".", linewidth=1, markersize=2, alpha=0.5)[0]
 			self.ax.set_xlim(transform.xdata.min(), transform.xdata.max())
 		self.target_marker: Line2D = self.ax.axvline( freq, 0.0, 1.0, color='green', linestyle='-')
@@ -251,7 +250,7 @@ class MITTransformPlot(SignalPlot):
 		x,y = ts_tensors['time'].squeeze(), tnorm(ts_tensors['y'].squeeze())
 		transformed: Tensor = transform.embed( x, y )
 		embedding: np.ndarray = transform.magnitude( transformed )
-		print( f"MITTransformPlot.apply_transform: x{list(x.shape)}, y{list(y.shape)} -> embedding{list(embedding.shape)} ---> min={embedding.min():.3f}, max={embedding.max():.3f}, mean={embedding.mean():.3f} ---")
+		self.log.info( f"MITTransformPlot.apply_transform: x{list(x.shape)}, y{list(y.shape)} -> embedding{list(embedding.shape)} ---> min={embedding.min():.3f}, max={embedding.max():.3f}, mean={embedding.mean():.3f} ---")
 		return znorm(embedding)
 
 	def update_selection_marker(self, freq ) -> float:

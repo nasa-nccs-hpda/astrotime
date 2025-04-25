@@ -5,11 +5,9 @@ from omegaconf import DictConfig, OmegaConf
 from torch import Tensor, device, nn
 from .base import Transform
 from wotan import flatten
-from astrotime.util.math import logspace, tnorm
 from astrotime.util.logging import elapsed
 
 def clamp( idx: int ) -> int: return max( 0, idx )
-
 
 def detrend( ts: np.ndarray, ys: np.ndarray, cfg: DictConfig ) -> np.ndarray:
 	return flatten( ts.flatten(), ys.flatten(), window_length=cfg.detrend_window_length, method=cfg.detrend_method, return_trend=True)
@@ -24,7 +22,6 @@ class DetrendTransform(Transform):
 		self._xdata = ts
 		x,y = ts.cpu().numpy().flatten(), ys.cpu().numpy().flatten()
 		flatten_lc, trend_lc = flatten(x,y, window_length=self.cfg.detrend_window_length, method=self.cfg.detrend_method, return_trend=True)
-		print( f"Detrend.flatten: x{x.shape}, y{y.shape} -> flatten_lc({type(flatten_lc)}){flatten_lc.shape} ")
 		return torch.from_numpy(flatten_lc) # torch.stack( [torch.from_numpy(flatten_lc), torch.from_numpy(trend_lc)],  dim=1 )
 
 	def magnitude(self, embedding: Tensor) -> np.ndarray:
