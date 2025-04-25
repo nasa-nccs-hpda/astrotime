@@ -28,7 +28,9 @@ class DetrendTransform(Transform):
 
 	def embed(self, ts: torch.Tensor, ys: torch.Tensor) -> Tensor:
 		self._xdata = ts
-		flatten_lc, trend_lc = flatten(ts.flatten(), ys.flatten(), window_length=self.cfg.detrend_window_length, method=self.cfg.detrend_method, return_trend=True)
+		x,y = ts.cpu().numpy().flatten(), ys.cpu().numpy().flatten()
+		flatten_lc, trend_lc = flatten(x,y, window_length=self.cfg.detrend_window_length, method=self.cfg.detrend_method, return_trend=True)
+		print( f"Detrend.flatten: x{x.shape}, y{y.shape} -> flatten_lc{flatten_lc.shape}")
 		return torch.from_numpy(flatten_lc) # torch.stack( [torch.from_numpy(flatten_lc), torch.from_numpy(trend_lc)],  dim=1 )
 
 	def magnitude(self, embedding: Tensor) -> np.ndarray:
