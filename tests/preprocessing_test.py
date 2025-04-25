@@ -2,7 +2,7 @@ from astrotime.util.series import TSet
 from typing import List, Optional, Dict, Type, Tuple, Union
 from astrotime.util.math import tnorm
 from astrotime.loaders.MIT import MITOctavesLoader
-from astrotime.encoders.wotan import DetrendTransform
+from astrotime.encoders.wotan.detrend import DetrendTransform
 from astrotime.config.context import astrotime_initialize
 import torch, xarray as xa, numpy as np
 from hydra import initialize, compose
