@@ -16,8 +16,8 @@ from wotan.lowess import lowess
 def nnan(x: np.ndarray) -> int:
 	return np.sum(np.isnan(x))
 
-def inan(x: np.ndarray) -> np.ndarray:
-	return np.where( np.isnan(x) )
+def inan(x: np.ndarray):
+	return np.where( np.isnan(x) ).tolist()
 
 def flatten(
     time,
