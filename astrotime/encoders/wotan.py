@@ -11,20 +11,14 @@ from astrotime.util.logging import elapsed
 def clamp( idx: int ) -> int: return max( 0, idx )
 
 
-def detrend( ts: np.ndarray, ys: np.ndarray, cfg: DictConfig, device ) -> np.ndarray:
-	t: Tensor = torch.from_numpy( ts[None,:] if ts.ndim == 1 else ts )
-	y: Tensor = torch.from_numpy( ys[None,:] if ys.ndim == 1 else ys )
-	transform = DetrendTransform( cfg,  device )
-	detrended: Tensor = transform.embed( t, y )
-	return transform.magnitude( detrended )
+def detrend( ts: np.ndarray, ys: np.ndarray, cfg: DictConfig ) -> np.ndarray:
+	return flatten( ts.flatten(), ys.flatten(), window_length=cfg.detrend_window_length, method=cfg.detrend_method, return_trend=True)
 
 class DetrendTransform(Transform):
 
 	def __init__(self, cfg: DictConfig, device: device):
 		Transform.__init__(self, cfg, device)
 		self._xdata = None
-# detrend_window_length = 0.5
-# detrend_method = 'biweight'
 
 	def embed(self, ts: torch.Tensor, ys: torch.Tensor) -> Tensor:
 		self._xdata = ts
@@ -34,7 +28,7 @@ class DetrendTransform(Transform):
 		return torch.from_numpy(flatten_lc) # torch.stack( [torch.from_numpy(flatten_lc), torch.from_numpy(trend_lc)],  dim=1 )
 
 	def magnitude(self, embedding: Tensor) -> np.ndarray:
-		return embedding[0].cpu().numpy()
+		return embedding.cpu().numpy()
 
 	@property
 	def xdata(self) -> np.ndarray:
