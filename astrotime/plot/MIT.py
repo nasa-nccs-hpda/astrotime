@@ -250,7 +250,7 @@ class MITTransformPlot(SignalPlot):
 		x,y = ts_tensors['time'].squeeze(), tnorm(ts_tensors['y'].squeeze())
 		transformed: Tensor = transform.embed( x, y )
 		embedding: np.ndarray = transform.magnitude( transformed )
-		self.log.info( f"MITTransformPlot.apply_transform: x{list(x.shape)}, y{list(y.shape)} -> embedding{list(embedding.shape)} ---> min={embedding.min():.3f}, max={embedding.max():.3f}, mean={embedding.mean():.3f} ---")
+		self.log.info( f"MITTransformPlot.apply_transform: x{list(x.shape)}, y{list(y.shape)} -> embedding{list(embedding.shape)} ---> x min={embedding.min():.3f}, max={embedding.max():.3f}, mean={embedding.mean():.3f} ---")
 		return znorm(embedding)
 
 	def update_selection_marker(self, freq ) -> float:
@@ -266,9 +266,9 @@ class MITTransformPlot(SignalPlot):
 		transform_peak_freq = None
 		for iplot, (tname, transform) in enumerate(self.transforms.items()):
 			tdata: np.ndarray = self.apply_transform(transform,series_data)
-			self.log.info(f"---- MITTransformPlot({iplot}) {tname}[{self.element})] update: tdata{tdata.shape}, mean={tdata.mean():.3f} --- ")
 			self.plots[tname].set_ydata(tdata)
 			self.plots[tname].set_xdata(transform.xdata)
+			self.log.info(f"---- MITTransformPlot({iplot}) {tname}[{self.element})] update: tdata{tdata.shape}, x range=({transform.xdata.min():.3f}->{transform.xdata.max():.3f}) --- ")
 			if iplot == 0:
 				target_freq = transform.get_target_freq( target_period )
 				self.log.info(f"            ->>> target_freq = {target_freq:.4f},  target_period = {target_period:.4f}")
