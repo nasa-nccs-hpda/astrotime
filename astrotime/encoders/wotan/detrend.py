@@ -19,8 +19,9 @@ class DetrendTransform(Transform):
 
 	def embed(self, ts: torch.Tensor, ys: torch.Tensor) -> Tensor:
 		x,y = ts.cpu().numpy().flatten(), ys.cpu().numpy().flatten()
-		fvals = flatten(x,y, window_length=self.cfg.detrend_window_length, method=self.cfg.detrend_method )
+		fvals: np.ndarray = flatten(x,y, window_length=self.cfg.detrend_window_length, method=self.cfg.detrend_method )
 		self._xdata = fvals[0]
+		self.log.info(f"DetrendTransform detrended: result{fvals.shape}, x-range=({self._xdata.min():.3f}->{self._xdata.max():.3f})")
 		return torch.from_numpy( np.stack(fvals, axis=1) )
 
 	def magnitude(self, embedding: Tensor) -> np.ndarray:
