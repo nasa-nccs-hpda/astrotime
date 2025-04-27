@@ -17,11 +17,15 @@ class Transform(torch.nn.Module):
 	def process_event(self, **kwargs ):
 		pass
 
+	@property
+	def xdata(self, **kwargs ) -> np.ndarray:
+		raise NotImplementedError("Transform.xdata not implemented")
+
 	def embed(self, xs: Tensor, ys: Tensor) -> Tensor:
-		raise NotImplementedError("EmbeddingLayer.embed() not implemented")
+		raise NotImplementedError("Transform.embed() not implemented")
 
 	def magnitude(self, embedding: Tensor) -> np.ndarray:
-		raise NotImplementedError("EmbeddingLayer.embed() not implemented")
+		raise NotImplementedError("Transform.magnitude() not implemented")
 
 class Encoder:
 

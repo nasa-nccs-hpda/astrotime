@@ -268,6 +268,7 @@ class MITTransformPlot(SignalPlot):
 			tdata: np.ndarray = self.apply_transform(transform,series_data)
 			self.plots[tname].set_ydata(tdata)
 			self.plots[tname].set_xdata(transform.xdata)
+			self.ax.set_xlim( transform.xdata.min(), transform.xdata.max() )
 			self.log.info(f"---- MITTransformPlot({iplot}) {tname}[{self.element})] update: tdata{tdata.shape}, x range=({transform.xdata.min():.3f}->{transform.xdata.max():.3f}) --- ")
 			if iplot == 0:
 				target_freq = transform.get_target_freq( target_period )
