@@ -221,13 +221,13 @@ class MITTransformPlot(SignalPlot):
 		for iplot, (tname, transform) in enumerate(self.transforms.items()):
 			tdata: np.ndarray = self.apply_transform(transform,series_data)
 			self.plots[tname] = self.ax.plot(transform.xdata.squeeze(), tdata.squeeze(), label=tname, color=self.colors[iplot], marker=".", linewidth=1, markersize=2, alpha=0.5)[0]
-			self.ax.set_xlim(transform.xdata.min(), transform.xdata.max())
+			self.ax.set_xlim( transform.xdata.min(), transform.xdata.max() )
+			self.ax.set_ylim( tdata.min(), tdata.max() )
 		self.target_marker: Line2D = self.ax.axvline( freq, 0.0, 1.0, color='green', linestyle='-')
 		self.selection_marker: Line2D = self.ax.axvline( 0, 0.0, 1.0, color=self.colors[0], linestyle='-', linewidth=2)
 		self.ax.title.set_text(f"{self.name}: TPeriod={period:.3f} (Freq={freq:.3f})")
 		self.ax.title.set_fontsize(8)
 		self.ax.title.set_fontweight('bold')
-		self.ax.set_ylim( 0.0, 1.0 )
 		self.ax.set_xscale('log')
 		self.ax.xaxis.set_major_formatter(ticker.StrMethodFormatter("{x:.2f}"))
 		self.ax.xaxis.set_major_locator(ticker.LogLocator(base=2, numticks=8))
@@ -280,6 +280,7 @@ class MITTransformPlot(SignalPlot):
 			self.plots[tname].set_ydata(tdata)
 			self.plots[tname].set_xdata(transform.xdata)
 			self.ax.set_xlim( transform.xdata.min(), transform.xdata.max() )
+			self.ax.set_ylim( tdata.min(), tdata.max() )
 			self.log.info(f"---- MITTransformPlot({iplot}) {tname}[{self.element})] update: tdata{tdata.shape}, x range=({transform.xdata.min():.3f}->{transform.xdata.max():.3f}) --- ")
 			if iplot == 0:
 				target_freq = transform.get_target_freq( target_period )
