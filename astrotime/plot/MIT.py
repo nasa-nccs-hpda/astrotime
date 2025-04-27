@@ -18,6 +18,10 @@ log = logging.getLogger()
 def tolower(ls: Optional[List[str]]) -> List[str]:
 	return [a.lower() for a in ls] if (ls is not None) else []
 
+def l2norm(ydata: np.ndarray) -> np.ndarray:
+	m,s = ydata.mean(), ydata.std()
+	return (ydata-m)/s
+
 def znorm(ydata: np.ndarray) -> np.ndarray:
 	y0,y1 = ydata.min(), ydata.max()
 	return (ydata-y0)/(y1-y0)
@@ -193,11 +197,18 @@ class MITTransformPlot(SignalPlot):
 		self.annotations: List[str] = tolower( kwargs.get('annotations',None) )
 		self.colors = ['darkviolet', 'darkorange', 'saddlebrown', 'darkturquoise', 'magenta' ]
 		self.ofac = kwargs.get('upsample_factor',1)
+		self.normtype = kwargs.get('norm', 'z')
 		self.plots: Dict[str,Line2D] = {}
 		self.target_marker: Line2D = None
 		self.selection_marker: Line2D = None
 		self.add_param( STIntParam('element', (0,len(self.TICS))  ) )
 		self.transax = None
+
+	def norm(self, embedding: np.ndarray):
+		if self.normtype == "z":  return znorm(embedding)
+		if self.normtype == "u":  return unorm(embedding)
+		if self.normtype == "l2": return l2norm(embedding)
+		raise Exception(f"MITTransformPlot.norm: unknown normtype={self.normtype}")
 
 	def set_sector(self, sector: int ):
 		self.sector = sector
@@ -251,7 +262,7 @@ class MITTransformPlot(SignalPlot):
 		transformed: Tensor = transform.embed( x, y )
 		embedding: np.ndarray = transform.magnitude( transformed )
 		self.log.info( f"MITTransformPlot.apply_transform: x{list(x.shape)}, y{list(y.shape)} -> embedding{list(embedding.shape)} ---> x min={embedding.min():.3f}, max={embedding.max():.3f}, mean={embedding.mean():.3f} ---")
-		return znorm(embedding)
+		return self.norm(embedding)
 
 	def update_selection_marker(self, freq ) -> float:
 		period = 1/freq
