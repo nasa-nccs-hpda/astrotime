@@ -34,7 +34,7 @@ To compare the performance of these models on a (more) irregularly sampled datas
 
     >   * mamba create -n astrotime.pt ninja python=3.10
     >   * mamba activate astrotime
-    >   * pip install torch jupyterlab==4.0.13 ipywidgets==7.8.4 cuda-python jupyterlab_widgets ipykernel==6.29 ipympl ipython==8.26 xarray netCDF4 pygam wotan astropy statsmodels scikit-learn hydra-core rich
+    >   * pip install torch jupyterlab==4.0.13 ipywidgets==7.8.4 cuda-python jupyterlab_widgets ipykernel==6.29 ipympl ipython==8.26 xarray netCDF4 pygam wotan astropy statsmodels transitleastsquares scikit-learn hydra-core rich
 
 ## Dataset Preparation
 
