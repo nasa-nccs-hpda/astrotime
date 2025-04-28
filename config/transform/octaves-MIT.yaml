@@ -7,8 +7,8 @@ noctaves:   ${data.noctaves}        # Number of octaves in base frequency space
 nharmonics: ${data.nharmonics}      # Number of octaves in harmonics space
 time_scale:   1.0                   # Time rescale factor for shifted frequency range
 decay_factor: 0.0                   # Time envelope decay factor
-bw_winlen: 0.5                      # Detrend parameter for Wotan
-spline_minbrk: 0.3                  # Detrend parameter for Wotan
+bw_winlen: 0.25                     # Detrend parameter for Wotan
+spline_minbrk: 0.01                 # Denoise parameter for Wotan
 
 
 
