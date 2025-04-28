@@ -302,9 +302,10 @@ def flatten(
     # trend_lc[trend_lc == 0] = np.nan  # avoid division by zero
 
     print( f"flatten: time{time.shape} flux{flux.shape} trend_flux{trend_flux.shape}")
-    nanmask = ~np.isnan(trend_flux)
-    time, flux = time[nanmask], flux[nanmask]
-    trend_lc = trend_flux[nanmask]
+    gapmask = ~np.isnan(flux)
+    trendmask = ~np.isnan(trend_flux)
+    time, flux = time[gapmask][trendmask], flux[gapmask][trendmask]
+    trend_lc = trend_flux[trendmask]
     flatten_lc = flux / trend_lc
 
     return [time, flux, flatten_lc, trend_lc]
