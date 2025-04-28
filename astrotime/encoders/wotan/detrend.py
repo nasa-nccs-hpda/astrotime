@@ -16,21 +16,27 @@ class DetrendTransform(Transform):
 	def __init__(self, cfg: DictConfig, device: device):
 		Transform.__init__(self, cfg, device)
 		self._xdata: np.ndarray = None
+		self._trends: List[np.ndarray] = []
 
 	def embed(self, ts: torch.Tensor, ys: torch.Tensor) -> Tensor:
 		x,y = ts.cpu().numpy().flatten(), ys.cpu().numpy().flatten()
 		self.log.info(f"DetrendTransform input: time{x.shape}, range=({x.min():.3f}->{x.max():.3f})")
-		fvals: np.ndarray = flatten(x,y, window_length=self.cfg.detrend_window_length, method=self.cfg.detrend_method )
-		self._xdata = fvals[0]
+		time1, flux1, flatten_lc, trend_lc   = flatten( x, y, window_length=self.cfg.bw_winlen, method='biweight' )
+		time2, flux2, flatten_lc1, trend_lc1 = flatten( time1, flatten_lc, method='pspline', break_tolerance=self.cfg.spline_minbrk )
+		self._xdata = time2
+		self._trends = [ trend_lc1, trend_lc ]
 		self.log.info(f"   ******* detrended: time{self._xdata.shape}, range=({self._xdata.min():.3f}->{self._xdata.max():.3f})")
-		return torch.from_numpy( np.stack(fvals, axis=1) )
+		return torch.from_numpy( flatten_lc1 )
 
 	def magnitude(self, embedding: Tensor) -> np.ndarray:
-		return embedding[:,2].cpu().numpy()
+		return embedding.cpu().numpy()
 
 	@property
 	def xdata(self) -> np.ndarray:
 		return self._xdata
+
+	def trend(self, idx: int) -> np.ndarray:
+		return self._trends[idx]
 
 	@property
 	def nfeatures(self) -> int:
