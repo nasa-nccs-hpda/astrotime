@@ -217,6 +217,7 @@ class MITLoader(IterativeDataLoader):
 		cz = np.stack([ctime,cy],axis=0)
 		if cz.shape[1] >= self.series_length:
 			return cz[:,:self.series_length]
+		return None
 
 	def get_largest_block( self, TIC: str ) -> np.ndarray:
 		threshold = self.cfg.block_gap_threshold
