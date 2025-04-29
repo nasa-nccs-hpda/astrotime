@@ -261,6 +261,7 @@ class MITLoader(IterativeDataLoader):
 				if eslice is not None:
 					elems.append(eslice)
 					periods.append(p)
+					print( f"{TIC}: {eslice.shape}")
 		z = np.stack(elems,axis=0)
 		self.train_data['t'] = z[:,0,:]
 		self.train_data['y'] = z[:,1,:]
