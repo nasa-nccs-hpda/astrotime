@@ -4,12 +4,13 @@ from typing import List, Tuple, Mapping
 from omegaconf import DictConfig
 from torch import Tensor, device
 from astrotime.encoders.base import Transform
-from astrotime.encoders.wotan.flatten import flatten
 
 def clamp( idx: int ) -> int: return max( 0, idx )
 
 def detrend( ts: np.ndarray, ys: np.ndarray, cfg: DictConfig ) -> Tuple[np.ndarray,np.ndarray,np.ndarray,np.ndarray]:
-	return flatten( ts.flatten(), ys.flatten(), window_length=cfg.detrend_window_length, method=cfg.detrend_method )
+	from astrotime.encoders.wotan.flatten import flatten
+	time1, flux1, flatten_lc, trend_lc = flatten( ts.flatten(), ys.flatten(), window_length=cfg.detrend_window_length, method='biweight')
+	return time1, flux1, flatten_lc, trend_lc
 
 class DetrendTransform(Transform):
 
@@ -21,12 +22,11 @@ class DetrendTransform(Transform):
 	def embed(self, ts: torch.Tensor, ys: torch.Tensor) -> Tensor:
 		x,y = ts.cpu().numpy().flatten(), ys.cpu().numpy().flatten()
 		self.log.info(f"DetrendTransform input: time{x.shape}, range=({x.min():.3f}->{x.max():.3f})")
-		time1, flux1, flatten_lc, trend_lc   = flatten( x, y, window_length=self.cfg.bw_winlen, method='biweight' )
-		time2, flux2, flatten_lc1, trend_lc1 = flatten( time1, flatten_lc, method='pspline', break_tolerance=self.cfg.spline_minbrk )
-		self._xdata = time2
-		self._trends = [ trend_lc1, trend_lc ]
+		time1, flux1, flatten_lc, trend_lc   = detrend( x, y, self.cfg )
+		self._xdata = time1
+		self._trends = [trend_lc, trend_lc]
 		self.log.info(f"   ******* detrended: time{self._xdata.shape}, range=({self._xdata.min():.3f}->{self._xdata.max():.3f})")
-		return torch.from_numpy( flatten_lc1 )
+		return torch.from_numpy( flatten_lc )
 
 	def magnitude(self, embedding: Tensor) -> np.ndarray:
 		return embedding.cpu().numpy()

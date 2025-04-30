@@ -1,0 +1,16 @@
+series_length: ${data.series_length}  # Length of subset of input timeseries to process
+sparsity:   0.0                       # Fraction of observations to drop (randomly)
+batch_size: ${data.batch_size}      # Batch size for training
+nfreq_oct:  ${data.nfreq_oct}       # Number of frequency values (log2 spaced) in each octave
+base_freq:  ${data.base_freq}       # Start frequency of base octave
+noctaves:   ${data.noctaves}        # Number of octaves in base frequency space
+nharmonics: ${data.nharmonics}      # Number of octaves in harmonics space
+time_scale:   1.0                   # Time rescale factor for shifted frequency range
+decay_factor: 0.0                   # Time envelope decay factor
+bw_winlen: 0.25                     # Detrend parameter for Wotan
+spline_minbrk: 0.2                  # Denoise parameter for Wotan
+
+
+
+
+
