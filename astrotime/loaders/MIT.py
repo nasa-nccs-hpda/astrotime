@@ -77,6 +77,7 @@ class MITLoader(IterativeDataLoader):
 			if self.test_mode_index == 2:
 				result = self.synthetic.process_batch( result )
 			return result
+		return None
 
 	def get_batch( self, sector_index: int, batch_index: int ) -> Optional[Dict[str,np.ndarray]]:
 		if self.load_sector(sector_index):

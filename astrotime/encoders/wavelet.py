@@ -114,8 +114,21 @@ class WaveletAnalysisLayer(EmbeddingLayer):
 		EmbeddingLayer.__init__(self, cfg, embedding_space, device)
 		self.C = cfg.decay_factor / (8 * math.pi ** 2)
 		self.init_log(f"WaveletAnalysisLayer: nfreq={self.nfreq} ")
+		self.subbatch_size = cfg.get('subbatch_size',-1)
+
+	def sbatch(self, ts: torch.Tensor, ys: torch.Tensor, subbatch: int) -> tuple[Tensor,Tensor]:
+		sbr = [ subbatch*self.subbatch_size, (subbatch+1)*self.subbatch_size ]
+		return ts[sbr[0]:sbr[1]], ys[sbr[0]:sbr[1]]
 
 	def embed(self, ts: torch.Tensor, ys: torch.Tensor) -> Tensor:
+		if self.subbatch_size <= 0:
+			return self.embed_subbatch( ts, ys )
+		else:
+			nsubbatches = math.ceil(ys.shape[0]/self.subbatch_size)
+			subbatches = [ self.embed_subbatch( *self.sbatch(ts,ys,i) ) for i in range(nsubbatches) ]
+			return torch.concat( subbatches, dim=0 )
+
+	def embed_subbatch(self, ts: torch.Tensor, ys: torch.Tensor ) -> Tensor:
 		t0 = time.time()
 		self.init_log(f"WaveletAnalysisLayer shapes: ts{list(ts.shape)} ys{list(ys.shape)}")
 	#	slen: int = self.series_length if (self.series_length > 0) else ys.shape[1]

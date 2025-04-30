@@ -1,6 +1,7 @@
 import hydra, torch
 from omegaconf import DictConfig
 from torch import nn
+from typing import List, Optional, Dict, Type, Union, Tuple
 from astrotime.encoders.baseline import ValueEncoder
 from astrotime.util.series import TSet
 from astrotime.loaders.MIT import MITLoader
@@ -25,7 +26,10 @@ def my_app(cfg: DictConfig) -> None:
 
 	trainer = IterativeTrainer( cfg.train, data_loader, encoder, model )
 	trainer.initialize_checkpointing(version)
-	trainer.compute()
+
+	batch: Dict[str,torch.Tensor] = trainer.get_next_batch()
+	print( f"BATCH: {list(batch['z'].shape)}")
+#	trainer.compute()
 
 if __name__ == "__main__":
 	my_app()
