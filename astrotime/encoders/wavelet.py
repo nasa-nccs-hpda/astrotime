@@ -4,15 +4,19 @@ from typing import List, Tuple, Mapping
 from omegaconf import DictConfig, OmegaConf
 from torch import Tensor, device, nn
 from .embedding import EmbeddingLayer
-from astrotime.util.math import logspace, tnorm
+from astrotime.util.math import log2space, tnorm
 from astrotime.util.logging import elapsed
 
 def clamp( idx: int ) -> int: return max( 0, idx )
 
 def embedding_space( cfg: DictConfig, device: device ) -> Tuple[np.ndarray,Tensor]:
-	nspace = logspace( cfg.base_freq_range[0], cfg.base_freq_range[1], cfg.nfreq )
-	tspace = torch.FloatTensor( nspace ).to(device)
-	return nspace, tspace
+	base_freq =  cfg.base_freq
+	noctaves =  cfg.noctaves + cfg.nharmonics
+	top_freq = base_freq + base_freq*2**noctaves
+	nfreq = cfg.nfreq_oct * noctaves
+	nfspace = log2space( base_freq, top_freq, nfreq )
+	tfspace = torch.FloatTensor( nfspace ).to(device)
+	return nfspace, tfspace
 
 def wavelet_analysis_projection( ts: np.ndarray, ys: np.ndarray, fspace: np.ndarray, cfg: DictConfig, device ) -> np.ndarray:
 	t: Tensor = torch.from_numpy( ts[None,:] if ts.ndim == 1 else ts )
