@@ -8,13 +8,13 @@ class EmbeddingLayer(Transform):
 
 	def __init__(self, cfg, embedding_space: Tensor, device: device):
 		Transform.__init__(self,cfg,device)
-		self.series_length = cfg.series_length
-		self.nfreq = embedding_space.shape[0]
-		self.batch_size = cfg.batch_size
-		self.time_scale = self.cfg.time_scale
+		self.series_length: int = cfg.series_length
+		self.nfreq: int = embedding_space.shape[0]
+		self.batch_size: int = cfg.batch_size
+		self.time_scale: float = self.cfg.time_scale
 		self._embedding_space: Tensor = embedding_space.to(self.device)
 		self.log.info(f"EmbeddingLayer: series_length={self.series_length} batch_size={self.batch_size} ")
-		self.init_state = True
+		self.init_state: bool = True
 
 	def init_log(self, msg: str):
 		if self.init_state: self.log.info(msg)
@@ -45,6 +45,6 @@ class EmbeddingLayer(Transform):
 		raise NotImplementedError("EmbeddingLayer.projection_dim not implemented")
 
 	@property
-	def output_series_length(self):
-		raise NotImplementedError("EmbeddingLayer.output_series_length not implemented")
+	def output_series_length(self) -> int:
+		return self.nfreq
 

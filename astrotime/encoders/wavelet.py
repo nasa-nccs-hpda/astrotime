@@ -30,7 +30,6 @@ class WaveletSynthesisLayer(EmbeddingLayer):
 
 	def __init__(self, cfg: DictConfig, embedding_space: Tensor, device: device):
 		EmbeddingLayer.__init__(self, cfg, embedding_space, device)
-		self.nfreq = cfg.nfreq
 		self.C = cfg.decay_factor / (8 * math.pi ** 2)
 		self.init_log(f"WaveletSynthesisLayer: nfreq={self.nfreq} ")
 
@@ -109,10 +108,6 @@ class WaveletSynthesisLayer(EmbeddingLayer):
 	def nfeatures(self) -> int:
 		return 2
 
-	@property
-	def output_series_length(self):
-		return self.cfg.nfreq
-
 class WaveletAnalysisLayer(EmbeddingLayer):
 
 	def __init__(self, cfg, embedding_space: Tensor, device: device):
@@ -163,10 +158,6 @@ class WaveletAnalysisLayer(EmbeddingLayer):
 	@property
 	def nfeatures(self) -> int:
 		return 3
-
-	@property
-	def output_series_length(self):
-		return self.cfg.nfreq
 
 class WaveletProjConvLayer(EmbeddingLayer):
 
