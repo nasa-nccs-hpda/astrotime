@@ -9,10 +9,10 @@ def is_power_of_two(n: int) -> bool:
 	return (n & (n - 1)) == 0
 
 def logspace(start: float, stop: float, N: int) -> np.ndarray:
-	return np.pow(10.0, np.linspace(np.log10(start), np.log10(stop), N))
+	return np.power(10.0, np.linspace(np.log10(start), np.log10(stop), N))
 
 def log2space(start: float, stop: float, N: int) -> np.ndarray:
-	return np.pow(2.0, np.linspace(np.log2(start), np.log2(stop), N))
+	return np.power(2.0, np.linspace(np.log2(start), np.log2(stop), N))
 
 def shp( x ) -> List[int]:
 	return list(x.shape)
