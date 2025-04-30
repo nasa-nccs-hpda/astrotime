@@ -29,7 +29,7 @@ def my_app(cfg: DictConfig) -> None:
 
 	batch: Dict[str,torch.Tensor] = trainer.get_next_batch()
 	print( f"BATCH: {list(batch['z'].shape)}")
-#	trainer.compute()
+	trainer.compute()
 
 if __name__ == "__main__":
 	my_app()

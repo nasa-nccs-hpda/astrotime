@@ -182,7 +182,6 @@ class MITLoader(IterativeDataLoader):
 		t0 = time.time()
 		refresh = kwargs.get('refresh',False)
 		if (self.current_sector != sector) or (self.dataset is None):
-			print(f"Loading sector {sector}")
 			self._read_TICS(sector)
 			if refresh: self.refresh()
 			else:       self._load_cache_dataset(sector)
@@ -190,7 +189,6 @@ class MITLoader(IterativeDataLoader):
 				xarrays: Dict[str,xa.DataArray] = {}
 				ymax = 0.0
 				for iT, TIC in enumerate(self._TICS):
-					if iT % 50 == 0: print(".",end="",flush=True)
 					data_file = self.bls_file_path(sector,TIC)
 					dfbls = pd.read_csv( data_file, header=None, names=['Header', 'Data'] )
 					dfbls = dfbls.set_index('Header').T
