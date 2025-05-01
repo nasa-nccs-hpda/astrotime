@@ -48,3 +48,7 @@ class EmbeddingLayer(Transform):
 	def output_series_length(self) -> int:
 		return self.nfreq
 
+	@property
+	def nfeatures(self) -> int:
+		return 1
+

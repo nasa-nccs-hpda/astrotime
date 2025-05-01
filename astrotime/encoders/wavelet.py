@@ -104,10 +104,6 @@ class WaveletSynthesisLayer(EmbeddingLayer):
 	def magnitude(self, embedding: Tensor) -> Tensor:
 		return embedding[:,0,:]
 
-	@property
-	def nfeatures(self) -> int:
-		return 2
-
 class WaveletAnalysisLayer(EmbeddingLayer):
 
 	def __init__(self, cfg, embedding_space: Tensor, device: device):
@@ -115,6 +111,9 @@ class WaveletAnalysisLayer(EmbeddingLayer):
 		self.C = cfg.decay_factor / (8 * math.pi ** 2)
 		self.init_log(f"WaveletAnalysisLayer: nfreq={self.nfreq} ")
 		self.subbatch_size = cfg.get('subbatch_size',-1)
+		self.nharmonics = self.cfg.get('nharmonics', 0)
+		self.noctaves = self.cfg.noctaves
+		self.nfreq_oct = self.cfg.nfreq_oct
 
 	def sbatch(self, ts: torch.Tensor, ys: torch.Tensor, subbatch: int) -> tuple[Tensor,Tensor]:
 		sbr = [ subbatch*self.subbatch_size, (subbatch+1)*self.subbatch_size ]
@@ -131,7 +130,6 @@ class WaveletAnalysisLayer(EmbeddingLayer):
 	def embed_subbatch(self, ts: torch.Tensor, ys: torch.Tensor ) -> Tensor:
 		t0 = time.time()
 		self.init_log(f"WaveletAnalysisLayer shapes: ts{list(ts.shape)} ys{list(ys.shape)}")
-	#	slen: int = self.series_length if (self.series_length > 0) else ys.shape[1]
 		slen: int = ys.shape[1]
 		ones: Tensor = torch.ones( ys.shape[0], self.nfreq, slen, device=self.device)
 		tau = 0.5 * (ts[:, slen // 2] + ts[:, slen // 2 + 1])
@@ -162,15 +160,26 @@ class WaveletAnalysisLayer(EmbeddingLayer):
 		self.init_state = False
 		return rv
 
-	def magnitude(self, embedding: Tensor) -> np.ndarray:
-		mag = torch.sqrt( torch.sum( embedding**2, dim=1 ) )
-		mcov: Tensor = torch.cov(mag)
-		self.log.info( f"WaveletAnalysisLayer: mag{list(mag.shape)} -> mcov{list(mcov.shape)}")
-		return mag.cpu().numpy()
+	def fold_harmonics(self, embedding: Tensor) -> Tensor:      # [Batch,NF]
+		if self.nharmonics <= 0:
+			return embedding
+		else:
+			nf0 = self.noctaves * self.nfreq_oct
+			flayers = [ embedding[:,:nf0] ]
+			for iH in range(1,self.nharmonics+1):
+				dfH = self.nfreq_oct*iH
+				flayers.append( embedding[dfH:nf0+dfH] )
+			embedding = torch.concat( flayers, dim=1 )
+			return embedding
 
-	@property
-	def nfeatures(self) -> int:
-		return 3
+	def nfeatures(self):
+		return 1 if (self.nharmonics <= 0) else self.nharmonics+1
+
+	def magnitude(self, embedding: Tensor) -> np.ndarray:
+		mag = torch.sqrt( torch.sum( embedding**2, dim=1 ) ).squeeze()
+		mag = self.fold_harmonics( mag )
+		self.log.info(f"WaveletAnalysisLayer: magnitude{list(mag.shape)}({torch.mean(mag):.2f},{torch.std(mag):.2f})")
+		return mag.cpu().numpy()
 
 class WaveletProjConvLayer(EmbeddingLayer):
 
