@@ -20,6 +20,7 @@ class MITLoader(IterativeDataLoader):
 		self.series_length = cfg.series_length
 		self.period_range: Optional[Tuple[float,float]] = None
 		self.current_sector = None
+		self.loaded_sector = None
 		self.sector_batch_offset = None
 		self.dataset: Optional[xa.Dataset] = None
 		self.train_data: Dict[str,np.ndarray] = {}
@@ -63,10 +64,10 @@ class MITLoader(IterativeDataLoader):
 			else:
 				self.current_sector = self.current_sector + 1
 				self.sector_batch_offset = 0
-				if self.current_sector == self.sector_range[1]:
-					self.current_sector = self.sector_range[0]
-					return None
-				self.log.info( f"Init Dataset: sector={self.current_sector}, sector_range={self.sector_range}, nbatches={self._nbatches} sector_batch_offset={self.sector_batch_offset}")
+				reset = (self.current_sector == self.sector_range[1])
+				if reset: self.current_sector = self.sector_range[0]
+				self.log.info(f"Init Dataset: sector={self.current_sector}, sector_batch_offset={self.sector_batch_offset}, reset={reset}")
+
 		if self.current_sector >= 0:
 			if self.load_sector(self.current_sector):
 				self.update_training_data()
@@ -159,10 +160,9 @@ class MITLoader(IterativeDataLoader):
 
 	def _load_cache_dataset( self, sector_index ):
 		t0 = time.time()
-		if self.current_sector != sector_index:
+		if self.loaded_sector != sector_index:
 			self.refresh()
 		if self.dataset is None:
-			self.current_sector = sector_index
 			dspath: str = self.cache_path(sector_index)
 			if os.path.exists(dspath):
 				self.dataset = xa.open_dataset( dspath, engine="netcdf4" )
@@ -182,7 +182,7 @@ class MITLoader(IterativeDataLoader):
 	def load_sector( self, sector: int, **kwargs ) -> bool:
 		t0 = time.time()
 		refresh = kwargs.get('refresh',False)
-		if (self.current_sector != sector) or (self.dataset is None):
+		if (self.loaded_sector != sector) or (self.dataset is None):
 			self._read_TICS(sector)
 			if refresh: self.refresh()
 			else:       self._load_cache_dataset(sector)
@@ -208,6 +208,7 @@ class MITLoader(IterativeDataLoader):
 				self.log.info(f" Loaded sector {sector} files in {t1-t0:.3f} sec")
 				self.dataset.to_netcdf( self.cache_path(sector), engine="netcdf4" )
 			self.ymax = self.dataset.attrs["ymax"]
+			self.loaded_sector = sector
 			return True
 		return False
 
