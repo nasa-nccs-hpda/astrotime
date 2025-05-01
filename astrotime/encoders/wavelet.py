@@ -172,6 +172,7 @@ class WaveletAnalysisLayer(EmbeddingLayer):
 			embedding = torch.concat( flayers, dim=1 )
 			return embedding
 
+	@property
 	def nfeatures(self):
 		return 1 if (self.nharmonics <= 0) else self.nharmonics+1
 
