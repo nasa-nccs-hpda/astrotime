@@ -166,9 +166,9 @@ class MITLoader(IterativeDataLoader):
 			dspath: str = self.cache_path(sector_index)
 			if os.path.exists(dspath):
 				self.dataset = xa.open_dataset( dspath, engine="netcdf4" )
-				print( f"Opened cache dataset from {dspath} in in {time.time()-t0:.3f} sec, nvars = {len(self.dataset.data_vars)}")
+				self.log.info( f"Opened cache dataset from {dspath} in in {time.time()-t0:.3f} sec, nvars = {len(self.dataset.data_vars)}")
 			else:
-				print( f"Cache file not found: {dspath}")
+				self.log.info( f"Cache file not found: {dspath}")
 		return self.dataset
 
 	def size(self, sector_index) -> int:
@@ -181,9 +181,10 @@ class MITLoader(IterativeDataLoader):
 
 	def load_sector( self, sector: int, **kwargs ) -> bool:
 		t0 = time.time()
-		refresh = kwargs.get('refresh',False)
+		refresh = True # kwargs.get('refresh',False)
 		if (self.loaded_sector != sector) or (self.dataset is None):
 			self._read_TICS(sector)
+			self.log.info(f" Loading sector {sector}, loaded_sector={self.loaded_sector}, #TICS={len(self._TICS)}, refresh={refresh}")
 			if refresh: self.refresh()
 			else:       self._load_cache_dataset(sector)
 			if self.dataset is None:
