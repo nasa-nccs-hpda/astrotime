@@ -124,7 +124,9 @@ class WaveletAnalysisLayer(EmbeddingLayer):
 		return ts[sbr[0]:sbr[1]], ys[sbr[0]:sbr[1]]
 
 	def embed(self, ts: torch.Tensor, ys: torch.Tensor) -> Tensor:
-		if self.subbatch_size <= 0:
+		if ys.ndim == 1:
+			return self.embed_subbatch( ts, ys[None,:] )
+		elif self.subbatch_size <= 0:
 			return self.embed_subbatch( ts, ys )
 		else:
 			nsubbatches = math.ceil(ys.shape[0]/self.subbatch_size)
