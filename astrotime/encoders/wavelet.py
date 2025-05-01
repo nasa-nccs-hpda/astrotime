@@ -134,11 +134,8 @@ class WaveletAnalysisLayer(EmbeddingLayer):
 			return self.embed_subbatch( ts, ys )
 		else:
 			nsubbatches = math.ceil(ys.shape[0]/self.subbatch_size)
-			self.log.info(f" -----> embed batch, BSIZE={ys.shape[0]}, SBSIZE={self.subbatch_size}, NSB={nsubbatches}")
 			subbatches = [ self.embed_subbatch( *self.sbatch(ts,ys,i) ) for i in range(nsubbatches) ]
-			rv = torch.concat( subbatches, dim=0 )
-			self.log.info(f" ---- -------------> result{list(rv.shape)}")
-			return rv
+			return torch.concat( subbatches, dim=0 )
 
 	def embed_subbatch(self, ts: torch.Tensor, ys: torch.Tensor ) -> Tensor:
 		t0 = time.time()
@@ -178,13 +175,11 @@ class WaveletAnalysisLayer(EmbeddingLayer):
 		else:
 			mag = torch.sqrt(torch.sum(embedding ** 2, dim=1))
 			nf0 = self.noctaves * self.nfreq_oct
-			self.log.info(f"WaveletAnalysisLayer.fold_harmonics: mag{list(mag.shape)}, nf0={nf0}, nHf={self.nharmonics*self.nfreq_oct}")
 			flayers = [ mag[:,:nf0] ]
 			for iH in range(1,self.nharmonics+1):
 				dfH = self.nfreq_oct*iH
 				flayers.append( mag[:,dfH:nf0+dfH] )
 			embedding = torch.stack( flayers, dim=1 )
-			self.log.info(f" -------------> folded{list(embedding.shape)}({torch.mean(embedding):.2f},{torch.std(embedding):.2f})")
 			return embedding
 
 	@property
