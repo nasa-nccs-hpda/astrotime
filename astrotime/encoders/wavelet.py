@@ -108,12 +108,16 @@ class WaveletAnalysisLayer(EmbeddingLayer):
 
 	def __init__(self, cfg, embedding_space: Tensor, device: device):
 		EmbeddingLayer.__init__(self, cfg, embedding_space, device)
-		self.C = cfg.decay_factor / (8 * math.pi ** 2)
+		self.C: float = cfg.decay_factor / (8 * math.pi ** 2)
 		self.init_log(f"WaveletAnalysisLayer: nfreq={self.nfreq} ")
-		self.subbatch_size = cfg.get('subbatch_size',-1)
-		self.nharmonics = self.cfg.get('nharmonics', 0)
-		self.noctaves = self.cfg.noctaves
-		self.nfreq_oct = self.cfg.nfreq_oct
+		self.subbatch_size: int = cfg.get('subbatch_size',-1)
+		self.nharmonics: int = self.cfg.get('nharmonics', 0)
+		self.noctaves: int = self.cfg.noctaves
+		self.nfreq_oct: int = self.cfg.nfreq_oct
+
+	@property
+	def output_series_length(self) -> int:
+		return self.noctaves * self.nfreq_oct
 
 	def sbatch(self, ts: torch.Tensor, ys: torch.Tensor, subbatch: int) -> tuple[Tensor,Tensor]:
 		sbr = [ subbatch*self.subbatch_size, (subbatch+1)*self.subbatch_size ]
