@@ -116,6 +116,10 @@ class WaveletAnalysisLayer(EmbeddingLayer):
 		self.nfreq_oct: int = self.cfg.nfreq_oct
 
 	@property
+	def xdata(self) -> np.ndarray:
+		return self._embedding_space[:self.output_series_length].cpu().numpy()
+
+	@property
 	def output_series_length(self) -> int:
 		return self.noctaves * self.nfreq_oct
 
