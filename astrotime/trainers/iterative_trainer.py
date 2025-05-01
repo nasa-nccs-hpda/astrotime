@@ -125,7 +125,7 @@ class IterativeTrainer(object):
                 for ibatch in range(0,batch_idx_end):
                     t0 = time.time()
                     batch = self.get_next_batch()
-                    if batch is None:
+                    if (batch is None) or (batch['z'].shape[0]==0):
                         break
                     else:
                         self.global_time = time.time()

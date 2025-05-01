@@ -128,9 +128,10 @@ class WaveletAnalysisLayer(EmbeddingLayer):
 			return self.embed_subbatch( ts, ys )
 		else:
 			nsubbatches = math.ceil(ys.shape[0]/self.subbatch_size)
+			self.log.info(f" -----> embed batch, BSIZE={ys.shape[0]}, SBSIZE={self.subbatch_size}, NSB={nsubbatches}")
 			subbatches = [ self.embed_subbatch( *self.sbatch(ts,ys,i) ) for i in range(nsubbatches) ]
 			rv = torch.concat( subbatches, dim=0 )
-			self.log.info(f" ---- -------------> embed batch{list(rv.shape)}")
+			self.log.info(f" ---- -------------> result{list(rv.shape)}")
 			return rv
 
 	def embed_subbatch(self, ts: torch.Tensor, ys: torch.Tensor ) -> Tensor:
