@@ -35,6 +35,6 @@ def get_model_from_cfg( cfg: DictConfig, device: torch.device, embedding_layer: 
 		cnn_channels = add_cnn_block( model, cnn_channels, num_input_features, cfg )
 		num_input_features = -1
 	reduced_series_len = embedding_layer.output_series_length // int( math.pow(cfg.pool_size, cfg.num_blocks) )
-	print(f"CNN: reduced_series_len={reduced_series_len}, cnn_channels={cnn_channels}")
+	print(f"CNN: reduced_series_len={reduced_series_len}, cnn_channels={cnn_channels}, output_series_length={embedding_layer.output_series_length}")
 	add_dense_block( model, cnn_channels*reduced_series_len, cfg )
 	return model.to(device)
