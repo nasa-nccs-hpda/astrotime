@@ -164,13 +164,13 @@ class WaveletAnalysisLayer(EmbeddingLayer):
 			return embedding
 		else:
 			mag = torch.sqrt(torch.sum(embedding ** 2, dim=1))
-			self.log.info(f"WaveletAnalysisLayer.fold_harmonics: mag{list(mag.shape)}")
 			nf0 = self.noctaves * self.nfreq_oct
+			self.log.info(f"WaveletAnalysisLayer.fold_harmonics: mag{list(mag.shape)}, nf0={nf0}, nHf={self.nharmonics*self.nfreq_oct}")
 			flayers = [ mag[:,:nf0] ]
 			for iH in range(1,self.nharmonics+1):
 				dfH = self.nfreq_oct*iH
-				flayers.append( mag[dfH:nf0+dfH] )
-			embedding = torch.concat( flayers, dim=1 )
+				flayers.append( mag[:,dfH:nf0+dfH] )
+			embedding = torch.stack( flayers, dim=1 )
 			self.log.info(f" -------------> folded{list(embedding.shape)}({torch.mean(embedding):.2f},{torch.std(embedding):.2f})")
 			return embedding
 
