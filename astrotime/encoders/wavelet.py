@@ -191,9 +191,12 @@ class WaveletAnalysisLayer(EmbeddingLayer):
 	def nfeatures(self):
 		return 1 if (self.nharmonics <= 0) else self.nharmonics+1
 
-	def magnitude(self, embedding: Tensor) -> np.ndarray:
+	def power(self, embedding: Tensor) -> np.ndarray:
 		mag = torch.sqrt( torch.sum( embedding**2, dim=1 ) ).squeeze()
 		return mag.cpu().numpy()
+
+	def magnitude(self, embedding: Tensor) -> np.ndarray:
+		return embedding[:,0].cpu().numpy().squeeze()
 
 class WaveletProjConvLayer(EmbeddingLayer):
 
