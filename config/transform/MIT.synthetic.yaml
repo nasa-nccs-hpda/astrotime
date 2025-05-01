@@ -9,7 +9,7 @@ time_scale:   1.0                   # Time rescale factor for shifted frequency 
 decay_factor: 0.0                   # Time envelope decay factor
 bw_winlen: 0.25                     # Detrend parameter for Wotan
 spline_minbrk: 0.2                  # Denoise parameter for Wotan
-subbatch_size: 10                   # Split batches into (serially computed) subbatches in order to fit into gpu memory
+subbatch_size: 0                    # IF>0: Split batches into (serially computed) subbatches in order to fit into gpu memory
 
 
 
