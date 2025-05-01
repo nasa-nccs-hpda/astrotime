@@ -125,9 +125,9 @@ class IterativeTrainer(object):
                 for ibatch in range(0,batch_idx_end):
                     t0 = time.time()
                     batch = self.get_next_batch()
-                    if (batch is None) or (batch['z'].shape[0]==0):
+                    if batch is None:
                         break
-                    else:
+                    elif batch['z'].shape[0] > 0:
                         self.global_time = time.time()
                         self.log.info( f"BATCH-{ibatch}: input={shp(batch['z'])}, target={shp(batch['target'])}")
                         result: Tensor = self.model( batch['z'] )
