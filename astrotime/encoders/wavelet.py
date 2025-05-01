@@ -154,22 +154,23 @@ class WaveletAnalysisLayer(EmbeddingLayer):
 		p1: Tensor = w_prod(ys, pw1)
 		p2: Tensor = w_prod(ys, pw2)
 		self.init_log(f" --> p0{list(p0.shape)} p1{list(p1.shape)} p2{list(p2.shape)}")
-
-		rv: Tensor = torch.concat( (p0[:, None, :], p1[:, None, :], p2[:, None, :]), dim=1)
-		self.init_log(f" Completed embedding in {elapsed(t0):.5f} sec: result{list(rv.shape)}")
+		embedding: Tensor = torch.concat( (p0[:, None, :], p1[:, None, :], p2[:, None, :]), dim=1)
+		self.init_log(f" Completed embedding in {elapsed(t0):.5f} sec: embedding{list(embedding.shape)}")
 		self.init_state = False
-		return rv
+		return self.fold_harmonics(embedding)
 
 	def fold_harmonics(self, embedding: Tensor) -> Tensor:      # [Batch,NF]
 		if self.nharmonics <= 0:
 			return embedding
 		else:
+			mag = torch.sqrt(torch.sum(embedding ** 2, dim=1)).squeeze()
 			nf0 = self.noctaves * self.nfreq_oct
-			flayers = [ embedding[:,:nf0] ]
+			flayers = [ mag[:,:nf0] ]
 			for iH in range(1,self.nharmonics+1):
 				dfH = self.nfreq_oct*iH
-				flayers.append( embedding[dfH:nf0+dfH] )
+				flayers.append( mag[dfH:nf0+dfH] )
 			embedding = torch.concat( flayers, dim=1 )
+			self.log.info(f"WaveletAnalysisLayer: fold_harmonics{list(embedding.shape)}({torch.mean(embedding):.2f},{torch.std(embedding):.2f})")
 			return embedding
 
 	@property
@@ -178,8 +179,6 @@ class WaveletAnalysisLayer(EmbeddingLayer):
 
 	def magnitude(self, embedding: Tensor) -> np.ndarray:
 		mag = torch.sqrt( torch.sum( embedding**2, dim=1 ) ).squeeze()
-		mag = self.fold_harmonics( mag )
-		self.log.info(f"WaveletAnalysisLayer: magnitude{list(mag.shape)}({torch.mean(mag):.2f},{torch.std(mag):.2f})")
 		return mag.cpu().numpy()
 
 class WaveletProjConvLayer(EmbeddingLayer):

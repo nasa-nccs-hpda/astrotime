@@ -26,9 +26,6 @@ def my_app(cfg: DictConfig) -> None:
 
 	trainer = IterativeTrainer( cfg.train, data_loader, encoder, model )
 	trainer.initialize_checkpointing(version)
-
-	batch: Dict[str,torch.Tensor] = trainer.get_next_batch()
-	print( f"BATCH: {list(batch['z'].shape)}")
 	trainer.compute()
 
 if __name__ == "__main__":
