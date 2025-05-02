@@ -182,6 +182,7 @@ class MITLoader(IterativeDataLoader):
 	def load_sector( self, sector: int, **kwargs ) -> bool:
 		t0 = time.time()
 		refresh = kwargs.get('refresh',False)
+		min_size = kwargs.get('min_size', 512)
 		if (self.loaded_sector != sector) or (self.dataset is None):
 			self._read_TICS(sector)
 			self.log.info(f" Loading sector {sector}, loaded_sector={self.loaded_sector}, #TICS={len(self._TICS)}, refresh={refresh}")
@@ -201,14 +202,11 @@ class MITLoader(IterativeDataLoader):
 						dflc = pd.read_csv( lc_file, header=None, sep='\s+')
 						nan_mask = ~np.isnan(dflc[1].values)
 						t, y = dflc[0].values[nan_mask], dflc[1].values[nan_mask]
-						try: ym = y.max()
-						except:
-							msg = f"y.max ERROR: TIC[{iT}] = {TIC}, t{list(t.shape)}({dflc[0].values.shape}) y{list(y.shape)}({dflc[1].values.shape}) lc_file={lc_file}"
-							self.log.info(msg)
-							raise Exception( msg )
-						if ym > ymax: ymax = ym
-						xarrays[ TIC + ".time" ] = xa.DataArray( t, dims=TIC+".obs" )
-						xarrays[ TIC + ".y" ]    = xa.DataArray( y, dims=TIC+".obs", attrs=dict(sn=sn,period=period) )
+						if y.size > min_size:
+							ym = y.max()
+							if ym > ymax: ymax = ym
+							xarrays[ TIC + ".time" ] = xa.DataArray( t, dims=TIC+".obs" )
+							xarrays[ TIC + ".y" ]    = xa.DataArray( y, dims=TIC+".obs", attrs=dict(sn=sn,period=period) )
 				self.dataset = xa.Dataset( xarrays, attrs=dict(ymax=ymax) )
 				t1 = time.time()
 				self.log.info(f" Loaded sector {sector} files in {t1-t0:.3f} sec")
