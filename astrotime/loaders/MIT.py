@@ -195,9 +195,10 @@ class MITLoader(IterativeDataLoader):
 					dfbls = pd.read_csv( data_file, header=None, names=['Header', 'Data'] )
 					dfbls = dfbls.set_index('Header').T
 					period: float = np.float64(dfbls['per'].values[0])
-					if self.in_range(period):
+					lc_file = self.lc_file_path(sector, TIC)
+					if self.in_range(period) and os.path.exists(lc_file):
 						sn: float = np.float64(dfbls['sn'].values[0])
-						dflc = pd.read_csv( self.lc_file_path(sector,TIC), header=None, sep='\s+')
+						dflc = pd.read_csv( lc_file, header=None, sep='\s+')
 						nan_mask = ~np.isnan(dflc[1].values)
 						t, y = dflc[0].values[nan_mask], dflc[1].values[nan_mask]
 						ym = y.max()
