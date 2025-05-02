@@ -201,7 +201,11 @@ class MITLoader(IterativeDataLoader):
 						dflc = pd.read_csv( lc_file, header=None, sep='\s+')
 						nan_mask = ~np.isnan(dflc[1].values)
 						t, y = dflc[0].values[nan_mask], dflc[1].values[nan_mask]
-						ym = y.max()
+						try: ym = y.max()
+						except:
+							msg = f"y.max ERROR: TIC[{iT}] = {TIC}, t{list(t.shape)}({dflc[0].values.shape}) y{list(y.shape)}({dflc[1].values.shape}) lc_file={lc_file}"
+							self.log.info(msg)
+							raise Exception( msg )
 						if ym > ymax: ymax = ym
 						xarrays[ TIC + ".time" ] = xa.DataArray( t, dims=TIC+".obs" )
 						xarrays[ TIC + ".y" ]    = xa.DataArray( y, dims=TIC+".obs", attrs=dict(sn=sn,period=period) )
