@@ -28,7 +28,6 @@ class MITLoader(IterativeDataLoader):
 		self.tset: TSet = None
 		self._nbatches = -1
 		self.test_mode_index = self.TestModes.index( cfg.test_mode )
-		self.ymax = None
 		self._TICS = None
 
 	def initialize(self, tset: TSet, **kwargs ):
@@ -211,7 +210,6 @@ class MITLoader(IterativeDataLoader):
 				t1 = time.time()
 				self.log.info(f" Loaded sector {sector} files in {t1-t0:.3f} sec")
 				self.dataset.to_netcdf( self.cache_path(sector), engine="netcdf4" )
-			self.ymax = self.dataset.attrs["ymax"]
 			self.loaded_sector = sector
 			return True
 		return False
