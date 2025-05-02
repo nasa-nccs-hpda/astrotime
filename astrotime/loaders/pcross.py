@@ -12,31 +12,25 @@ class PlanetCrossingDataGenerator:
 		self.arange: Tuple[float,float] = cfg.arange
 		self.wrange: Tuple[float, float] = cfg.wrange
 		self.nrange: Tuple[float, float] = cfg.nrange
-		self.q2 = math.sqrt(math.log(2))
 
-	def get_element(  self, time: xa.DataArray, y: xa.DataArray ) -> xa.DataArray:
-		period: float  = y.attrs['period']
+	def signal(self, t: np.ndarray, p: float|np.ndarray ):
 		a: float = random.uniform( *self.arange )
 		w: float = random.uniform( *self.wrange )
 		n: float = random.uniform( *self.nrange )
-		noise: np.ndarray = np.random.normal(0.0, self.n, time.shape[0])
-		tvals: np.ndarray = time.values
-		dt = np.mod(tvals,period) - period/2
-		pcross: np.ndarray =  (1 - a*np.exp(-(w*dt/period) ** 2)) + noise
-		signal: xa.DataArray = y.copy( data=pcross )
-		signal.attrs.update( width=w, amp=a, noise=n )
+		noise: np.ndarray = np.random.normal(0.0, n, t.shape )
+		dt = np.mod(t,p) - p/2
+		s: np.ndarray =  (1 - a*np.exp(-(w*dt/p) ** 2)) + noise
+		return s
+
+	def get_element(  self, time: xa.DataArray, y: xa.DataArray ) -> xa.DataArray:
+		s = self.signal( time.values, y.attrs['period'] )
+		signal: xa.DataArray = y.copy( data=s )
 		return signal
 
 	def process_batch(self, batch: Dict[str, np.ndarray]) -> Dict[str, np.ndarray]:
-		tvals, y, p = batch['t'], batch['y'], batch['p']
-		a: float =     random.uniform( self.arange[0], self.arange[1] )
-		h: float =     random.uniform( self.hrange[0], self.hrange[1] )
-		period = p[:,None]
-		noise: np.ndarray = np.random.normal(0.0, self.noise, tvals.shape)
-		dt = np.mod(tvals,period) - period
-		pcross: np.ndarray =  (1 - h * np.exp(-(a*dt/period) ** 2)) + noise
-		self.log.info( f"PlanetCrossingDataGenerator.process_batch: a={a}, h={h}, period{period.shape}, tvals{tvals.shape}, y{y.shape}, dt{dt.shape}, pcross{pcross.shape}")
-		return dict( t=tvals, y=pcross, p=p )
+		t, p = batch['t'], batch['p']
+		s = self.signal( t, p[:,None] )
+		return dict( t=t, y=s, p=p )
 
 
 
