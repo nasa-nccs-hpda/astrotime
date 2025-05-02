@@ -192,20 +192,24 @@ class MITLoader(IterativeDataLoader):
 				ymax = 0.0
 				for iT, TIC in enumerate(self._TICS):
 					data_file = self.bls_file_path(sector,TIC)
-					dfbls = pd.read_csv( data_file, header=None, names=['Header', 'Data'] )
-					dfbls = dfbls.set_index('Header').T
-					period: float = np.float64(dfbls['per'].values[0])
 					lc_file = self.lc_file_path(sector, TIC)
-					if self.in_range(period) and os.path.exists(lc_file):
-						sn: float = np.float64(dfbls['sn'].values[0])
-						dflc = pd.read_csv( lc_file, header=None, sep='\s+')
-						nan_mask = ~np.isnan(dflc[1].values)
-						t, y = dflc[0].values[nan_mask], dflc[1].values[nan_mask]
-						if y.size > min_size:
-							ym = y.max()
-							if ym > ymax: ymax = ym
-							xarrays[ TIC + ".time" ] = xa.DataArray( t, dims=TIC+".obs" )
-							xarrays[ TIC + ".y" ]    = xa.DataArray( y, dims=TIC+".obs", attrs=dict(sn=sn,period=period) )
+					try:
+						dfbls = pd.read_csv( data_file, header=None, names=['Header', 'Data'] )
+						dfbls = dfbls.set_index('Header').T
+						period: float = np.float64(dfbls['per'].values[0])
+						if self.in_range(period) and os.path.exists(lc_file):
+							sn: float = np.float64(dfbls['sn'].values[0])
+							dflc = pd.read_csv( lc_file, header=None, sep='\s+')
+							nan_mask = ~np.isnan(dflc[1].values)
+							t, y = dflc[0].values[nan_mask], dflc[1].values[nan_mask]
+							if y.size > min_size:
+								ym = y.max()
+								if ym > ymax: ymax = ym
+								xarrays[ TIC + ".time" ] = xa.DataArray( t, dims=TIC+".obs" )
+								xarrays[ TIC + ".y" ]    = xa.DataArray( y, dims=TIC+".obs", attrs=dict(sn=sn,period=period) )
+					except Exception as e:
+						self.log.info(f" ERROR loading TIC {TIC} from file {data_file}, lc_file={lc_file}: {e}")
+
 				self.dataset = xa.Dataset( xarrays, attrs=dict(ymax=ymax) )
 				t1 = time.time()
 				self.log.info(f" Loaded sector {sector} files in {t1-t0:.3f} sec")
