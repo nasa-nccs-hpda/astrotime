@@ -10,20 +10,21 @@ class PlanetCrossingDataGenerator:
 		self.log = logging.getLogger()
 		self.cfg = cfg
 		self.arange: Tuple[float,float] = cfg.arange
-		self.hrange: Tuple[float, float] = cfg.hrange
-		self.noise = cfg.noise
+		self.wrange: Tuple[float, float] = cfg.wrange
+		self.nrange: Tuple[float, float] = cfg.nrange
 		self.q2 = math.sqrt(math.log(2))
 
 	def get_element(  self, time: xa.DataArray, y: xa.DataArray ) -> xa.DataArray:
 		period: float  = y.attrs['period']
-		a: float =     random.uniform( self.arange[0], self.arange[1] )
-		h: float =     random.uniform( self.hrange[0], self.hrange[1] )
-		noise: np.ndarray = np.random.normal(0.0, self.noise, time.shape[0])
+		a: float = random.uniform( *self.arange )
+		w: float = random.uniform( *self.wrange )
+		n: float = random.uniform( *self.nrange )
+		noise: np.ndarray = np.random.normal(0.0, self.n, time.shape[0])
 		tvals: np.ndarray = time.values
 		dt = np.mod(tvals,period) - period/2
-		pcross: np.ndarray =  (1 - h * np.exp(-(a*dt/period) ** 2)) + noise
+		pcross: np.ndarray =  (1 - a*np.exp(-(w*dt/period) ** 2)) + noise
 		signal: xa.DataArray = y.copy( data=pcross )
-		signal.attrs.update(width=a, mag=h, noise=self.noise)
+		signal.attrs.update( width=w, amp=a, noise=n )
 		return signal
 
 	def process_batch(self, batch: Dict[str, np.ndarray]) -> Dict[str, np.ndarray]:

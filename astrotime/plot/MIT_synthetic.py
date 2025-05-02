@@ -12,7 +12,7 @@ log = logging.getLogger()
 
 class MITSyntheticPlot(MITDatasetPlot):
 
-	def __init__(self, name: str, data_loader: IterativeDataLoader, sector: int, cfg: DictConfig, **kwargs):
+	def __init__(self, name: str, cfg: DictConfig, data_loader: IterativeDataLoader, sector: int, **kwargs):
 		MITDatasetPlot.__init__(self, name, data_loader, sector, **kwargs)
 		self.arange: Tuple[float,float] = cfg.arange
 		self.hrange: Tuple[float, float] = cfg.hrange
