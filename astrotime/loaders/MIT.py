@@ -181,7 +181,7 @@ class MITLoader(IterativeDataLoader):
 
 	def load_sector( self, sector: int, **kwargs ) -> bool:
 		t0 = time.time()
-		refresh = True # kwargs.get('refresh',False)
+		refresh = kwargs.get('refresh',False)
 		if (self.loaded_sector != sector) or (self.dataset is None):
 			self._read_TICS(sector)
 			self.log.info(f" Loading sector {sector}, loaded_sector={self.loaded_sector}, #TICS={len(self._TICS)}, refresh={refresh}")
@@ -254,17 +254,18 @@ class MITLoader(IterativeDataLoader):
 		elems = []
 		periods = []
 		for TIC in self._TICS:
-			cy: xa.DataArray = self.dataset[TIC + ".y"]
-			p = cy.attrs["period"]
-			if self.in_range(p):
-				# bz: np.ndarray = self.get_largest_block(TIC)
-				# if bz.shape[1] >= self.series_length:
-				# 	elems.append( self.get_batch_element(bz) )
-				# 	periods.append(p)
-				eslice = self.get_elem_slice(TIC)
-				if eslice is not None:
-					elems.append(eslice)
-					periods.append(p)
+			if TIC+".y" in self.dataset.data_vars:
+				cy: xa.DataArray = self.dataset[TIC+".y"]
+				p = cy.attrs["period"]
+				if self.in_range(p):
+					# bz: np.ndarray = self.get_largest_block(TIC)
+					# if bz.shape[1] >= self.series_length:
+					# 	elems.append( self.get_batch_element(bz) )
+					# 	periods.append(p)
+					eslice = self.get_elem_slice(TIC)
+					if eslice is not None:
+						elems.append(eslice)
+						periods.append(p)
 		z = np.stack(elems,axis=0)
 		self.train_data['t'] = z[:,0,:]
 		self.train_data['y'] = z[:,1,:]

@@ -169,6 +169,19 @@ class WaveletAnalysisLayer(EmbeddingLayer):
 		self.init_state = False
 		return self.fold_harmonics(embedding)
 
+	def fold_octaves(self, embedding: Tensor) -> Tensor:      # [Batch,NF]
+		if self.nharmonics <= 0:
+			return embedding
+		else:
+			mag = torch.sqrt(torch.sum(embedding ** 2, dim=1))
+			nf0 = self.noctaves * self.nfreq_oct
+			flayers = [ mag[:,:nf0] ]
+			for iH in range(1,self.nharmonics+1):
+				dfH = self.nfreq_oct*iH
+				flayers.append( mag[:,dfH:nf0+dfH] )
+			embedding = torch.stack( flayers, dim=1 )
+			return embedding
+
 	def fold_harmonics(self, embedding: Tensor) -> Tensor:      # [Batch,NF]
 		if self.nharmonics <= 0:
 			return embedding
