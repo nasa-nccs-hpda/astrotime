@@ -6,8 +6,12 @@ from torch import Tensor, device, nn
 from .embedding import EmbeddingLayer
 from astrotime.util.math import log2space, tnorm
 from astrotime.util.logging import elapsed
+from astrotime.util.interpolation import RegularGridInterpolator
 
 def clamp( idx: int ) -> int: return max( 0, idx )
+
+def is_power_of_two(n):
+	return n > 0 and (n & (n - 1)) == 0
 
 def embedding_space( cfg: DictConfig, device: device ) -> Tuple[np.ndarray,Tensor]:
 	base_freq =  cfg.base_freq
@@ -175,10 +179,16 @@ class WaveletAnalysisLayer(EmbeddingLayer):
 		else:
 			mag = torch.sqrt(torch.sum(embedding ** 2, dim=1))
 			nf0 = self.noctaves * self.nfreq_oct
+			base_freq =  self._embedding_space[:nf0]
 			flayers = [ mag[:,:nf0] ]
 			for iH in range(1,self.nharmonics+1):
-				dfH = self.nfreq_oct*iH
-				flayers.append( mag[:,dfH:nf0+dfH] )
+				octave: float = math.log2(iH)
+				if octave.is_integer():
+					dfH = self.nfreq_oct*octave
+					flayers.append( mag[:,dfH:nf0+dfH] )
+				else:
+					interpolator = RegularGridInterpolator(  [self._embedding_space], mag )
+					flayers.append( interpolator( iH*base_freq ) )
 			embedding = torch.stack( flayers, dim=1 )
 			return embedding
 
