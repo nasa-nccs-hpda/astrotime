@@ -182,7 +182,7 @@ class WaveletAnalysisLayer(EmbeddingLayer):
 			for iH in range(1,self.nharmonics+1):
 				octave: float = math.log2(iH)
 				if octave.is_integer():
-					dfH = self.nfreq_oct*octave
+					dfH = self.nfreq_oct*int(octave)
 					flayers.append( mag[:,dfH:nf0+dfH] )
 				else:
 					interpolator = RegularGridInterpolator(  [self._embedding_space], mag )
