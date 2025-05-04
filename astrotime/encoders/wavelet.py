@@ -10,12 +10,10 @@ from astrotime.util.interpolation import RegularGridInterpolator
 
 def clamp( idx: int ) -> int: return max( 0, idx )
 
-def is_power_of_two(n):
-	return n > 0 and (n & (n - 1)) == 0
-
 def embedding_space( cfg: DictConfig, device: device ) -> Tuple[np.ndarray,Tensor]:
 	base_freq =  cfg.base_freq
-	noctaves =  cfg.noctaves + cfg.nharmonics
+	nharmonic_octaves: float = math.ceil(math.log2(cfg.nharmonics))
+	noctaves =  cfg.noctaves + nharmonic_octaves
 	top_freq = base_freq + base_freq*2**noctaves
 	nfreq = cfg.nfreq_oct * noctaves
 	nfspace = log2space( base_freq, top_freq, nfreq )
@@ -173,7 +171,7 @@ class WaveletAnalysisLayer(EmbeddingLayer):
 		self.init_state = False
 		return self.fold_harmonics(embedding)
 
-	def fold_octaves(self, embedding: Tensor) -> Tensor:      # [Batch,NF]
+	def fold_harmonics(self, embedding: Tensor) -> Tensor:      # [Batch,NF]
 		if self.nharmonics <= 0:
 			return embedding
 		else:
@@ -189,19 +187,6 @@ class WaveletAnalysisLayer(EmbeddingLayer):
 				else:
 					interpolator = RegularGridInterpolator(  [self._embedding_space], mag )
 					flayers.append( interpolator( iH*base_freq ) )
-			embedding = torch.stack( flayers, dim=1 )
-			return embedding
-
-	def fold_harmonics(self, embedding: Tensor) -> Tensor:      # [Batch,NF]
-		if self.nharmonics <= 0:
-			return embedding
-		else:
-			mag = torch.sqrt(torch.sum(embedding ** 2, dim=1))
-			nf0 = self.noctaves * self.nfreq_oct
-			flayers = [ mag[:,:nf0] ]
-			for iH in range(1,self.nharmonics+1):
-				dfH = self.nfreq_oct*iH
-				flayers.append( mag[:,dfH:nf0+dfH] )
 			embedding = torch.stack( flayers, dim=1 )
 			return embedding
 
