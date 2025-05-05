@@ -203,7 +203,7 @@ class WaveletAnalysisLayer(EmbeddingLayer):
 		return mag.cpu().numpy()
 
 	def magnitude(self, embedding: Tensor) -> np.ndarray:
-		return embedding[:,0].cpu().numpy().squeeze()
+		return embedding.cpu().numpy().squeeze()
 
 class WaveletProjConvLayer(EmbeddingLayer):
 
