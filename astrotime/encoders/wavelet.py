@@ -178,7 +178,9 @@ class WaveletAnalysisLayer(EmbeddingLayer):
 		else:
 			mag = torch.sqrt(torch.sum(embedding ** 2, dim=1))
 			nf0 = self.noctaves * self.nfreq_oct
-			full_freq = self._embedding_space[None, :].view(mag.shape)
+			es0: Tensor = self._embedding_space[None, :]
+			self.log.info(f"fold_harmonics: es0{shp(es0)} -> {shp(mag)}")
+			full_freq = es0.view(mag.shape)
 			base_freq = full_freq[:,nf0]
 			flayers = [ mag[:,:nf0] ]
 			self.log.info(f"fold_harmonics: x0{shp(full_freq)} y0{shp(mag)} -> x1{shp(base_freq)}")
