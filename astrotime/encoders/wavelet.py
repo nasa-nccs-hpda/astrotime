@@ -187,8 +187,9 @@ class WaveletAnalysisLayer(EmbeddingLayer):
 					dfH: int = self.nfreq_oct*int(octave)
 					harmonic: Tensor = mag[:,dfH:nf0+dfH]
 				else:
-					full_freq = self._embedding_space[None,:]
-					harmonic: Tensor = interp1d( full_freq, mag, iH*base_freq )
+					full_freq = self._embedding_space[None,:].view(mag.shape)
+					hfreq = (iH*base_freq)[None,:].view(mag.shape)
+					harmonic: Tensor = interp1d( full_freq, mag, hfreq )
 				self.log.info(f" ---> H{iH}]: x1{shp(base_freq)} y1{shp(harmonic)}")
 				flayers.append( harmonic )
 			embedding = torch.stack( flayers, dim=1 )
