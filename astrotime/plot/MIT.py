@@ -195,7 +195,7 @@ class MITTransformPlot(SignalPlot):
 		self.data_loader: IterativeDataLoader = data_loader
 		self.TICS: List[str] = data_loader.TICS(sector)
 		self.annotations: List[str] = tolower( kwargs.get('annotations',None) )
-		self.colors = [ 'red', 'green', 'blue', 'yellow', 'magenta', 'cyan', 'darkviolet', 'darkorange', 'saddlebrown', 'darkturquoise' ]
+		self.colors = [ 'black', 'red', 'green', 'blue', 'yellow', 'magenta', 'cyan', 'darkviolet', 'darkorange', 'saddlebrown', 'darkturquoise' ]
 		self.ofac = kwargs.get('upsample_factor',1)
 		self.normtype = kwargs.get('norm', 'z')
 		self.plots: List[Line2D] = []
@@ -228,7 +228,9 @@ class MITTransformPlot(SignalPlot):
 		y = tdata[None,:] if (tdata.ndim == 1) else tdata
 		self.nlines = y.shape[0]
 		for ip in range(self.nlines):
-			self.plots.append( self.ax.plot(x, y[ip], label=f"{self.tname}-{ip}", color=self.colors[ip], marker=".", linewidth=1, markersize=2, alpha=0.5)[0] )
+			alpha = 1.0 - ip/self.nlines
+			lw = 2 if (ip == 0) else 1
+			self.plots.append( self.ax.plot(x, y[ip], label=f"{self.tname}-{ip}", color=self.colors[ip], marker=".", linewidth=lw, markersize=lw, alpha=alpha)[0] )
 		self.ax.set_xlim( self.transform.xdata.min(), self.transform.xdata.max() )
 		self.ax.set_ylim( tdata.min(), tdata.max() )
 		self.target_marker: Line2D = self.ax.axvline( freq, 0.0, 1.0, color='grey', linestyle='-', linewidth=3, alpha=0.5)
