@@ -182,7 +182,7 @@ class WaveletAnalysisLayer(EmbeddingLayer):
 			base_freq = full_freq[:,:nf0]
 			flayers = [ mag[:,:nf0] ]
 		#	self.log.info(f"fold_harmonics: x0{shp(full_freq)} y0{shp(mag)} -> x1{shp(base_freq)}")
-			for iH in range(1,self.nharmonics+1):
+			for iH in range(2,self.nharmonics+2):
 				octave: float = math.log2(iH)
 				if octave.is_integer():
 					dfH: int = self.nfreq_oct*int(octave)
