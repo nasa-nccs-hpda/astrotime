@@ -47,5 +47,7 @@ class MITSyntheticPlot(MITDatasetPlot):
 
 	@exception_handled
 	def update(self, val=0, **kwargs ):
-		MITDatasetPlot.update(self, val, **kwargs)
+		params = {pn: self._current_value[pn] for pn in self._sparms.keys()}
+		self.data_loader.set_params( params )
+		MITDatasetPlot.update(self, val,  **kwargs)
 

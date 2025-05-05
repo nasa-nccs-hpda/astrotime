@@ -39,6 +39,10 @@ class IterativeDataLoader:
 
 	def __init__(self):
 		self.log = logging.getLogger()
+		self.params: Dict[str,float] = {}
+
+	def set_params(self, params: Dict[str,float] ):
+		self.params = params
 
 	def get_dataset( self, *args ) -> xa.Dataset:
 		raise NotImplementedError(f"The class '{self.__class__.__name__}' does not implement the 'get_dataset' method")

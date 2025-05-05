@@ -76,7 +76,7 @@ class MITLoader(IterativeDataLoader):
 			self.sector_batch_offset = batch_end
 			self.log.info( f"  *** get_next_batch: batch({batch_start}->{batch_end}), t{self.train_data['t'].shape}->bt{result['t'].shape}, y{self.train_data['y'].shape}->by{result['y'].shape}, p{self.train_data['p'].shape}->bp{result['p'].shape}  ")
 			if self.test_mode_index == 2:
-				result = self.synthetic.process_batch( result )
+				result = self.synthetic.process_batch( result, **self.params )
 			return result
 		return None
 
