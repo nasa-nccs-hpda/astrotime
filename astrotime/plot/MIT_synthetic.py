@@ -15,7 +15,7 @@ class MITSyntheticPlot(MITDatasetPlot):
 	def __init__(self, name: str, cfg: DictConfig, data_loader: IterativeDataLoader, sector: int, **kwargs):
 		MITDatasetPlot.__init__(self, name, data_loader, sector, **kwargs)
 		self.arange: Tuple[float,float] = cfg.arange
-		self.hrange: Tuple[float, float] = cfg.hrange
+		self.wrange: Tuple[float, float] = cfg.wrange
 		self.nrange: Tuple[float, float] = cfg.nrange
 		self.add_param( STFloatParam('width', self.wrange ) )
 		self.add_param(STFloatParam('amplitude', self.arange))
