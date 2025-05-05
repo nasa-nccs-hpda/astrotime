@@ -261,7 +261,7 @@ class MITTransformPlot(SignalPlot):
 		x,y = ts_tensors['time'].squeeze(), tnorm(ts_tensors['y'].squeeze())
 		transformed: Tensor = transform.embed( x, y )
 		embedding: np.ndarray = transform.magnitude( transformed )
-		self.log.info( f"MITTransformPlot.apply_transform: x{list(x.shape)}, y{list(y.shape)} -> embedding{list(embedding.shape)} ---> x min={embedding.min():.3f}, max={embedding.max():.3f}, mean={embedding.mean():.3f} ---")
+		self.log.info( f"MITTransformPlot.apply_transform: x{list(x.shape)}, y{list(y.shape)} -> transformed{list(transformed.shape)}  embedding{list(embedding.shape)} ---> x min={embedding.min():.3f}, max={embedding.max():.3f}, mean={embedding.mean():.3f} ---")
 		return self.norm(embedding)
 
 	def update_selection_marker(self, freq ) -> float:
