@@ -187,22 +187,27 @@ class MITDatasetPlot(SignalPlot):
 
 class MITTransformPlot(SignalPlot):
 
-	def __init__(self, name: str, data_loader: IterativeDataLoader, transforms: Dict[str,Transform], sector: int, **kwargs):
+	def __init__(self, name: str, data_loader: IterativeDataLoader, transform: Transform, sector: int, **kwargs):
 		SignalPlot.__init__(self, **kwargs)
 		self.name = name
 		self.sector: int = sector
-		self.transforms: Dict[str,Transform] = transforms
+		self.transform: Transform = transform
 		self.data_loader: IterativeDataLoader = data_loader
 		self.TICS: List[str] = data_loader.TICS(sector)
 		self.annotations: List[str] = tolower( kwargs.get('annotations',None) )
-		self.colors = ['darkviolet', 'darkorange', 'saddlebrown', 'darkturquoise', 'magenta' ]
+		self.colors = [ 'red', 'green', 'blue', 'yellow', 'magenta', 'cyan', 'darkviolet', 'darkorange', 'saddlebrown', 'darkturquoise' ]
 		self.ofac = kwargs.get('upsample_factor',1)
 		self.normtype = kwargs.get('norm', 'z')
-		self.plots: Dict[str,Line2D] = {}
+		self.plots: List[Line2D] = []
 		self.target_marker: Line2D = None
 		self.selection_marker: Line2D = None
 		self.add_param( STIntParam('element', (0,len(self.TICS))  ) )
 		self.transax = None
+		self.nlines = -1
+
+	@property
+	def tname(self):
+		return self.transform.name
 
 	def norm(self, embedding: np.ndarray):
 		if self.normtype == "z":  return znorm(embedding)
@@ -218,15 +223,16 @@ class MITTransformPlot(SignalPlot):
 		series_data: xa.Dataset = self.data_loader.get_dataset_element(self.sector, self.TICS[self.element])
 		period: float = series_data.data_vars['y'].attrs['period']
 		freq = 1.0 / period
-		for iplot, (tname, transform) in enumerate(self.transforms.items()):
-			tdata: np.ndarray = self.apply_transform(transform,series_data)
-			x,y = transform.xdata.squeeze(), tdata.squeeze()
-			self.log.info(f"           *** ---- MITTransformPlot.setup: x{x.shape} y{y.shape} ")
-			self.plots[tname] = self.ax.plot(x, y, label=tname, color=self.colors[iplot], marker=".", linewidth=1, markersize=2, alpha=0.5)[0]
-			self.ax.set_xlim( transform.xdata.min(), transform.xdata.max() )
-			self.ax.set_ylim( tdata.min(), tdata.max() )
-		self.target_marker: Line2D = self.ax.axvline( freq, 0.0, 1.0, color='green', linestyle='-')
-		self.selection_marker: Line2D = self.ax.axvline( 0, 0.0, 1.0, color=self.colors[0], linestyle='-', linewidth=2)
+		tdata: np.ndarray = self.apply_transform(series_data)
+		x = self.transform.xdata.squeeze()
+		y = tdata[None,:] if (tdata.ndim == 1) else tdata
+		self.nlines = y.shape[0]
+		for ip in range(self.nlines):
+			self.plots.append( self.ax.plot(x, y[ip], label=f"{self.tname}-{ip}", color=self.colors[ip], marker=".", linewidth=1, markersize=2, alpha=0.5)[0] )
+		self.ax.set_xlim( self.transform.xdata.min(), self.transform.xdata.max() )
+		self.ax.set_ylim( tdata.min(), tdata.max() )
+		self.target_marker: Line2D = self.ax.axvline( freq, 0.0, 1.0, color='grey', linestyle='-', linewidth=3, alpha=0.5)
+		self.selection_marker: Line2D = self.ax.axvline( 0, 0.0, 1.0, color='black', linestyle='-', linewidth=1, alpha=1.0)
 		self.ax.title.set_text(f"{self.name}: TPeriod={period:.3f} (Freq={freq:.3f})")
 		self.ax.title.set_fontsize(8)
 		self.ax.title.set_fontweight('bold')
@@ -257,12 +263,12 @@ class MITTransformPlot(SignalPlot):
 			self.update()
 
 	@exception_handled
-	def apply_transform( self, transform: Transform, series_data: xa.Dataset ) -> np.ndarray:
-		slen = transform.cfg.series_length
-		ts_tensors: Dict[str,Tensor] =  { k: FloatTensor(series_data.data_vars[k].values[:slen]).to(transform.device) for k in ['time','y'] }
+	def apply_transform( self, series_data: xa.Dataset ) -> np.ndarray:
+		slen = self.transform.cfg.series_length
+		ts_tensors: Dict[str,Tensor] =  { k: FloatTensor(series_data.data_vars[k].values[:slen]).to(self.transform.device) for k in ['time','y'] }
 		x,y = ts_tensors['time'].squeeze(), tnorm(ts_tensors['y'].squeeze())
-		transformed: Tensor = transform.embed( x, y )
-		embedding: np.ndarray = transform.magnitude( transformed )
+		transformed: Tensor = self.transform.embed( x, y )
+		embedding: np.ndarray = self.transform.magnitude( transformed )
 		self.log.info( f"MITTransformPlot.apply_transform: x{list(x.shape)}, y{list(y.shape)} -> transformed{list(transformed.shape)}  embedding{list(embedding.shape)} ---> x min={embedding.min():.3f}, max={embedding.max():.3f}, mean={embedding.mean():.3f} ---")
 		return self.norm(embedding)
 
@@ -276,19 +282,16 @@ class MITTransformPlot(SignalPlot):
 	def update(self, val=0):
 		series_data: xa.Dataset = self.data_loader.get_dataset_element(self.sector, self.TICS[self.element])
 		target_period: float = series_data.data_vars['y'].attrs['period']
-		transform_peak_freq = None
-		for iplot, (tname, transform) in enumerate(self.transforms.items()):
-			tdata: np.ndarray = self.apply_transform(transform,series_data)
-			self.plots[tname].set_ydata(tdata)
-			self.plots[tname].set_xdata(transform.xdata)
-			self.ax.set_xlim( transform.xdata.min(), transform.xdata.max() )
-			self.ax.set_ylim( tdata.min(), tdata.max() )
-			self.log.info(f"---- MITTransformPlot({iplot}) {tname}[{self.element})] update: tdata{tdata.shape}, x range=({transform.xdata.min():.3f}->{transform.xdata.max():.3f}) --- ")
-			if iplot == 0:
-				target_freq = transform.get_target_freq( target_period )
-				self.log.info(f"            ->>> target_freq = {target_freq:.4f},  target_period = {target_period:.4f}")
-				self.target_marker.set_xdata([target_freq,target_freq])
-				transform_peak_freq = transform.xdata[np.argmax(tdata)]
+		tdata: np.ndarray = self.apply_transform(series_data)
+		for ip in range(self.nlines):
+			self.plots[ip].set_ydata(tdata[ip])
+			self.plots[ip].set_xdata(self.transform.xdata)
+		self.ax.set_xlim( self.transform.xdata.min(), self.transform.xdata.max() )
+		self.ax.set_ylim( tdata.min(), tdata.max() )
+		self.log.info(f"---- MITTransformPlot {self.tname}[{self.element})] update: tdata{tdata.shape}, x range=({self.transform.xdata.min():.3f}->{self.transform.xdata.max():.3f}) --- ")
+		target_freq = self.transform.get_target_freq( target_period )
+		self.target_marker.set_xdata([target_freq,target_freq])
+		transform_peak_freq = self.transform.xdata[np.argmax(tdata)]
 		transform_period = self.update_selection_marker(transform_peak_freq)
 		self.ax.title.set_text(f"{self.name}: TP={transform_period:.3f} (F={transform_peak_freq:.3f})")
 		self.ax.figure.canvas.draw_idle()

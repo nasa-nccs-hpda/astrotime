@@ -24,8 +24,8 @@ def wavelet_analysis_projection( ts: np.ndarray, ys: np.ndarray, fspace: np.ndar
 
 class OctaveAnalysisLayer(EmbeddingLayer):
 
-	def __init__(self, cfg, embedding_space: Tensor, device: device):
-		EmbeddingLayer.__init__(self, cfg, embedding_space, device)
+	def __init__(self, name, cfg, embedding_space: Tensor, device: device):
+		EmbeddingLayer.__init__(self, name, cfg, embedding_space, device)
 		self.C = cfg.decay_factor / (8 * math.pi ** 2)
 		self.init_log(f"WaveletAnalysisLayer: nfreq={self.nfreq} ")
 		self.nfreq_oct: int   = cfg.nfreq_oct

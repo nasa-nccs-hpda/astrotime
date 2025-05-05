@@ -6,8 +6,8 @@ from .base import Transform
 
 class EmbeddingLayer(Transform):
 
-	def __init__(self, cfg, embedding_space: Tensor, device: device):
-		Transform.__init__(self,cfg,device)
+	def __init__(self, name: str, cfg, embedding_space: Tensor, device: device):
+		Transform.__init__(self, name, cfg, device )
 		self.series_length: int = cfg.series_length
 		self.nfreq: int = embedding_space.shape[0]
 		self.batch_size: int = cfg.batch_size

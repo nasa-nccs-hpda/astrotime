@@ -16,8 +16,8 @@ def embedding_space( cfg, device: device ) -> Tuple[np.ndarray,Tensor]:
 
 class FoldingAnalysisLayer(WaveletAnalysisLayer):
 
-	def __init__(self, cfg, embedding_space: Tensor, device: device):
-		WaveletAnalysisLayer.__init__(self, cfg, embedding_space, device)
+	def __init__(self, name, cfg, embedding_space: Tensor, device: device):
+		WaveletAnalysisLayer.__init__(self, name, cfg, embedding_space, device)
 		self.nfreq_oct: int   = cfg.nfreq_oct
 		self.base_freq: float = cfg.base_freq
 		self.noctaves: int    = cfg.noctaves

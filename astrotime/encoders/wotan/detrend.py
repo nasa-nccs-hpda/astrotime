@@ -14,8 +14,8 @@ def detrend( ts: np.ndarray, ys: np.ndarray, cfg: DictConfig ) -> Tuple[np.ndarr
 
 class DetrendTransform(Transform):
 
-	def __init__(self, cfg: DictConfig, device: device):
-		Transform.__init__(self, cfg, device)
+	def __init__(self, name: str, cfg: DictConfig, device: device):
+		Transform.__init__(self, name, cfg, device)
 		self._xdata: np.ndarray = None
 		self._trends: List[np.ndarray] = []
 

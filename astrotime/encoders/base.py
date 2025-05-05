@@ -7,8 +7,9 @@ from astrotime.trainers.filters import RandomDownsample
 
 class Transform(torch.nn.Module):
 
-	def __init__(self, cfg: DictConfig, device: device):
+	def __init__(self, name: str, cfg: DictConfig, device: device):
 		torch.nn.Module.__init__(self)
+		self.name = name
 		self.requires_grad_(False)
 		self.device = device
 		self.cfg: DictConfig = cfg
