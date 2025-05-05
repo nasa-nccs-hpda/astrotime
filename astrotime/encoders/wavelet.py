@@ -6,7 +6,7 @@ from torch import Tensor, device, nn
 from .embedding import EmbeddingLayer
 from astrotime.util.math import log2space, tnorm
 from astrotime.util.logging import elapsed
-from astrotime.util.interpolation import RegularGridInterpolator
+from astrotime.util.interpolation import interp1d
 
 def clamp( idx: int ) -> int: return max( 0, idx )
 
@@ -185,8 +185,8 @@ class WaveletAnalysisLayer(EmbeddingLayer):
 					dfH = self.nfreq_oct*int(octave)
 					flayers.append( mag[:,dfH:nf0+dfH] )
 				else:
-					interpolator = RegularGridInterpolator(  [self._embedding_space], mag )
-					flayers.append( interpolator( iH*base_freq ) )
+					harmonic: Tensor = interp1d( self._embedding_space, mag, iH*base_freq )
+					flayers.append( harmonic )
 			embedding = torch.stack( flayers, dim=1 )
 			return embedding
 
