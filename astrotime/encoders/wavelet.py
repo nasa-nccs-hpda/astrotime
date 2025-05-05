@@ -1,5 +1,6 @@
 import random, time, numpy as np
 import torch, math
+from astrotime.util.math import shp
 from typing import List, Tuple, Mapping
 from omegaconf import DictConfig, OmegaConf
 from torch import Tensor, device, nn
@@ -179,14 +180,16 @@ class WaveletAnalysisLayer(EmbeddingLayer):
 			nf0 = self.noctaves * self.nfreq_oct
 			base_freq =  self._embedding_space[:nf0]
 			flayers = [ mag[:,:nf0] ]
+			self.log.info(f"fold_harmonics: x0{shp(self._embedding_space)} y0{shp(mag)} ")
 			for iH in range(1,self.nharmonics+1):
 				octave: float = math.log2(iH)
 				if octave.is_integer():
-					dfH = self.nfreq_oct*int(octave)
-					flayers.append( mag[:,dfH:nf0+dfH] )
+					dfH: int = self.nfreq_oct*int(octave)
+					harmonic: Tensor = mag[:,dfH:nf0+dfH]
 				else:
 					harmonic: Tensor = interp1d( self._embedding_space, mag, iH*base_freq )
-					flayers.append( harmonic )
+				self.log.info(f" ---> H{iH}]: x1{shp(base_freq)} y1{shp(harmonic)}")
+				flayers.append( harmonic )
 			embedding = torch.stack( flayers, dim=1 )
 			return embedding
 
