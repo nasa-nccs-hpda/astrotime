@@ -19,8 +19,8 @@ class PlanetCrossingDataGenerator:
 		n: float =  kwargs.get( 'noise', random.uniform( *self.nrange ) )
 		noise: np.ndarray = np.random.normal(0.0, n, t.shape )
 		dt = np.mod(t,p) - p/2
-		s: np.ndarray =  (1 - a*np.exp(-(w*dt/p) ** 2)) + noise
-		return s
+		s: np.ndarray = 1 - a*np.exp(-(w*dt/p) ** 2)
+		return s + noise
 
 	def get_element(  self, time: xa.DataArray, y: xa.DataArray ) -> xa.DataArray:
 		s = self.signal( time.values, y.attrs['period'] )
