@@ -20,7 +20,7 @@ class PlanetCrossingDataGenerator:
 		self.log.info( f"PlanetCrossing Signal: a={a}, w={w}, n={n}, args={kwargs}")
 		noise: np.ndarray = np.random.normal(0.0, n, t.shape )
 		dt = np.mod(t,p) - p/2
-		s: np.ndarray = 1 - a*np.exp(-(w*dt/p) ** 2)
+		s: np.ndarray = 1 - 3*a*np.exp(-(dt/(w*p)) ** 2)
 		return s + noise
 
 	def get_element(  self, time: xa.DataArray, y: xa.DataArray, **kwargs ) -> xa.DataArray:
