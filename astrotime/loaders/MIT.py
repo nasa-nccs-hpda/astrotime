@@ -114,7 +114,7 @@ class MITLoader(IterativeDataLoader):
 		self.load_sector(sector_index, **kwargs)
 		time: xa.DataArray = self.dataset.data_vars[TIC+".time"]
 		y: xa.DataArray = self.dataset.data_vars[TIC + ".y"]
-		signal: xa.DataArray = self.synthetic.get_element( time, y )
+		signal: xa.DataArray = self.synthetic.get_element( time, y, **self.params )
 		return xa.Dataset( dict( time=time, y=signal ) )
 
 	@property

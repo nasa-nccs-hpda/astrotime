@@ -23,8 +23,8 @@ class PlanetCrossingDataGenerator:
 		s: np.ndarray = 1 - a*np.exp(-(w*dt/p) ** 2)
 		return s + noise
 
-	def get_element(  self, time: xa.DataArray, y: xa.DataArray ) -> xa.DataArray:
-		s = self.signal( time.values, y.attrs['period'] )
+	def get_element(  self, time: xa.DataArray, y: xa.DataArray, **kwargs ) -> xa.DataArray:
+		s = self.signal( time.values, y.attrs['period'], **kwargs )
 		signal: xa.DataArray = y.copy( data=s )
 		return signal
 
