@@ -18,8 +18,8 @@ class MITSyntheticPlot(MITDatasetPlot):
 		self.wrange: Tuple[float, float] = cfg.wrange
 		self.nrange: Tuple[float, float] = cfg.nrange
 		self.add_param( STFloatParam('width', self.wrange ) )
-		self.add_param(STFloatParam('amplitude', self.arange))
-		self.add_param(STFloatParam('noise', self.nrange))
+		self.add_param( STFloatParam('amplitude', self.arange ) )
+		self.add_param( STFloatParam('noise', self.nrange ) )
 
 	@exception_handled
 	def button_press(self, event: MouseEvent) -> Any:
@@ -47,7 +47,5 @@ class MITSyntheticPlot(MITDatasetPlot):
 
 	@exception_handled
 	def update(self, val=0, **kwargs ):
-		params = {pn: self._current_value[pn] for pn in self._sparms.keys()}
-		self.data_loader.set_params( params )
-		MITDatasetPlot.update(self, val,  **kwargs)
+		MITDatasetPlot.update( self, val, **kwargs )
 

@@ -157,6 +157,7 @@ class MITDatasetPlot(SignalPlot):
 
 	@exception_handled
 	def get_element_data(self) -> Tuple[np.ndarray,np.ndarray,float]:
+		self.data_loader.set_params( { pn: pv.value_selected() for pn, pv in self._sparms.items()} )
 		element: xa.Dataset = self.data_loader.get_dataset_element(self.sector,self.TICS[self.element], refresh=self.refresh )
 		t, y = element.data_vars['time'], element.data_vars['y']
 		ydata: np.ndarray = y.values
