@@ -273,7 +273,7 @@ class MITTransformPlot(SignalPlot):
 		transformed: Tensor = self.transform.embed( x, y )
 		embedding: np.ndarray = self.transform.magnitude( transformed )
 		self.log.info( f"MITTransformPlot.apply_transform: x{list(x.shape)}, y{list(y.shape)} -> transformed{list(transformed.shape)}  embedding{list(embedding.shape)} ---> x min={embedding.min():.3f}, max={embedding.max():.3f}, mean={embedding.mean():.3f} ---")
-		return self.norm(embedding)
+		return embedding # self.norm(embedding)
 
 	def update_selection_marker(self, freq ) -> float:
 		period = 1/freq
