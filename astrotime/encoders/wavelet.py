@@ -199,7 +199,7 @@ class WaveletAnalysisLayer(EmbeddingLayer):
 					harmonic: Tensor = mag[:,dfH:nf0+dfH]
 				else:
 					harmonic: Tensor = interp1d( full_freq, mag, iH*base_freq )
-				flayers.append(harmonic)
+				flayers.append(l0*harmonic)
 			embedding = torch.stack( flayers, dim=1 )
 			return embedding
 
