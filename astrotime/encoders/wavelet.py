@@ -17,7 +17,8 @@ def pnorm( x: Tensor ) -> Tensor:
 
 def embedding_space( cfg: DictConfig, device: device ) -> Tuple[np.ndarray,Tensor]:
 	base_freq =  cfg.base_freq
-	nharmonic_octaves: float = math.ceil(math.log2(cfg.nharmonics))
+	nharmonics = cfg.get('nharmonics', 0)
+	nharmonic_octaves: float = 0 if (nharmonics==0) else math.ceil(math.log2(nharmonics))
 	noctaves =  cfg.noctaves + nharmonic_octaves
 	top_freq = base_freq + base_freq*2**noctaves
 	nfreq = cfg.nfreq_oct * noctaves
@@ -199,7 +200,7 @@ class WaveletAnalysisLayer(EmbeddingLayer):
 
 	@property
 	def nfeatures(self):
-		return 1 if (self.nharmonics <= 0) else self.nharmonics+1
+		return 3 if (self.nharmonics <= 0) else self.nharmonics+1
 
 	def power(self, embedding: Tensor) -> np.ndarray:
 		mag = torch.sqrt( torch.sum( embedding**2, dim=1 ) ).squeeze()
