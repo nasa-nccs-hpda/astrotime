@@ -16,8 +16,8 @@ def pnorm1( x: Tensor ) -> Tensor:
 	return x / torch.sum( x, dim=-1, keepdim=True )
 
 def pnorm( x: Tensor ) -> Tensor:
-	x0: Tensor = x.min( dim=-1, keepdim=True )
-	x1: Tensor = x.max( dim=-1, keepdim=True )
+	x0: Tensor = x.min( dim=-1, keepdim=True )[0]
+	x1: Tensor = x.max( dim=-1, keepdim=True )[0]
 	return (x-x0)/(x1-x0)
 
 def embedding_space( cfg: DictConfig, device: device ) -> Tuple[np.ndarray,Tensor]:
