@@ -127,6 +127,7 @@ class WaveletAnalysisLayer(EmbeddingLayer):
 		self.nharmonics: int = self.cfg.get('nharmonics', 0)
 		self.noctaves: int = self.cfg.noctaves
 		self.nfreq_oct: int = self.cfg.nfreq_oct
+		self.sum_features = True
 
 	@property
 	def xdata(self) -> np.ndarray:
@@ -191,7 +192,7 @@ class WaveletAnalysisLayer(EmbeddingLayer):
 			full_freq: Tensor = self._embedding_space[None,:].expand(mag.shape)
 			base_freq = full_freq[:,:nf0]
 			l0: Tensor = mag[:,:nf0]
-			flayers = [ l0 ]
+			flayers =  l0  if self.sum_features else [ l0 ]
 			for iH in range(2,self.nharmonics+2):
 				octave: float = math.log2(iH)
 				if octave.is_integer():
@@ -199,13 +200,13 @@ class WaveletAnalysisLayer(EmbeddingLayer):
 					harmonic: Tensor = mag[:,dfH:nf0+dfH]
 				else:
 					harmonic: Tensor = interp1d( full_freq, mag, iH*base_freq )
-				flayers.append( torch.where( l0 < 0.5, torch.zeros_like(harmonic), harmonic ) )
-			embedding = torch.stack( flayers, dim=1 )
-			return embedding
+				harmonic =  torch.where( l0 < 0.5, torch.zeros_like(harmonic), harmonic )
+				flayers += harmonic if self.sum_features else flayers.append( harmonic )
+			return flayers if self.sum_features else torch.stack( flayers, dim=1 )
 
 	@property
 	def nfeatures(self):
-		return 3 if (self.nharmonics <= 0) else self.nharmonics+1
+		return 1 if self.sum_features else (3 if (self.nharmonics <= 0) else self.nharmonics+1)
 
 	def power(self, embedding: Tensor) -> np.ndarray:
 		mag = torch.sqrt( torch.sum( embedding**2, dim=1 ) ).squeeze()
