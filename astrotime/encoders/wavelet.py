@@ -11,6 +11,10 @@ from astrotime.util.interpolation import interp1d
 
 def clamp( idx: int ) -> int: return max( 0, idx )
 
+def pnorm( x: Tensor ) -> Tensor:
+	x = torch.where( x < 0.0, torch.zeros_like(x), x )
+	return x / torch.sum( x, dim=-1, keepdim=True )
+
 def embedding_space( cfg: DictConfig, device: device ) -> Tuple[np.ndarray,Tensor]:
 	base_freq =  cfg.base_freq
 	nharmonic_octaves: float = math.ceil(math.log2(cfg.nharmonics))
@@ -180,17 +184,16 @@ class WaveletAnalysisLayer(EmbeddingLayer):
 			nf0 = self.noctaves * self.nfreq_oct
 			full_freq: Tensor = self._embedding_space[None,:].expand(mag.shape)
 			base_freq = full_freq[:,:nf0]
-			flayers = [ mag[:,:nf0] ]
-		#	self.log.info(f"fold_harmonics: x0{shp(full_freq)} y0{shp(mag)} -> x1{shp(base_freq)}")
+			l0: Tensor = pnorm(mag[:,:nf0])
+			flayers = [ l0 ]
 			for iH in range(2,self.nharmonics+2):
 				octave: float = math.log2(iH)
 				if octave.is_integer():
 					dfH: int = self.nfreq_oct*int(octave)
-					harmonic: Tensor = mag[:,dfH:nf0+dfH]
+					harmonic: Tensor = pnorm(mag[:,dfH:nf0+dfH])
 				else:
-					harmonic: Tensor = interp1d( full_freq, mag, iH*base_freq )
-		#		self.log.info(f" ---> H{iH}]: y1{shp(harmonic)}")
-				flayers.append( harmonic )
+					harmonic: Tensor = pnorm( interp1d( full_freq, mag, iH*base_freq ) )
+				flayers.append( pnorm(l0*harmonic) )
 			embedding = torch.stack( flayers, dim=1 )
 			return embedding
 

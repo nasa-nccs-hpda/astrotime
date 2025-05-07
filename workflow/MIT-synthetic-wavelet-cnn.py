@@ -21,7 +21,7 @@ def my_app(cfg: DictConfig) -> None:
 	data_loader = MITLoader(cfg.data)
 	data_loader.initialize(TSet.Train)
 
-	embedding = WaveletAnalysisLayer( cfg.transform, embedding_space_tensor, device )
+	embedding = WaveletAnalysisLayer( 'analysis', cfg.transform, embedding_space_tensor, device )
 	model: nn.Module = get_model_from_cfg( cfg.model, device, embedding )
 
 	trainer = IterativeTrainer( cfg.train, data_loader, encoder, model )
