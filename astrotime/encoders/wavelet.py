@@ -11,6 +11,9 @@ from astrotime.util.interpolation import interp1d
 
 def clamp( idx: int ) -> int: return max( 0, idx )
 
+def tclamp( x: Tensor ) -> Tensor:
+	return torch.where( x < 0.0, torch.zeros_like(x), x )
+
 def pnorm1( x: Tensor ) -> Tensor:
 	x = torch.where( x < 0.0, torch.zeros_like(x), x )
 	return x / torch.sum( x, dim=-1, keepdim=True )
@@ -199,7 +202,7 @@ class WaveletAnalysisLayer(EmbeddingLayer):
 					dfH: int = self.nfreq_oct*int(octave)
 					harmonic: Tensor = mag[:,dfH:nf0+dfH]
 				else:
-					harmonic: Tensor = interp1d( full_freq, mag, iH*base_freq )
+					harmonic: Tensor = tclamp( interp1d( full_freq, mag, iH*base_freq ) )
 				harmonic =  torch.where( l0 < 0.5, torch.zeros_like(harmonic), harmonic )
 				flayers += harmonic if self.sum_features else flayers.append( harmonic )
 			return flayers if self.sum_features else torch.stack( flayers, dim=1 )
