@@ -128,9 +128,10 @@ class WaveletAnalysisLayer(EmbeddingLayer):
 		self.init_log(f"WaveletAnalysisLayer: nfreq={self.nfreq} ")
 		self.subbatch_size: int = cfg.get('subbatch_size',-1)
 		self.nharmonics: int = self.cfg.get('nharmonics', 0)
+		self.fold_harmonics = self.cfg.get('fold_harmonics', self.nharmonics>0 )
 		self.noctaves: int = self.cfg.noctaves
 		self.nfreq_oct: int = self.cfg.nfreq_oct
-		self.sum_features = True
+		self.sum_features = self.cfg.get('sum_features', self.fold_harmonics )
 
 	@property
 	def xdata(self) -> np.ndarray:
@@ -184,9 +185,9 @@ class WaveletAnalysisLayer(EmbeddingLayer):
 		embedding: Tensor = torch.concat( (p0[:, None, :], p1[:, None, :], p2[:, None, :]), dim=1)
 		self.init_log(f" Completed embedding in {elapsed(t0):.5f} sec: embedding{list(embedding.shape)}")
 		self.init_state = False
-		return self.fold_harmonics(embedding) if self.cfg.fold_harmonics else embedding
+		return self.fold_harmonic_layers(embedding) if self.fold_harmonics else embedding
 
-	def fold_harmonics(self, embedding: Tensor) -> Tensor:      # [Batch,NF]
+	def fold_harmonic_layers(self, embedding: Tensor) -> Tensor:      # [Batch,NF]
 		if self.nharmonics <= 0:
 			return embedding
 		else:
