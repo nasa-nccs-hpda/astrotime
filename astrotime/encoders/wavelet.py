@@ -11,9 +11,12 @@ from astrotime.util.interpolation import interp1d
 
 def clamp( idx: int ) -> int: return max( 0, idx )
 
-def pnorm( x: Tensor ) -> Tensor:
+def pnorm1( x: Tensor ) -> Tensor:
 	x = torch.where( x < 0.0, torch.zeros_like(x), x )
 	return x / torch.sum( x, dim=-1, keepdim=True )
+
+def pnorm( x: Tensor ) -> Tensor:
+	return x
 
 def embedding_space( cfg: DictConfig, device: device ) -> Tuple[np.ndarray,Tensor]:
 	base_freq =  cfg.base_freq
