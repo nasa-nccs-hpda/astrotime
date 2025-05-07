@@ -128,7 +128,7 @@ class WaveletAnalysisLayer(EmbeddingLayer):
 		self.init_log(f"WaveletAnalysisLayer: nfreq={self.nfreq} ")
 		self.subbatch_size: int = cfg.get('subbatch_size',-1)
 		self.nharmonics: int = self.cfg.get('nharmonics', 0)
-		self.fold_harmonics = self.cfg.get('fold_harmonics', self.nharmonics>0 )
+		self.fold_harmonics = False if (self.nharmonics==0) else self.cfg.get('fold_harmonics', True )
 		self.noctaves: int = self.cfg.noctaves
 		self.nfreq_oct: int = self.cfg.nfreq_oct
 		self.sum_features = self.cfg.get('sum_features', self.fold_harmonics )
