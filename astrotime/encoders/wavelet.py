@@ -16,7 +16,9 @@ def pnorm1( x: Tensor ) -> Tensor:
 	return x / torch.sum( x, dim=-1, keepdim=True )
 
 def pnorm( x: Tensor ) -> Tensor:
-	return x
+	x0: Tensor = x.min( dim=-1, keepdim=True )
+	x1: Tensor = x.max( dim=-1, keepdim=True )
+	return (x-x0)/(x1-x0)
 
 def embedding_space( cfg: DictConfig, device: device ) -> Tuple[np.ndarray,Tensor]:
 	base_freq =  cfg.base_freq
@@ -184,20 +186,20 @@ class WaveletAnalysisLayer(EmbeddingLayer):
 		if self.nharmonics <= 0:
 			return embedding
 		else:
-			mag = torch.sqrt(torch.sum(embedding ** 2, dim=1))
+			mag = pnorm( torch.sqrt(torch.sum(embedding ** 2, dim=1)) )
 			nf0 = self.noctaves * self.nfreq_oct
 			full_freq: Tensor = self._embedding_space[None,:].expand(mag.shape)
 			base_freq = full_freq[:,:nf0]
-			l0: Tensor = pnorm(mag[:,:nf0])
+			l0: Tensor = mag[:,:nf0]
 			flayers = [ l0 ]
 			for iH in range(2,self.nharmonics+2):
 				octave: float = math.log2(iH)
 				if octave.is_integer():
 					dfH: int = self.nfreq_oct*int(octave)
-					harmonic: Tensor = pnorm(mag[:,dfH:nf0+dfH])
+					harmonic: Tensor = mag[:,dfH:nf0+dfH]
 				else:
-					harmonic: Tensor = pnorm( interp1d( full_freq, mag, iH*base_freq ) )
-				flayers.append( pnorm(harmonic) )
+					harmonic: Tensor = interp1d( full_freq, mag, iH*base_freq )
+				flayers.append(harmonic)
 			embedding = torch.stack( flayers, dim=1 )
 			return embedding
 
