@@ -174,7 +174,7 @@ class WaveletAnalysisLayer(EmbeddingLayer):
 		embedding: Tensor = torch.concat( (p0[:, None, :], p1[:, None, :], p2[:, None, :]), dim=1)
 		self.init_log(f" Completed embedding in {elapsed(t0):.5f} sec: embedding{list(embedding.shape)}")
 		self.init_state = False
-		return self.fold_harmonics(embedding)
+		return self.fold_harmonics(embedding) if self.cfg.fold_harmonics else embedding
 
 	def fold_harmonics(self, embedding: Tensor) -> Tensor:      # [Batch,NF]
 		if self.nharmonics <= 0:
