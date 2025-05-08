@@ -210,7 +210,7 @@ class WaveletAnalysisLayer(EmbeddingLayer):
 				harmonic =  torch.where( l0 < threshold, torch.zeros_like(harmonic), harmonic )
 				if self.sum_features:   flayers = flayers + harmonic
 				else:                   flayers.append( harmonic )
-			return flayers if self.sum_features else torch.stack( flayers, dim=1 )
+			return flayers[:,None,:] if self.sum_features else torch.stack( flayers, dim=1 )
 
 	@property
 	def nfeatures(self):
@@ -221,7 +221,8 @@ class WaveletAnalysisLayer(EmbeddingLayer):
 		return mag.cpu().numpy()
 
 	def magnitude(self, embedding: Tensor) -> np.ndarray:
-		return embedding.cpu().numpy().squeeze()
+		self.init_log(f" -> Embedding magnitude{embedding.shape}")
+		return embedding.cpu().numpy()
 
 class WaveletProjConvLayer(EmbeddingLayer):
 

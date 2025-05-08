@@ -17,7 +17,6 @@ class PlanetCrossingDataGenerator:
 		a: float =  kwargs.get( 'amplitude', random.uniform( *self.arange ) )
 		w: float =  kwargs.get( 'width', random.uniform( *self.wrange ) )
 		n: float =  kwargs.get( 'noise', random.uniform( *self.nrange ) )
-		self.log.info( f"PlanetCrossing Signal: a={a}, w={w}, n={n}, args={kwargs}")
 		noise: np.ndarray = np.random.normal(0.0, n, t.shape )
 		dt = np.mod(t,p) - p/2
 		s: np.ndarray = 1 - 3*a*np.exp(-(dt/(w*p)) ** 2)
@@ -31,7 +30,6 @@ class PlanetCrossingDataGenerator:
 	def process_batch(self, batch: Dict[str, np.ndarray], **kwargs) -> Dict[str, np.ndarray]:
 		t, p = batch['t'], batch['p']
 		s = self.signal( t, p[:,None], **kwargs )
-		self.log.info( f" --> process_batch: t{t.shape} p{p.shape} -> s{s.shape}" )
 		return dict( t=t, y=s, p=p )
 
 
