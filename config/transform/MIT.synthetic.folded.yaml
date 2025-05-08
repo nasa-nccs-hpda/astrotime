@@ -11,7 +11,8 @@ bw_winlen: 0.25                     # Detrend parameter for Wotan
 spline_minbrk: 0.2                  # Denoise parameter for Wotan
 subbatch_size: 10                   # IF>0: Split batches into (serially computed) subbatches in order to fit into gpu memory
 fold_harmonics: true                # Add folded harmonics as additional features of output
-sum_features: false                 # Output the sum over harmonics at each freq
+sum_features: true                  # Output the sum over harmonics at each freq
+fold_threshold: 0.5
 
 
 

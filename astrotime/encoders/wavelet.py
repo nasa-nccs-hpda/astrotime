@@ -132,6 +132,7 @@ class WaveletAnalysisLayer(EmbeddingLayer):
 		self.noctaves: int = self.cfg.noctaves
 		self.nfreq_oct: int = self.cfg.nfreq_oct
 		self.sum_features = self.cfg.get('sum_features', self.fold_harmonics )
+		self.fold_threshold = self.cfg.get('fold_threshold', 0.5 )
 
 	@property
 	def xdata(self) -> np.ndarray:
@@ -183,15 +184,16 @@ class WaveletAnalysisLayer(EmbeddingLayer):
 		p2: Tensor = w_prod(ys, pw2)
 		self.init_log(f" --> p0{list(p0.shape)} p1{list(p1.shape)} p2{list(p2.shape)}")
 		embedding: Tensor = torch.concat( (p0[:, None, :], p1[:, None, :], p2[:, None, :]), dim=1)
-		self.init_log(f" Completed embedding in {elapsed(t0):.5f} sec: embedding{list(embedding.shape)}")
 		self.init_state = False
-		return self.fold_harmonic_layers(embedding, **kwargs) if self.fold_harmonics else embedding
+		rv = self.fold_harmonic_layers(embedding, **kwargs) if self.fold_harmonics else embedding
+		self.init_log(f" Completed embedding in {elapsed(t0):.5f} sec: result{list(rv.shape)}")
+		return rv
 
 	def fold_harmonic_layers(self, embedding: Tensor, **kwargs) -> Tensor:      # [Batch,NF]
 		if self.nharmonics <= 0:
 			return embedding
 		else:
-			fold_threshold = kwargs.get('threshold', 0.5)
+			threshold = kwargs.get('threshold', self.fold_threshold)
 			mag = pnorm( torch.sqrt(torch.sum(embedding ** 2, dim=1)) )
 			nf0 = self.noctaves * self.nfreq_oct
 			full_freq: Tensor = self._embedding_space[None,:].expand(mag.shape)
@@ -205,7 +207,7 @@ class WaveletAnalysisLayer(EmbeddingLayer):
 					harmonic: Tensor = mag[:,dfH:nf0+dfH]
 				else:
 					harmonic: Tensor = tclamp( interp1d( full_freq, mag, iH*base_freq ) )
-				harmonic =  torch.where( l0 < fold_threshold, torch.zeros_like(harmonic), harmonic )
+				harmonic =  torch.where( l0 < threshold, torch.zeros_like(harmonic), harmonic )
 				if self.sum_features:   flayers = flayers + harmonic
 				else:                   flayers.append( harmonic )
 			return flayers if self.sum_features else torch.stack( flayers, dim=1 )
