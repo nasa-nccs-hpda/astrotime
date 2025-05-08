@@ -162,9 +162,11 @@ class IterativeTrainer(object):
                         self.global_time = time.time()
                         tbatch, zbatch = batch['target'], batch['z']
                         for iE, TIC in enumerate(batch['TICS']):
-                            output: Tensor = self.model(zbatch[iE][None,:])
+                            input: Tensor = zbatch[iE][None,:]
+                            imean, istd = input.mean().item(), input.std().item()
+                            output: Tensor = self.model( input )
                             pt, pout = tbatch[iE].item(), output.item()
-                            self.log.info(f" *** {TIC}: target={pt:.3f}, output={pout:.3f}, ratio={pout/pt:.3f}")
+                            self.log.info(f" *** {TIC}: input{shp(input)} stats=({imean:.3f},{istd:.3f}), target={pt:.3f}, output={pout:.3f}, ratio={pout/pt:.3f}")
 
             except StopIteration:
                 print( f"Completed evaluation in {elapsed(te)/60:.5f} min.")
