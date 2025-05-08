@@ -161,10 +161,12 @@ class IterativeTrainer(object):
                     if batch['z'].shape[0] > 0:
                         self.global_time = time.time()
                         result: Tensor = self.model( batch['z'] )
+                        target: Tensor = batch['target']
+                        self.log.info(f"BATCH-S{batch['sector']}: result{shp(result)}, target{shp(target)}")
                         for iE, TIC in enumerate(batch['TICS']):
-                            output,target = result[iE], batch['target'][iE]
+                            output,target = result[iE], target[iE]
                             loss: Tensor = self.loss_function( output, target )
-                            self.log.info(f"BATCH-S{batch['sector']}[{TIC}]: target={target.item():.3f}, output={output.item():.3f}, loss={loss.item():.3f}")
+                            self.log.info(f" *** {TIC}: target={target.item():.3f}, output={output.item():.3f}, loss={loss.item():.3f}")
 
             except StopIteration:
                 print( f"Completed evaluation in {elapsed(te)/60:.5f} min.")
