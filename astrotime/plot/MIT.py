@@ -1,6 +1,6 @@
 import logging, numpy as np
 import xarray as xa
-from .param import STIntParam
+from .param import STIntParam, STFloatParam
 from matplotlib import ticker
 from torch import nn, optim, Tensor, FloatTensor
 from .base import SignalPlot, bounds
@@ -202,6 +202,7 @@ class MITTransformPlot(SignalPlot):
 		self.target_marker: Line2D = None
 		self.selection_marker: Line2D = None
 		self.add_param( STIntParam('element', (0,len(self.TICS))  ) )
+		self.add_param( STFloatParam('threshold', (0.0,1.0), value=0.5 ) )
 		self.transax = None
 		self.nlines = -1
 
@@ -263,7 +264,7 @@ class MITTransformPlot(SignalPlot):
 		slen = self.transform.cfg.series_length
 		ts_tensors: Dict[str,Tensor] =  { k: FloatTensor(series_data.data_vars[k].values[:slen]).to(self.transform.device) for k in ['time','y'] }
 		x,y = ts_tensors['time'].squeeze(), tnorm(ts_tensors['y'].squeeze())
-		transformed: Tensor = self.transform.embed( x, y )
+		transformed: Tensor = self.transform.embed( x, y, threshold=self.threshold )
 		embedding: np.ndarray = self.transform.magnitude( transformed )
 		self.log.info( f"MITTransformPlot.apply_transform: x{list(x.shape)}, y{list(y.shape)} -> transformed{list(transformed.shape)}  embedding{list(embedding.shape)} ---> x min={embedding.min():.3f}, max={embedding.max():.3f}, mean={embedding.mean():.3f} ---")
 		return embedding

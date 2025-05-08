@@ -145,17 +145,17 @@ class WaveletAnalysisLayer(EmbeddingLayer):
 		sbr = [ subbatch*self.subbatch_size, (subbatch+1)*self.subbatch_size ]
 		return ts[sbr[0]:sbr[1]], ys[sbr[0]:sbr[1]]
 
-	def embed(self, ts: torch.Tensor, ys: torch.Tensor) -> Tensor:
+	def embed(self, ts: torch.Tensor, ys: torch.Tensor, **kwargs) -> Tensor:
 		if ys.ndim == 1:
 			return self.embed_subbatch( ts[None,:], ys[None,:] )
 		elif self.subbatch_size <= 0:
 			return self.embed_subbatch( ts, ys )
 		else:
 			nsubbatches = math.ceil(ys.shape[0]/self.subbatch_size)
-			subbatches = [ self.embed_subbatch( *self.sbatch(ts,ys,i) ) for i in range(nsubbatches) ]
+			subbatches = [ self.embed_subbatch( *self.sbatch(ts,ys,i), **kwargs ) for i in range(nsubbatches) ]
 			return torch.concat( subbatches, dim=0 )
 
-	def embed_subbatch(self, ts: torch.Tensor, ys: torch.Tensor ) -> Tensor:
+	def embed_subbatch(self, ts: torch.Tensor, ys: torch.Tensor, **kwargs ) -> Tensor:
 		t0 = time.time()
 		self.init_log(f"WaveletAnalysisLayer shapes: ts{list(ts.shape)} ys{list(ys.shape)}")
 		slen: int = ys.shape[1]
@@ -185,12 +185,13 @@ class WaveletAnalysisLayer(EmbeddingLayer):
 		embedding: Tensor = torch.concat( (p0[:, None, :], p1[:, None, :], p2[:, None, :]), dim=1)
 		self.init_log(f" Completed embedding in {elapsed(t0):.5f} sec: embedding{list(embedding.shape)}")
 		self.init_state = False
-		return self.fold_harmonic_layers(embedding) if self.fold_harmonics else embedding
+		return self.fold_harmonic_layers(embedding, **kwargs) if self.fold_harmonics else embedding
 
-	def fold_harmonic_layers(self, embedding: Tensor) -> Tensor:      # [Batch,NF]
+	def fold_harmonic_layers(self, embedding: Tensor, **kwargs) -> Tensor:      # [Batch,NF]
 		if self.nharmonics <= 0:
 			return embedding
 		else:
+			fold_threshold = kwargs.get('threshold', 0.5)
 			mag = pnorm( torch.sqrt(torch.sum(embedding ** 2, dim=1)) )
 			nf0 = self.noctaves * self.nfreq_oct
 			full_freq: Tensor = self._embedding_space[None,:].expand(mag.shape)
@@ -204,7 +205,7 @@ class WaveletAnalysisLayer(EmbeddingLayer):
 					harmonic: Tensor = mag[:,dfH:nf0+dfH]
 				else:
 					harmonic: Tensor = tclamp( interp1d( full_freq, mag, iH*base_freq ) )
-				harmonic =  torch.where( l0 < 0.5, torch.zeros_like(harmonic), harmonic )
+				harmonic =  torch.where( l0 < fold_threshold, torch.zeros_like(harmonic), harmonic )
 				if self.sum_features:   flayers = flayers + harmonic
 				else:                   flayers.append( harmonic )
 			return flayers if self.sum_features else torch.stack( flayers, dim=1 )

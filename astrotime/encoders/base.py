@@ -22,7 +22,7 @@ class Transform(torch.nn.Module):
 	def xdata(self, **kwargs ) -> np.ndarray:
 		raise NotImplementedError("Transform.xdata not implemented")
 
-	def embed(self, xs: Tensor, ys: Tensor) -> Tensor:
+	def embed(self, xs: Tensor, ys: Tensor, **kwargs) -> Tensor:
 		raise NotImplementedError("Transform.embed() not implemented")
 
 	def magnitude(self, embedding: Tensor) -> np.ndarray:
