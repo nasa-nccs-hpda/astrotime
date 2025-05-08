@@ -162,8 +162,8 @@ class IterativeTrainer(object):
                         self.global_time = time.time()
                         tbatch, zbatch = batch['target'], batch['z']
                         for iE, TIC in enumerate(batch['TICS']):
-                            output: Tensor = self.model(zbatch[iE])
-                            loss: Tensor = self.loss_function( output, tbatch[iE] )
+                            output: Tensor = self.model(zbatch[iE][None,:])
+                            loss: Tensor = self.loss_function( output, tbatch[iE][None,:] )
                             self.log.info(f" *** {TIC}: target={tbatch[iE].item():.3f}, output={output.item():.3f}, loss={loss.item():.3f}")
 
             except StopIteration:
