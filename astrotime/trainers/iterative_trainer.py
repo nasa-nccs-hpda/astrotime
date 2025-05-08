@@ -162,7 +162,7 @@ class IterativeTrainer(object):
                         self.global_time = time.time()
                         result: Tensor = self.model( batch['z'] )
                         loss: Tensor = self.loss_function( result.squeeze(), batch['target'].squeeze() )
-                        self.log.info(f"BATCH-S{batch['sector']}[{ibatch}]: TICS={shp(batch['TICS'])}, input={shp(batch['z'])}, target={shp(batch['target'])}, result={shp(result)}, loss={shp(loss)}")
+                        self.log.info(f"BATCH-S{batch['sector']}[{ibatch}]: TICS={len(batch['TICS'])}, input={shp(batch['z'])}, target={shp(batch['target'])}, result={shp(result)}, loss={shp(loss)}")
 
             except StopIteration:
                 print( f"Completed evaluation in {elapsed(te)/60:.5f} min.")
