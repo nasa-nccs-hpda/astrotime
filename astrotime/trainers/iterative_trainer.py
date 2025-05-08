@@ -1,15 +1,16 @@
-from typing import List, Optional, Dict, Type, Tuple
+from typing import List, Optional, Dict, Type, Tuple, Union
 from omegaconf import DictConfig
 from .checkpoints import CheckpointManager
 from astrotime.encoders.base import Encoder
 import xarray as xa
 from astrotime.util.math import shp
-from astrotime.loaders.base import IterativeDataLoader
+from astrotime.loaders.base import IterativeDataLoader, RDict
 import time, sys, torch, logging, numpy as np
 from torch import nn, optim, Tensor
 from astrotime.util.math import nnan
 from astrotime.util.series import TSet
 from astrotime.util.logging import elapsed
+TRDict = Dict[str,Union[List[str],int,torch.Tensor]]
 
 def tocpu( c, idx=0 ):
     if isinstance( c, Tensor ):
@@ -78,18 +79,18 @@ class IterativeTrainer(object):
             self.optimizer.step()
 
 
-    def encode_batch(self, batch: Dict[str,np.ndarray]) -> Dict[str,torch.Tensor]:
-        target: Tensor = torch.from_numpy(batch['p']).to(self.device)
-        t, y = self.encoder.encode_batch(batch['t'], batch['y'])
+    def encode_batch(self, batch: RDict) -> TRDict:
+        target: Tensor = torch.from_numpy(batch.pop('p')).to(self.device)
+        t, y = self.encoder.encode_batch(batch.pop('t'), batch.pop('y'))
         z: Tensor = torch.concat((t[:, None, :] * self.time_scale, y), dim=1)
-        return dict(z=z, target=target * self.time_scale)
+        return dict( z=z, target=target * self.time_scale, **batch )
 
-    def get_next_batch(self) -> Optional[Dict[str,torch.Tensor]]:
-        dset: Optional[Dict[str,np.ndarray]] = self.loader.get_next_batch()
+    def get_next_batch(self) -> Optional[TRDict]:
+        dset: RDict = self.loader.get_next_batch()
         return self.encode_batch(dset)
 
-    def get_batch(self, dset_idx: int, ibatch: int) -> Optional[Dict[str,torch.Tensor]]:
-        dset: Optional[Dict[str,np.ndarray]] = self.loader.get_batch(dset_idx,ibatch)
+    def get_batch(self, dset_idx: int, ibatch: int) -> Optional[TRDict]:
+        dset: Optional[RDict] = self.loader.get_batch(dset_idx,ibatch)
         return None if (dset is None) else self.encode_batch(dset)
 
     @property
@@ -147,6 +148,24 @@ class IterativeTrainer(object):
                     val_losses = np.array(losses)
                     print( f" Validation Loss: mean={val_losses.mean():.3f}, median={np.median(val_losses):.3f}, range=({val_losses.min():.3f} -> {val_losses.max():.3f})")
 
+    def evaluate(self):
+        print(f"SignalTrainer[{self.mode}]: device={self.device}")
+        with self.device:
+            te = time.time()
+            self.loader.initialize(self.mode)
+            self.model.train(False)
+            self.loader.init_epoch()
+            try:
+                for ibatch in range(0,sys.maxsize):
+                    batch = self.get_next_batch()
+                    if batch['z'].shape[0] > 0:
+                        self.global_time = time.time()
+                        result: Tensor = self.model( batch['z'] )
+                        loss: Tensor = self.loss_function( result.squeeze(), batch['target'].squeeze() )
+                        self.log.info(f"BATCH-S{batch['sector']}[{ibatch}]: TICS={shp(batch['TICS'])}, input={shp(batch['z'])}, target={shp(batch['target'])}, result={shp(result)}, loss={shp(loss)}")
+
+            except StopIteration:
+                print( f"Completed evaluation in {elapsed(te)/60:.5f} min.")
 
 
 

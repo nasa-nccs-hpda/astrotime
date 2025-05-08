@@ -1,5 +1,5 @@
 import time, os, numpy as np, xarray as xa
-from astrotime.loaders.base import IterativeDataLoader
+from astrotime.loaders.base import IterativeDataLoader, RDict
 from astrotime.loaders.pcross import PlanetCrossingDataGenerator
 from typing import List, Optional, Dict, Type, Union, Tuple
 import pandas as pd
@@ -7,7 +7,6 @@ from enum import Enum
 from glob import glob
 from omegaconf import DictConfig, OmegaConf
 from astrotime.util.series import TSet
-
 
 class MITLoader(IterativeDataLoader):
 
@@ -54,7 +53,7 @@ class MITLoader(IterativeDataLoader):
 	def ndsets(self) -> int:
 		return self.sector_range[1]-self.sector_range[0] + 1
 
-	def get_next_batch( self ) -> Optional[Dict[str,np.ndarray]]:
+	def get_next_batch( self ) -> Optional[RDict]:
 		ibatch = self.sector_batch_offset//self.cfg.batch_size
 		self.log.info(f"MITLoader.get_next_batch: sector = {self.current_sector}, ibatch={ibatch}, nbatches={self._nbatches}, sector_batch_offset={self.sector_batch_offset}, batch_size={self.cfg.batch_size}, tset={self.tset}")
 		if (self._nbatches > 0) and ( ibatch>= self._nbatches-1):
@@ -72,7 +71,9 @@ class MITLoader(IterativeDataLoader):
 				self.update_training_data()
 			batch_start = self.sector_batch_offset
 			batch_end   = batch_start+self.cfg.batch_size
-			result = { k: self.train_data[k][batch_start:batch_end] for k in ['t','y','p'] }
+			result: RDict = { k: self.train_data[k][batch_start:batch_end] for k in ['t','y','p'] }
+			result['TICS'] = self._TICS[batch_start:batch_end]
+			result['sector'] = self.current_sector
 			self.sector_batch_offset = batch_end
 			self.log.info( f"  *** get_next_batch: batch({batch_start}->{batch_end}), test_mode={self.test_mode_index}, t{self.train_data['t'].shape}->bt{result['t'].shape}, y{self.train_data['y'].shape}->by{result['y'].shape}, p{self.train_data['p'].shape}->bp{result['p'].shape}  ")
 			if self.test_mode_index == 2:
@@ -86,6 +87,8 @@ class MITLoader(IterativeDataLoader):
 		batch_start = self.sector_batch_offset*batch_index
 		batch_end   = batch_start+self.cfg.batch_size
 		result = { k: self.train_data[k][batch_start:batch_end] for k in ['t','y','p'] }
+		result['TICS'] = self._TICS[batch_start:batch_end]
+		result['sector'] = self.current_sector
 		if self.test_mode_index == 2:
 			result = self.synthetic.process_batch(result)
 		return result

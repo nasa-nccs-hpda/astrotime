@@ -29,8 +29,8 @@ class PlanetCrossingDataGenerator:
 
 	def process_batch(self, batch: Dict[str, np.ndarray], **kwargs) -> Dict[str, np.ndarray]:
 		t, p = batch['t'], batch['p']
-		s = self.signal( t, p[:,None], **kwargs )
-		return dict( t=t, y=s, p=p )
+		batch['y'] = self.signal( t, p[:,None], **kwargs )
+		return batch
 
 
 

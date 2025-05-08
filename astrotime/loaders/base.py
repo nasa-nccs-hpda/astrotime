@@ -35,6 +35,8 @@ class DataLoader:
 	def nelements( self ) -> int:
 		return self.nbatches(TSet.Train) * self.batch_size
 
+RDict = Dict[str,Union[List[str],int,np.ndarray]]
+
 class IterativeDataLoader:
 
 	def __init__(self):
@@ -53,7 +55,7 @@ class IterativeDataLoader:
 	def init_epoch(self):
 		raise NotImplementedError(f"The class '{self.__class__.__name__}' does not implement the 'init_epoch' method")
 
-	def get_next_batch(self) -> Optional[Dict[str,np.ndarray]]:
+	def get_next_batch(self) -> Optional[RDict]:
 		raise NotImplementedError(f"The class '{self.__class__.__name__}' does not implement the 'get_next_batch' method")
 
 	def get_batch( self, dset_idx: int, batch_index ) -> Optional[Dict[str,np.ndarray]]:
