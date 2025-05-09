@@ -228,7 +228,6 @@ class MITLoader(IterativeDataLoader):
 		cz = np.stack([ctime,cy],axis=0)
 		if cz.shape[1] >= self.series_length:
 			rv = cz[:,:self.series_length]
-			print(f"{TIC} eslice({self.series_length}): {cz.shape} -> {rv.shape}")
 			return rv
 		return None
 

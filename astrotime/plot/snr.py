@@ -10,8 +10,8 @@ def snr_analysis( loader: IterativeDataLoader, device: torch.device ):
 		try:
 			for ibatch in range(0, sys.maxsize):
 				batch: RDict = loader.get_next_batch()
-				if batch['z'].shape[0] > 0:
-					snr = batch['snr']
+				if batch['y'].shape[0] > 0:
+					snr = batch['sn']
 					print( f" batch snr{snr.shape}")
 
 		except StopIteration:
