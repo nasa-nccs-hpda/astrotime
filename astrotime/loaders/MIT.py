@@ -269,6 +269,7 @@ class MITLoader(IterativeDataLoader):
 				if self.in_range(p):
 					eslice = self.get_elem_slice(TIC)
 					if eslice is not None:
+						print( f"eslice{eslice.shape}")
 						elems.append(eslice)
 						periods.append(p)
 						sns.append(sn)
