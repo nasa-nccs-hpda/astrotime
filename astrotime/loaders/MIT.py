@@ -16,7 +16,7 @@ class MITLoader(IterativeDataLoader):
 		super().__init__()
 		self.cfg = cfg
 		self.sector_range = cfg.sector_range
-		self.series_length = cfg.series_length
+		self.series_length = cfg.get('series_length', 8000 )
 		self.period_range: Optional[Tuple[float,float]] = None
 		self.current_sector = None
 		self.loaded_sector = None
@@ -223,14 +223,13 @@ class MITLoader(IterativeDataLoader):
 		return False
 
 	def get_elem_slice(self,TIC: str):
+		rv = None
 		ctime: np.ndarray = self.dataset[TIC+".time"].values.squeeze()
 		cy: np.ndarray = self.dataset[TIC+".y"].values.squeeze()
 		cz = np.stack([ctime,cy],axis=0)
 		if cz.shape[1] >= self.series_length:
 			rv = cz[:,:self.series_length]
-			print(f"{TIC} eslice({self.series_length}): {cz.shape} -> {rv.shape}")
-			return rv
-		return None
+		return rv
 
 	def get_largest_block( self, TIC: str ) -> np.ndarray:
 		threshold = self.cfg.block_gap_threshold
