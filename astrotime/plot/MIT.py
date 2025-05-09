@@ -145,10 +145,10 @@ class MITDatasetPlot(SignalPlot):
 
 	@exception_handled
 	def _setup(self):
-		xs, ys, self.period = self.get_element_data()
+		xs, ys, self.period, snr= self.get_element_data()
 		self.origin = xs[np.argmax(np.abs(ys))]
 		self.plot: Line2D = self.ax.plot(xs, ys, label='y', color='blue', marker=".", linewidth=1, markersize=2, alpha=0.5)[0]
-		self.ax.title.set_text(f"{self.name}: TP={self.period:.3f} (F={1/self.period:.3f})")
+		self.ax.title.set_text(f"{self.name}: TP={self.period:.3f} (F={1/self.period:.3f}) SNR={snr:.3f}")
 		self.ax.title.set_fontsize(8)
 		self.ax.title.set_fontweight('bold')
 		self.ax.set_xlim(xs[0],xs[-1])
@@ -156,27 +156,28 @@ class MITDatasetPlot(SignalPlot):
 		self.ax.set_ylim(ys.min(),ys.max())
 
 	@exception_handled
-	def get_element_data(self) -> Tuple[np.ndarray,np.ndarray,float]:
+	def get_element_data(self) -> Tuple[np.ndarray,np.ndarray,float,float]:
 		self.data_loader.set_params( { pn: pv.value_selected() for pn, pv in self._sparms.items()} )
 		element: xa.Dataset = self.data_loader.get_dataset_element(self.sector,self.TICS[self.element], refresh=self.refresh )
 		t, y = element.data_vars['time'], element.data_vars['y']
 		ydata: np.ndarray = y.values
 		xdata: np.ndarray = t.values
 		target: float = y.attrs['period']
+		snr: float = y.attrs['sn']
 		if self.fold_period is not None:
 			xdata = xdata - np.floor(xdata/self.fold_period)*self.fold_period
-		return xdata, znorm(ydata.squeeze()), target
+		return xdata, znorm(ydata.squeeze()), target, snr
 
 	@exception_handled
 	def update(self, val=0, **kwargs ):
-		xdata, ydata, self.period = self.get_element_data()
+		xdata, ydata, self.period, snr = self.get_element_data()
 		self.origin = xdata[np.argmax(np.abs(ydata))]
 		self.plot.set_ydata(ydata)
 		self.plot.set_xdata(xdata)
 		self.plot.set_linewidth( 1 if (self.fold_period is None) else 0)
 		fold_period = kwargs.get('period')
 		active_period = self.period if (fold_period is None) else fold_period
-		title = f"{self.name}: TP={active_period:.3f} (F={1/active_period:.3f})"
+		title = f"{self.name}: TP={active_period:.3f} (F={1/active_period:.3f}) SNR={snr:.3f}"
 		self.ax.title.set_text( kwargs.get('title',title) )
 		self.update_period_marker()
 		self.ax.set_xlim(xdata.min(),xdata.max())
