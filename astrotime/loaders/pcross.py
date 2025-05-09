@@ -9,9 +9,9 @@ class PlanetCrossingDataGenerator:
 		super().__init__()
 		self.log = logging.getLogger()
 		self.cfg = cfg
-		self.arange: Tuple[float,float] = cfg.arange
-		self.wrange: Tuple[float, float] = cfg.wrange
-		self.nrange: Tuple[float, float] = cfg.nrange
+		self.arange: Tuple[float,float]  = cfg.get('arange',(0.01,0.1) )
+		self.wrange: Tuple[float, float] = cfg.get('wrange',(0.01,0.1) )
+		self.nrange: Tuple[float, float] = cfg.get('nrange',(0.01,0.1) )
 
 	def signal(self, t: np.ndarray, p: float|np.ndarray, **kwargs ):
 		a: float =  kwargs.get( 'amplitude', random.uniform( *self.arange ) )
