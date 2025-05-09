@@ -7,7 +7,7 @@ sector_range:
 batch_size: 50
 block_gap_threshold: 0.01
 max_period: 50.0
-series_length: -1                 # Length of subset of input timeseries to process (-1 means no subsetting)
+series_length: 8192                 # Length of subset of input timeseries to process (-1 means no subsetting)
 arange:
   - 40
   - 80
