@@ -218,7 +218,7 @@ class MITTransformPlot(SignalPlot):
 		series_data: xa.Dataset = self.data_loader.get_dataset_element(self.sector, self.TICS[self.element])
 		period: float = series_data.data_vars['y'].attrs['period']
 		freq = 1.0 / period
-		tdata: np.ndarray = self.apply_transform(series_data)
+		tdata: np.ndarray = self.apply_transform(series_data).squeeze()
 		x = self.transform.xdata.squeeze()
 		y = tdata[None,:] if (tdata.ndim == 1) else tdata
 		self.nlines = y.shape[0]
