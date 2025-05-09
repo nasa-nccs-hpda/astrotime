@@ -207,7 +207,7 @@ class WaveletAnalysisLayer(EmbeddingLayer):
 					harmonic: Tensor = mag[:,dfH:nf0+dfH]
 				else:
 					harmonic: Tensor = tclamp( interp1d( full_freq, mag, iH*base_freq ) )
-				print( f"harmonic-{iH}: h{shp(harmonic)}, l0{shp(l0)}")
+				print( f"harmonic-{iH}({octave}): h{shp(harmonic)}, l0{shp(l0)}")
 				harmonic =  torch.where( l0 < threshold, torch.zeros_like(harmonic), harmonic )
 				if self.sum_features:   flayers = flayers + harmonic
 				else:                   flayers.append( harmonic )
