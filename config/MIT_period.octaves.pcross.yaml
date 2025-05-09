@@ -1,7 +1,7 @@
 defaults:
   - platform: "explore"
   - train: "MIT_cnn"
-  - transform: "octaves-MIT"
+  - transform: "MIT.octaves"
   - data: "pcross.octaves"
   - model: "wp_cnn"
   - _self_
