@@ -222,6 +222,7 @@ class MITTransformPlot(SignalPlot):
 		x = self.transform.xdata.squeeze()
 		y = tdata[None,:] if (tdata.ndim == 1) else tdata
 		self.nlines = y.shape[0]
+		print( f"PLOT: x{x.shape} y{y.shape}")
 		for ip in range(self.nlines):
 			alpha = 1.0 - ip/self.nlines
 			lw = 2 if (ip == 0) else 1
