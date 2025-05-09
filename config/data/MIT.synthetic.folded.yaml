@@ -9,7 +9,7 @@ block_gap_threshold: 0.01
 nfreq_oct: 512                     # Number of frequency values (log2 spaced) in each octave
 base_freq:  0.05                   # Start frequency of base freq range
 noctaves: 9                        # Number of octaves in base freq range
-nharmonics: 8                      # Number of harmonics to fold in as features
+nharmonics: 5                      # Number of harmonics to fold in as features
 series_length: 16384               # Length of subset of input timeseries to process (-1 means no subsetting)
 wrange:
   - 0.01
