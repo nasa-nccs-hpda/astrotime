@@ -16,3 +16,4 @@ hrange:
   - 0.3
 noise: 0.05
 test_mode: default
+snr_threshold: 100

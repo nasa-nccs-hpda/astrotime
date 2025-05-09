@@ -20,6 +20,7 @@ nrange:
   - 0.01
   - 0.1
 test_mode: default
+snr_threshold: 100
 
 
 

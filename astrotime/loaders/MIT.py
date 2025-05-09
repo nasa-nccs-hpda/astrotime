@@ -16,6 +16,7 @@ class MITLoader(IterativeDataLoader):
 		super().__init__()
 		self.cfg = cfg
 		self.sector_range = cfg.sector_range
+		self.snr_threshold = cfg.get('snr_threshold',0.0)
 		self.series_length = cfg.series_length
 		self.period_range: Optional[Tuple[float,float]] = None
 		self.current_sector = None
@@ -269,7 +270,7 @@ class MITLoader(IterativeDataLoader):
 				sn = cy.attrs["sn"]
 				if self.in_range(p):
 					eslice = self.get_elem_slice(TIC)
-					if eslice is not None:
+					if (eslice is not None) and (sn > self.snr_threshold):
 						elems.append(eslice)
 						periods.append(p)
 						sns.append(sn)
