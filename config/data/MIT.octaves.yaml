@@ -4,12 +4,12 @@ cache_path:  "${platform.project_root}/cache/data/MIT"
 sector_range:
   - 59
   - 83
-batch_size: 50
+batch_size: 32
 block_gap_threshold: 0.01
 nfreq_oct: 512                     # Number of frequency values (log2 spaced) in each octave
 base_freq:  0.05                   # Start frequency of base freq range
 noctaves: 9                        # Number of octaves in base freq range
-nharmonics: 5                      # Number of octaves in harmonics range
+nharmonics: 2                      # Number of octaves in harmonics range
 series_length: 8192                  # Length of subset of input timeseries to process (-1 means no subsetting)
 arange:
   - 40
