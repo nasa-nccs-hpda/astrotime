@@ -116,6 +116,7 @@ class MITDatasetPlot(SignalPlot):
 			self.data_loader.update_test_mode()
 			args = dict(title="Synthetic Sinusoids") if (self.data_loader.test_mode_index == 1) else {}
 			self.update(**args)
+			#self.process_event(id="update")
 
 	@exception_handled
 	def process_ext_event(self, **event_data):
@@ -281,7 +282,7 @@ class MITTransformPlot(SignalPlot):
 	def update(self, val=0):
 		series_data: xa.Dataset = self.data_loader.get_dataset_element(self.sector, self.TICS[self.element])
 		target_period: float = series_data.data_vars['y'].attrs['period']
-		tdata: np.ndarray = self.apply_transform(series_data)
+		tdata: np.ndarray = self.apply_transform(series_data).squeeze()
 		x = self.transform.xdata.squeeze()
 		y = tdata[None,:] if (tdata.ndim == 1) else tdata
 		for ip in range(self.nlines):
