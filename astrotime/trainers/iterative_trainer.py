@@ -163,7 +163,7 @@ class IterativeTrainer(object):
                         tbatch, zbatch = batch['target'], batch['z']
                         for iE, TIC in enumerate(batch['TICS']):
                             input: Tensor = zbatch[iE][None,:]
-                            imean, istd = input.mean().item(), input.std().item()
+                            imean, istd = input[:,1,:].mean().item(), input[:,1,:].std().item()
                             output: Tensor = self.model( input )
                             pt, pout = tbatch[iE].item(), output.item()
                             self.log.info(f" *** {TIC}: input{shp(input)} stats=({imean:.3f},{istd:.3f}), target={pt:.3f}, output={pout:.3f}, ratio={pout/pt:.3f}")
