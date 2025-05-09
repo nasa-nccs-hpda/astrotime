@@ -71,7 +71,7 @@ class MITLoader(IterativeDataLoader):
 				self.update_training_data()
 			batch_start = self.sector_batch_offset
 			batch_end   = batch_start+self.cfg.batch_size
-			result: RDict = { k: self.train_data[k][batch_start:batch_end] for k in ['t','y','p'] }
+			result: RDict = { k: self.train_data[k][batch_start:batch_end] for k in ['t','y','p','sn'] }
 			result['TICS'] = self._TICS[batch_start:batch_end]
 			result['sector'] = self.current_sector
 			self.sector_batch_offset = batch_end
@@ -86,7 +86,7 @@ class MITLoader(IterativeDataLoader):
 			self.update_training_data()
 		batch_start = self.sector_batch_offset*batch_index
 		batch_end   = batch_start+self.cfg.batch_size
-		result = { k: self.train_data[k][batch_start:batch_end] for k in ['t','y','p'] }
+		result = { k: self.train_data[k][batch_start:batch_end] for k in ['t','y','p','sn'] }
 		result['TICS'] = self._TICS[batch_start:batch_end]
 		result['sector'] = self.current_sector
 		if self.test_mode_index == 2:
@@ -96,7 +96,7 @@ class MITLoader(IterativeDataLoader):
 	def get_element( self, sector_index: int, element_index: int ) -> Optional[Dict[str,Union[np.ndarray,float]]]:
 		if self.load_sector(sector_index):
 			self.update_training_data()
-		result = { k: self.train_data[k][element_index] for k in ['t','y','p'] }
+		result = { k: self.train_data[k][element_index] for k in ['t','y','p','sn'] }
 		return result
 
 	def get_dataset_element( self, sector_index: int, TIC: str, **kwargs ) -> xa.Dataset:
@@ -260,24 +260,23 @@ class MITLoader(IterativeDataLoader):
 	def update_training_data(self):
 		self.log.info("\nupdate_training_data\n")
 		elems = []
-		periods = []
+		periods, sns = [], []
 		for TIC in self._TICS:
 			if TIC+".y" in self.dataset.data_vars:
 				cy: xa.DataArray = self.dataset[TIC+".y"]
-				p = cy.attrs["period"]
+				p  = cy.attrs["period"]
+				sn = cy.attrs["sn"]
 				if self.in_range(p):
-					# bz: np.ndarray = self.get_largest_block(TIC)
-					# if bz.shape[1] >= self.series_length:
-					# 	elems.append( self.get_batch_element(bz) )
-					# 	periods.append(p)
 					eslice = self.get_elem_slice(TIC)
 					if eslice is not None:
 						elems.append(eslice)
 						periods.append(p)
+						sns.append(sn)
 		z = np.stack(elems,axis=0)
 		self.train_data['t'] = z[:,0,:]
 		self.train_data['y'] = z[:,1,:]
 		self.train_data['p'] = np.array(periods)
+		self.train_data['sn'] = np.array(sns)
 		fdropped = (len(self._TICS)-z.shape[0])/len(self._TICS)
 		self._nbatches = self.train_data['t'].shape[0] // self.cfg.batch_size
 		self.log.info( f"get_training_data: nbatches={self._nbatches}, t{self.train_data['t'].shape}, y{self.train_data['y'].shape}, p{self.train_data['p'].shape}, dropped {fdropped*100:.2f}%")
