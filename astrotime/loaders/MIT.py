@@ -227,7 +227,9 @@ class MITLoader(IterativeDataLoader):
 		cy: np.ndarray = self.dataset[TIC+".y"].values.squeeze()
 		cz = np.stack([ctime,cy],axis=0)
 		if cz.shape[1] >= self.series_length:
-			return cz[:,:self.series_length]
+			rv = cz[:,:self.series_length]
+			print(f"{TIC} eslice({self.series_length}): {cz.shape} -> {rv.shape}")
+			return rv
 		return None
 
 	def get_largest_block( self, TIC: str ) -> np.ndarray:
@@ -269,7 +271,6 @@ class MITLoader(IterativeDataLoader):
 				if self.in_range(p):
 					eslice = self.get_elem_slice(TIC)
 					if eslice is not None:
-						print( f"eslice{eslice.shape}")
 						elems.append(eslice)
 						periods.append(p)
 						sns.append(sn)
