@@ -22,11 +22,6 @@ class PlanetCrossingDataGenerator:
 		s: np.ndarray = 1 - 3*a*np.exp(-(dt/(w*p)) ** 2)
 		return s + noise
 
-	def get_element(  self, time: xa.DataArray, y: xa.DataArray, **kwargs ) -> xa.DataArray:
-		s = self.signal( time.values, y.attrs['period'], **kwargs )
-		signal: xa.DataArray = y.copy( data=s )
-		return signal
-
 	def process_batch(self, batch: Dict[str, np.ndarray], **kwargs) -> Dict[str, np.ndarray]:
 		t, p = batch['t'], batch['p']
 		batch['y'] = self.signal( t, p[:,None], **kwargs )

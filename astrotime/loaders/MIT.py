@@ -97,33 +97,12 @@ class MITLoader(IterativeDataLoader):
 	def get_element( self, sector_index: int, element_index: int ) -> Optional[Dict[str,Union[np.ndarray,float]]]:
 		if self.load_sector(sector_index):
 			self.update_training_data()
-		result = { k: self.train_data[k][element_index] for k in ['t','y','p','sn'] }
-		return result
-
-	def get_dataset_element( self, sector_index: int, TIC: str, **kwargs ) -> xa.Dataset:
-		if self.load_sector(sector_index):
-			self.update_training_data()
-		if     self.test_mode_index == 0: return xa.Dataset( self.train_data )
-		elif   self.test_mode_index == 1: return self.get_sinusoid_element(sector_index,TIC)
-		elif   self.test_mode_index == 2: return self.get_pcross_element(sector_index, TIC)
-		else: raise Exception(f"Unknown test mode {self.test_mode_index}")
-
-	def get_sinusoid_element( self, sector_index: int, TIC: str, **kwargs ) -> xa.Dataset:
-		if self.load_sector(sector_index):
-			self.update_training_data()
-		time: xa.DataArray = self.dataset.data_vars[TIC+".time"]
-		y: xa.DataArray = self.dataset.data_vars[TIC+".y"]
-		sinusoid: np.ndarray = np.sin( 2*np.pi*time.values / y.attrs["period"] )
-		return xa.Dataset( dict(  time=time, y=y.copy( data=sinusoid ) ) )
-
-	def get_pcross_element( self, sector_index: int, TIC: str, **kwargs ) -> xa.Dataset:
-		if self.load_sector(sector_index):
-			self.update_training_data()
-		time: xa.DataArray = self.dataset.data_vars[TIC+".time"]
-		y: xa.DataArray = self.dataset.data_vars[TIC + ".y"]
-		self.log.info(f"get_pcross_element[{sector_index},{TIC}]: parms = {self.params}")
-		signal: xa.DataArray = self.synthetic.get_element( time, y, **self.params )
-		return xa.Dataset( dict( time=time, y=signal ) )
+		element_data = { k: self.train_data[k][element_index] for k in ['t','y','p','sn'] }
+		if   self.test_mode_index == 1:
+			element_data['y'] = np.sin( 2*np.pi*element_data['t'] / element_data['p'] )
+		elif   self.test_mode_index == 2:
+			element_data['y'] = self.synthetic.signal(element_data['t'], element_data['p'], **self.params)
+		return element_data
 
 	@property
 	def nbatches(self) -> int:
