@@ -217,8 +217,8 @@ class MITTransformPlot(SignalPlot):
 
 	@exception_handled
 	def _setup(self):
-		series_data: xa.Dataset = self.data_loader.get_dataset_element(self.sector, self.TICS[self.element])
-		period: float = series_data.data_vars['y'].attrs['period']
+		series_data: Dict[str,Union[np.ndarray,float]] = self.data_loader.get_element(self.sector, self.element)
+		period: float = series_data['p']
 		freq = 1.0 / period
 		tdata: np.ndarray = self.apply_transform(series_data).squeeze()
 		x = self.transform.xdata.squeeze()
@@ -263,10 +263,9 @@ class MITTransformPlot(SignalPlot):
 			self.update()
 
 	@exception_handled
-	def apply_transform( self, series_data: xa.Dataset ) -> np.ndarray:
-		slen = self.transform.cfg.series_length
-		ts_tensors: Dict[str,Tensor] =  { k: FloatTensor(series_data.data_vars[k].values[:slen]).to(self.transform.device) for k in ['time','y'] }
-		x,y = ts_tensors['time'].squeeze(), tnorm(ts_tensors['y'].squeeze())
+	def apply_transform( self, series_data: Dict[str,Union[np.ndarray,float]] ) -> np.ndarray:
+		ts_tensors: Dict[str,Tensor] =  { k: FloatTensor(series_data[k]).to(self.transform.device) for k in ['t','y'] }
+		x,y = ts_tensors['t'].squeeze(), tnorm(ts_tensors['y'].squeeze())
 		transformed: Tensor = self.transform.embed( x, y, threshold=self.threshold )
 		embedding: np.ndarray = self.transform.magnitude( transformed )
 		self.log.info( f"MITTransformPlot.apply_transform: x{list(x.shape)}, y{list(y.shape)} -> transformed{list(transformed.shape)}  embedding{list(embedding.shape)} ---> x min={embedding.min():.3f}, max={embedding.max():.3f}, mean={embedding.mean():.3f} ---")
@@ -280,8 +279,8 @@ class MITTransformPlot(SignalPlot):
 
 	@exception_handled
 	def update(self, val=0):
-		series_data: xa.Dataset = self.data_loader.get_dataset_element(self.sector, self.TICS[self.element])
-		target_period: float = series_data.data_vars['y'].attrs['period']
+		series_data: Dict[str,Union[np.ndarray,float]] = self.data_loader.get_element(self.sector, self.element)
+		target_period: float = series_data['p']
 		tdata: np.ndarray = self.apply_transform(series_data).squeeze()
 		x = self.transform.xdata.squeeze()
 		y = tdata[None,:] if (tdata.ndim == 1) else tdata

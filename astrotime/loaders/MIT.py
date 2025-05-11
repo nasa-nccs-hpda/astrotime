@@ -101,21 +101,24 @@ class MITLoader(IterativeDataLoader):
 		return result
 
 	def get_dataset_element( self, sector_index: int, TIC: str, **kwargs ) -> xa.Dataset:
-		self.load_sector(sector_index, **kwargs)
-		if     self.test_mode_index == 0: return xa.Dataset( { k: self.dataset.data_vars[TIC+"."+k] for k in ['time','y'] } )
+		if self.load_sector(sector_index):
+			self.update_training_data()
+		if     self.test_mode_index == 0: return xa.Dataset( self.train_data )
 		elif   self.test_mode_index == 1: return self.get_sinusoid_element(sector_index,TIC)
 		elif   self.test_mode_index == 2: return self.get_pcross_element(sector_index, TIC)
 		else: raise Exception(f"Unknown test mode {self.test_mode_index}")
 
 	def get_sinusoid_element( self, sector_index: int, TIC: str, **kwargs ) -> xa.Dataset:
-		self.load_sector(sector_index, **kwargs)
+		if self.load_sector(sector_index):
+			self.update_training_data()
 		time: xa.DataArray = self.dataset.data_vars[TIC+".time"]
 		y: xa.DataArray = self.dataset.data_vars[TIC+".y"]
 		sinusoid: np.ndarray = np.sin( 2*np.pi*time.values / y.attrs["period"] )
 		return xa.Dataset( dict(  time=time, y=y.copy( data=sinusoid ) ) )
 
 	def get_pcross_element( self, sector_index: int, TIC: str, **kwargs ) -> xa.Dataset:
-		self.load_sector(sector_index, **kwargs)
+		if self.load_sector(sector_index):
+			self.update_training_data()
 		time: xa.DataArray = self.dataset.data_vars[TIC+".time"]
 		y: xa.DataArray = self.dataset.data_vars[TIC + ".y"]
 		self.log.info(f"get_pcross_element[{sector_index},{TIC}]: parms = {self.params}")
