@@ -253,6 +253,7 @@ class MITLoader(IterativeDataLoader):
 						elems.append(eslice)
 						periods.append(p)
 						sns.append(sn)
+						tics.append(TIC)
 		z = np.stack(elems,axis=0)
 		self.train_data['t'] = z[:,0,:]
 		self.train_data['y'] = z[:,1,:]
