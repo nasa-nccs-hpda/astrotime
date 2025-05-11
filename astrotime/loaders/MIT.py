@@ -260,7 +260,7 @@ class MITLoader(IterativeDataLoader):
 		return (p >= self.period_range[0]) and (p <= self.period_range[1])
 
 	def update_training_data(self):
-		self.log.info("\nupdate_training_data\n")
+		self.log.info(f"\nupdate_training_data(sector={self.loaded_sector}), snr_threshold={self.snr_threshold}, period_range={self.period_range}\n")
 		elems = []
 		periods, sns = [], []
 		for TIC in self._TICS:
