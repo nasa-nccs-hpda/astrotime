@@ -68,8 +68,7 @@ class MITLoader(IterativeDataLoader):
 				self.log.info(f"Init Dataset: sector={self.current_sector}, sector_batch_offset={self.sector_batch_offset}")
 
 		if self.current_sector >= 0:
-			if self.load_sector(self.current_sector):
-				self.update_training_data()
+			self.load_sector(self.current_sector)
 			batch_start = self.sector_batch_offset
 			batch_end   = batch_start+self.cfg.batch_size
 			result: RDict = { k: self.train_data[k][batch_start:batch_end] for k in ['t','y','p','sn'] }
@@ -83,8 +82,7 @@ class MITLoader(IterativeDataLoader):
 		return None
 
 	def get_batch( self, sector_index: int, batch_index: int ) -> Optional[Dict[str,np.ndarray]]:
-		if self.load_sector(sector_index):
-			self.update_training_data()
+		self.load_sector(sector_index)
 		batch_start = self.sector_batch_offset*batch_index
 		batch_end   = batch_start+self.cfg.batch_size
 		result = { k: self.train_data[k][batch_start:batch_end] for k in ['t','y','p','sn'] }
@@ -95,8 +93,7 @@ class MITLoader(IterativeDataLoader):
 		return result
 
 	def get_element( self, sector_index: int, element_index: int ) -> Optional[Dict[str,Union[np.ndarray,float]]]:
-		if self.load_sector(sector_index):
-			self.update_training_data()
+		self.load_sector(sector_index)
 		element_data = { k: self.train_data[k][element_index] for k in ['t','y','p','sn'] }
 		if   self.test_mode_index == 1:
 			element_data['y'] = np.sin( 2*np.pi*element_data['t'] / element_data['p'] )
@@ -112,8 +109,7 @@ class MITLoader(IterativeDataLoader):
 	@property
 	def nelements(self) -> int:
 		if self.current_sector >= 0:
-			if self.load_sector(self.current_sector):
-				self.update_training_data()
+			self.load_sector(self.current_sector)
 			return self.train_data['t'].shape[0]
 		return -1
 
@@ -202,6 +198,7 @@ class MITLoader(IterativeDataLoader):
 				self.log.info(f" Loaded sector {sector} files in {t1-t0:.3f} sec")
 				self.dataset.to_netcdf( self.cache_path(sector), engine="netcdf4" )
 			self.loaded_sector = sector
+			self.update_training_data()
 			return True
 		return False
 
