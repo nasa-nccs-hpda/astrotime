@@ -229,7 +229,7 @@ class MITTransformPlot(SignalPlot):
 			lw = 2 if (ip == 0) else 1
 			self.plots.append( self.ax.plot(x, y[ip], label=f"{self.tname}-{ip}", color=self.colors[ip], marker=".", linewidth=lw, markersize=lw, alpha=alpha)[0] )
 		self.ax.set_xlim( x.min(), x.max() )
-		self.ax.set_ylim( y[0].min(), y[0].max() )
+		self.ax.set_ylim( y.min(), y.max() )
 		self.target_marker: Line2D = self.ax.axvline( freq, 0.0, 1.0, color='grey', linestyle='-', linewidth=3, alpha=0.5)
 		self.selection_marker: Line2D = self.ax.axvline( 0, 0.0, 1.0, color='black', linestyle='-', linewidth=1, alpha=1.0)
 		self.ax.title.set_text(f"{self.name}: TPeriod={period:.3f} (Freq={freq:.3f})")
@@ -287,7 +287,7 @@ class MITTransformPlot(SignalPlot):
 			self.plots[ip].set_ydata(y[ip])
 			self.plots[ip].set_xdata(x)
 		self.ax.set_xlim( x.min(), x.max() )
-		self.ax.set_ylim( y[0].min(), y[0].max() )
+		self.ax.set_ylim( y.min(), y.max() )
 		self.log.info(f"---- MITTransformPlot {self.tname}[{self.element})] update: y{y.shape}, x range=({x.min():.3f}->{x.max():.3f}) --- ")
 		target_freq = self.transform.get_target_freq( target_period )
 		self.target_marker.set_xdata([target_freq,target_freq])
