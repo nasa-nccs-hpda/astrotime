@@ -18,7 +18,7 @@ class MITLoader(IterativeDataLoader):
 		self.sector_range = cfg.sector_range
 		self.snr_threshold = cfg.get('snr_threshold',0.0)
 		self.series_length = cfg.series_length
-		self.period_range: Optional[Tuple[float,float]] = None
+		self.period_range: Tuple[float,float] = None
 		self.current_sector = None
 		self.loaded_sector = None
 		self.sector_batch_offset = None
@@ -32,7 +32,7 @@ class MITLoader(IterativeDataLoader):
 
 	def initialize(self, tset: TSet, **kwargs ):
 		self.tset = tset
-		self.period_range =  self.get_period_range()
+		self.period_range = self.get_period_range()
 		self._read_TICS(self.current_sector)
 		self.init_epoch()
 
@@ -44,11 +44,10 @@ class MITLoader(IterativeDataLoader):
 	def update_test_mode(self):
 		self.test_mode_index = (self.test_mode_index + 1) % len(self.TestModes)
 
-	def get_period_range(self) -> Optional[Tuple[float,float]]:
-		max_period = self.cfg.get('max_period',None)
-		if max_period is not None:
-			return 0, max_period
-		return 0, float('inf')
+	def get_period_range(self) -> Tuple[float,float]:
+		f0 = self.cfg.base_freq
+		f1 = f0 + f0 * 2**self.cfg.noctaves
+		return 1/f1, 1/f0
 
 	@property
 	def ndsets(self) -> int:
