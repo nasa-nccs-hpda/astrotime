@@ -240,7 +240,7 @@ class MITLoader(IterativeDataLoader):
 	def update_training_data(self):
 		self.log.info(f"\nupdate_training_data(sector={self.loaded_sector}), snr_threshold={self.snr_threshold}, period_range={self.period_range}\n")
 		elems = []
-		periods, sns, tics, xp, xt  = [], [], [], 0, 0
+		periods, sns, tics, xp0, xp1, xt  = [], [], [], 0, 0, 0
 		for TIC in self._TICS:
 			if TIC+".y" in self.dataset.data_vars:
 				cy: xa.DataArray = self.dataset[TIC+".y"]
@@ -254,13 +254,16 @@ class MITLoader(IterativeDataLoader):
 						sns.append(sn)
 						tics.append(TIC)
 					else: xt = xt + 1
-				else: xp = xp + 1
+				else:
+					if p < self.period_range[0]: xp0 = xp0 + 1
+					if p > self.period_range[1]: xp1 = xp1 + 1
+
 		z = np.stack(elems,axis=0)
 		self.train_data['t'] = z[:,0,:]
 		self.train_data['y'] = z[:,1,:]
 		self.train_data['p'] = np.array(periods)
 		self.train_data['sn'] = np.array(sns)
-		dropped = self.ftics(z.shape[0]), self.ftics(xp), self.ftics(xt)
+		dropped = self.ftics(z.shape[0]), self.ftics(xp0), self.ftics(xp1), self.ftics(xt)
 		self._nbatches = math.ceil( self.train_data['t'].shape[0] / self.cfg.batch_size )
 		self._TICS = tics
 		self.log.info( f"get_training_data: nbatches={self._nbatches}, t{self.train_data['t'].shape}, y{self.train_data['y'].shape}, p{self.train_data['p'].shape}, dropped: {dropped[0]:.2f} {dropped[1]:.2f} {dropped[2]:.2f} ")
