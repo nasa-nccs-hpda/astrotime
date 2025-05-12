@@ -122,7 +122,7 @@ class IterativeTrainer(object):
                 te = time.time()
                 self.set_train_status()
                 self.loader.init_epoch()
-                losses, log_interval, t0 = [], 200, time.time()
+                losses, log_interval, t0 = [], 50, time.time()
                 try:
                     for ibatch in range(0,sys.maxsize):
                         t0 = time.time()
