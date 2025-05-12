@@ -214,7 +214,7 @@ class WaveletAnalysisLayer(EmbeddingLayer):
 
 	@property
 	def nfeatures(self):
-		return 1 if self.sum_features else (3 if (self.nharmonics <= 0) else self.nharmonics+1)
+		return 1 if self.sum_features else (2 if (self.nharmonics <= 0) else self.nharmonics+1)
 
 	def power(self, embedding: Tensor) -> np.ndarray:
 		mag = torch.sqrt( torch.sum( embedding**2, dim=1 ) ).squeeze()
