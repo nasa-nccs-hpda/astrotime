@@ -160,14 +160,13 @@ class WaveletAnalysisLayer(EmbeddingLayer):
 		t0 = time.time()
 		self.init_log(f"WaveletAnalysisLayer shapes: ts{list(ts.shape)} ys{list(ys.shape)}")
 		slen: int = ys.shape[1]
-		ones: Tensor = torch.ones( ys.shape[0], self.nfreq, slen, device=self.device)
 		tau = 0.5 * (ts[:, slen // 2] + ts[:, slen // 2 + 1])
 		tau: Tensor = tau[:, None, None]
 		omega = self._embedding_space * 2.0 * math.pi
 		omega_: Tensor = omega[None, :, None]  # broadcast-to(self.batch_size,self.nfreq,slen)
 		ts: Tensor = ts[:, None, :]  # broadcast-to(self.batch_size,self.nfreq,slen)
 		dt: Tensor = (ts - tau)
-		self.init_log(f" tau{list(tau.shape)} dt{list(dt.shape)} ones{list(ones.shape)}")
+		self.init_log(f" tau{list(tau.shape)} dt{list(dt.shape)}")
 		dz: Tensor = omega_ * dt
 		weights: Tensor = torch.exp(-self.C * dz ** 2) if (self.cfg.decay_factor > 0.0) else 1.0
 		sum_w: Tensor = torch.sum(weights, dim=-1) if (self.cfg.decay_factor > 0.0) else 1.0
@@ -177,13 +176,12 @@ class WaveletAnalysisLayer(EmbeddingLayer):
 
 		pw1: Tensor = torch.sin(dz)
 		pw2: Tensor = torch.cos(dz)
-		self.init_log(f" --> pw0{list(ones.shape)} pw1{list(pw1.shape)} pw2{list(pw2.shape)}  ")
+		self.init_log(f" --> pw1{list(pw1.shape)} pw2{list(pw2.shape)}  ")
 
-		p0: Tensor = w_prod(ys, ones)
 		p1: Tensor = w_prod(ys, pw1)
 		p2: Tensor = w_prod(ys, pw2)
-		self.init_log(f" --> p0{list(p0.shape)} p1{list(p1.shape)} p2{list(p2.shape)}")
-		embedding: Tensor = torch.concat( (p0[:, None, :], p1[:, None, :], p2[:, None, :]), dim=1)
+		self.init_log(f" --> p1{list(p1.shape)} p2{list(p2.shape)}")
+		embedding: Tensor = torch.concat( (p1[:, None, :], p2[:, None, :]), dim=1)
 		self.init_state = False
 		rv = self.fold_harmonic_layers(embedding, **kwargs) if self.fold_harmonics else embedding
 		self.init_log(f" Completed embedding in {elapsed(t0):.5f} sec: result{list(rv.shape)}")
