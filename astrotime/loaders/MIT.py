@@ -240,7 +240,7 @@ class MITLoader(IterativeDataLoader):
 	def update_training_data(self):
 		self.log.info(f"\nupdate_training_data(sector={self.loaded_sector}), snr_threshold={self.snr_threshold}, period_range={self.period_range}\n")
 		elems = []
-		periods, sns, tics, xp0, xp1, xt  = [], [], [], 0, 0, 0
+		periods, sns, tics, xp0, xp1, xt, xx  = [], [], [], 0, 0, 0, 0
 		for TIC in self._TICS:
 			if TIC+".y" in self.dataset.data_vars:
 				cy: xa.DataArray = self.dataset[TIC+".y"]
@@ -257,16 +257,17 @@ class MITLoader(IterativeDataLoader):
 				else:
 					if p < self.period_range[0]: xp0 = xp0 + 1
 					if p > self.period_range[1]: xp1 = xp1 + 1
+			else: xx = xx + 1
 
 		z = np.stack(elems,axis=0)
 		self.train_data['t'] = z[:,0,:]
 		self.train_data['y'] = z[:,1,:]
 		self.train_data['p'] = np.array(periods)
 		self.train_data['sn'] = np.array(sns)
-		ntic = len(self._TICS)
+		ntic0, ntic1 = len(tics), len(self._TICS)
 		self._nbatches = math.ceil( self.train_data['t'].shape[0] / self.cfg.batch_size )
 		self._TICS = tics
-		self.log.info( f"get_training_data: nbatches={self._nbatches}, t{self.train_data['t'].shape}, y{self.train_data['y'].shape}, p{self.train_data['p'].shape}, dropped: {z.shape[0]/ntic:.2f} {xp0/ntic:.2f} {xp1/ntic:.2f} {xt/ntic:.2f} ")
+		self.log.info( f"get_training_data: nbatches={self._nbatches}, t{self.train_data['t'].shape}, y{self.train_data['y'].shape}, p{self.train_data['p'].shape}, dropped: {ntic0/ntic1:.2f} {xx/ntic1:.2f} {xp0/ntic1:.2f} {xp1/ntic1:.2f} {xt/ntic1:.2f} ")
 
 	def refresh(self):
 		self.dataset = None
