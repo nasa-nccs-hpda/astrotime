@@ -7,7 +7,7 @@ sector_range:
 batch_size: 32
 nfreq_oct: 512                     # Number of frequency values (log2 spaced) in each octave
 base_freq:  0.1                    # Start frequency of base freq range
-noctaves: 7                        # Number of octaves in base freq range
+noctaves: 8                        # Number of octaves in base freq range
 series_length: 8192               # Length of subset of input timeseries to process (-1 means no subsetting)
 test_mode: default
 snr_threshold: 100
