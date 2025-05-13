@@ -1,5 +1,6 @@
-import logging, numpy as np
+import logging, os, csv, pickle, numpy as np
 import xarray as xa
+import pandas as pd
 from .param import STIntParam, STFloatParam
 from matplotlib import ticker
 from torch import nn, optim, Tensor, FloatTensor
@@ -68,6 +69,7 @@ class MITDatasetPlot(SignalPlot):
 	def __init__(self, name: str, data_loader: IterativeDataLoader, sector: int, **kwargs):
 		SignalPlot.__init__(self, **kwargs)
 		self.name = name
+		self.version = name.split(':')[0]
 		self.sector: int = sector
 		self.data_loader: MITLoader = data_loader
 		self.refresh = kwargs.get('refresh', False)
@@ -83,6 +85,7 @@ class MITDatasetPlot(SignalPlot):
 		self.origin = None
 		self.period = None
 		self.fold_period: float = None
+		self.registered_elements: Dict[Tuple[int,int],Tuple[float,float]] = self.load_registered_elements()
 
 	@exception_handled
 	def update_period_marker(self) -> str:
@@ -116,7 +119,8 @@ class MITDatasetPlot(SignalPlot):
 			self.data_loader.update_test_mode()
 			args = dict(title="Synthetic Sinusoids") if (self.data_loader.test_mode_index == 1) else {}
 			self.update(**args)
-			#self.process_event(id="update")
+		elif event.key in ['ctrl+s']:
+			self.register_element()
 
 	@exception_handled
 	def process_ext_event(self, **event_data):
@@ -155,6 +159,32 @@ class MITDatasetPlot(SignalPlot):
 		self.ax.set_xlim(xs[0],xs[-1])
 		self.update_period_marker()
 		self.ax.set_ylim(ys.min(),ys.max())
+
+	def register_element(self):
+		element: Dict[str,Union[np.ndarray,float]] = self.data_loader.get_element(self.sector,self.element ) # , refresh=self.refresh )
+		f: float = 1/element['p']
+		snr: float = element['sn']
+		self.registered_elements[ (self.sector,self.element) ] = (f,snr)
+		self.save_registered_elements()
+
+	@property
+	def refile(self):
+		cdir = f"{self.data_loader.cfg.cache_path}/registered_elements"
+		os.makedirs(cdir,exist_ok=True)
+		return f"{cdir}/{self.version}.pkl"
+
+	def save_registered_elements(self):
+		with open( self.refile, 'wb') as file:
+			pickle.dump(self.registered_elements, file)
+			self.log.info( f" ---- MITDatasetPlot-> save_registered_elements: {self.refile} saved" )
+
+	def load_registered_elements(self) -> Dict[Tuple[int,int],Tuple[float,float]]:
+		if os.path.exists(self.refile):
+			with open(self.refile, 'rb') as file:
+				rv = pickle.load( file )
+				self.log.info( f" ---- MITDatasetPlot-> loaded {len(rv)} registered elements from {self.refile}")
+				return rv
+		return {}
 
 	@exception_handled
 	def get_element_data(self) -> Tuple[np.ndarray,np.ndarray,float,float]:

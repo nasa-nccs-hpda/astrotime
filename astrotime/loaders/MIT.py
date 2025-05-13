@@ -16,7 +16,8 @@ class MITLoader(IterativeDataLoader):
 		super().__init__()
 		self.cfg = cfg
 		self.sector_range = cfg.sector_range
-		self.snr_threshold = cfg.get('snr_threshold',0.0)
+		self.snr_min = cfg.get('snr_min',0.0)
+		self.snr_max = cfg.get('snr_max', 1e6)
 		self.series_length = cfg.series_length
 		self.period_range: Tuple[float,float] = None
 		self.current_sector = None
@@ -238,7 +239,7 @@ class MITLoader(IterativeDataLoader):
 		return (p >= self.period_range[0]) and (p <= self.period_range[1])
 
 	def update_training_data(self):
-		self.log.info(f"\nupdate_training_data(sector={self.loaded_sector}), snr_threshold={self.snr_threshold}, period_range={self.period_range}\n")
+		self.log.info(f"\nupdate_training_data(sector={self.loaded_sector}), period_range={self.period_range}\n")
 		elems = []
 		periods, sns, tics, xp0, xp1, xt, xx  = [], [], [], 0, 0, 0, 0
 		for TIC in self._TICS:
@@ -248,7 +249,7 @@ class MITLoader(IterativeDataLoader):
 				sn = cy.attrs["sn"]
 				if self.in_range(p):
 					eslice = self.get_elem_slice(TIC)
-					if (eslice is not None) and (sn > self.snr_threshold):
+					if (eslice is not None) and (sn > self.snr_min) and (sn < self.snr_max):
 						elems.append(eslice)
 						periods.append(p)
 						sns.append(sn)
