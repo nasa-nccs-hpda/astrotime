@@ -14,7 +14,7 @@ def snr_analysis( loader: IterativeDataLoader ) -> np.ndarray:
 			if batch['y'].shape[0] > 0:
 				snrl.append( batch['sn'] )
 	except StopIteration: pass
-	return np.stack(snrl).flatten()
+	return np.concatenate(snrl)
 
 
 
