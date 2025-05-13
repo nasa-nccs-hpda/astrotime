@@ -119,7 +119,6 @@ class SignalTrainer(object):
                     t0 = time.time()
                     batch_input, target = self.get_batch(self.mode,ibatch)
                     self.global_time = time.time()
-                    self.log.info( f"BATCH-{ibatch}: input={shp(batch_input)}, target={shp(target)}")
                     result: Tensor = self.model( batch_input )
                     loss: Tensor = self.loss_function( result.squeeze(), target.squeeze() )
                     self.conditionally_update_weights(loss)

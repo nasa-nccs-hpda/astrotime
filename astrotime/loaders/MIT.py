@@ -56,7 +56,6 @@ class MITLoader(IterativeDataLoader):
 
 	def get_next_batch( self ) -> Optional[RDict]:
 		ibatch = self.sector_batch_offset//self.cfg.batch_size
-		self.log.info(f"MITLoader.get_next_batch: sector = {self.current_sector}, ibatch={ibatch}, nbatches={self._nbatches}, sector_batch_offset={self.sector_batch_offset}, batch_size={self.cfg.batch_size}, tset={self.tset}")
 		if (self._nbatches > 0) and ( ibatch>= self._nbatches-1):
 			if self.tset == TSet.Validation:
 				self.current_sector = -1
@@ -75,7 +74,6 @@ class MITLoader(IterativeDataLoader):
 			result['TICS'] = self._TICS[batch_start:batch_end]
 			result['sector'] = self.current_sector
 			self.sector_batch_offset = batch_end
-			self.log.info( f"  *** get_next_batch: batch({batch_start}->{batch_end}), test_mode={self.test_mode_index}, t{self.train_data['t'].shape}->bt{result['t'].shape}, y{self.train_data['y'].shape}->by{result['y'].shape}, p{self.train_data['p'].shape}->bp{result['p'].shape}  ")
 			if self.test_mode_index == 2:
 				result = self.synthetic.process_batch( result, **self.params )
 			return result
