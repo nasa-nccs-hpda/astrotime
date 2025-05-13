@@ -15,7 +15,6 @@ version = "MIT_period"
 def my_app(cfg: DictConfig) -> None:
 	device: torch.device = astrotime_initialize( cfg, version )
 	embedding_space_array, embedding_space_tensor = embedding_space(cfg.transform, device)
-	cfg.data['snr_threshold'] = 150
 
 	encoder = ValueEncoder( cfg.transform, device )
 	data_loader = MITLoader(cfg.data)
