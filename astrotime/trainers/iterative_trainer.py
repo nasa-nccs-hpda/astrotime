@@ -114,8 +114,11 @@ class IterativeTrainer(object):
         return not self.cfg.mode.startswith("val")
 
     def loss_function(self, result: Tensor, target: Tensor) -> Tensor:
-        e = torch.log2( result/target )**2
-        return e.mean()
+        e =  torch.log2(result/target)**2
+        return torch.sqrt( e.mean() )
+
+    def get_model_result(self, batch: TRDict) -> Tensor:
+        return self.cfg.base_freq + self.model( batch['z'] )
 
     def compute(self):
         print(f"SignalTrainer[{self.mode}]: , {self.nepochs} epochs, device={self.device}")
@@ -131,7 +134,7 @@ class IterativeTrainer(object):
                         batch = self.get_next_batch()
                         if batch['z'].shape[0] > 0:
                             self.global_time = time.time()
-                            result: Tensor = self.model( batch['z'] )
+                            result: Tensor = self.get_model_result( batch )
                             loss: Tensor = self.loss_function( result, batch['target'] )
                             self.conditionally_update_weights(loss)
                             losses.append(loss.item())
