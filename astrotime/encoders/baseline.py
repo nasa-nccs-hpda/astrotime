@@ -58,6 +58,8 @@ class ValueEncoder(Encoder):
 
 	def encode_batch(self, x0: np.ndarray, y0: np.ndarray ) -> Tuple[Tensor,Tensor]:
 		with (self.device):
+			if x0.ndim == 1: x0 = x0[None,:]
+			if y0.ndim == 1: y0 = y0[None,:]
 			x,y = self.apply_filters(x0,y0, dim=1)
 			i0: int = random.randint(0,  x.shape[1]-self.input_series_length )
 			Y: Tensor = torch.FloatTensor(y[:,i0:i0 + self.input_series_length]).to(self.device)
