@@ -26,6 +26,10 @@ class ModelEvaluator(object):
         self.target_period = None
         self.model_period = None
 
+    @property
+    def tname(self):
+        return self.embedding.name
+
     def TICS(self, sector_index: int) -> List[str]:
         return self.loader.TICS(sector_index)
 
