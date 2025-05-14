@@ -7,6 +7,7 @@ import time, sys, torch, logging, numpy as np
 from torch import nn, optim, Tensor
 from astrotime.encoders.wavelet import WaveletAnalysisLayer, embedding_space
 from astrotime.models.cnn.cnn_baseline import get_nn_model_from_cfg
+from astrotime.loaders.MIT import MITLoader
 from astrotime.encoders.baseline import ValueEncoder
 TRDict = Dict[str,Union[List[str],int,torch.Tensor]]
 
@@ -15,13 +16,22 @@ TRDict = Dict[str,Union[List[str],int,torch.Tensor]]
 
 class ModelEvaluator(object):
 
-    def __init__(self, cfg: DictConfig, loader: IterativeDataLoader, embedding: EmbeddingLayer, device ):
+    def __init__(self, cfg: DictConfig, loader: MITLoader, embedding: EmbeddingLayer, device ):
         self.encoder: ValueEncoder = ValueEncoder( cfg.transform, device )
         self.embedding: EmbeddingLayer = embedding
-        self.loader: IterativeDataLoader = loader
+        self.loader: MITLoader = loader
         self.cfg: DictConfig = cfg
         self.model: nn.Module = get_nn_model_from_cfg( cfg.model, device, embedding.nfeatures, embedding.output_series_length )
         self.device = device
+        self.target_period = None
+        self.model_period = None
+
+    def TICS(self, sector_index: int) -> List[str]:
+        return self.loader.TICS(sector_index)
+
+    @property
+    def xdata(self) -> np.ndarray:
+        return self.embedding.xdata.squeeze()
 
     def encode_element(self, element: RDict) -> TRDict:
         p: Tensor = torch.from_numpy(element.pop('p')).to(self.device)
@@ -33,8 +43,18 @@ class ModelEvaluator(object):
         element: RDict = self.loader.get_element(sector, element)
         return self.encode_element(element)
 
-    def evaluate(self, sector: int, element: int) -> Tuple[np.ndarray,float]:
+    def evaluate(self, sector: int, element: int) -> np.ndarray:
         element: TRDict = self.get_element(sector, element)
         embedding: Tensor = self.embedding.forward(element['z'])
         result: Tensor = self.model(embedding)
-        return embedding.detach().cpu().numpy(), result.detach().cpu().item()
+        self.target_period = element['target'].detach().cpu().item()
+        self.model_period  = result.detach().cpu().item()
+        return embedding.detach().cpu().numpy()
+
+    @property
+    def target_frequency(self) -> float:
+        return 1.0 / self.target_period
+
+    @property
+    def model_frequency(self) -> float:
+        return 1.0 / self.model_period

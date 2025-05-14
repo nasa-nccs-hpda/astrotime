@@ -12,6 +12,7 @@ from matplotlib.backend_bases import KeyEvent, MouseEvent, MouseButton
 from astrotime.loaders.base import IterativeDataLoader
 from astrotime.util.logging import exception_handled
 from astrotime.encoders.embedding import Transform, EmbeddingLayer
+from astrotime.trainers.model_evaluator import ModelEvaluator
 from typing import List, Optional, Dict, Type, Union, Tuple, Any, Set
 from astrotime.util.math import tnorm
 log = logging.getLogger()
@@ -324,5 +325,99 @@ class MITTransformPlot(SignalPlot):
 		transform_peak_freq = self.transform.xdata[np.argmax(y[0])]
 		transform_period = self.update_selection_marker(transform_peak_freq)
 		self.ax.title.set_text(f"{self.name}: TP={transform_period:.3f} (F={transform_peak_freq:.3f})")
+		self.ax.figure.canvas.draw_idle()
+
+
+class MITEvaluatorPlot(SignalPlot):
+
+	def __init__(self, name: str, evaluator: ModelEvaluator, sector: int, **kwargs):
+		SignalPlot.__init__(self, **kwargs)
+		self.name = name
+		self.sector: int = sector
+		self.evaluator: ModelEvaluator = evaluator
+		self.TICS: List[str] = evaluator.TICS(sector)
+		self.annotations: List[str] = tolower( kwargs.get('annotations',None) )
+		self.colors = [ 'black', 'red', 'green', 'blue', 'magenta', 'cyan', 'darkviolet', 'darkorange', 'saddlebrown', 'darkturquoise' ]
+		self.ofac = kwargs.get('upsample_factor',1)
+		self.plots: List[Line2D] = []
+		self.target_marker: Line2D = None
+		self.model_marker: Line2D = None
+		self.add_param( STIntParam('element', (0,len(self.TICS))  ) )
+		self.add_param( STFloatParam('threshold', (0.0,1.0), value=0.5 ) )
+		self.transax = None
+		self.nlines = -1
+
+	@property
+	def tname(self):
+		return self.transform.name
+
+	def set_sector(self, sector: int ):
+		self.sector = sector
+
+	@exception_handled
+	def _setup(self):
+		tdata, period = self.evaluator.evaluate(self.sector, self.element)
+		target_freq = self.evaluator.target_frequency
+		model_freq = self.evaluator.model_frequency
+		x = self.evaluator.xdata
+		y = tdata[None,:] if (tdata.ndim == 1) else tdata
+		self.nlines = y.shape[0]
+		print( f"PLOT: x{x.shape} y{y.shape}")
+		for ip in range(self.nlines):
+			alpha = 1.0 - ip/self.nlines
+			lw = 2 if (ip == 0) else 1
+			self.plots.append( self.ax.plot(x, y[ip], label=f"{self.tname}-{ip}", color=self.colors[ip], marker=".", linewidth=lw, markersize=lw, alpha=alpha)[0] )
+		self.ax.set_xlim( x.min(), x.max() )
+		self.ax.set_ylim( y.min(), y.max() )
+		self.target_marker: Line2D = self.ax.axvline( target_freq, 0.0, 1.0, color='grey', linestyle='-', linewidth=3, alpha=0.5)
+		self.model_marker: Line2D  = self.ax.axvline( model_freq, 0.0, 1.0, color='yellow', linestyle='-', linewidth=2, alpha=1.0)
+		self.ax.title.set_text(f"{self.name}: target_freq={target_freq:.3f} model_freq={model_freq:.3f}")
+		self.ax.title.set_fontsize(8)
+		self.ax.title.set_fontweight('bold')
+		self.ax.set_xscale('log')
+		self.ax.xaxis.set_major_formatter(ticker.StrMethodFormatter("{x:.2f}"))
+		self.ax.xaxis.set_major_locator(ticker.LogLocator(base=2, numticks=8))
+		self.ax.legend(loc="upper right", fontsize=8)
+
+	@exception_handled
+	def button_press(self, event: MouseEvent) -> Any:
+		if event.inaxes == self.ax and (event.button == MouseButton.RIGHT):
+			self.log.info(f"           *** ---- MITTransformPlot.button_press: selected freq={event.xdata:.2f} mods={event.modifiers} --- ")
+			if "shift" in event.modifiers:
+				freq, period = event.xdata, 1/event.xdata
+				self.log.info(f"           *** ---- MITTransformPlot.button_press: selected freq={freq:.2f}, period={period:.2f} --- ")
+				self.ax.title.set_text(f"{self.name}: TP={period:.3f} (F={freq:.3f})")
+				self.model_marker.set_xdata([freq, freq])
+				self.process_event( id="period-update", period=period, ax=str(id(self.ax)), color=self.colors[0] )
+			elif "ctrl" in event.modifiers:
+				for t in self.transforms.values():
+					t.process_event( id="crtl-mouse-press", x=event.xdata, y=event.ydata, ax=event.inaxes )
+				self.update()
+
+	def key_press(self, event: KeyEvent) -> Any:
+		if event.key.startswith( 'ctrl+'):
+			for t in self.transforms.values():
+				t.process_event( id="KeyEvent", key=event.key, ax=event.inaxes )
+			self.update()
+
+	@exception_handled
+	def update(self, val=0):
+		tdata = self.evaluator.evaluate(self.sector, self.element)
+		target_freq = self.evaluator.target_frequency
+		model_freq = self.evaluator.model_frequency
+		x = self.evaluator.xdata
+		y = tdata[None,:] if (tdata.ndim == 1) else tdata
+
+		for ip in range(self.nlines):
+			self.plots[ip].set_ydata(y[ip])
+			self.plots[ip].set_xdata(x)
+		self.ax.set_xlim( x.min(), x.max() )
+		self.ax.set_ylim( y.min(), y.max() )
+		self.log.info(f"---- MITTransformPlot {self.tname}[{self.element})] update: y{y.shape}, x range=({x.min():.3f}->{x.max():.3f}) --- ")
+
+		self.target_marker.set_xdata([target_freq,target_freq])
+		self.model_marker.set_xdata( [model_freq, model_freq] )
+		self.process_event(id="period-update", period=1/model_freq, ax=str(id(self.ax)), color=self.colors[0])
+		self.ax.title.set_text(f"{self.name}: target_freq={target_freq:.3f} (model_freq={model_freq:.3f})")
 		self.ax.figure.canvas.draw_idle()
 
