@@ -33,11 +33,14 @@ class ModelEvaluator(object):
     def xdata(self) -> np.ndarray:
         return self.embedding.xdata.squeeze()
 
+    def to_tensor(self, x: float|np.ndarray) -> Tensor:
+        t: Tensor = Tensor(x) if type(x)==float else torch.from_numpy(x)
+        return t.to(self.device)
+
     def encode_element(self, element: RDict) -> TRDict:
-        p: Tensor = torch.from_numpy(element.pop('p')).to(self.device)
         t, y = self.encoder.encode_batch(element.pop('t'), element.pop('y'))
         z: Tensor = torch.concat((t[:, None, :], y), dim=1)
-        return dict( z=z, target=p, **element )
+        return dict( z=z, **element )
 
     def get_element(self, sector: int, element: int) -> Optional[TRDict]:
         element: RDict = self.loader.get_element(sector, element)
@@ -47,7 +50,7 @@ class ModelEvaluator(object):
         element: TRDict = self.get_element(sector, element)
         embedding: Tensor = self.embedding.forward(element['z'])
         result: Tensor = self.model(embedding)
-        self.target_period = element['target'].detach().cpu().item()
+        self.target_period = element['p']
         self.model_period  = result.detach().cpu().item()
         return embedding.detach().cpu().numpy()
 
