@@ -29,6 +29,7 @@ class CheckpointManager(object):
 
 	def _load_state(self) -> Dict[str,Any]:
 		cpath = self.checkpoint_path()
+		print( f"Loading checkpoint from {cpath}")
 		checkpoint = torch.load( cpath, map_location='cpu' )
 		return checkpoint
 
