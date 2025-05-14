@@ -26,10 +26,8 @@ class IterativeTrainer(object):
         self.device = encoder.device
         self.loader: IterativeDataLoader = loader
         self.cfg: DictConfig = cfg
-        self.loss_function: nn.Module = nn.L1Loss()
         self.model: nn.Module = model
         self.encoder: Encoder = encoder
-        self.time_scale = encoder.time_scale
         self.optimizer: optim.Optimizer = self.get_optimizer()
         self.log = logging.getLogger()
         self._checkpoint_manager = None
@@ -80,10 +78,10 @@ class IterativeTrainer(object):
 
 
     def encode_batch(self, batch: RDict) -> TRDict:
-        target: Tensor = torch.from_numpy(batch.pop('p')).to(self.device)
+        p: Tensor = torch.from_numpy(batch.pop('p')).to(self.device)
         t, y = self.encoder.encode_batch(batch.pop('t'), batch.pop('y'))
-        z: Tensor = torch.concat((t[:, None, :] * self.time_scale, y), dim=1)
-        return dict( z=z, target=target * self.time_scale, **batch )
+        z: Tensor = torch.concat((t[:, None, :], y), dim=1)
+        return dict( z=z, target=1/p, **batch )
 
     def get_next_batch(self) -> Optional[TRDict]:
         dset: RDict = self.loader.get_next_batch()
@@ -115,6 +113,10 @@ class IterativeTrainer(object):
     def training(self) -> bool:
         return not self.cfg.mode.startswith("val")
 
+    def loss_function(self, result: Tensor, target: Tensor) -> Tensor:
+        e: Tensor = torch.log2( torch.abs(result - target) )
+        return e.mean(dim=0)
+
     def compute(self):
         print(f"SignalTrainer[{self.mode}]: , {self.nepochs} epochs, device={self.device}")
         with self.device:
@@ -130,13 +132,13 @@ class IterativeTrainer(object):
                         if batch['z'].shape[0] > 0:
                             self.global_time = time.time()
                             result: Tensor = self.model( batch['z'] )
-                            loss: Tensor = self.loss_function( result.squeeze(), batch['target'].squeeze() )
+                            loss: Tensor = self.loss_function( result, batch['target'] )
                             self.conditionally_update_weights(loss)
                             losses.append(loss.item())
                             if (self.mode == TSet.Train) and ((ibatch % log_interval == 0) or ((ibatch < 5) and (epoch==0))):
                                 aloss = np.array(losses)
                                 mean_loss = aloss.mean()
-                                print(f"E-{epoch} B-{ibatch} S-{self.loader.dset_idx} loss={mean_loss:.3f} (unscaled: {mean_loss/self.time_scale:.3f}), range=({aloss.min():.3f} -> {aloss.max():.3f}), dt={elapsed(t0):.5f} sec")
+                                print(f"E-{epoch} B-{ibatch} S-{self.loader.dset_idx} loss={mean_loss:.3f} (unscaled: {mean_loss:.3f}), range=({aloss.min():.3f} -> {aloss.max():.3f}), dt={elapsed(t0):.5f} sec")
                                 losses = []
                 except StopIteration:
                     print( f"Completed epoch {epoch} in {elapsed(te)/60:.5f} min.")
