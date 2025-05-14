@@ -349,7 +349,7 @@ class MITEvaluatorPlot(SignalPlot):
 
 	@property
 	def tname(self):
-		return self.evaluator.name
+		return self.evaluator.tname
 
 	def set_sector(self, sector: int ):
 		self.sector = sector
