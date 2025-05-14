@@ -15,6 +15,7 @@ class EmbeddingLayer(Transform):
 		self._embedding_space: Tensor = embedding_space.to(self.device)
 		self.log.info(f"EmbeddingLayer: series_length={self.series_length} batch_size={self.batch_size} ")
 		self.init_state: bool = True
+		self._result: torch.Tensor = None
 
 	def init_log(self, msg: str):
 		if self.init_state: self.log.info(msg)
@@ -23,14 +24,17 @@ class EmbeddingLayer(Transform):
 		self.log.debug(f"WaveletEmbeddingLayer shapes:")
 		xs: torch.Tensor = input[:, 0, :]
 		ys: torch.Tensor = input[:, 1:, :]
-		result: torch.Tensor = self.embed(xs,ys)
+		self._result: torch.Tensor = self.embed(xs,ys)
 		self.init_state = False
-		return result
+		return self._result
+
+	def get_result(self) -> np.ndarray:
+		return self._result.cpu().numpy()
 
 	def get_target_freq( self, target_period: float ) -> float:
 		return 1/target_period
 
-	def embed(self, xs: Tensor, ys: Tensor) -> Tensor:
+	def embed(self, xs: Tensor, ys: Tensor, **kwargs) -> Tensor:
 		raise NotImplementedError("EmbeddingLayer.embed() not implemented")
 
 	def magnitude(self, embedding: Tensor) -> np.ndarray:

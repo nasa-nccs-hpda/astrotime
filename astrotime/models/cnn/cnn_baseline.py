@@ -38,15 +38,3 @@ def get_model_from_cfg( cfg: DictConfig, device: torch.device, embedding_layer: 
 	print(f"CNN: reduced_series_len={reduced_series_len}, cnn_channels={cnn_channels}, output_series_length={embedding_layer.output_series_length}")
 	add_dense_block( model, cnn_channels*reduced_series_len, cfg )
 	return model.to(device)
-
-def get_nn_model_from_cfg( cfg: DictConfig, device: torch.device, nfeatures: int, series_len: int  ) -> nn.Module:
-	model: nn.Sequential = nn.Sequential()
-	cnn_channels = cfg.cnn_channels
-	num_input_features = nfeatures
-	for iblock in range(cfg.num_blocks):
-		cnn_channels = add_cnn_block( model, cnn_channels, num_input_features, cfg )
-		num_input_features = -1
-	reduced_series_len = series_len // int( math.pow(cfg.pool_size, cfg.num_blocks) )
-	print(f"CNN: reduced_series_len={reduced_series_len}, cnn_channels={cnn_channels}, series_length={series_len}")
-	add_dense_block( model, cnn_channels*reduced_series_len, cfg )
-	return model.to(device)

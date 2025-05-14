@@ -6,7 +6,7 @@ from astrotime.loaders.base import IterativeDataLoader, RDict
 import time, sys, torch, logging, numpy as np
 from torch import nn, optim, Tensor
 from astrotime.trainers.checkpoints import CheckpointManager
-from astrotime.models.cnn.cnn_baseline import get_nn_model_from_cfg
+from astrotime.models.cnn.cnn_baseline import get_model_from_cfg
 from astrotime.loaders.MIT import MITLoader
 from astrotime.encoders.baseline import ValueEncoder
 TRDict = Dict[str,Union[List[str],int,torch.Tensor]]
@@ -18,7 +18,7 @@ class ModelEvaluator(object):
         self.embedding: EmbeddingLayer = embedding
         self.loader: MITLoader = loader
         self.cfg: DictConfig = cfg
-        self.model: nn.Module = get_nn_model_from_cfg( cfg.model, device, embedding.nfeatures, embedding.output_series_length )
+        self.model: nn.Module = get_model_from_cfg( cfg.model, device, embedding )
         self.device = device
         self.target_period = None
         self.model_period = None
@@ -51,11 +51,11 @@ class ModelEvaluator(object):
 
     def evaluate(self, sector: int, element: int) -> np.ndarray:
         element: TRDict = self.get_element(sector, element)
-        embedding: Tensor = self.embedding.forward(element['z'])
-        result: Tensor = self.model(embedding)
+        model_result: Tensor = self.model(element['z'])
+        embedding: np.ndarray = self.embedding.get_result()
         self.target_period = element['p']
-        self.model_period  = result.detach().cpu().item()
-        return embedding.detach().cpu().numpy()
+        self.model_period  = model_result.cpu().item()
+        return embedding
 
     @property
     def target_frequency(self) -> float:
