@@ -356,7 +356,7 @@ class MITEvaluatorPlot(SignalPlot):
 
 	@exception_handled
 	def _setup(self):
-		tdata = self.evaluator.evaluate(self.sector, self.element)
+		tdata = self.evaluator.evaluate(self.sector, self.element).squeeze()
 		target_freq = self.evaluator.target_frequency
 		model_freq = self.evaluator.model_frequency
 		x = self.evaluator.xdata
@@ -402,7 +402,7 @@ class MITEvaluatorPlot(SignalPlot):
 
 	@exception_handled
 	def update(self, val=0):
-		tdata = self.evaluator.evaluate(self.sector, self.element)
+		tdata = self.evaluator.evaluate(self.sector, self.element).squeeze()
 		target_freq = self.evaluator.target_frequency
 		model_freq = self.evaluator.model_frequency
 		x = self.evaluator.xdata
