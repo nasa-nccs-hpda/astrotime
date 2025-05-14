@@ -11,7 +11,7 @@ log = logging.getLogger()
 
 class CheckpointManager(object):
 
-	def __init__(self, version: str, model: nn.Module, optimizer: Optimizer, cfg: DictConfig ):
+	def __init__(self, version: str, model: nn.Module, optimizer: Optional[Optimizer], cfg: DictConfig ):
 		self._cpaths: Dict[str,str] = {}
 		self.version = version
 		self.model: nn.Module = model
@@ -19,7 +19,8 @@ class CheckpointManager(object):
 		self.optimizer = optimizer
 
 	def save_checkpoint(self, epoch: int, batch: int  ) -> str:
-		checkpoint = dict(  model_state_dict=self.model.state_dict(), optimizer_state_dict=self.optimizer.state_dict(), epoch=epoch, batch=batch )
+		checkpoint = dict(  model_state_dict=self.model.state_dict(), epoch=epoch, batch=batch )
+		if self.optimizer is not None: checkpoint['optimizer_state_dict'] = self.optimizer.state_dict()
 		cpath = self.checkpoint_path()
 		if os.path.isfile(cpath):
 			shutil.copyfile( cpath, self.checkpoint_path(backup=True) )
@@ -41,7 +42,8 @@ class CheckpointManager(object):
 				log.info(f"Loaded model checkpoint from {cppath}, update_model = {update_model}", )
 				if update_model:
 					self.model.load_state_dict( train_state.pop('model_state_dict') )
-					self.optimizer.load_state_dict( train_state.pop('optimizer_state_dict') )
+					if self.optimizer is not None:
+						self.optimizer.load_state_dict( train_state.pop('optimizer_state_dict') )
 			except Exception as e:
 				log.info(f"Unable to load model from {cppath}: {e}", )
 				traceback.print_exc()

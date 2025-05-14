@@ -44,8 +44,8 @@ class PeriodMarkers:
 		self.markers: List[Line2D] = []
 		self.yrange = kwargs.get('yrange', (-1,1) )
 		self.npm: int = kwargs.get('npm', 7 )
-		self.color: str = kwargs.get('color', 'green' )
-		self.alpha: float = kwargs.get('alpha', 0.5 )
+		self.color: str = kwargs.get('color', 'grey' )
+		self.alpha: float = kwargs.get('alpha', 0.75 )
 		self.linestyle: str = kwargs.get('linestyle', '-')
 
 	def update(self, origin: float, period: float = None ):
@@ -337,7 +337,7 @@ class MITEvaluatorPlot(SignalPlot):
 		self.evaluator: ModelEvaluator = evaluator
 		self.TICS: List[str] = evaluator.TICS(sector)
 		self.annotations: List[str] = tolower( kwargs.get('annotations',None) )
-		self.colors = [ 'black', 'red', 'green', 'blue', 'magenta', 'cyan', 'darkviolet', 'darkorange', 'saddlebrown', 'darkturquoise' ]
+		self.colors = [ 'red', 'blue', 'magenta', 'cyan', 'darkviolet', 'darkorange', 'saddlebrown', 'darkturquoise' ]
 		self.ofac = kwargs.get('upsample_factor',1)
 		self.plots: List[Line2D] = []
 		self.target_marker: Line2D = None
@@ -364,13 +364,11 @@ class MITEvaluatorPlot(SignalPlot):
 		self.nlines = y.shape[0]
 		print( f"PLOT: x{x.shape} y{y.shape}")
 		for ip in range(self.nlines):
-			alpha = 1.0 - ip/self.nlines
-			lw = 2 if (ip == 0) else 1
-			self.plots.append( self.ax.plot(x, y[ip], label=f"{self.tname}-{ip}", color=self.colors[ip], marker=".", linewidth=lw, markersize=lw, alpha=alpha)[0] )
+			self.plots.append( self.ax.plot(x, y[ip], label=f"{self.tname}-{ip}", color=self.colors[ip], marker=".", linewidth=1, markersize=2, alpha=1.0)[0] )
 		self.ax.set_xlim( x.min(), x.max() )
 		self.ax.set_ylim( y.min(), y.max() )
 		self.target_marker: Line2D = self.ax.axvline( target_freq, 0.0, 1.0, color='grey', linestyle='-', linewidth=3, alpha=0.5)
-		self.model_marker: Line2D  = self.ax.axvline( model_freq, 0.0, 1.0, color='yellow', linestyle='-', linewidth=2, alpha=1.0)
+		self.model_marker: Line2D  = self.ax.axvline( model_freq, 0.0, 1.0, color='green', linestyle='-', linewidth=2, alpha=1.0)
 		self.ax.title.set_text(f"{self.name}: target_freq={target_freq:.3f} model_freq={model_freq:.3f}")
 		self.ax.title.set_fontsize(8)
 		self.ax.title.set_fontweight('bold')

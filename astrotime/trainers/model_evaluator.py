@@ -5,18 +5,15 @@ from astrotime.encoders.embedding import EmbeddingLayer
 from astrotime.loaders.base import IterativeDataLoader, RDict
 import time, sys, torch, logging, numpy as np
 from torch import nn, optim, Tensor
-from astrotime.encoders.wavelet import WaveletAnalysisLayer, embedding_space
+from astrotime.trainers.checkpoints import CheckpointManager
 from astrotime.models.cnn.cnn_baseline import get_nn_model_from_cfg
 from astrotime.loaders.MIT import MITLoader
 from astrotime.encoders.baseline import ValueEncoder
 TRDict = Dict[str,Union[List[str],int,torch.Tensor]]
 
-# embedding_space_array, embedding_space_tensor = embedding_space(cfg.transform, device)
-# self.wavelet: WaveletAnalysisLayer = WaveletAnalysisLayer('analysis', cfg.transform, embedding_space_tensor, device)
-
 class ModelEvaluator(object):
 
-    def __init__(self, cfg: DictConfig, loader: MITLoader, embedding: EmbeddingLayer, device ):
+    def __init__(self, cfg: DictConfig, version: str, loader: MITLoader, embedding: EmbeddingLayer, device ):
         self.encoder: ValueEncoder = ValueEncoder( cfg.transform, device )
         self.embedding: EmbeddingLayer = embedding
         self.loader: MITLoader = loader
@@ -25,6 +22,8 @@ class ModelEvaluator(object):
         self.device = device
         self.target_period = None
         self.model_period = None
+        self._checkpoint_manager = CheckpointManager( version, self.model, None, self.cfg.train )
+        self.train_state = self._checkpoint_manager.load_checkpoint( update_model=True )
 
     @property
     def tname(self):
