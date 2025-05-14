@@ -114,8 +114,7 @@ class IterativeTrainer(object):
         return not self.cfg.mode.startswith("val")
 
     def loss_function(self, result: Tensor, target: Tensor) -> Tensor:
-        e: Tensor = torch.log2( torch.abs(result - target) )
-        return e.mean(dim=0)
+        return torch.log2( torch.abs(result - target) ).mean()
 
     def compute(self):
         print(f"SignalTrainer[{self.mode}]: , {self.nepochs} epochs, device={self.device}")
