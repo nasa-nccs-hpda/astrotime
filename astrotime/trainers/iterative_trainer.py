@@ -130,6 +130,7 @@ class IterativeTrainer(object):
                             loss: Tensor = self.loss( result, batch['target'] )
                             self.conditionally_update_weights(loss)
                             losses.append(loss.item())
+                            print(f"E{epoch}.B{ibatch}:, result-range: [{result.min().cpu().item():.3f} -> {result.max().cpu().item():.3f}], loss={loss.cpu().item():.3f}")
                             if (self.mode == TSet.Train) and ((ibatch % log_interval == 0) or ((ibatch < 5) and (epoch==0))):
                                 aloss = np.array(losses)
                                 mean_loss = aloss.mean()
