@@ -117,7 +117,7 @@ class IterativeTrainer(object):
         return torch.abs( torch.log2(result/target) ).mean()
 
     def get_model_result(self, batch: TRDict) -> Tensor:
-        return self.cfg.base_freq + self.model( batch['z'] )
+        return self.cfg.base_freq * 2.0 ** self.model( batch['z'] )
 
     def compute(self):
         print(f"SignalTrainer[{self.mode}]: , {self.nepochs} epochs, device={self.device}")
