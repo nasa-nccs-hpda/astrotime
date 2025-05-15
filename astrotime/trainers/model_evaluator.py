@@ -49,14 +49,14 @@ class ModelEvaluator(object):
         element: RDict = self.loader.get_element(sector, element)
         return self.encode_element(element)
 
-    def get_model_result(self, element: TRDict) -> float:
-        return self.cfg.base_freq * 2.0 ** self.model( element['z'] ).cpu().item()
+    def get_model_result(self, element: TRDict) -> Tensor:
+        return self.cfg.base_freq * torch.pow( 2.0, self.model( element['z'] ) )
 
     def evaluate(self, sector: int, element: int) -> np.ndarray:
         element: TRDict = self.get_element(sector, element)
         embedding: np.ndarray = self.embedding.get_result()
         self._target_freq = 1/element['p']
-        self._model_freq  = self.get_model_result(element)
+        self._model_freq  = self.get_model_result(element).cpu().item()
         return embedding
 
     @property

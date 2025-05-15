@@ -76,7 +76,6 @@ class IterativeTrainer(object):
             loss.backward()
             self.optimizer.step()
 
-
     def encode_batch(self, batch: RDict) -> TRDict:
         p: Tensor = torch.from_numpy(batch.pop('p')).to(self.device)
         t, y = self.encoder.encode_batch(batch.pop('t'), batch.pop('y'))
@@ -114,10 +113,10 @@ class IterativeTrainer(object):
         return not self.cfg.mode.startswith("val")
 
     def loss_function(self, result: Tensor, target: Tensor) -> Tensor:
-        return torch.abs( torch.log2(result/target) ).mean()
+        return torch.log2( torch.abs(result-target) ).mean()
 
     def get_model_result(self, batch: TRDict) -> Tensor:
-        return self.cfg.base_freq * 2.0 ** self.model( batch['z'] )
+        return self.cfg.base_freq * torch.pow( 2.0, self.model( batch['z'] ) )
 
     def compute(self):
         print(f"SignalTrainer[{self.mode}]: , {self.nepochs} epochs, device={self.device}")
