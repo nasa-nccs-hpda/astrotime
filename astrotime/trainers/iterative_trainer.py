@@ -114,8 +114,7 @@ class IterativeTrainer(object):
         return not self.cfg.mode.startswith("val")
 
     def loss_function(self, result: Tensor, target: Tensor) -> Tensor:
-        e =  torch.log2(result/target)**2
-        return torch.sqrt( e.mean() )
+        return torch.abs( torch.log2(result/target) ).mean()
 
     def get_model_result(self, batch: TRDict) -> Tensor:
         return self.cfg.base_freq + self.model( batch['z'] )
