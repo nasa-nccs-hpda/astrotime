@@ -25,8 +25,8 @@ def pnorm( x: Tensor ) -> Tensor:
 
 def embedding_space( cfg: DictConfig, device: device ) -> Tuple[np.ndarray,Tensor]:
 	base_freq =  cfg.base_freq
-	nharmonics = cfg.get('nharmonics', 0)
-	nharmonic_octaves: float = 0 if (nharmonics==0) else math.ceil(math.log2(nharmonics))
+	fold_harmonic = cfg.get('fold_harmonic', True)
+	nharmonic_octaves = 1 if fold_harmonic else 0
 	noctaves =  cfg.noctaves + nharmonic_octaves
 	top_freq = base_freq + base_freq*2**noctaves
 	nfreq = cfg.nfreq_oct * noctaves
@@ -127,12 +127,10 @@ class WaveletAnalysisLayer(EmbeddingLayer):
 		self.C: float = cfg.decay_factor / (8 * math.pi ** 2)
 		self.init_log(f"WaveletAnalysisLayer: nfreq={self.nfreq} ")
 		self.subbatch_size: int = cfg.get('subbatch_size',-1)
-		self.nharmonics: int = self.cfg.get('nharmonics', 0)
-		self.fold_harmonics = False if (self.nharmonics==0) else self.cfg.get('fold_harmonics', True )
+		self.fold_harmonic =  self.cfg.get('fold_harmonic', True)
+		self.nharmonics: int = 1 if self.fold_harmonics else 0
 		self.noctaves: int = self.cfg.noctaves
 		self.nfreq_oct: int = self.cfg.nfreq_oct
-		self.sum_features = self.cfg.get('sum_features', self.fold_harmonics )
-		self.fold_threshold = self.cfg.get('fold_threshold', 0.5 )
 
 	@property
 	def xdata(self) -> np.ndarray:
@@ -140,7 +138,7 @@ class WaveletAnalysisLayer(EmbeddingLayer):
 
 	@property
 	def output_series_length(self) -> int:
-		return self.noctaves * self.nfreq_oct
+		return self.nf
 
 	def sbatch(self, ts: torch.Tensor, ys: torch.Tensor, subbatch: int) -> tuple[Tensor,Tensor]:
 		sbr = [ subbatch*self.subbatch_size, (subbatch+1)*self.subbatch_size ]
@@ -180,45 +178,56 @@ class WaveletAnalysisLayer(EmbeddingLayer):
 
 		p1: Tensor = w_prod(ys, pw1)
 		p2: Tensor = w_prod(ys, pw2)
-		self.init_log(f" --> p1{list(p1.shape)} p2{list(p2.shape)}")
-		embedding: Tensor = torch.concat( (p1[:, None, :], p2[:, None, :]), dim=1)
+		mag: Tensor =  torch.sqrt( p1**2 + p2**2 )
+		phase: Tensor = torch.atan2(p1, p2)
+		features =  [ f[:,:self.nf] for f in [p1,p2,mag,phase]]
+		if self.fold_harmonic: features.append( self.fold_harmonic_layer(mag) )
+		self.init_log(f" --> p1{list(p1.shape)} p2{list(p2.shape)} mag{list(p2.shape)} phase{list(p2.shape)} h{list(h.shape)}")
+		embedding: Tensor = torch.stack( features, dim=1)
 		self.init_state = False
-		rv = self.fold_harmonic_layers(embedding, **kwargs) if self.fold_harmonics else embedding
-		self.init_log(f" Completed embedding in {elapsed(t0):.5f} sec: result{list(rv.shape)}")
-		return rv
+		self.init_log(f" Completed embedding in {elapsed(t0):.5f} sec: result{list(embedding.shape)}")
+		return embedding
 
-	def fold_harmonic_layers(self, embedding: Tensor, **kwargs) -> Tensor:      # [Batch,NF]
-		if self.nharmonics <= 0:
-			return embedding
-		else:
-			threshold = kwargs.get('threshold', self.fold_threshold)
-			mag = pnorm( torch.sqrt(torch.sum(embedding ** 2, dim=1)) )
-			nf0 = self.noctaves * self.nfreq_oct
-			full_freq: Tensor = self._embedding_space[None,:].expand(mag.shape)
-			base_freq = full_freq[:,:nf0]
-			l0: Tensor = mag[:,:nf0]
-			flayers =  l0  if self.sum_features else [ l0 ]
-			for iH in range(2,self.nharmonics+2):
-				octave: float = math.log2(iH)
-				if octave.is_integer():
-					dfH: int = self.nfreq_oct*int(octave)
-					harmonic: Tensor = mag[:,dfH:nf0+dfH]
-					print(f"harmonic-{iH}({octave}): h{shp(harmonic)}, mag{shp(mag)}, l0{shp(l0)} dfH={dfH} nf0={nf0}")
-				else:
-					harmonic: Tensor = tclamp( interp1d( full_freq, mag, iH*base_freq ) )
+	def fold_harmonic_layer(self, mag: Tensor) -> Tensor:      # [Batch,NF]
+		threshold = self.cfg.get('fold_threshold', 0.5 )
+		l0: Tensor = mag[:,:self.nf]
+		dfH: int = self.nfreq_oct
+		harmonic: Tensor = mag[:,dfH:self.nf+dfH]
+		harmonic =  torch.where( l0 < threshold, torch.zeros_like(harmonic), harmonic )
+		return harmonic
 
-				harmonic =  torch.where( l0 < threshold, torch.zeros_like(harmonic), harmonic )
-				if self.sum_features:   flayers = flayers + harmonic
-				else:                   flayers.append( harmonic )
-			return flayers[:,None,:] if self.sum_features else torch.stack( flayers, dim=1 )
+	@property
+	def nf(self):
+		return self.noctaves * self.nfreq_oct
+
+	# def fold_harmonic_layers(self, embedding: Tensor, **kwargs) -> Tensor:      # [Batch,NF]
+	# 	if self.nharmonics <= 0:
+	# 		return embedding
+	# 	else:
+	# 		threshold = kwargs.get('threshold', self.fold_threshold)
+	# 		mag = pnorm( torch.sqrt(torch.sum(embedding ** 2, dim=1)) )
+	# 		nf0 = self.noctaves * self.nfreq_oct
+	# 		full_freq: Tensor = self._embedding_space[None,:].expand(mag.shape)
+	# 		base_freq = full_freq[:,:nf0]
+	# 		l0: Tensor = mag[:,:nf0]
+	# 		flayers =  l0  if self.sum_features else [ l0 ]
+	# 		for iH in range(2,self.nharmonics+2):
+	# 			octave: float = math.log2(iH)
+	# 			if octave.is_integer():
+	# 				dfH: int = self.nfreq_oct*int(octave)
+	# 				harmonic: Tensor = mag[:,dfH:nf0+dfH]
+	# 				print(f"harmonic-{iH}({octave}): h{shp(harmonic)}, mag{shp(mag)}, l0{shp(l0)} dfH={dfH} nf0={nf0}")
+	# 			else:
+	# 				harmonic: Tensor = tclamp( interp1d( full_freq, mag, iH*base_freq ) )
+	#
+	# 			harmonic =  torch.where( l0 < threshold, torch.zeros_like(harmonic), harmonic )
+	# 			if self.sum_features:   flayers = flayers + harmonic
+	# 			else:                   flayers.append( harmonic )
+	# 		return flayers[:,None,:] if self.sum_features else torch.stack( flayers, dim=1 )
 
 	@property
 	def nfeatures(self):
-		return 1 if self.sum_features else (2 if (self.nharmonics <= 0) else self.nharmonics+1)
-
-	def power(self, embedding: Tensor) -> np.ndarray:
-		mag = torch.sqrt( torch.sum( embedding**2, dim=1 ) ).squeeze()
-		return mag.cpu().numpy()
+		return self.nharmonics + 4
 
 	def magnitude(self, embedding: Tensor) -> np.ndarray:
 		self.init_log(f" -> Embedding magnitude{embedding.shape}")
