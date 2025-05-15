@@ -4,6 +4,14 @@ from omegaconf import DictConfig, OmegaConf
 from astrotime.encoders.embedding import EmbeddingLayer
 from typing import Any, Dict, List, Optional, Tuple, Mapping
 
+class TScaleLoss(nn.Module):
+	def __init__(self, cfg: DictConfig):
+		super(TScaleLoss, self).__init__()
+		self.cfg = cfg
+
+	def forward(self, input, target):
+		return torch.abs( ( input-target)/target ).mean()
+
 class FScaleLoss(nn.Module):
 	def __init__(self, cfg: DictConfig):
 		super(FScaleLoss, self).__init__()
