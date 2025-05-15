@@ -20,8 +20,8 @@ class ModelEvaluator(object):
         self.cfg: DictConfig = cfg
         self.model: nn.Module = get_model_from_cfg( cfg.model, device, embedding )
         self.device = device
-        self.target_period = None
-        self.model_period = None
+        self._target_freq = None
+        self._model_freq = None
         self._checkpoint_manager = CheckpointManager( version, self.model, None, self.cfg.train )
         self.train_state = self._checkpoint_manager.load_checkpoint( update_model=True )
 
@@ -49,18 +49,20 @@ class ModelEvaluator(object):
         element: RDict = self.loader.get_element(sector, element)
         return self.encode_element(element)
 
+    def get_model_result(self, element: TRDict) -> float:
+        return self.cfg.base_freq * 2.0 ** self.model( element['z'] ).cpu().item()
+
     def evaluate(self, sector: int, element: int) -> np.ndarray:
         element: TRDict = self.get_element(sector, element)
-        model_result: Tensor = self.model(element['z'])
         embedding: np.ndarray = self.embedding.get_result()
-        self.target_period = element['p']
-        self.model_period  = model_result.cpu().item()
+        self._target_freq = 1/element['p']
+        self._model_freq  = self.get_model_result(element)
         return embedding
 
     @property
     def target_frequency(self) -> float:
-        return 1.0 / self.target_period
+        return self._target_freq
 
     @property
     def model_frequency(self) -> float:
-        return 1.0 / self.model_period
+        return self._model_freq
