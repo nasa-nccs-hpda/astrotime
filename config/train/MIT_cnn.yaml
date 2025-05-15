@@ -1,5 +1,5 @@
 optim: rms                                              # Optimizer
-lr: 1e-3                                                # Learning rate
+lr: 1e-2                                                # Learning rate
 nepochs: 5000                                           #  Training Epochs
 refresh_state: False                                    # Start from random weights (Ignore existing checkpoints)
 overwrite_log: True                                     # Start new log file
