@@ -2,12 +2,11 @@ from typing import List, Optional, Dict, Type, Tuple, Union
 from omegaconf import DictConfig
 from .checkpoints import CheckpointManager
 from astrotime.encoders.base import Encoder
-import xarray as xa
+from astrotime.models.cnn.cnn_baseline import FScaleLoss
 from astrotime.util.math import shp
 from astrotime.loaders.base import IterativeDataLoader, RDict
 import time, sys, torch, logging, numpy as np
 from torch import nn, optim, Tensor
-from astrotime.util.math import nnan
 from astrotime.util.series import TSet
 from astrotime.util.logging import elapsed
 TRDict = Dict[str,Union[List[str],int,torch.Tensor]]
@@ -30,6 +29,7 @@ class IterativeTrainer(object):
         self.encoder: Encoder = encoder
         self.optimizer: optim.Optimizer = self.get_optimizer()
         self.log = logging.getLogger()
+        self.loss = FScaleLoss(cfg)
         self._checkpoint_manager = None
         self.start_batch: int = 0
         self.start_epoch: int = 0
@@ -112,18 +112,6 @@ class IterativeTrainer(object):
     def training(self) -> bool:
         return not self.cfg.mode.startswith("val")
 
-    def loss_function1(self, result: Tensor, target: Tensor) -> Tensor:
-        return torch.log2( torch.abs(result-target) ).mean()
-
-    def get_model_result1(self, batch: TRDict) -> Tensor:
-        return self.cfg.base_freq * torch.pow( 2.0, self.model( batch['z'] ) )
-
-    def loss_function(self, result: Tensor, target: Tensor) -> Tensor:
-        return torch.abs(result-target).mean()
-
-    def get_model_result(self, batch: TRDict) -> Tensor:
-        return self.cfg.base_freq + self.model( batch['z'] )
-
     def compute(self):
         print(f"SignalTrainer[{self.mode}]: , {self.nepochs} epochs, device={self.device}")
         with self.device:
@@ -138,8 +126,8 @@ class IterativeTrainer(object):
                         batch = self.get_next_batch()
                         if batch['z'].shape[0] > 0:
                             self.global_time = time.time()
-                            result: Tensor = self.get_model_result( batch )
-                            loss: Tensor = self.loss_function( result, batch['target'] )
+                            result: Tensor = self.model( batch['z'] )
+                            loss: Tensor = self.loss( result, batch['target'] )
                             self.conditionally_update_weights(loss)
                             losses.append(loss.item())
                             if (self.mode == TSet.Train) and ((ibatch % log_interval == 0) or ((ibatch < 5) and (epoch==0))):

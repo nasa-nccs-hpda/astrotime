@@ -4,6 +4,23 @@ from omegaconf import DictConfig, OmegaConf
 from astrotime.encoders.embedding import EmbeddingLayer
 from typing import Any, Dict, List, Optional, Tuple, Mapping
 
+class FScaleLoss(nn.Module):
+	def __init__(self, cfg: DictConfig):
+		super(FScaleLoss, self).__init__()
+		self.cfg = cfg
+
+	def forward(self, input, target):
+		return torch.abs( torch.log2( input/target) ).mean()
+
+class FScale(nn.Module):
+	def __init__(self, cfg: DictConfig):
+		super(FScale, self).__init__()
+		self.cfg = cfg
+
+	def forward(self, input):
+		return self.cfg.base_freq * torch.pow(2.0,input)
+
+
 def add_cnn_block( model: nn.Sequential, nchannels: int, num_input_features: int, cfg: DictConfig ) -> int:
 	block_input_channels = num_input_features if (num_input_features > 0) else nchannels
 	in_channels = block_input_channels
@@ -27,6 +44,7 @@ def add_dense_block( model: nn.Sequential, in_channels:int, cfg: DictConfig ):
 	model.append( nn.ELU() )
 	model.append( nn.Linear( cfg.dense_channels, cfg.out_channels ) )
 	model.append( nn.ReLU() )
+	model.append( FScale(cfg) )
 
 def get_model_from_cfg( cfg: DictConfig, device: torch.device, embedding_layer: EmbeddingLayer  ) -> nn.Module:
 	model: nn.Sequential = nn.Sequential( embedding_layer )
