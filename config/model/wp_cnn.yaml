@@ -8,4 +8,5 @@ pool_size: 2                                    # Max pool size for every block
 stride: 1                                       # Stride value for every CNN layer
 kernel_size: 3                                  # Kernel size for every CNN layer
 cnn_expansion_factor: 4                         # Increase in the number of channels from one CNN layer to the next
+base_freq:  ${data.base_freq}                   # Start frequency of base octave
 
