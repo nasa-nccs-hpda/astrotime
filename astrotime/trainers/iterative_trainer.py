@@ -112,11 +112,17 @@ class IterativeTrainer(object):
     def training(self) -> bool:
         return not self.cfg.mode.startswith("val")
 
-    def loss_function(self, result: Tensor, target: Tensor) -> Tensor:
+    def loss_function1(self, result: Tensor, target: Tensor) -> Tensor:
         return torch.log2( torch.abs(result-target) ).mean()
 
-    def get_model_result(self, batch: TRDict) -> Tensor:
+    def get_model_result1(self, batch: TRDict) -> Tensor:
         return self.cfg.base_freq * torch.pow( 2.0, self.model( batch['z'] ) )
+
+    def loss_function(self, result: Tensor, target: Tensor) -> Tensor:
+        return torch.abs(result-target).mean()
+
+    def get_model_result(self, batch: TRDict) -> Tensor:
+        return self.cfg.base_freq + self.model( batch['z'] )
 
     def compute(self):
         print(f"SignalTrainer[{self.mode}]: , {self.nepochs} epochs, device={self.device}")
