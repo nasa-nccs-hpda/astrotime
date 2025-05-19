@@ -162,7 +162,7 @@ class SyntheticLoader(IterativeDataLoader):
 	def update_training_data(self):
 		self.log.info(f"update_training_data(sector={self.loaded_sector})")
 		periods, stypes, elems  = [], [], []
-		for ielem in range(self.cfg.file_size):
+		for ielem in range(1,self.cfg.file_size+1):
 			eslice, period, stype = self.get_elem_slice(ielem)
 			if eslice is not None:
 				elems.append(eslice)
