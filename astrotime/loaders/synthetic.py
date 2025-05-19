@@ -128,13 +128,17 @@ class SyntheticLoader(IterativeDataLoader):
 		return False
 
 	def get_elem_slice(self,ielem: int):
-		cy: xa.DataArray = self.dataset[f"s0{ielem}"]
-		ct: xa.DataArray = self.dataset[f"t0{ielem}"]
-		cz = np.stack([ct,cy],axis=0)
-		elem = cz[:,:self.series_length] if (cz.shape[1] >= self.series_length) else None
-		period = cy.attrs["period"]
-		stype = cy.attrs["type"]
-		return elem, period, stype
+		try:
+			cy: xa.DataArray = self.dataset[f"s0{ielem}"]
+			ct: xa.DataArray = self.dataset[f"t0{ielem}"]
+			cz = np.stack([ct,cy],axis=0)
+			elem = cz[:,:self.series_length] if (cz.shape[1] >= self.series_length) else None
+			period = cy.attrs["period"]
+			stype = cy.attrs["type"]
+			return elem, period, stype
+		except KeyError:
+			print(f"KeyError: s0{ielem} <-> {list(self.dataset.data_vars.keys())}")
+			return None, None, None
 
 	def get_largest_block( self, TIC: str ) -> np.ndarray:
 		threshold = self.cfg.block_gap_threshold
