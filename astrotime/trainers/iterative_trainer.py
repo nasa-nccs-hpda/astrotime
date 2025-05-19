@@ -2,7 +2,7 @@ from typing import List, Optional, Dict, Type, Tuple, Union
 from omegaconf import DictConfig
 from .checkpoints import CheckpointManager
 from astrotime.encoders.base import Encoder
-from astrotime.models.cnn.cnn_baseline import TScaleLoss
+from astrotime.models.cnn.cnn_baseline import MAELoss
 from astrotime.util.math import shp
 from astrotime.loaders.base import IterativeDataLoader, RDict
 import time, sys, torch, logging, numpy as np
@@ -29,7 +29,7 @@ class IterativeTrainer(object):
         self.encoder: Encoder = encoder
         self.optimizer: optim.Optimizer = self.get_optimizer()
         self.log = logging.getLogger()
-        self.loss = TScaleLoss(cfg)
+        self.loss = MAELoss(cfg)
         self._checkpoint_manager = None
         self.start_batch: int = 0
         self.start_epoch: int = 0
