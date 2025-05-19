@@ -2,17 +2,15 @@ import time, argparse, traceback, numpy as np
 from typing import Any, Dict, List, Tuple, Type, Optional, Union
 import xarray as xa
 
-rootdir = "/explore/nobackup/people/bppowel1/timehascome/"
+rootdir = "/explore/nobackup/projects/ilab/data/astrotime/synthetic/"
 dset = "astro_signals_with_noise"
-#rootdir = "/explore/nobackup/projects/ilab/data/astrotime/sinusoids/"
-# rootdir = "/Users/tpmaxwel/Data/astro_sigproc/sinusoids"
 
 fstart = 0
 nfiles = 10
 ncfilesize = 1000
 
 for archive_idx in range(fstart, fstart+nfiles):
-    npz_path = f"{rootdir}/{dset}_{archive_idx}.npz"
+    npz_path = f"{rootdir}/npz/{dset}_{archive_idx}.npz"
     t0 = time.time()
     data=np.load( npz_path, allow_pickle=True )
     signals: np.ndarray = data["signals"]
