@@ -8,7 +8,7 @@ from astrotime.encoders.wavelet import WaveletAnalysisLayer, embedding_space
 from astrotime.trainers.iterative_trainer import IterativeTrainer
 from astrotime.models.cnn.cnn_baseline import get_model_from_cfg
 from astrotime.config.context import astrotime_initialize
-from loaders.synthetic import SyntheticLoader
+from astrotime.loaders.synthetic import SyntheticLoader
 
 version = "synthetic_period"
 
