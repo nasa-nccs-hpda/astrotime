@@ -137,7 +137,7 @@ class SyntheticLoader(IterativeDataLoader):
 			stype = cy.attrs["type"]
 			return elem, period, stype
 		except KeyError:
-			print(f"KeyError: s0{ielem} <-> {list(self.dataset.data_vars.keys())}")
+			#print(f"KeyError: s0{ielem} <-> {list(self.dataset.data_vars.keys())}")
 			return None, None, None
 
 	def get_largest_block( self, TIC: str ) -> np.ndarray:
