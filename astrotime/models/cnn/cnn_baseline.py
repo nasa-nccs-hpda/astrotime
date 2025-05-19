@@ -9,24 +9,32 @@ class TScaleLoss(nn.Module):
 		super(TScaleLoss, self).__init__()
 		self.cfg = cfg
 
-	def forward(self, input, target):
-		return torch.abs( ( input-target)/target ).mean()
+	def forward(self, product: torch.Tensor, target: torch.Tensor)-> torch.Tensor:
+		return torch.abs( (product-target)/target ).mean()
 
 class FScaleLoss(nn.Module):
 	def __init__(self, cfg: DictConfig):
 		super(FScaleLoss, self).__init__()
 		self.cfg = cfg
 
-	def forward(self, input, target):
-		return torch.abs( torch.log2( input/target) ).mean()
+	def forward(self, product: torch.Tensor, target: torch.Tensor)-> torch.Tensor:
+		return torch.abs( torch.log2( product/target) ).mean()
 
-class FScale(nn.Module):
+class FScaleLog(nn.Module):
 	def __init__(self, cfg: DictConfig):
-		super(FScale, self).__init__()
+		super(FScaleLog, self).__init__()
 		self.cfg = cfg
 
-	def forward(self, input):
-		return self.cfg.base_freq * torch.pow(2.0,input)
+	def forward(self, tensor: torch.Tensor) -> torch.Tensor:
+		return self.cfg.base_freq * torch.pow(2.0,tensor)
+
+class FScaleLin(nn.Module):
+	def __init__(self, cfg: DictConfig):
+		super(FScaleLin, self).__init__()
+		self.cfg = cfg
+
+	def forward(self, tensor: torch.Tensor) -> torch.Tensor:
+		return self.cfg.base_freq + tensor
 
 
 def add_cnn_block( model: nn.Sequential, nchannels: int, num_input_features: int, cfg: DictConfig ) -> int:
@@ -52,7 +60,7 @@ def add_dense_block( model: nn.Sequential, in_channels:int, cfg: DictConfig ):
 	model.append( nn.ELU() )
 	model.append( nn.Linear( cfg.dense_channels, cfg.out_channels ) )
 	model.append( nn.ReLU() )
-	model.append( FScale(cfg) )
+	model.append( FScaleLin(cfg) )
 
 def get_model_from_cfg( cfg: DictConfig, device: torch.device, embedding_layer: EmbeddingLayer  ) -> nn.Module:
 	model: nn.Sequential = nn.Sequential( embedding_layer )

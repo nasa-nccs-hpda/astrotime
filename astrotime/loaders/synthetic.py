@@ -15,6 +15,7 @@ class SyntheticLoader(IterativeDataLoader):
 		self.files = None
 		self.nfiles = None
 		self.sector_index = 0
+		self.max_period = 1/self.cfg.base_freq
 		self.sector_shuffle = None
 		self.series_length = cfg.series_length
 		self.loaded_sector = None
@@ -140,24 +141,6 @@ class SyntheticLoader(IterativeDataLoader):
 			#print(f"KeyError: s0{ielem} <-> {list(self.dataset.data_vars.keys())}")
 			return None, None, None
 
-	def get_largest_block( self, TIC: str ) -> np.ndarray:
-		threshold = self.cfg.block_gap_threshold
-		ctime: np.ndarray = self.dataset[TIC+".time"].values.squeeze()
-		cy: np.ndarray = self.dataset[TIC+".y"].values.squeeze()
-		diff: np.ndarray = np.diff(ctime)
-		break_indices: np.ndarray = np.nonzero(diff > threshold)[0]
-		cz = np.stack([ctime,cy],axis=0)
-		if break_indices.size == 0:
-			bz = cz
-		elif break_indices.size == 1:
-			bz = cz[:,0:break_indices[0]] if (break_indices[0] >= ctime.size//2) else cz[:,break_indices[0]:]
-		else:
-			zblocks: List[np.ndarray] = np.array_split(cz, break_indices,axis=1)
-			bsizes: np.array = np.array([break_indices[0]] + np.diff(break_indices).tolist() + [ctime.size - break_indices[-1]])
-			idx_largest_block: np.ndarray = np.argmax(bsizes)
-			bz: np.array = zblocks[ idx_largest_block ]
-		return bz
-
 	def get_batch_element(self, bz: np.ndarray) -> np.ndarray:
 		center = bz.shape[1] // 2
 		bdata = bz[:,center-self.series_length//2:center+self.series_length//2]
@@ -169,7 +152,7 @@ class SyntheticLoader(IterativeDataLoader):
 		svids = [ vid[1:] for vid in self.dataset.data_vars.keys() if vid[0]=='s']
 		for svid in svids:
 			eslice, period, stype = self.get_elem_slice(svid)
-			if eslice is not None:
+			if (eslice is not None) and (period<=self.max_period):
 				elems.append(eslice)
 				periods.append(period)
 				stypes.append(stype)
