@@ -127,10 +127,10 @@ class SyntheticLoader(IterativeDataLoader):
 			return True
 		return False
 
-	def get_elem_slice(self,ielem: int):
+	def get_elem_slice(self, svid: str) -> Tuple[np.ndarray,float,str]:
 		try:
-			cy: xa.DataArray = self.dataset[f"s0{ielem}"]
-			ct: xa.DataArray = self.dataset[f"t0{ielem}"]
+			cy: xa.DataArray = self.dataset['s'+svid]
+			ct: xa.DataArray = self.dataset['t'+svid]
 			cz = np.stack([ct,cy],axis=0)
 			elem = cz[:,:self.series_length] if (cz.shape[1] >= self.series_length) else None
 			period = cy.attrs["period"]
@@ -166,8 +166,9 @@ class SyntheticLoader(IterativeDataLoader):
 	def update_training_data(self):
 		self.log.info(f"update_training_data(sector={self.loaded_sector})")
 		periods, stypes, elems  = [], [], []
-		for ielem in range(self.cfg.file_size):
-			eslice, period, stype = self.get_elem_slice(ielem)
+		svids = [ vid[1:] for vid in self.dataset.data_vars.keys() if vid[0]=='s']
+		for svid in svids:
+			eslice, period, stype = self.get_elem_slice(svid)
 			if eslice is not None:
 				elems.append(eslice)
 				periods.append(period)
