@@ -44,6 +44,7 @@ class MITLoader(IterativeDataLoader):
 		self.sector_index = 0
 		self._nbatches = -1
 		random.shuffle(self.sector_shuffle)
+		self.current_sector = self.sector_shuffle[self.sector_index]
 
 	def update_test_mode(self):
 		self.test_mode_index = (self.test_mode_index + 1) % len(self.TestModes)
