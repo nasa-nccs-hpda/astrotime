@@ -128,8 +128,8 @@ class SyntheticLoader(IterativeDataLoader):
 		return False
 
 	def get_elem_slice(self,ielem: int):
-		cy: xa.DataArray = self.dataset[f"s{ielem:04}"]
-		ct: xa.DataArray = self.dataset[f"t{ielem:04}"]
+		cy: xa.DataArray = self.dataset[f"s0{ielem}"]
+		ct: xa.DataArray = self.dataset[f"t0{ielem}"]
 		cz = np.stack([ct,cy],axis=0)
 		elem = cz[:,:self.series_length] if (cz.shape[1] >= self.series_length) else None
 		period = cy.attrs["period"]
@@ -162,7 +162,7 @@ class SyntheticLoader(IterativeDataLoader):
 	def update_training_data(self):
 		self.log.info(f"update_training_data(sector={self.loaded_sector})")
 		periods, stypes, elems  = [], [], []
-		for ielem in range(1,self.cfg.file_size+1):
+		for ielem in range(self.cfg.file_size):
 			eslice, period, stype = self.get_elem_slice(ielem)
 			if eslice is not None:
 				elems.append(eslice)
