@@ -133,7 +133,7 @@ class SyntheticLoader(IterativeDataLoader):
 		cz = np.stack([ct,cy],axis=0)
 		elem = cz[:,:self.series_length] if (cz.shape[1] >= self.series_length) else None
 		period = cy.attrs["period"]
-		stype = cy.attrs["stype"]
+		stype = cy.attrs["type"]
 		return elem, period, stype
 
 	def get_largest_block( self, TIC: str ) -> np.ndarray:
