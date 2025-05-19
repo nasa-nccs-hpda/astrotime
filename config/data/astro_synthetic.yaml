@@ -1,0 +1,12 @@
+source: astro_signals_with_noise                                                # Dataset type
+dataset_root:  "${platform.project_root}/synthetic/nc"    # Location of processed netcdf files
+cache_path:  "${platform.project_root}/cache/data/synthetic"
+batch_size: 16
+nfreq_oct: 512                     # Number of frequency values (log2 spaced) in each octave
+base_freq:  0.1                    # Start frequency of base freq range
+noctaves: 7                        # Number of octaves in base freq range
+series_length: 3072                # Length of subset of input timeseries to process (-1 means no subsetting) 2048 4096
+test_mode: default
+file_size: 1000
+
+
