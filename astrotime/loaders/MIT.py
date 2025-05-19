@@ -75,7 +75,7 @@ class MITLoader(IterativeDataLoader):
 			self.load_sector(self.current_sector)
 			batch_start = self.sector_batch_offset
 			batch_end   = batch_start+self.cfg.batch_size
-			result: RDict = { k: self.train_data[k][batch_start:batch_end] for k in ['t','y','p','sn'] }
+			result: RDict = { k: self.train_data[k][batch_start:batch_end] for k in ['t','y','period','stype'] }
 			result['TICS'] = self._TICS[batch_start:batch_end]
 			result['sector'] = self.current_sector
 			self.sector_batch_offset = batch_end
