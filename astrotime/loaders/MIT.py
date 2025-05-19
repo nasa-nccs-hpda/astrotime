@@ -1,4 +1,4 @@
-import time, os, math, numpy as np, xarray as xa
+import time, os, math, numpy as np, xarray as xa, random
 from astrotime.loaders.base import IterativeDataLoader, RDict
 from astrotime.loaders.pcross import PlanetCrossingDataGenerator
 from typing import List, Optional, Dict, Type, Union, Tuple
@@ -16,6 +16,8 @@ class MITLoader(IterativeDataLoader):
 		super().__init__()
 		self.cfg = cfg
 		self.sector_range = cfg.sector_range
+		self.sector_index = 0
+		self.sector_shuffle = list( range(self.sector_range[0],self.sector_range[1]) )
 		self.snr_min = cfg.get('snr_min',0.0)
 		self.snr_max = cfg.get('snr_max', 1e6)
 		self.series_length = cfg.series_length
@@ -39,8 +41,9 @@ class MITLoader(IterativeDataLoader):
 
 	def init_epoch(self):
 		self.sector_batch_offset = 0
-		self.current_sector = self.sector_range[0] if self.tset == TSet.Train else self.sector_range[1]
+		self.sector_index = 0
 		self._nbatches = -1
+		random.shuffle(self.sector_shuffle)
 
 	def update_test_mode(self):
 		self.test_mode_index = (self.test_mode_index + 1) % len(self.TestModes)
@@ -60,10 +63,11 @@ class MITLoader(IterativeDataLoader):
 			if self.tset == TSet.Validation:
 				self.current_sector = -1
 			else:
-				self.current_sector = self.current_sector + 1
-				self.sector_batch_offset = 0
-				if self.current_sector == self.sector_range[1]:
+				self.sector_index = self.sector_index + 1
+				if self.sector_index == len(self.sector_shuffle):
 					raise StopIteration
+				self.current_sector = self.sector_shuffle[self.sector_index]
+				self.sector_batch_offset = 0
 				self.log.info(f"Init Dataset: sector={self.current_sector}, sector_batch_offset={self.sector_batch_offset}")
 
 		if self.current_sector >= 0:
