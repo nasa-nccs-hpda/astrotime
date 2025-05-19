@@ -77,7 +77,7 @@ class IterativeTrainer(object):
             self.optimizer.step()
 
     def encode_batch(self, batch: RDict) -> TRDict:
-        p: Tensor = torch.from_numpy(batch.pop('p')).to(self.device)
+        p: Tensor = torch.from_numpy(batch.pop('period')).to(self.device)
         t, y = self.encoder.encode_batch(batch.pop('t'), batch.pop('y'))
         z: Tensor = torch.concat((t[:, None, :], y), dim=1)
         return dict( z=z, target=1/p, **batch )
