@@ -28,9 +28,7 @@ for archive_idx in range(fstart, fstart+nfiles):
             xvars = {}
             for vid, sidx in enumerate(range(*brng)):
                 signal,tvar,period,stype = signals[sidx].astype(np.float32), times[sidx].astype(np.float32), periods[sidx], types[sidx]
-                print( type(signal))
-                nan_mask = (np.isnan(signal) | np.isnan(time))
-                signal, tvar, tcoord, sname = signal[~nan_mask], tvar[~nan_mask], f"t{archive_idx}{vid}", f"s{archive_idx}{vid}"
+                tcoord, sname =f"t{archive_idx}{vid}", f"s{archive_idx}{vid}"
                 xvars[sname] = xa.DataArray(signal, dims=[tcoord], coords={tcoord:tvar}, attrs=dict(period=period, type=stype) )
             ncf_idx = archive_idx * files_per_archive + file_idx
             ncpath = f"{rootdir}/nc/{dset}_{ncf_idx}.nc"
