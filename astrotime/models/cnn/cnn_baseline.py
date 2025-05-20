@@ -9,12 +9,10 @@ class ScaledELU(nn.Module):
 
 	def __init__(self, cfg: DictConfig) -> None:
 		super().__init__()
-		self.cfg = cfg
-		self.f0: float = self.cfg.base_freq
-		self.a: float = self.f0 * math.log(2)
+		self.f0: float = cfg.base_freq
 
 	def forward(self, x: torch.Tensor) -> torch.Tensor:
-		return F.elu(x,self.a) if (x<=0) else self.f0 * ( torch.pow(2,x) - 1 )
+		return self.f0 * ( torch.pow(2,x) - 1 )
 
 class MAELoss(nn.Module):
 	def __init__(self, cfg: DictConfig):
