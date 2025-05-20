@@ -2,7 +2,6 @@ from typing import List, Optional, Dict, Type, Tuple, Union
 from omegaconf import DictConfig
 from .checkpoints import CheckpointManager
 from astrotime.encoders.base import Encoder
-from astrotime.models.cnn.cnn_baseline import MAELoss
 from astrotime.util.math import shp
 from astrotime.loaders.base import IterativeDataLoader, RDict
 import time, sys, torch, logging, numpy as np
@@ -21,7 +20,7 @@ def tocpu( c, idx=0 ):
 
 class IterativeTrainer(object):
 
-    def __init__(self, cfg: DictConfig, loader: IterativeDataLoader, encoder: Encoder, model: nn.Module ):
+    def __init__(self, cfg: DictConfig, loader: IterativeDataLoader, encoder: Encoder, model: nn.Module, loss: nn.Module = nn.L1Loss() ):
         self.device = encoder.device
         self.loader: IterativeDataLoader = loader
         self.cfg: DictConfig = cfg
@@ -29,7 +28,7 @@ class IterativeTrainer(object):
         self.encoder: Encoder = encoder
         self.optimizer: optim.Optimizer = self.get_optimizer()
         self.log = logging.getLogger()
-        self.loss = nn.L1Loss()
+        self.loss = loss
         self._checkpoint_manager = None
         self.start_batch: int = 0
         self.start_epoch: int = 0
