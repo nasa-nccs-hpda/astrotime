@@ -52,7 +52,8 @@ class SyntheticLoader(IterativeDataLoader):
 			self.log.info(f"Init Dataset: sector={self.current_sector}, sector_batch_offset={self.sector_batch_offset}")
 
 		if self.current_sector >= 0:
-			if self.load_sector(self.current_sector):
+			self.load_sector(self.current_sector)
+			if self.dataset is not None:
 				batch_start = self.sector_batch_offset
 				batch_end   = batch_start+self.cfg.batch_size
 				result: RDict = { k: self.train_data[k][batch_start:batch_end] for k in ['t','y','period','stype'] }
