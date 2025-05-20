@@ -77,7 +77,7 @@ class IterativeTrainer(object):
             self.optimizer.step()
 
     def encode_batch(self, batch: RDict) -> TRDict:
-        self.log.info( f"encode_batch: {list(batch.keys())}")
+        self.log.debug( f"encode_batch: {list(batch.keys())}")
         p: Tensor = torch.from_numpy(batch.pop('period')).to(self.device)
         t, y = self.encoder.encode_batch(batch.pop('t'), batch.pop('y'))
         z: Tensor = torch.concat((t[:, None, :], y), dim=1)
@@ -86,7 +86,7 @@ class IterativeTrainer(object):
     def get_next_batch(self) -> Optional[TRDict]:
         while True:
             dset: RDict = self.loader.get_next_batch()
-            self.log.info(f"get_next_batch:")
+            self.log.debug(f"get_next_batch:")
             if dset is not None:
                 return self.encode_batch(dset)
 
@@ -131,11 +131,10 @@ class IterativeTrainer(object):
                         if batch['z'].shape[0] > 0:
                             self.global_time = time.time()
                             result: Tensor = self.model( batch['z'] )
-                            self.log.info(f"result{list(result.shape)} range: [{result.min().cpu().item():.3f} -> {result.max().cpu().item():.3f}]")
+                            self.log.debug(f"result{list(result.shape)} range: [{result.min().cpu().item():.3f} -> {result.max().cpu().item():.3f}]")
                             loss: Tensor = self.loss( result, batch['target'] )
-                            self.log.info(f"loss{list(loss.shape)} = [{loss.cpu().item():.3f}]")
+                            self.log.debug(f"loss{list(loss.shape)} = [{loss.cpu().item():.3f}]")
                             self.conditionally_update_weights(loss)
-                            self.log.info(f"conditionally_update_weights")
                             losses.append(loss.cpu().item())
           #                  print(f"E{epoch}.B{ibatch}:, result-range: [{result.min().cpu().item():.3f} -> {result.max().cpu().item():.3f}], loss={loss.cpu().item():.3f}")
                             if (self.mode == TSet.Train) and ((ibatch % log_interval == 0) or ((ibatch < 5) and (epoch==0))):

@@ -60,7 +60,7 @@ class SyntheticLoader(IterativeDataLoader):
 				result['offset'] = batch_start
 				result['sector'] = self.current_sector
 				self.sector_batch_offset = batch_end
-				self.log.info(f"get_next_batch: y{result['y'].shape}, t{result['t'].shape}")
+				self.log.debug(f"get_next_batch: y{result['y'].shape}, t{result['t'].shape}")
 				return result
 		return None
 
