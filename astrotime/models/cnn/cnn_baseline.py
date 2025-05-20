@@ -5,6 +5,14 @@ from astrotime.encoders.embedding import EmbeddingLayer
 from typing import Any, Dict, List, Optional, Tuple, Mapping
 import torch.nn.functional as F
 
+class ScaledELU(nn.Module):
+
+    def __init__(self) -> None:
+        super().__init__()
+
+    def forward(self, input: torch.Tensor) -> torch.Tensor:
+        return F.elu(input)
+
 class ScaledRelu(nn.Module):
 	def __init__(self, cfg: DictConfig) -> None:
 		super().__init__()
@@ -78,7 +86,7 @@ def add_dense_block( model: nn.Sequential, in_channels:int, cfg: DictConfig ):
 	model.append( nn.ELU() )
 	model.append( nn.Linear( cfg.dense_channels, cfg.out_channels ) )
 	# model.append( ScaledRelu(cfg) )
-	model.append( nn.ELU() )
+	model.append( ScaledELU() )
 
 def get_model_from_cfg( cfg: DictConfig, device: torch.device, embedding_layer: EmbeddingLayer  ) -> nn.Module:
 	model: nn.Sequential = nn.Sequential( embedding_layer )
