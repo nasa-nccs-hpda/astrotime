@@ -49,7 +49,7 @@ class SyntheticLoader(IterativeDataLoader):
 			if self.sector_index == self.nfiles:
 				raise StopIteration
 			self.sector_batch_offset = 0
-			self.log.info(f"Init Dataset: sector={self.current_sector}, sector_batch_offset={self.sector_batch_offset}")
+			self.log.debug(f"Init Dataset: sector={self.current_sector}, sector_batch_offset={self.sector_batch_offset}")
 
 		if self.current_sector >= 0:
 			self.load_sector(self.current_sector)
@@ -153,7 +153,7 @@ class SyntheticLoader(IterativeDataLoader):
 		return bdata
 
 	def update_training_data(self):
-		self.log.info(f"update_training_data(sector={self.loaded_sector})")
+		self.log.debug(f"update_training_data(sector={self.loaded_sector})")
 		periods, stypes, elems  = [], [], []
 		svids = [ vid[1:] for vid in self.dataset.data_vars.keys() if vid[0]=='s']
 		for svid in svids:
