@@ -78,7 +78,7 @@ def add_dense_block( model: nn.Sequential, in_channels:int, cfg: DictConfig ):
 	model.append( nn.ELU() )
 	model.append( nn.Linear( cfg.dense_channels, cfg.out_channels ) )
 	# model.append( ScaledRelu(cfg) )
-	model.append( nn.ReLU() )
+	model.append( nn.ELU() )
 
 def get_model_from_cfg( cfg: DictConfig, device: torch.device, embedding_layer: EmbeddingLayer  ) -> nn.Module:
 	model: nn.Sequential = nn.Sequential( embedding_layer )
