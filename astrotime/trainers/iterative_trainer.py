@@ -140,7 +140,7 @@ class IterativeTrainer(object):
                                 print(f"E-{epoch} B-{ibatch} S-{self.loader.dset_idx} loss={mean_loss:.3f} (unscaled: {mean_loss:.3f}), range=({aloss.min():.3f} -> {aloss.max():.3f}), dt={elapsed(t0):.5f} sec")
                                 losses = []
                 except StopIteration:
-                    print( f"Completed epoch {epoch} in {elapsed(te)/60:.5f} min.")
+                    print( f"Completed epoch {epoch} in {elapsed(te)/60:.5f} min, mean-loss= {np.array(losses).mean():.3f}")
 
                 if self.mode == TSet.Train:
                     self._checkpoint_manager.save_checkpoint( epoch, 0 )
