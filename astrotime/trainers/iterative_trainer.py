@@ -85,7 +85,6 @@ class IterativeTrainer(object):
     def get_next_batch(self) -> Optional[TRDict]:
         while True:
             dset: RDict = self.loader.get_next_batch()
-            self.log.debug(f"get_next_batch:")
             if dset is not None:
                 return self.encode_batch(dset)
 
