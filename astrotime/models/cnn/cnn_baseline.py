@@ -7,20 +7,14 @@ import torch.nn.functional as F
 
 class ScaledELU(nn.Module):
 
-    def __init__(self) -> None:
-        super().__init__()
-
-    def forward(self, input: torch.Tensor) -> torch.Tensor:
-        return F.elu(input)
-
-class ScaledRelu(nn.Module):
 	def __init__(self, cfg: DictConfig) -> None:
 		super().__init__()
 		self.cfg = cfg
+		self.f0: float = self.cfg.base_freq
+		self.a: float = self.f0 * math.log(2)
 
-	def forward(self, x):
-	#	return self.cfg.base_freq + F.relu(x)
-		return  F.relu(x)
+	def forward(self, x: torch.Tensor) -> torch.Tensor:
+		return F.elu(x,self.a) if (x<=0) else self.f0 * ( torch.pow(2,x) - 1 )
 
 class MAELoss(nn.Module):
 	def __init__(self, cfg: DictConfig):
@@ -85,8 +79,7 @@ def add_dense_block( model: nn.Sequential, in_channels:int, cfg: DictConfig ):
 	model.append( nn.Linear( in_channels, cfg.dense_channels ) )  # 64
 	model.append( nn.ELU() )
 	model.append( nn.Linear( cfg.dense_channels, cfg.out_channels ) )
-	# model.append( ScaledRelu(cfg) )
-	model.append( ScaledELU() )
+	model.append( ScaledELU(cfg) )
 
 def get_model_from_cfg( cfg: DictConfig, device: torch.device, embedding_layer: EmbeddingLayer  ) -> nn.Module:
 	model: nn.Sequential = nn.Sequential( embedding_layer )
