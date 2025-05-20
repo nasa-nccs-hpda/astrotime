@@ -52,14 +52,14 @@ class SyntheticLoader(IterativeDataLoader):
 			self.log.info(f"Init Dataset: sector={self.current_sector}, sector_batch_offset={self.sector_batch_offset}")
 
 		if self.current_sector >= 0:
-			self.load_sector(self.current_sector)
-			batch_start = self.sector_batch_offset
-			batch_end   = batch_start+self.cfg.batch_size
-			result: RDict = { k: self.train_data[k][batch_start:batch_end] for k in ['t','y','period','stype'] }
-			result['offset'] = batch_start
-			result['sector'] = self.current_sector
-			self.sector_batch_offset = batch_end
-			return result
+			if self.load_sector(self.current_sector):
+				batch_start = self.sector_batch_offset
+				batch_end   = batch_start+self.cfg.batch_size
+				result: RDict = { k: self.train_data[k][batch_start:batch_end] for k in ['t','y','period','stype'] }
+				result['offset'] = batch_start
+				result['sector'] = self.current_sector
+				self.sector_batch_offset = batch_end
+				return result
 		return None
 
 	def get_batch( self, sector_index: int, batch_index: int ) -> Optional[Dict[str,np.ndarray]]:
@@ -106,8 +106,11 @@ class SyntheticLoader(IterativeDataLoader):
 		if self.dataset is None:
 			dspath: str = self.file_path(sector_index)
 			if os.path.exists(dspath):
-				self.dataset = xa.open_dataset( dspath, engine="netcdf4" )
-				self.log.info( f"Opened cache dataset from {dspath} in in {time.time()-t0:.3f} sec, nvars = {len(self.dataset.data_vars)}")
+				try:
+					self.dataset = xa.open_dataset( dspath, engine="netcdf4" )
+					self.log.info( f"Opened cache dataset from {dspath} in in {time.time()-t0:.3f} sec, nvars = {len(self.dataset.data_vars)}")
+				except KeyError as ex:
+					self.log.error(f"Error reading file: {dspath}: {ex}")
 			else:
 				self.log.info( f"Cache file not found: {dspath}")
 		return self.dataset
@@ -123,8 +126,9 @@ class SyntheticLoader(IterativeDataLoader):
 	def load_sector( self, sector: int, **kwargs ) -> bool:
 		if (self.loaded_sector != sector) or (self.dataset is None):
 			self._load_cache_dataset(sector)
-			self.loaded_sector = sector
-			self.update_training_data()
+			if self.dataset is not None:
+				self.loaded_sector = sector
+				self.update_training_data()
 			return True
 		return False
 

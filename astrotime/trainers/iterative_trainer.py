@@ -83,8 +83,10 @@ class IterativeTrainer(object):
         return dict( z=z, target=1/p, **batch )
 
     def get_next_batch(self) -> Optional[TRDict]:
-        dset: RDict = self.loader.get_next_batch()
-        return self.encode_batch(dset)
+        while True:
+            dset: RDict = self.loader.get_next_batch()
+            if dset is not None:
+                return self.encode_batch(dset)
 
     def get_batch(self, dset_idx: int, ibatch: int) -> Optional[TRDict]:
         dset: Optional[RDict] = self.loader.get_batch(dset_idx,ibatch)
