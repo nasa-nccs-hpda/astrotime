@@ -30,6 +30,7 @@ class SyntheticLoader(IterativeDataLoader):
 		f1 = f0 + f0 * 2**self.cfg.noctaves
 		return 1/f1, 1/f0
 
+
 	def in_range(self, p: float) -> bool:
 		if self.period_range is None: return True
 		return (p >= self.period_range[0]) and (p <= self.period_range[1])
@@ -174,7 +175,8 @@ class SyntheticLoader(IterativeDataLoader):
 					periods.append(period)
 					stypes.append(stype)
 				else:
-					print( f" -----> Period out of range: {period:.3f}")
+					print( f" -----> Period out of range: {period:.3f} <-> prng=({self.period_range[0]:.3f}, {self.period_range[1]:.3f}) f0,nO=({self.cfg.base_freq:.3f},{self.cfg.noctaves:.3f})" )
+
 		z = np.stack(elems,axis=0)
 		self.train_data['t'] = z[:,0,:]
 		self.train_data['y'] = z[:,1,:]
