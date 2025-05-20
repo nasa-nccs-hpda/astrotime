@@ -29,7 +29,7 @@ class IterativeTrainer(object):
         self.encoder: Encoder = encoder
         self.optimizer: optim.Optimizer = self.get_optimizer()
         self.log = logging.getLogger()
-        self.loss = MAELoss(cfg)
+        self.loss = nn.L1Loss()
         self._checkpoint_manager = None
         self.start_batch: int = 0
         self.start_epoch: int = 0
