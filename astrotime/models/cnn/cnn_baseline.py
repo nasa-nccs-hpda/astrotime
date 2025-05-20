@@ -11,7 +11,8 @@ class ScaledRelu(nn.Module):
 		self.cfg = cfg
 
 	def forward(self, x):
-		return self.cfg.base_freq + F.relu(x)
+	#	return self.cfg.base_freq + F.relu(x)
+		return  F.relu(x)
 
 class MAELoss(nn.Module):
 	def __init__(self, cfg: DictConfig):
