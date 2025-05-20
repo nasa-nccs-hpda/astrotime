@@ -59,6 +59,7 @@ class SyntheticLoader(IterativeDataLoader):
 				result['offset'] = batch_start
 				result['sector'] = self.current_sector
 				self.sector_batch_offset = batch_end
+				self.log.info(f"get_next_batch: y{result['y'].shape}, t{result['t'].shape}")
 				return result
 		return None
 
@@ -66,14 +67,14 @@ class SyntheticLoader(IterativeDataLoader):
 		self.load_sector(sector_index)
 		batch_start = self.sector_batch_offset*batch_index
 		batch_end   = batch_start+self.cfg.batch_size
-		result = { k: self.train_data[k][batch_start:batch_end] for k in ['t','y','p','sn'] }
+		result = { k: self.train_data[k][batch_start:batch_end] for k in ['t','y','period','stype'] }
 		result['offset'] = batch_start
 		result['sector'] = self.current_sector
 		return result
 
 	def get_element( self, sector_index: int, element_index: int ) -> Optional[Dict[str,Union[np.ndarray,float]]]:
 		self.load_sector(sector_index)
-		element_data = { k: self.train_data[k][element_index] for k in ['t','y','p','sn'] }
+		element_data = { k: self.train_data[k][element_index] for k in ['t','y','period','stype'] }
 		return element_data
 
 	@property
