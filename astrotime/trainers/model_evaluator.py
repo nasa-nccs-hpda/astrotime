@@ -17,6 +17,7 @@ class ModelEvaluator(object):
         self.embedding: EmbeddingLayer = embedding
         self.loader: IterativeDataLoader = loader
         self.cfg: DictConfig = cfg
+        self.log = logging.getLogger()
         self.model: nn.Module = get_model_from_cfg( cfg.model, device, embedding )
         self.device = device
         self._target_freq = None
@@ -40,24 +41,26 @@ class ModelEvaluator(object):
         t: Tensor = Tensor(x) if type(x)==float else torch.from_numpy(x)
         return t.to(self.device)
 
-    def encode_element(self, element: RDict) -> TRDict:
-        t, y = self.encoder.encode_batch(element.pop('t'), element.pop('y'))
+    def encode_batch(self, batch: RDict) -> TRDict:
+        self.log.debug( f"encode_batch: {list(batch.keys())}")
+        p: Tensor = torch.from_numpy(batch.pop('period')).to(self.device)
+        t, y = self.encoder.encode_batch(batch.pop('t'), batch.pop('y'))
         z: Tensor = torch.concat((t[:, None, :], y), dim=1)
-        return dict( z=z, **element )
+        return dict( z=z, target=1/p, **batch )
 
-    def get_element(self, sector: int, element: int) -> Optional[TRDict]:
-        element: RDict = self.loader.get_element(sector, element)
-        return self.encode_element(element)
+    def get_batch(self, dset_idx: int, ibatch: int) -> Optional[TRDict]:
+        dset: Optional[RDict] = self.loader.get_batch(dset_idx,ibatch)
+        return None if (dset is None) else self.encode_batch(dset)
 
     def get_model_result(self, element: TRDict) -> Tensor:
         return self.cfg.base_freq * torch.pow( 2.0, self.model( element['z'] ) )
 
     def evaluate(self, sector: int, element: int) -> np.ndarray:
-        element: TRDict = self.get_element(sector, element)
-        embedding: np.ndarray = self.embedding.get_result()
-        self._target_freq = 1/element['p']
-        self._model_freq  = self.get_model_result(element).cpu().item()
-        return embedding
+        element: TRDict = self.get_batch(sector, element)
+        result: Tensor = self.model( element['z'] )
+        self._target_freq = element['target'].cpu().item()
+        self._model_freq  = result.cpu().item()
+        return self.embedding.get_result()
 
     @property
     def target_frequency(self) -> float:

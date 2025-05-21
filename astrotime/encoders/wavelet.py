@@ -183,8 +183,8 @@ class WaveletAnalysisLayer(EmbeddingLayer):
 		self.init_log(f" ----> p1{list(p1.shape)} p2{list(p2.shape)} mag{list(p2.shape)} phase{list(p2.shape)}")
 		self.init_log(f" ----> f0{list(features[0].shape)} f1{list(features[1].shape)} f2{list(features[2].shape)} f3{list(features[3].shape)}")
 		embedding: Tensor = torch.stack( features, dim=1)
+		self.init_log(f" Completed embedding in {elapsed(t0):.5f} sec: result{list(embedding.shape)}, nfeatures={embedding.shape[1]}")
 		self.init_state = False
-		self.init_log(f" Completed embedding in {elapsed(t0):.5f} sec: result{list(embedding.shape)}")
 		return embedding
 
 	def fold_harmonic_layer(self, mag: Tensor) -> Tensor:      # [Batch,NF]
