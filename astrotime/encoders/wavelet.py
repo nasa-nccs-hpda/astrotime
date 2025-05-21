@@ -185,7 +185,7 @@ class WaveletAnalysisLayer(EmbeddingLayer):
 		embedding: Tensor = torch.stack( features, dim=1)
 		self.init_log(f" Completed embedding in {elapsed(t0):.5f} sec: result{list(embedding.shape)}, nfeatures={embedding.shape[1]}")
 		self.init_state = False
-		return embedding
+		return tnorm(embedding,dim=2)
 
 	def fold_harmonic_layer(self, mag: Tensor) -> Tensor:      # [Batch,NF]
 		threshold = self.cfg.get('fold_threshold', 0.5 )
