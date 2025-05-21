@@ -7,16 +7,15 @@ import time, sys, torch, logging, numpy as np
 from torch import nn, optim, Tensor
 from astrotime.trainers.checkpoints import CheckpointManager
 from astrotime.models.cnn.cnn_baseline import get_model_from_cfg
-from astrotime.loaders.MIT import MITLoader
 from astrotime.encoders.baseline import ValueEncoder
 TRDict = Dict[str,Union[List[str],int,torch.Tensor]]
 
 class ModelEvaluator(object):
 
-    def __init__(self, cfg: DictConfig, version: str, loader: MITLoader, embedding: EmbeddingLayer, device ):
+    def __init__(self, cfg: DictConfig, version: str, loader: IterativeDataLoader, embedding: EmbeddingLayer, device ):
         self.encoder: ValueEncoder = ValueEncoder( cfg.transform, device )
         self.embedding: EmbeddingLayer = embedding
-        self.loader: MITLoader = loader
+        self.loader: IterativeDataLoader = loader
         self.cfg: DictConfig = cfg
         self.model: nn.Module = get_model_from_cfg( cfg.model, device, embedding )
         self.device = device
@@ -26,11 +25,12 @@ class ModelEvaluator(object):
         self.train_state = self._checkpoint_manager.load_checkpoint( update_model=True )
 
     @property
+    def nelements(self) -> int:
+        return self.loader.nelements
+
+    @property
     def tname(self):
         return self.embedding.name
-
-    def TICS(self, sector_index: int) -> List[str]:
-        return self.loader.TICS(sector_index)
 
     @property
     def xdata(self) -> np.ndarray:

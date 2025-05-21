@@ -1,7 +1,7 @@
 from astrotime.util.series import TSet
 from astrotime.loaders.MIT import MITOctavesLoader
 from astrotime.encoders.spectral_autocorr import HarmonicsFilterLayer
-from astrotime.plot.MIT import MITDatasetPlot, MITTransformPlot
+from plot.SCRAP.MIT import MITDatasetPlot, MITTransformPlot
 from astrotime.config.context import astrotime_initialize
 from astrotime.plot.base import SignalPlotFigure
 import torch

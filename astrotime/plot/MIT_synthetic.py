@@ -1,13 +1,12 @@
-import logging, numpy as np
-import xarray as xa
-from astrotime.plot.param import Number, Parameter, STParam, STFloatParam, STFloatValuesParam, Parameterized
-from torch import nn, optim, Tensor, FloatTensor
-from omegaconf import DictConfig, OmegaConf
-from matplotlib.backend_bases import KeyEvent, MouseEvent, MouseButton
+import logging
+from astrotime.plot.param import STFloatParam
+from omegaconf import DictConfig
+from matplotlib.backend_bases import KeyEvent, MouseEvent
 from astrotime.loaders.base import IterativeDataLoader
 from astrotime.util.logging import exception_handled
-from .MIT import MITDatasetPlot
-from typing import List, Optional, Dict, Type, Union, Tuple, Any, Set
+from plot.SCRAP.MIT import MITDatasetPlot
+from typing import Tuple, Any
+
 log = logging.getLogger()
 
 class MITSyntheticPlot(MITDatasetPlot):

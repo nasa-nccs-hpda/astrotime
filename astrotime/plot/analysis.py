@@ -5,13 +5,12 @@ from .param import STIntParam, STFloatParam
 from matplotlib import ticker
 from torch import nn, optim, Tensor, FloatTensor
 from .base import SignalPlot, bounds
-from astrotime.loaders.MIT import MITLoader
 from matplotlib.axes import Axes
 from matplotlib.lines import Line2D
 from matplotlib.backend_bases import KeyEvent, MouseEvent, MouseButton
 from astrotime.loaders.base import IterativeDataLoader
 from astrotime.util.logging import exception_handled
-from astrotime.encoders.embedding import Transform, EmbeddingLayer
+from astrotime.encoders.embedding import Transform
 from astrotime.trainers.model_evaluator import ModelEvaluator
 from typing import List, Optional, Dict, Type, Union, Tuple, Any, Set
 from astrotime.util.math import tnorm
@@ -65,21 +64,20 @@ class PeriodMarkers:
 			if pid >= len(self.markers):  self.markers.append( self.ax.axvline( tval, self.yrange[0], self.yrange[1], color=self.color, linestyle=self.linestyle, alpha=self.alpha) )
 			else:                         self.markers[pid].set_xdata([tval,tval])
 
-class MITDatasetPlot(SignalPlot):
+class DatasetPlot(SignalPlot):
 
 	def __init__(self, name: str, data_loader: IterativeDataLoader, sector: int, **kwargs):
 		SignalPlot.__init__(self, **kwargs)
 		self.name = name
 		self.version = name.split(':')[0]
 		self.sector: int = sector
-		self.data_loader: MITLoader = data_loader
+		self.data_loader: IterativeDataLoader = data_loader
 		self.refresh = kwargs.get('refresh', False)
-		self.TICS: List[str] = data_loader.TICS(sector)
 		self.annotations: List[str] = tolower( kwargs.get('annotations',None) )
 		self.colors = ['blue', 'green'] + [ 'yellow' ] * 16
 		self.ofac = kwargs.get('upsample_factor',1)
 		self.plot: Line2D = None
-		self.add_param( STIntParam('element', (0,len(self.TICS))))
+		self.add_param( STIntParam('element', (0,self.data_loader.nelements)  ) )
 		self.period_markers: Dict[str,PeriodMarkers] = {}
 		self.ext_pm_ids: Set[str] = set()
 		self.transax = None
@@ -114,11 +112,11 @@ class MITDatasetPlot(SignalPlot):
 		if event.key in ['ctrl+f','alt+ƒ']:
 			if self.fold_period is None:    self.fold_period = self.period if (event.key == 'ctrl+f') else self.get_ext_period()
 			else :                          self.fold_period = None
-			self.log.info(f"                 MITDatasetPlot-> key_press({event.key}), fold period = {self.fold_period} ")
+			self.log.info(f"                 DatasetPlot-> key_press({event.key}), fold period = {self.fold_period} ")
 			self.update(period=self.fold_period)
 		elif event.key in ['ctrl+t']:
 			self.data_loader.update_test_mode()
-			args = dict(title="Synthetic Sinusoids") if (self.data_loader.test_mode_index == 1) else {}
+			args = dict(title=" Sinusoids") if (self.data_loader.test_mode_index == 1) else {}
 			self.update(**args)
 		elif event.key in ['ctrl+s']:
 			self.register_element()
@@ -177,13 +175,13 @@ class MITDatasetPlot(SignalPlot):
 	def save_registered_elements(self):
 		with open( self.refile, 'wb') as file:
 			pickle.dump(self.registered_elements, file)
-			self.log.info( f" ---- MITDatasetPlot-> save_registered_elements: {self.refile} saved" )
+			self.log.info( f" ---- DatasetPlot-> save_registered_elements: {self.refile} saved" )
 
 	def load_registered_elements(self) -> Dict[Tuple[int,int],Tuple[float,float]]:
 		if os.path.exists(self.refile):
 			with open(self.refile, 'rb') as file:
 				rv = pickle.load( file )
-				self.log.info( f" ---- MITDatasetPlot-> loaded {len(rv)} registered elements from {self.refile}")
+				self.log.info( f" ---- DatasetPlot-> loaded {len(rv)} registered elements from {self.refile}")
 				return rv
 		return {}
 
@@ -214,11 +212,11 @@ class MITDatasetPlot(SignalPlot):
 		self.ax.set_xlim(xdata.min(),xdata.max())
 		try:  self.ax.set_ylim(ydata.min(),ydata.max())
 		except: self.log.info( f" ------------------ Error in y bounds: {ydata.min()} -> {ydata.max()}" )
-		self.log.info( f" ---- MITDatasetPlot-> update({self.element}:{self.TICS[self.element]}): xlim=({xdata.min():.3f},{xdata.max():.3f}), ylim=({ydata.min():.3f},{ydata.max():.3f}), xdata.shape={self.plot.get_xdata().shape} origin={self.origin} ---" )
+		self.log.info( f" ---- DatasetPlot-> update({self.element}: xlim=({xdata.min():.3f},{xdata.max():.3f}), ylim=({ydata.min():.3f},{ydata.max():.3f}), xdata.shape={self.plot.get_xdata().shape} origin={self.origin} ---" )
 		self.ax.figure.canvas.draw_idle()
 
 
-class MITTransformPlot(SignalPlot):
+class TransformPlot(SignalPlot):
 
 	def __init__(self, name: str, data_loader: IterativeDataLoader, transform: Transform, sector: int, **kwargs):
 		SignalPlot.__init__(self, **kwargs)
@@ -226,14 +224,13 @@ class MITTransformPlot(SignalPlot):
 		self.sector: int = sector
 		self.transform: Transform = transform
 		self.data_loader: IterativeDataLoader = data_loader
-		self.TICS: List[str] = data_loader.TICS(sector)
 		self.annotations: List[str] = tolower( kwargs.get('annotations',None) )
 		self.colors = [ 'black', 'red', 'green', 'blue', 'yellow', 'magenta', 'cyan', 'darkviolet', 'darkorange', 'saddlebrown', 'darkturquoise' ]
 		self.ofac = kwargs.get('upsample_factor',1)
 		self.plots: List[Line2D] = []
 		self.target_marker: Line2D = None
 		self.selection_marker: Line2D = None
-		self.add_param( STIntParam('element', (0,len(self.TICS))  ) )
+		self.add_param( STIntParam('element', (0,self.data_loader.nelements)  ) )
 		self.add_param( STFloatParam('threshold', (0.0,1.0), value=0.5 ) )
 		self.transax = None
 		self.nlines = -1
@@ -274,10 +271,10 @@ class MITTransformPlot(SignalPlot):
 	@exception_handled
 	def button_press(self, event: MouseEvent) -> Any:
 		if event.inaxes == self.ax and (event.button == MouseButton.RIGHT):
-			self.log.info(f"           *** ---- MITTransformPlot.button_press: selected freq={event.xdata:.2f} mods={event.modifiers} --- ")
+			self.log.info(f"           *** ---- TransformPlot.button_press: selected freq={event.xdata:.2f} mods={event.modifiers} --- ")
 			if "shift" in event.modifiers:
 				freq, period = event.xdata, 1/event.xdata
-				self.log.info(f"           *** ---- MITTransformPlot.button_press: selected freq={freq:.2f}, period={period:.2f} --- ")
+				self.log.info(f"           *** ---- TransformPlot.button_press: selected freq={freq:.2f}, period={period:.2f} --- ")
 				self.ax.title.set_text(f"{self.name}: TP={period:.3f} (F={freq:.3f})")
 				self.selection_marker.set_xdata([freq, freq])
 				self.process_event( id="period-update", period=period, ax=str(id(self.ax)), color=self.colors[0] )
@@ -298,7 +295,7 @@ class MITTransformPlot(SignalPlot):
 		x,y = ts_tensors['t'].squeeze(), tnorm(ts_tensors['y'].squeeze())
 		transformed: Tensor = self.transform.embed( x, y, threshold=self.threshold )
 		embedding: np.ndarray = self.transform.magnitude( transformed )
-		self.log.info( f"MITTransformPlot.apply_transform: x{list(x.shape)}, y{list(y.shape)} -> transformed{list(transformed.shape)}  embedding{list(embedding.shape)} ---> x min={embedding.min():.3f}, max={embedding.max():.3f}, mean={embedding.mean():.3f} ---")
+		self.log.info( f"TransformPlot.apply_transform: x{list(x.shape)}, y{list(y.shape)} -> transformed{list(transformed.shape)}  embedding{list(embedding.shape)} ---> x min={embedding.min():.3f}, max={embedding.max():.3f}, mean={embedding.mean():.3f} ---")
 		return embedding
 
 	def update_selection_marker(self, freq ) -> float:
@@ -319,7 +316,7 @@ class MITTransformPlot(SignalPlot):
 			self.plots[ip].set_xdata(x)
 		self.ax.set_xlim( x.min(), x.max() )
 		self.ax.set_ylim( y.min(), y.max() )
-		self.log.info(f"---- MITTransformPlot {self.tname}[{self.element})] update: y{y.shape}, x range=({x.min():.3f}->{x.max():.3f}) --- ")
+		self.log.info(f"---- TransformPlot {self.tname}[{self.element})] update: y{y.shape}, x range=({x.min():.3f}->{x.max():.3f}) --- ")
 		target_freq = self.transform.get_target_freq( target_period )
 		self.target_marker.set_xdata([target_freq,target_freq])
 		transform_peak_freq = self.transform.xdata[np.argmax(y[0])]
@@ -328,24 +325,27 @@ class MITTransformPlot(SignalPlot):
 		self.ax.figure.canvas.draw_idle()
 
 
-class MITEvaluatorPlot(SignalPlot):
+class EvaluatorPlot(SignalPlot):
 
 	def __init__(self, name: str, evaluator: ModelEvaluator, sector: int, **kwargs):
 		SignalPlot.__init__(self, **kwargs)
 		self.name = name
 		self.sector: int = sector
 		self.evaluator: ModelEvaluator = evaluator
-		self.TICS: List[str] = evaluator.TICS(sector)
 		self.annotations: List[str] = tolower( kwargs.get('annotations',None) )
 		self.colors = [ 'red', 'blue', 'magenta', 'cyan', 'darkviolet', 'darkorange', 'saddlebrown', 'darkturquoise' ]
 		self.ofac = kwargs.get('upsample_factor',1)
 		self.plots: List[Line2D] = []
 		self.target_marker: Line2D = None
 		self.model_marker: Line2D = None
-		self.add_param( STIntParam('element', (0,len(self.TICS))  ) )
+		self.add_param( STIntParam('element', (0,self.nelements)  ) )
 		self.add_param( STFloatParam('threshold', (0.0,1.0), value=0.5 ) )
 		self.transax = None
 		self.nlines = -1
+
+	@property
+	def nelements(self) -> int:
+		return self.evaluator.nelements
 
 	@property
 	def tname(self):
@@ -380,10 +380,10 @@ class MITEvaluatorPlot(SignalPlot):
 	@exception_handled
 	def button_press(self, event: MouseEvent) -> Any:
 		if event.inaxes == self.ax and (event.button == MouseButton.RIGHT):
-			self.log.info(f"           *** ---- MITTransformPlot.button_press: selected freq={event.xdata:.2f} mods={event.modifiers} --- ")
+			self.log.info(f"           *** ---- TransformPlot.button_press: selected freq={event.xdata:.2f} mods={event.modifiers} --- ")
 			if "shift" in event.modifiers:
 				freq, period = event.xdata, 1/event.xdata
-				self.log.info(f"           *** ---- MITTransformPlot.button_press: selected freq={freq:.2f}, period={period:.2f} --- ")
+				self.log.info(f"           *** ---- TransformPlot.button_press: selected freq={freq:.2f}, period={period:.2f} --- ")
 				self.ax.title.set_text(f"{self.name}: TP={period:.3f} (F={freq:.3f})")
 				self.model_marker.set_xdata([freq, freq])
 				self.process_event( id="period-update", period=period, ax=str(id(self.ax)), color=self.colors[0] )
@@ -411,7 +411,7 @@ class MITEvaluatorPlot(SignalPlot):
 			self.plots[ip].set_xdata(x)
 		self.ax.set_xlim( x.min(), x.max() )
 		self.ax.set_ylim( y.min(), y.max() )
-		self.log.info(f"---- MITTransformPlot {self.tname}[{self.element})] update: y{y.shape}, x range=({x.min():.3f}->{x.max():.3f}) --- ")
+		self.log.info(f"---- TransformPlot {self.tname}[{self.element})] update: y{y.shape}, x range=({x.min():.3f}->{x.max():.3f}) --- ")
 
 		self.target_marker.set_xdata([target_freq,target_freq])
 		self.model_marker.set_xdata( [model_freq, model_freq] )
