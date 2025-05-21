@@ -191,8 +191,8 @@ class DatasetPlot(SignalPlot):
 		element: Dict[str,Union[np.ndarray,float]] = self.data_loader.get_element(self.sector,self.element ) # , refresh=self.refresh )
 		ydata: np.ndarray = element['y']
 		xdata: np.ndarray = element['t']
-		target: float = element['p']
-		snr: float = element['sn']
+		target: float = element['p'] if ('p' in element) else element['period']
+		snr: float = element.get('sn',0.0)
 		if self.fold_period is not None:
 			xdata = xdata - np.floor(xdata/self.fold_period)*self.fold_period
 		return xdata, znorm(ydata.squeeze()), target, snr

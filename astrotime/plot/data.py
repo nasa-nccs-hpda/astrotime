@@ -112,7 +112,7 @@ class SignalDatasetPlot(SignalPlot):
 		print( element.keys())
 		ydata: np.ndarray = element['y']
 		xdata: np.ndarray = element['t']
-		target: float = element['p']
+		target: float = element['p'] if ('p' in element) else element['period']
 		return xdata, ydata, target
 
 	@exception_handled
