@@ -129,11 +129,11 @@ class IterativeTrainer(object):
                         if batch['z'].shape[0] > 0:
                             self.global_time = time.time()
                             result: Tensor = self.model( batch['z'] )
-                            self.log.debug(f"result{list(result.shape)} range: [{result.min().cpu().item():.3f} -> {result.max().cpu().item():.3f}]")
+                            self.log.info(f"result{list(result.shape)} range: [{result.min().cpu().item():.3f} -> {result.max().cpu().item():.3f}]")
                             loss: Tensor = self.loss( result.squeeze(), batch['target'].squeeze() )
                             self.conditionally_update_weights(loss)
                             losses.append(loss.cpu().item())
-          #                  print(f"E{epoch}.B{ibatch}:, result-range: [{result.min().cpu().item():.3f} -> {result.max().cpu().item():.3f}], loss={loss.cpu().item():.3f}")
+                            self.log.info(f"E{epoch}.B{ibatch}:, result-range: [{result.min().cpu().item():.3f} -> {result.max().cpu().item():.3f}], loss={loss.cpu().item():.3f}")
                             if (self.mode == TSet.Train) and ((ibatch % log_interval == 0) or ((ibatch < 5) and (epoch==0))):
                                 aloss = np.array(losses)
                                 mean_loss = aloss.mean()

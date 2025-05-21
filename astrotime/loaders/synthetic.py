@@ -60,7 +60,7 @@ class SyntheticLoader(IterativeDataLoader):
 			if self.sector_index == self.nfiles:
 				raise StopIteration
 			self.sector_batch_offset = 0
-			self.log.debug(f"Init Dataset: sector={self.current_sector}, sector_batch_offset={self.sector_batch_offset}")
+			self.log.info(f"Init Dataset: sector={self.current_sector}, sector_batch_offset={self.sector_batch_offset}")
 
 		if self.current_sector >= 0:
 			self.load_sector(self.current_sector)
@@ -71,7 +71,7 @@ class SyntheticLoader(IterativeDataLoader):
 				result['offset'] = batch_start
 				result['sector'] = self.current_sector
 				self.sector_batch_offset = batch_end
-				self.log.debug(f"get_next_batch: y{result['y'].shape}, t{result['t'].shape}")
+				self.log.info(f"get_next_batch: y{result['y'].shape}, t{result['t'].shape}")
 				return result
 		return None
 

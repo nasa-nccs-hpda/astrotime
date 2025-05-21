@@ -156,7 +156,7 @@ class WaveletAnalysisLayer(EmbeddingLayer):
 
 	def embed_subbatch(self, ts: torch.Tensor, ys: torch.Tensor, **kwargs ) -> Tensor:
 		t0 = time.time()
-		self.log.debug(f"WaveletAnalysisLayer shapes: ts{list(ts.shape)} ys{list(ys.shape)}")
+		self.init_log(f"WaveletAnalysisLayer shapes: ts{list(ts.shape)} ys{list(ys.shape)}")
 		slen: int = ys.shape[1]
 		tau = 0.5 * (ts[:, slen // 2] + ts[:, slen // 2 + 1])
 		tau: Tensor = tau[:, None, None]
@@ -164,7 +164,7 @@ class WaveletAnalysisLayer(EmbeddingLayer):
 		omega_: Tensor = omega[None, :, None]  # broadcast-to(self.batch_size,self.nfreq,slen)
 		ts: Tensor = ts[:, None, :]  # broadcast-to(self.batch_size,self.nfreq,slen)
 		dt: Tensor = (ts - tau)
-		self.log.debug(f" tau{list(tau.shape)} dt{list(dt.shape)}")
+		self.init_log(f" tau{list(tau.shape)} dt{list(dt.shape)}")
 		dz: Tensor = omega_ * dt
 		weights: Tensor = torch.exp(-self.C * dz ** 2) if (self.cfg.decay_factor > 0.0) else 1.0
 		sum_w: Tensor = torch.sum(weights, dim=-1) if (self.cfg.decay_factor > 0.0) else 1.0
@@ -180,11 +180,11 @@ class WaveletAnalysisLayer(EmbeddingLayer):
 		phase: Tensor = torch.atan2(p1, p2)
 		features =  [ f[:,:self.nf] for f in [p1,p2,mag,phase]]
 		if self.fold_harmonic: features.append( self.fold_harmonic_layer(mag) )
-		self.log.debug(f" ----> p1{list(p1.shape)} p2{list(p2.shape)} mag{list(p2.shape)} phase{list(p2.shape)}")
-		self.log.debug(f" ----> f0{list(features[0].shape)} f1{list(features[1].shape)} f2{list(features[2].shape)} f3{list(features[3].shape)}")
+		self.init_log(f" ----> p1{list(p1.shape)} p2{list(p2.shape)} mag{list(p2.shape)} phase{list(p2.shape)}")
+		self.init_log(f" ----> f0{list(features[0].shape)} f1{list(features[1].shape)} f2{list(features[2].shape)} f3{list(features[3].shape)}")
 		embedding: Tensor = torch.stack( features, dim=1)
 		self.init_state = False
-		self.log.debug(f" Completed embedding in {elapsed(t0):.5f} sec: result{list(embedding.shape)}")
+		self.init_log(f" Completed embedding in {elapsed(t0):.5f} sec: result{list(embedding.shape)}")
 		return embedding
 
 	def fold_harmonic_layer(self, mag: Tensor) -> Tensor:      # [Batch,NF]
