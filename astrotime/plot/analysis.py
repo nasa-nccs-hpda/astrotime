@@ -66,7 +66,7 @@ class PeriodMarkers:
 
 class DatasetPlot(SignalPlot):
 
-	def __init__(self, name: str, data_loader: IterativeDataLoader, sector: int, **kwargs):
+	def __init__(self, name: str, data_loader: IterativeDataLoader, sector:int=0, **kwargs):
 		SignalPlot.__init__(self, **kwargs)
 		self.name = name
 		self.version = name.split(':')[0]
@@ -218,7 +218,7 @@ class DatasetPlot(SignalPlot):
 
 class TransformPlot(SignalPlot):
 
-	def __init__(self, name: str, data_loader: IterativeDataLoader, transform: Transform, sector: int, **kwargs):
+	def __init__(self, name: str, data_loader: IterativeDataLoader, transform: Transform, sector:int=0, **kwargs):
 		SignalPlot.__init__(self, **kwargs)
 		self.name = name
 		self.sector: int = sector
@@ -327,7 +327,7 @@ class TransformPlot(SignalPlot):
 
 class EvaluatorPlot(SignalPlot):
 
-	def __init__(self, name: str, evaluator: ModelEvaluator, sector: int, **kwargs):
+	def __init__(self, name: str, evaluator: ModelEvaluator, sector:int=0, **kwargs):
 		SignalPlot.__init__(self, **kwargs)
 		self.name = name
 		self.sector: int = sector
