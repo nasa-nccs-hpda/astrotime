@@ -46,7 +46,7 @@ class ModelEvaluator(object):
         return None if (dset is None) else self.encode_element(dset)
 
     def encode_element(self, batch: RDict) -> TRDict:
-        p: Tensor = torch.FloatTensor(batch.pop('period')).to(self.device)
+        p: float = batch.pop('period')
         z: Tensor = self.to_tensor(batch.pop('t'), batch.pop('y'))
         return dict( z=z, target=1/p, **batch )
 
