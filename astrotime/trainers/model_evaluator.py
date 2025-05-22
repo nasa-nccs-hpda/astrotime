@@ -59,7 +59,7 @@ class ModelEvaluator(object):
     def evaluate(self, sector: int, element: int) -> np.ndarray:
         element: TRDict = self.get_element(sector, element)
         result: Tensor = self.model( element['z'] )
-        self._target_freq = element['target'].cpu().item()
+        self._target_freq = element['target']
         self._model_freq  = result.cpu().item()
         return self.embedding.get_result()
 
