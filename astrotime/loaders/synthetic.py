@@ -161,7 +161,7 @@ class SyntheticLoader(IterativeDataLoader):
 				i0: int = random.randint(0, ct.shape[0] - self.series_length)
 				elem: np.ndarray = cz[:,i0:i0+self.series_length]
 				TD = ct[-1] - ct[0]
-				TE = cz[0][-1] -  cz[0][0]
+				TE = elem[0][-1]-elem[0][0]
 				if period > TE:
 					print(f"Dropping elem-{svid}: period={period:.3f} > TE={TE:.3f}, TD={TD:.3f}, maxP={self.period_range[1]:.3f}")
 					return None
