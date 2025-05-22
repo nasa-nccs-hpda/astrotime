@@ -83,6 +83,7 @@ class DatasetPlot(SignalPlot):
 		self.origin = None
 		self.period = None
 		self.fold_period: float = None
+		self.model_period: float = 0.0
 		self.registered_elements: Dict[Tuple[int,int],Tuple[float,float]] = self.load_registered_elements()
 
 	@exception_handled
@@ -128,6 +129,7 @@ class DatasetPlot(SignalPlot):
 				period = event_data['period']
 				pm = self.period_markers.setdefault(pm_name, PeriodMarkers(pm_name, self.ax, color=event_data['color']))
 				pm.update( self.origin, period )
+				self.model_period = period
 
 	@exception_handled
 	def get_ext_period(self) -> float:
@@ -205,7 +207,7 @@ class DatasetPlot(SignalPlot):
 		self.plot.set_linewidth( 1 if (self.fold_period is None) else 0)
 		fold_period = kwargs.get('period')
 		active_period = self.period if (fold_period is None) else fold_period
-		title = f"{self.name}({self.sector},{self.element}): TP={active_period:.3f} (F={1 / active_period:.3f})"
+		title = f"{self.name}({self.sector},{self.element}): TP={active_period:.3f} (TF={1 / active_period:.3f}), MP={self.model_period:.3f} (MF={1/self.model_period:.3f})"
 		self.ax.title.set_text( kwargs.get('title',title) )
 		self.update_period_marker()
 		self.ax.set_xlim(xdata.min(),xdata.max())
@@ -370,7 +372,7 @@ class EvaluatorPlot(SignalPlot):
 
 		self.target_marker: Line2D = self.ax.axvline( target_freq, 0.0, 1.0, color=self.marker_colors[0], linestyle='-', linewidth=2, alpha=0.7)
 		self.model_marker: Line2D  = self.ax.axvline( model_freq, 0.0, 1.0, color=self.marker_colors[1], linestyle='-', linewidth=2, alpha=0.7)
-		self.ax.title.set_text(f"{self.name}: target({self.marker_colors[0]})={target_freq:.3f} model({self.marker_colors[1]})={model_freq:.3f}")
+		self.ax.title.set_text(f"{self.name}: target({self.sector},{self.element})={target_freq:.3f} model({self.marker_colors[1]})={model_freq:.3f}")
 		self.ax.title.set_fontsize(8)
 		self.ax.title.set_fontweight('bold')
 		self.ax.set_xscale('log')
@@ -417,6 +419,6 @@ class EvaluatorPlot(SignalPlot):
 		self.target_marker.set_xdata([target_freq,target_freq])
 		self.model_marker.set_xdata( [model_freq, model_freq] )
 		self.process_event(id="period-update", period=1/model_freq, ax=str(id(self.ax)), color=self.marker_colors[1])
-		self.ax.title.set_text(f"{self.name}: target_freq={target_freq:.3f} (model_freq={model_freq:.3f})")
+		self.ax.title.set_text(f"{self.name}({self.sector},{self.element}): target_freq={target_freq:.3f} (model_freq={model_freq:.3f})")
 		self.ax.figure.canvas.draw_idle()
 
