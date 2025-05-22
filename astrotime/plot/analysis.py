@@ -59,7 +59,7 @@ class PeriodMarkers:
 
 	def refresh(self):
 		self.log.info( f" PeriodMarkers({self.name}:{id(self):02X}).refresh( origin={self.origin:.2f}, period={self.period:.2f} ) -- --- -- ")
-		for pid in range(0,self.npm):
+		for pid in range(-self.npm//2,self.npm//2+1):
 			tval = self.origin + pid*self.period
 			if pid >= len(self.markers):  self.markers.append( self.ax.axvline( tval, self.yrange[0], self.yrange[1], color=self.color, linestyle=self.linestyle, alpha=self.alpha) )
 			else:                         self.markers[pid].set_xdata([tval,tval])
@@ -130,6 +130,8 @@ class DatasetPlot(SignalPlot):
 				pm = self.period_markers.setdefault(pm_name, PeriodMarkers(pm_name, self.ax, color=event_data['color']))
 				pm.update( self.origin, period )
 				self.model_period = period
+				title = f"{self.name}({self.sector},{self.element}): TP={self.period:.3f} (TF={1/self.period:.3f}), MP={period:.3f} (MF={1/period:.3f})"
+				self.ax.title.set_text(title)
 
 	@exception_handled
 	def get_ext_period(self) -> float:
