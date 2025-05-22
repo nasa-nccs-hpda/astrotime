@@ -1,10 +1,16 @@
 import random, time, torch, numpy as np
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional, Tuple, Union
 from astrotime.encoders.base import Encoder
 from torch import Tensor, device
 from omegaconf import DictConfig, OmegaConf
 from .embedding import EmbeddingLayer
 from astrotime.util.math import tnorm
+TRDict = Dict[str,Union[List[str],int,torch.Tensor]]
+RDict = Dict[str,Union[List[str],int,np.ndarray]]
+
+def bpop( batch: RDict, key: str ) -> np.ndarray:
+	z: np.ndarray = batch.pop(key)
+	return z if (z.ndim > 1) else z[None,:]
 
 class IterativeEncoder(Encoder):
 
@@ -42,15 +48,10 @@ class ValueEncoder(Encoder):
 		with (self.device):
 			y1, x1 = [], []
 			for idx, (y,x) in enumerate(zip(dset['y'],dset['x'])):
-				nanmask = ~np.isnan(y)
-				x, y = x[nanmask], y[nanmask]
 				x,y = self.apply_filters(x,y,dim=0)
-				i0: int = random.randint(0, y.shape[0] - self.cfg.series_length)
-				ys: Tensor = torch.FloatTensor( y[i0:i0 + self.cfg.series_length] ).to(self.device)
-				xs: Tensor = torch.FloatTensor( x[i0:i0 + self.cfg.series_length] ).to(self.device)
-				y1.append( torch.unsqueeze( ys, dim=0) )
-				x1.append( torch.unsqueeze( xs, dim=0) )
-			Y, X = torch.concatenate(y1, dim=0), torch.concatenate(x1, dim=0)
+				y1.append( torch.FloatTensor( y ).to(self.device) )
+				x1.append( torch.FloatTensor( x ).to(self.device) )
+			Y, X = torch.stack(y1, dim=0), torch.stack(x1, dim=0)
 			Y = tnorm( Y, dim=1 )
 			if Y.ndim == 2: Y = torch.unsqueeze(Y, dim=2)
 			if self.chan_first: Y = Y.transpose(1, 2)
@@ -69,6 +70,25 @@ class ValueEncoder(Encoder):
 			self.log.debug( f" ** ENCODED BATCH: x{list(x0.shape)} y{list(y0.shape)} -> T{list(X.shape)} Y{list(Y.shape)}")
 			if self.chan_first: Y = Y.transpose(1,2)
 			return X, Y
+
+	# def encode_periodic_batch(self, batch:  RDict) -> Optional[TRDict]:
+	# 	with (self.device):
+	# 		p: np.ndarray = batch.pop('period')
+	# 		t: np.ndarray = bpop(batch,'t')
+	# 		y: np.ndarray = bpop(batch,'y')
+	# 		t,y = self.apply_filters(t,y, dim=1)
+	# 		TL: np.ndarray = t[:,-1] - t[:,0]
+	# 		TS: np.ndarray = t[:,self.input_series_length] - t[:,0]
+	#
+	#
+	# 		i0: int = random.randint(0,  x.shape[1]-self.input_series_length )
+	# 		Y: Tensor = torch.FloatTensor(y[:,i0:i0 + self.input_series_length]).to(self.device)
+	# 		X: Tensor = torch.FloatTensor(x[:,i0:i0 + self.input_series_length]).to(self.device)
+	# 		Y = tnorm(Y, dim=1)
+	# 		if Y.ndim == 2: Y = torch.unsqueeze( Y, dim=2)
+	# 		self.log.debug( f" ** ENCODED BATCH: x{list(x0.shape)} y{list(y0.shape)} -> T{list(X.shape)} Y{list(Y.shape)}")
+	# 		if self.chan_first: Y = Y.transpose(1,2)
+	# 		return X, Y
 
 class ValueEmbeddingLayer(EmbeddingLayer):
 

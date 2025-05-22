@@ -1,4 +1,4 @@
-from typing import List, Tuple, Mapping
+from typing import List, Tuple, Mapping, Optional
 import logging, torch, numpy as np
 from omegaconf import DictConfig
 from torch import Tensor, device
@@ -52,6 +52,9 @@ class Encoder:
 		return self.cfg.series_length
 
 	def encode_batch(self, x: np.ndarray, y: np.ndarray) -> Tuple[Tensor, Tensor]:
+		raise NotImplementedError()
+
+	def encode_periodic_batch(self, batch: Mapping[str,np.ndarray]) -> Optional[Mapping[str,np.ndarray]]:
 		raise NotImplementedError()
 
 	def add_filter(self, tfilter: TrainingFilter ):

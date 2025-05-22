@@ -17,14 +17,13 @@ def my_app(cfg: DictConfig) -> None:
 	device: torch.device = astrotime_initialize( cfg, version )
 	embedding_space_array, embedding_space_tensor = embedding_space(cfg.transform, device)
 
-	encoder = ValueEncoder( cfg.transform, device )
 	data_loader = SyntheticLoader(cfg.data)
 	data_loader.initialize(TSet.Train)
 
 	embedding = WaveletAnalysisLayer( 'analysis', cfg.transform, embedding_space_tensor, device )
 	model: nn.Module = get_model_from_cfg( cfg.model, device, embedding )
 
-	trainer = IterativeTrainer( cfg.train, data_loader, encoder, model )
+	trainer = IterativeTrainer( cfg.train, device, data_loader, model )
 	trainer.initialize_checkpointing(version)
 	trainer.compute()
 

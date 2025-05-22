@@ -367,8 +367,8 @@ class EvaluatorPlot(SignalPlot):
 			self.plots.append( self.ax.plot(x, y[ip], label=f"{self.tname}-{ip}", color=self.colors[ip], marker=".", linewidth=1, markersize=1, alpha=0.7)[0] )
 		self.ax.set_xlim( x.min(), x.max() )
 		self.ax.set_ylim( y.min(), y.max() )
-		marker_colors = [ 'grey', 'green']
-		self.target_marker: Line2D = self.ax.axvline( target_freq, 0.0, 1.0, color=marker_colors[0], linestyle='-', linewidth=3, alpha=0.7)
+		marker_colors = [ 'black', 'green']
+		self.target_marker: Line2D = self.ax.axvline( target_freq, 0.0, 1.0, color=marker_colors[0], linestyle='-', linewidth=2, alpha=0.7)
 		self.model_marker: Line2D  = self.ax.axvline( model_freq, 0.0, 1.0, color=marker_colors[1], linestyle='-', linewidth=2, alpha=0.7)
 		self.ax.title.set_text(f"{self.name}: target({marker_colors[0]})={target_freq:.3f} model({marker_colors[1]})={model_freq:.3f}")
 		self.ax.title.set_fontsize(8)

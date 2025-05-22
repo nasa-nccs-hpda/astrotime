@@ -18,18 +18,22 @@ def tocpu( c, idx=0 ):
     else:
         return c
 
+def tnorm(x: Tensor, dim: int=0) -> Tensor:
+    m: Tensor = x.mean( dim=dim, keepdim=True)
+    s: Tensor = torch.std( x, dim=dim, keepdim=True)
+    return (x - m) / s
+
 class IterativeTrainer(object):
 
-    def __init__(self, cfg: DictConfig, loader: IterativeDataLoader, encoder: Encoder, model: nn.Module, loss: nn.Module = nn.L1Loss() ):
-        self.device = encoder.device
+    def __init__(self, cfg: DictConfig, device: torch.device, loader: IterativeDataLoader, model: nn.Module, loss: nn.Module = nn.L1Loss() ):
+        self.device: torch.device = device
         self.loader: IterativeDataLoader = loader
         self.cfg: DictConfig = cfg
         self.model: nn.Module = model
-        self.encoder: Encoder = encoder
         self.optimizer: optim.Optimizer = self.get_optimizer()
         self.log = logging.getLogger()
-        self.loss = loss
-        self._checkpoint_manager = None
+        self.loss: nn.Module = loss
+        self._checkpoint_manager: CheckpointManager = None
         self.start_batch: int = 0
         self.start_epoch: int = 0
         self.epoch_loss: float = 0.0
@@ -53,9 +57,9 @@ class IterativeTrainer(object):
             self.log.info(f"{stats[0]}: dt={stats[1]}s")
 
     def get_optimizer(self) -> optim.Optimizer:
-         if   self.cfg.optim == "rms":  return optim.RMSprop( self.model.parameters(), lr=self.cfg.lr )
-         elif self.cfg.optim == "adam": return optim.Adam(    self.model.parameters(), lr=self.cfg.lr, weight_decay=self.cfg.weight_decay )
-         else: raise RuntimeError( f"Unknown optimizer: {self.cfg.optim}")
+        if   self.cfg.optim == "rms":  return optim.RMSprop( self.model.parameters(), lr=self.cfg.lr )
+        elif self.cfg.optim == "adam": return optim.Adam(    self.model.parameters(), lr=self.cfg.lr, weight_decay=self.cfg.weight_decay )
+        else: raise RuntimeError( f"Unknown optimizer: {self.cfg.optim}")
 
     def initialize_checkpointing(self, version: str):
         self._checkpoint_manager = CheckpointManager( version, self.model, self.optimizer, self.cfg )
@@ -78,9 +82,15 @@ class IterativeTrainer(object):
     def encode_batch(self, batch: RDict) -> TRDict:
         self.log.debug( f"encode_batch: {list(batch.keys())}")
         p: Tensor = torch.from_numpy(batch.pop('period')).to(self.device)
-        t, y = self.encoder.encode_batch(batch.pop('t'), batch.pop('y'))
-        z: Tensor = torch.concat((t[:, None, :], y), dim=1)
+        z: Tensor = self.to_tensor(batch.pop('t'), batch.pop('y'))
         return dict( z=z, target=1/p, **batch )
+
+    def to_tensor(self, x: np.ndarray, y: np.ndarray) -> Tensor:
+        with (self.device):
+            Y: Tensor = torch.FloatTensor(y).to(self.device)
+            X: Tensor = torch.FloatTensor(x).to(self.device)
+            Y = tnorm(Y, dim=1)
+            return torch.stack((X,Y), dim=1)
 
     def get_next_batch(self) -> Optional[TRDict]:
         while True:

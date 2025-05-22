@@ -145,18 +145,32 @@ class SyntheticLoader(IterativeDataLoader):
 			return True
 		return False
 
-	def get_elem_slice(self, svid: str) -> Tuple[np.ndarray,float,str]:
+	def get_elem_slice(self, svid: str) -> Optional[Tuple[np.ndarray,float,str]]:
 		try:
-			cy: xa.DataArray = self.dataset['s'+svid]
-			ct: xa.DataArray = self.dataset['t'+svid]
-			cz = np.stack([ct,cy],axis=0)
-			elem = cz[:,:self.series_length] if (cz.shape[1] >= self.series_length) else None
-			period = cy.attrs["period"]
-			stype = cy.attrs["type"]
-			return elem, period, stype
-		except KeyError:
-			#print(f"KeyError: s0{ielem} <-> {list(self.dataset.data_vars.keys())}")
-			return None, None, None
+			dsy: xa.DataArray = self.dataset['s'+svid]
+			dst: xa.DataArray = self.dataset['t'+svid]
+			period = dsy.attrs["period"]
+			stype = dsy.attrs["type"]
+			nanmask = ~np.isnan(dsy.values)
+			ct, cy = dst.values[nanmask], dsy.values[nanmask]
+			cz: np.ndarray = np.stack([ct,cy],axis=0)
+			if cz.shape[1] < self.series_length:
+				return None
+			else:
+				i0: int = random.randint(0, ct.shape[0] - self.series_length)
+				elem: np.ndarray = cz[:,i0:i0+self.series_length]
+				TD = ct[-1] - ct[0]
+				TE = cz[0][-1] -  cz[0][0]
+				if period > TE:
+					print(f"Dropping elem-{svid}: period={period:.3f} > TE={TE:.3f}, TD={TD:.3f}, maxP={self.period_range[1]:.3f}")
+					return None
+				else:
+					if 2*period > TE:
+						print(f"Warning elem-{svid}: 2*(period={period:.3f}) > TE={TE:.3f}, TD={TD:.3f}, maxP={self.period_range[1]:.3f}")
+					return elem, period, stype
+		except KeyError as err:
+			print(f"KeyError for elem-{svid}: {err} <-> dset-vars={list(self.dataset.data_vars.keys())}")
+			return None
 
 	def get_batch_element(self, bz: np.ndarray) -> np.ndarray:
 		center = bz.shape[1] // 2
