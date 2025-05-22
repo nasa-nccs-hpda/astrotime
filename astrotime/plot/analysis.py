@@ -59,8 +59,8 @@ class PeriodMarkers:
 
 	def refresh(self):
 		self.log.info( f" PeriodMarkers({self.name}:{id(self):02X}).refresh( origin={self.origin:.2f}, period={self.period:.2f} ) -- --- -- ")
-		for pid in range(-self.npm//2,self.npm//2+1):
-			tval = self.origin + pid*self.period
+		for pid in range(0,self.npm):
+			tval = self.origin + (pid-self.npm//2)*self.period
 			if pid >= len(self.markers):  self.markers.append( self.ax.axvline( tval, self.yrange[0], self.yrange[1], color=self.color, linestyle=self.linestyle, alpha=self.alpha) )
 			else:                         self.markers[pid].set_xdata([tval,tval])
 
