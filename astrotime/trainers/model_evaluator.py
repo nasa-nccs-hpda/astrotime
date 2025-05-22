@@ -54,8 +54,7 @@ class ModelEvaluator(object):
         with (self.device):
             Y: Tensor = torch.FloatTensor(y).to(self.device)
             X: Tensor = torch.FloatTensor(x).to(self.device)
-            Y = tnorm(Y, dim=1)
-            return torch.stack((X,Y), dim=1)
+            return torch.stack((X,tnorm(Y)), dim=0).unsqueeze(0)
 
     def evaluate(self, sector: int, element: int) -> np.ndarray:
         element: TRDict = self.get_element(sector, element)
