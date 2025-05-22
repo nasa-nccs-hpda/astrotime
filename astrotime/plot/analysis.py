@@ -60,7 +60,7 @@ class PeriodMarkers:
 	def refresh(self):
 		self.log.info( f" PeriodMarkers({self.name}:{id(self):02X}).refresh( origin={self.origin:.2f}, period={self.period:.2f} ) -- --- -- ")
 		for pid in range(0,self.npm):
-			tval = self.origin + (pid-self.npm//2) * self.period
+			tval = self.origin + pid*self.period
 			if pid >= len(self.markers):  self.markers.append( self.ax.axvline( tval, self.yrange[0], self.yrange[1], color=self.color, linestyle=self.linestyle, alpha=self.alpha) )
 			else:                         self.markers[pid].set_xdata([tval,tval])
 
@@ -334,6 +334,7 @@ class EvaluatorPlot(SignalPlot):
 		self.evaluator: ModelEvaluator = evaluator
 		self.annotations: List[str] = tolower( kwargs.get('annotations',None) )
 		self.colors = [ 'red', 'blue', 'magenta', 'cyan', 'darkviolet', 'darkorange', 'saddlebrown', 'darkturquoise' ]
+		self.marker_colors = ['black', 'green']
 		self.ofac = kwargs.get('upsample_factor',1)
 		self.plots: List[Line2D] = []
 		self.target_marker: Line2D = None
@@ -367,10 +368,10 @@ class EvaluatorPlot(SignalPlot):
 			self.plots.append( self.ax.plot(x, y[ip], label=f"{self.tname}-{ip}", color=self.colors[ip], marker=".", linewidth=1, markersize=1, alpha=0.7)[0] )
 		self.ax.set_xlim( x.min(), x.max() )
 		self.ax.set_ylim( y.min(), y.max() )
-		marker_colors = [ 'black', 'green']
-		self.target_marker: Line2D = self.ax.axvline( target_freq, 0.0, 1.0, color=marker_colors[0], linestyle='-', linewidth=2, alpha=0.7)
-		self.model_marker: Line2D  = self.ax.axvline( model_freq, 0.0, 1.0, color=marker_colors[1], linestyle='-', linewidth=2, alpha=0.7)
-		self.ax.title.set_text(f"{self.name}: target({marker_colors[0]})={target_freq:.3f} model({marker_colors[1]})={model_freq:.3f}")
+
+		self.target_marker: Line2D = self.ax.axvline( target_freq, 0.0, 1.0, color=self.marker_colors[0], linestyle='-', linewidth=2, alpha=0.7)
+		self.model_marker: Line2D  = self.ax.axvline( model_freq, 0.0, 1.0, color=self.marker_colors[1], linestyle='-', linewidth=2, alpha=0.7)
+		self.ax.title.set_text(f"{self.name}: target({self.marker_colors[0]})={target_freq:.3f} model({self.marker_colors[1]})={model_freq:.3f}")
 		self.ax.title.set_fontsize(8)
 		self.ax.title.set_fontweight('bold')
 		self.ax.set_xscale('log')
@@ -416,7 +417,7 @@ class EvaluatorPlot(SignalPlot):
 
 		self.target_marker.set_xdata([target_freq,target_freq])
 		self.model_marker.set_xdata( [model_freq, model_freq] )
-		self.process_event(id="period-update", period=1/model_freq, ax=str(id(self.ax)), color=self.colors[0])
+		self.process_event(id="period-update", period=1/model_freq, ax=str(id(self.ax)), color=self.marker_colors[1])
 		self.ax.title.set_text(f"{self.name}: target_freq={target_freq:.3f} (model_freq={model_freq:.3f})")
 		self.ax.figure.canvas.draw_idle()
 
