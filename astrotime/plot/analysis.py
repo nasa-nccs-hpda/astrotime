@@ -74,7 +74,6 @@ class DatasetPlot(SignalPlot):
 		self.data_loader: IterativeDataLoader = data_loader
 		self.refresh = kwargs.get('refresh', False)
 		self.annotations: List[str] = tolower( kwargs.get('annotations',None) )
-		self.colors = ['blue', 'green'] + [ 'yellow' ] * 16
 		self.ofac = kwargs.get('upsample_factor',1)
 		self.plot: Line2D = None
 		self.add_param( STIntParam('element', (0,self.data_loader.nelements)  ) )
@@ -152,7 +151,7 @@ class DatasetPlot(SignalPlot):
 		xs, ys, self.period, snr= self.get_element_data()
 		self.origin = xs[np.argmax(np.abs(ys))]
 		self.plot: Line2D = self.ax.plot(xs, ys, label='y', color='blue', marker=".", linewidth=1, markersize=2, alpha=0.5)[0]
-		self.ax.title.set_text(f"{self.name}: TP={self.period:.3f} (F={1/self.period:.3f}) SNR={snr:.3f}")
+		self.ax.title.set_text(f"{self.name}({self.sector},{self.element}): TP={self.period:.3f} (F={1/self.period:.3f})")
 		self.ax.title.set_fontsize(8)
 		self.ax.title.set_fontweight('bold')
 		self.ax.set_xlim(xs[0],xs[-1])
@@ -206,7 +205,7 @@ class DatasetPlot(SignalPlot):
 		self.plot.set_linewidth( 1 if (self.fold_period is None) else 0)
 		fold_period = kwargs.get('period')
 		active_period = self.period if (fold_period is None) else fold_period
-		title = f"{self.name}: TP={active_period:.3f} (F={1/active_period:.3f}) SNR={snr:.3f}"
+		title = f"{self.name}({self.sector},{self.element}): TP={active_period:.3f} (F={1 / active_period:.3f})"
 		self.ax.title.set_text( kwargs.get('title',title) )
 		self.update_period_marker()
 		self.ax.set_xlim(xdata.min(),xdata.max())
