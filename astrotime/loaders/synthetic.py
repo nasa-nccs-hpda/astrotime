@@ -60,7 +60,8 @@ class SyntheticLoader(IterativeDataLoader):
 			if self.sector_index == self.nfiles:
 				raise StopIteration
 			self.sector_batch_offset = 0
-			self.log.info(f"Init Dataset: sector={self.current_sector}, sector_batch_offset={self.sector_batch_offset}")
+			trng: np.ndarray = self.train_data['t'][:, -1] - self.train_data['t'][:, 0]
+			self.log.info(f"Init Dataset: sector={self.current_sector}, T-range: ({trng.min():.3f}->{trng.max():.3f}), mean={trng.mean():.3f}")
 
 		if self.current_sector >= 0:
 			self.load_sector(self.current_sector)
