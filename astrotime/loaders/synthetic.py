@@ -182,8 +182,9 @@ class SyntheticLoader(IterativeDataLoader):
 		periods, stypes, elems  = [], [], []
 		svids = [ vid[1:] for vid in self.dataset.data_vars.keys() if vid[0]=='s']
 		for svid in svids:
-			eslice, period, stype = self.get_elem_slice(svid)
-			if eslice is not None:
+			signal = self.get_elem_slice(svid)
+			if signal is not None:
+				eslice, period, stype = signal
 				if self.in_range(period):
 					elems.append(eslice)
 					periods.append(period)
