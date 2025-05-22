@@ -2,7 +2,7 @@ import time, os, math, numpy as np, xarray as xa, random
 from astrotime.loaders.base import IterativeDataLoader, RDict
 from astrotime.loaders.pcross import PlanetCrossingDataGenerator
 from typing import List, Optional, Dict, Type, Union, Tuple, Any
-import pandas as pd
+import torch
 from glob import glob
 from omegaconf import DictConfig, OmegaConf
 from astrotime.util.series import TSet
@@ -158,16 +158,20 @@ class SyntheticLoader(IterativeDataLoader):
 			if cz.shape[1] < self.series_length:
 				return None
 			else:
-				i0: int = random.randint(0, ct.shape[0] - self.series_length)
-				elem: np.ndarray = cz[:,i0:i0+self.series_length]
 				TD = ct[-1] - ct[0]
-				TE = elem[0][-1]-elem[0][0]
+				TE = ct[self.series_length] - ct[0]
 				if period > TE:
 					print(f"Dropping elem-{svid}: period={period:.3f} > TE={TE:.3f}, TD={TD:.3f}, maxP={self.period_range[1]:.3f}")
 					return None
+				elif 2*period > TE:
+					peak_idx: int = np.argmin(cy)[0]
+					TP = ct[peak_idx] - ct[0]
+					i0 = 0 if (TP > period) else max( peak_idx - 10, 0 )
+					elem: np.ndarray = cz[:, i0:i0 + self.series_length]
+					return elem, period, stype
 				else:
-					if 2*period > TE:
-						print(f"Warning elem-{svid}: 2*(period={period:.3f}) > TE={TE:.3f}, TD={TD:.3f}, maxP={self.period_range[1]:.3f}")
+					i0: int = random.randint(0, ct.shape[0] - self.series_length)
+					elem: np.ndarray = cz[:, i0:i0 + self.series_length]
 					return elem, period, stype
 		except KeyError as err:
 			print(f"KeyError for elem-{svid}: {err} <-> dset-vars={list(self.dataset.data_vars.keys())}")
