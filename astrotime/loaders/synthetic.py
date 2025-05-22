@@ -1,7 +1,7 @@
 import time, os, math, numpy as np, xarray as xa, random
 from astrotime.loaders.base import IterativeDataLoader, RDict
 from astrotime.loaders.pcross import PlanetCrossingDataGenerator
-from typing import List, Optional, Dict, Type, Union, Tuple
+from typing import List, Optional, Dict, Type, Union, Tuple, Any
 import pandas as pd
 from glob import glob
 from omegaconf import DictConfig, OmegaConf
@@ -53,7 +53,7 @@ class SyntheticLoader(IterativeDataLoader):
 		self._nbatches = -1
 		random.shuffle(self.sector_shuffle)
 
-	def get_next_batch( self ) -> Optional[RDict]:
+	def get_next_batch( self ) -> Optional[Dict[str,Any]]:
 		ibatch = self.sector_batch_offset//self.cfg.batch_size
 		if (self._nbatches > 0) and ( ibatch>= self._nbatches-1):
 			self.sector_index = self.sector_index + 1
@@ -74,18 +74,20 @@ class SyntheticLoader(IterativeDataLoader):
 				return result
 		return None
 
-	def get_batch( self, sector_index: int, batch_index: int ) -> Optional[Dict[str,np.ndarray]]:
+	def get_batch( self, sector_index: int, batch_index: int ) -> Optional[Dict[str,Any]]:
 		self.load_sector(sector_index)
-		batch_start = self.sector_batch_offset*batch_index
+		batch_start = self.cfg.batch_size*batch_index
 		batch_end   = batch_start+self.cfg.batch_size
-		result = { k: self.train_data[k][batch_start:batch_end] for k in ['t','y','period','stype'] }
+		result: Dict[str,Any] = { k: self.train_data[k][batch_start:batch_end] for k in ['t','y','period','stype'] }
 		result['offset'] = batch_start
 		result['sector'] = self.current_sector
 		return result
 
-	def get_element( self, sector_index: int, element_index: int ) -> Optional[Dict[str,Union[np.ndarray,float]]]:
+	def get_element( self, sector_index: int, element_index: int ) -> Optional[Dict[str,Any]]:
 		self.load_sector(sector_index)
-		element_data = { k: self.train_data[k][element_index] for k in ['t','y','period','stype'] }
+		element_data: Dict[str,Any] = { k: self.train_data[k][element_index] for k in ['t','y','period','stype'] }
+		element_data['offset'] = element_index
+		element_data['sector'] = self.current_sector
 		return element_data
 
 	@property

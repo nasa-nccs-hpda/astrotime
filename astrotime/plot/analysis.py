@@ -232,7 +232,6 @@ class TransformPlot(SignalPlot):
 		self.target_marker: Line2D = None
 		self.selection_marker: Line2D = None
 		self.add_param( STIntParam('element', (0,self.data_loader.nelements)  ) )
-		self.add_param( STFloatParam('threshold', (0.0,1.0), value=0.5 ) )
 		self.transax = None
 		self.nlines = -1
 
@@ -294,7 +293,7 @@ class TransformPlot(SignalPlot):
 	def apply_transform( self, series_data: Dict[str,Union[np.ndarray,float]] ) -> np.ndarray:
 		ts_tensors: Dict[str,Tensor] =  { k: FloatTensor(series_data[k]).to(self.transform.device) for k in ['t','y'] }
 		x,y = ts_tensors['t'].squeeze(), tnorm(ts_tensors['y'].squeeze())
-		transformed: Tensor = self.transform.embed( x, y, threshold=self.threshold )
+		transformed: Tensor = self.transform.embed( x, y )
 		embedding: np.ndarray = self.transform.magnitude( transformed )
 		self.log.info( f"TransformPlot.apply_transform: x{list(x.shape)}, y{list(y.shape)} -> transformed{list(transformed.shape)}  embedding{list(embedding.shape)} ---> x min={embedding.min():.3f}, max={embedding.max():.3f}, mean={embedding.mean():.3f} ---")
 		return embedding
@@ -341,7 +340,6 @@ class EvaluatorPlot(SignalPlot):
 		self.target_marker: Line2D = None
 		self.model_marker: Line2D = None
 		self.add_param( STIntParam('element', (0,self.nelements)  ) )
-		self.add_param( STFloatParam('threshold', (0.0,1.0), value=0.5 ) )
 		self.transax = None
 		self.nlines = -1
 
