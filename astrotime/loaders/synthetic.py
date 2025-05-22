@@ -60,8 +60,6 @@ class SyntheticLoader(IterativeDataLoader):
 			if self.sector_index == self.nfiles:
 				raise StopIteration
 			self.sector_batch_offset = 0
-			trng: np.ndarray = self.train_data['t'][:, -1] - self.train_data['t'][:, 0]
-			self.log.info(f"Init Dataset: sector={self.current_sector}, T-range: ({trng.min():.3f}->{trng.max():.3f}), mean={trng.mean():.3f}")
 
 		if self.current_sector >= 0:
 			self.load_sector(self.current_sector)
@@ -72,7 +70,7 @@ class SyntheticLoader(IterativeDataLoader):
 				result['offset'] = batch_start
 				result['sector'] = self.current_sector
 				self.sector_batch_offset = batch_end
-				self.log.info(f"get_next_batch: y{result['y'].shape}, t{result['t'].shape}")
+				self.log.debug(f"get_next_batch: y{result['y'].shape}, t{result['t'].shape}")
 				return result
 		return None
 
@@ -179,7 +177,6 @@ class SyntheticLoader(IterativeDataLoader):
 		return bdata
 
 	def update_training_data(self):
-		self.log.debug(f"update_training_data(sector={self.loaded_sector})")
 		periods, stypes, elems  = [], [], []
 		svids = [ vid[1:] for vid in self.dataset.data_vars.keys() if vid[0]=='s']
 		for svid in svids:
@@ -191,13 +188,14 @@ class SyntheticLoader(IterativeDataLoader):
 					stypes.append(stype)
 				else:
 					print( f" -----> Period out of range: {period:.3f} <-> prng=({self.period_range[0]:.3f}, {self.period_range[1]:.3f}) f0,nO=({self.cfg.base_freq:.3f},{self.cfg.noctaves:.3f})" )
-
 		z = np.stack(elems,axis=0)
 		self.train_data['t'] = z[:,0,:]
 		self.train_data['y'] = z[:,1,:]
 		self.train_data['period'] = np.array(periods)
 		self.train_data['stype'] = np.array(stypes)
 		self._nbatches = math.ceil( self.train_data['t'].shape[0] / self.cfg.batch_size )
+		trng: np.ndarray = z[:,0,-1] - z[:,0,0]
+		self.log.info(f"Load sector-{self.loaded_sector}, size={z.shape[0]}, T-range: ({trng.min():.3f}->{trng.max():.3f}), mean={trng.mean():.3f}")
 
 	def refresh(self):
 		self.dataset = None
