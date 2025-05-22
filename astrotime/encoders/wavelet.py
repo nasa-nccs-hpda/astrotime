@@ -188,12 +188,10 @@ class WaveletAnalysisLayer(EmbeddingLayer):
 		return tnorm(embedding,dim=2)
 
 	def fold_harmonic_layer(self, mag: Tensor) -> Tensor:      # [Batch,NF]
-		threshold = self.cfg.get('fold_threshold', 0.5 )
 		l0: Tensor = mag[:,:self.nf]
 		dfH: int = self.nfreq_oct
 		harmonic: Tensor = mag[:,dfH:self.nf+dfH]
-		harmonic =  torch.where( l0 < threshold, torch.zeros_like(harmonic), harmonic )
-		return harmonic
+		return tnorm(harmonic*l0,dim=1)
 
 	@property
 	def nf(self):
