@@ -160,26 +160,26 @@ class IterativeTrainer(object):
 
     def evaluate(self):
         print(f"SignalTrainer[{self.mode}]: device={self.device}")
+        self.cfg["mode"] = "val"
         with self.device:
             te = time.time()
             self.loader.initialize(self.mode)
             self.model.train(False)
             self.loader.init_epoch()
+            losses = []
             try:
                 for ibatch in range(0,sys.maxsize):
                     batch = self.get_next_batch()
                     if batch['z'].shape[0] > 0:
                         self.global_time = time.time()
-                        tbatch, zbatch = batch['target'], batch['z']
-                        for iE, TIC in enumerate(batch['TICS']):
-                            input: Tensor = zbatch[iE][None,:]
-                            imean, istd = input[:,1,:].mean().item(), input[:,1,:].std().item()
-                            output: Tensor = self.model( input )
-                            pt, pout = tbatch[iE].item(), output.item()
-                            self.log.info(f" *** {TIC}: input{shp(input)} stats=({imean:.3f},{istd:.3f}), target={pt:.3f}, output={pout:.3f}, ratio={pout/pt:.3f}")
+                        result: Tensor = self.model(batch['z'])
+                        loss: Tensor = self.loss(result.squeeze(), batch['target'].squeeze())
+                        losses.append(loss.cpu().item())
 
             except StopIteration:
                 print( f"Completed evaluation in {elapsed(te)/60:.5f} min.")
+                L: np.array = np.array(losses)
+                print( f"Loss mean = {L.mean():.3f}, range=[{L.min():.3f} -> {L.max():.3f}]" )
 
 
 

@@ -3,6 +3,7 @@ import torch, math
 from omegaconf import DictConfig, OmegaConf
 from astrotime.encoders.embedding import EmbeddingLayer
 from typing import Any, Dict, List, Optional, Tuple, Mapping
+from astrotime.models.spectral.peak_finder import SpectralPeakSelector
 import torch.nn.functional as F
 
 class ExpU(nn.Module):
@@ -56,4 +57,9 @@ def get_model_from_cfg( cfg: DictConfig, device: torch.device, embedding_layer: 
 	print(f"CNN: reduced_series_len={reduced_series_len}, cnn_channels={cnn_channels}, output_series_length={embedding_layer.output_series_length}")
 	add_dense_block( cfg, model, cnn_channels*reduced_series_len  )
 	if scale is not None: model.append(scale)
+	return model.to(device)
+
+def get_spectral_peak_selector_from_cfg( cfg: DictConfig, device: torch.device, embedding_layer: EmbeddingLayer  ) -> nn.Module:
+	model: nn.Sequential = nn.Sequential( embedding_layer )
+	model.append( SpectralPeakSelector( cfg, device, embedding_layer.xdata ) )
 	return model.to(device)

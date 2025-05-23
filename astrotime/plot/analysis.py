@@ -361,7 +361,7 @@ class EvaluatorPlot(SignalPlot):
 		tdata = self.evaluator.evaluate(self.sector, self.element).squeeze()
 		target_freq = self.evaluator.target_frequency
 		model_freq = self.evaluator.model_frequency
-		x = self.evaluator.xdata
+		x = self.evaluator.xdata.cpu().numpy()
 		y = tdata[None,:] if (tdata.ndim == 1) else tdata
 		self.nlines = y.shape[0]
 		print( f"PLOT: x{x.shape} y{y.shape}")
@@ -406,7 +406,7 @@ class EvaluatorPlot(SignalPlot):
 		tdata = self.evaluator.evaluate(self.sector, self.element).squeeze()
 		target_freq = self.evaluator.target_frequency
 		model_freq = self.evaluator.model_frequency
-		x = self.evaluator.xdata
+		x = self.evaluator.xdata.cpu().numpy()
 		y = tdata[None,:] if (tdata.ndim == 1) else tdata
 
 		for ip in range(self.nlines):

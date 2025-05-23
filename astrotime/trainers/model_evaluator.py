@@ -38,7 +38,7 @@ class ModelEvaluator(object):
         return self.embedding.name
 
     @property
-    def xdata(self) -> np.ndarray:
+    def xdata(self) -> Tensor:
         return self.embedding.xdata.squeeze()
 
     def get_element(self, dset_idx: int, element: int) -> Optional[TRDict]:

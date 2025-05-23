@@ -62,7 +62,7 @@ class SignalTransformPlot(SignalPlot):
 		xt: torch.Tensor = torch.from_numpy(t).to(self.device)
 		p: float = element['p']
 		embedding: torch.Tensor = self.transform.embed(xt[None,:],yt[None,:])
-		f: np.ndarray = self.transform.xdata.squeeze()
+		f: np.ndarray = self.transform.xdata.cpu().numpy().squeeze()
 		trans = self.transform.magnitude(embedding).squeeze()
 		return f, trans, p
 

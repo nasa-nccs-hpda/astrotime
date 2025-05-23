@@ -133,8 +133,8 @@ class WaveletAnalysisLayer(EmbeddingLayer):
 		self.nfreq_oct: int = self.cfg.nfreq_oct
 
 	@property
-	def xdata(self) -> np.ndarray:
-		return self._embedding_space[:self.output_series_length].cpu().numpy()
+	def xdata(self) -> Tensor:
+		return self._embedding_space[:self.output_series_length]
 
 	@property
 	def output_series_length(self) -> int:
@@ -177,13 +177,12 @@ class WaveletAnalysisLayer(EmbeddingLayer):
 		p1: Tensor = w_prod(ys, pw1)
 		p2: Tensor = w_prod(ys, pw2)
 		mag: Tensor =  torch.sqrt( p1**2 + p2**2 )
-		phase: Tensor = torch.atan2(p1, p2)
-		features =  [ f[:,:self.nf] for f in [p1,p2,mag,phase]]
+	#	phase: Tensor = torch.atan2(p1, p2)
+#		features =  [ f[:,:self.nf] for f in [p1,p2,mag,phase]]
+		features = [ mag[:, :self.nf] ]
 		if self.fold_harmonic: features.append( self.fold_harmonic_layer(mag) )
-		self.init_log(f" ----> p1{list(p1.shape)} p2{list(p2.shape)} mag{list(p2.shape)} phase{list(p2.shape)}")
-		self.init_log(f" ----> f0{list(features[0].shape)} f1{list(features[1].shape)} f2{list(features[2].shape)} f3{list(features[3].shape)}")
 		embedding: Tensor = torch.stack( features, dim=1)
-		self.init_log(f" Completed embedding in {elapsed(t0):.5f} sec: result{list(embedding.shape)}, nfeatures={embedding.shape[1]}")
+		self.init_log(f" Completed embedding{list(embedding.shape)} in {elapsed(t0):.5f} sec: nfeatures={embedding.shape[1]}")
 		self.init_state = False
 		return tnorm(embedding,dim=2)
 

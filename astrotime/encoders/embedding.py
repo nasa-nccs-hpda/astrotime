@@ -41,8 +41,8 @@ class EmbeddingLayer(Transform):
 		raise NotImplementedError("EmbeddingLayer.embed() not implemented")
 
 	@property
-	def xdata(self) -> np.ndarray:
-		return self._embedding_space.cpu().numpy()
+	def xdata(self) -> Tensor:
+		return self._embedding_space
 
 	@property
 	def projection_dim(self) -> int:
