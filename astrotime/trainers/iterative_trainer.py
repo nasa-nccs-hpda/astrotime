@@ -159,11 +159,14 @@ class IterativeTrainer(object):
                     val_losses = np.array(losses)
                     print( f" Validation Loss: mean={val_losses.mean():.3f}, median={np.median(val_losses):.3f}, range=({val_losses.min():.3f} -> {val_losses.max():.3f})")
 
-    def evaluate(self):
+    def evaluate(self, **kwargs ):
         print(f"SignalTrainer[{self.mode}]: device={self.device}")
         self.cfg["mode"] = "val"
+        ckp_version: Optional[str] =  kwargs.get("ckp_version", None)
         with self.device:
             te = time.time()
+            if ckp_version is not None:
+                self.initialize_checkpointing(ckp_version)
             self.loader.initialize(self.mode)
             self.model.train(False)
             self.loader.init_epoch()
