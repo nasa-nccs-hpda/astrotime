@@ -17,12 +17,12 @@ def tnorm(x: Tensor, dim: int=0) -> Tensor:
 
 class ModelEvaluator(object):
 
-    def __init__(self, cfg: DictConfig, version: str, loader: IterativeDataLoader, embedding: EmbeddingLayer, device ):
+    def __init__(self, cfg: DictConfig, version: str, loader: IterativeDataLoader, embedding: EmbeddingLayer, device, **kwargs ):
         self.embedding: EmbeddingLayer = embedding
         self.loader: IterativeDataLoader = loader
         self.cfg: DictConfig = cfg
         self.log = logging.getLogger()
-        self.model: nn.Module = get_model_from_cfg( cfg.model, device, embedding )
+        self.model: nn.Module = kwargs.get( 'model', get_model_from_cfg( cfg.model, device, embedding ) )
         self.device = device
         self._target_freq = None
         self._model_freq = None
