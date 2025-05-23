@@ -30,7 +30,7 @@ class IterativeTrainer(object):
         self.loader: IterativeDataLoader = loader
         self.cfg: DictConfig = cfg
         self.model: nn.Module = model
-        self.optimizer: optim.Optimizer = self.get_optimizer()
+        self.optimizer: optim.Optimizer = None
         self.log = logging.getLogger()
         self.loss: nn.Module = loss
         self._checkpoint_manager: CheckpointManager = None
@@ -126,6 +126,7 @@ class IterativeTrainer(object):
 
     def compute(self):
         print(f"SignalTrainer[{self.mode}]: , {self.nepochs} epochs, device={self.device}")
+        self.optimizer = self.get_optimizer()
         with self.device:
             for epoch in range(*self.epoch_range):
                 te = time.time()
