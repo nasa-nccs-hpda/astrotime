@@ -163,14 +163,13 @@ class SyntheticLoader(IterativeDataLoader):
 				if period > TE:
 					print(f"Dropping elem-{svid}: period={period:.3f} > TE={TE:.3f}, TD={TD:.3f}, maxP={self.period_range[1]:.3f}")
 					return None
-				elif 2*period > TE:
-					peak_idx: int = np.argmin(cy)
-					TP = ct[peak_idx] - ct[0]
-					i0 = 0 if (TP > period) else max( peak_idx - 10, 0 )
-					elem: np.ndarray = cz[:, i0:i0 + self.series_length]
-					return elem, period, stype
 				else:
-					i0: int = random.randint(0, ct.shape[0] - self.series_length)
+					if 2*period > TE:
+						peak_idx: int = np.argmin(cy)
+						TP = ct[peak_idx] - ct[0]
+						i0 = 0 if (TP > period) else min( max( peak_idx - 10, 0 ), ct.shape[0] - self.series_length )
+					else:
+						i0: int = random.randint(0, ct.shape[0] - self.series_length)
 					elem: np.ndarray = cz[:, i0:i0 + self.series_length]
 					return elem, period, stype
 		except KeyError as err:
