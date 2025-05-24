@@ -152,8 +152,7 @@ class SyntheticLoader(IterativeDataLoader):
 			dst: xa.DataArray = self.dataset['t'+svid]
 			period = dsy.attrs["period"]
 			stype = dsy.attrs["type"]
-			nanmask = ~np.isnan(dsy.values)
-			ct, cy = dst.values[nanmask], dsy.values[nanmask]
+			ct, cy = dst.values, dsy.values
 			cz: np.ndarray = np.stack([ct,cy],axis=0)
 			if cz.shape[1] < self.series_length:
 				return None

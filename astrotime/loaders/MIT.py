@@ -31,6 +31,7 @@ class MITLoader(IterativeDataLoader):
 		self.tset: TSet = None
 		self._nbatches = -1
 		self.test_mode_index = self.TestModes.index( cfg.test_mode )
+		self.refresh = kwargs.get('refresh',False)
 		self._TICS = None
 
 	def initialize(self, tset: TSet, **kwargs ):
@@ -145,8 +146,7 @@ class MITLoader(IterativeDataLoader):
 
 	def _load_cache_dataset( self, sector_index ):
 		t0 = time.time()
-		if self.loaded_sector != sector_index:
-			self.refresh()
+		if self.loaded_sector != sector_index: self.dataset = None
 		if self.dataset is None:
 			dspath: str = self.cache_path(sector_index)
 			if os.path.exists(dspath):
@@ -166,16 +166,14 @@ class MITLoader(IterativeDataLoader):
 
 	def load_sector( self, sector: int, **kwargs ) -> bool:
 		t0 = time.time()
-		refresh = kwargs.get('refresh',False)
-		min_size = kwargs.get('min_size', 512)
 		if (self.loaded_sector != sector) or (self.dataset is None):
 			self._read_TICS(sector)
 			self.log.info(f" Loading sector {sector}, loaded_sector={self.loaded_sector}, #TICS={len(self._TICS)}, refresh={refresh}")
-			if refresh: self.refresh()
+			if self.refresh: self.dataset = None
 			else:       self._load_cache_dataset(sector)
 			if self.dataset is None:
-				xarrays: Dict[str,xa.DataArray] = {}
 				ymax = 0.0
+				elems = []
 				for iT, TIC in enumerate(self._TICS):
 					data_file = self.bls_file_path(sector,TIC)
 					lc_file = self.lc_file_path(sector, TIC)
@@ -183,19 +181,24 @@ class MITLoader(IterativeDataLoader):
 						dfbls = pd.read_csv( data_file, header=None, names=['Header', 'Data'] )
 						dfbls = dfbls.set_index('Header').T
 						period: float = np.float64(dfbls['per'].values[0])
-						if self.in_range(period) and os.path.exists(lc_file):
+						if os.path.exists(lc_file):
 							sn: float = np.float64(dfbls['sn'].values[0])
 							dflc = pd.read_csv( lc_file, header=None, sep='\s+')
 							nan_mask = ~np.isnan(dflc[1].values)
 							t, y = dflc[0].values[nan_mask], dflc[1].values[nan_mask]
-							if y.size > min_size:
-								ym = y.max()
-								if ym > ymax: ymax = ym
-								xarrays[ TIC + ".time" ] = xa.DataArray( t, dims=TIC+".obs" )
-								xarrays[ TIC + ".y" ]    = xa.DataArray( y, dims=TIC+".obs", attrs=dict(sn=sn,period=period) )
+							ym = y.max()
+							if ym > ymax: ymax = ym
+							signal = dict( t=xa.DataArray( name=TIC + ".time", data=t, dims=TIC+".obs" ),
+										   y = xa.DataArray( name=TIC + ".y", data=y, dims=TIC+".obs", attrs=dict(sn=sn,period=period) ) )
+							elems.append( (y.size[0],signal) )
 					except Exception as e:
 						self.log.info(f" ERROR loading TIC {TIC} from file {data_file}, lc_file={lc_file}: {e}")
 
+				xarrays: Dict[str, xa.DataArray] = {}
+				for elem in sorted(elems):
+					edata = elem[1]
+					xarrays[ edata['y'].name ] = edata['y']
+					xarrays[ edata['t'].name ] = edata['t']
 				self.dataset = xa.Dataset( xarrays, attrs=dict(ymax=ymax) )
 				t1 = time.time()
 				self.log.info(f" Loaded sector {sector} files in {t1-t0:.3f} sec")
@@ -285,9 +288,6 @@ class MITLoader(IterativeDataLoader):
 		self._nbatches = math.ceil( self.train_data['t'].shape[0] / self.cfg.batch_size )
 		self._TICS = tics
 		self.log.info( f"get_training_data: nbatches={self._nbatches}, t{self.train_data['t'].shape}, y{self.train_data['y'].shape}, p{self.train_data['period'].shape}")
-
-	def refresh(self):
-		self.dataset = None
 
 	def ftics(self, n: int ):
 		return n / len(self._TICS)
