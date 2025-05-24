@@ -225,7 +225,7 @@ class MITLoader(IterativeDataLoader):
 			TD = ct[-1] - ct[0]
 			TE = ct[self.series_length] - ct[0]
 			if period > TE:
-				print(f"Dropping elem-{TIC}: period={period:.3f} > TE={TE:.3f}, TD={TD:.3f}, maxP={self.period_range[1]:.3f}")
+				print(f"Dropping elem-{TIC}: period={period:.3f} > TE={TE:.3f}, TD={TD:.3f}, maxP={self.period_range[1]:.3f}, series_length={self.series_length}")
 				return None
 			else:
 				if 2*period > TE:
