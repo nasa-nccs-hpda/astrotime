@@ -206,34 +206,30 @@ class MITLoader(IterativeDataLoader):
 		return False
 
 	def get_elem_slice(self,TIC: str) -> Optional[Tuple[np.ndarray,float,float]]:
-		try:
-			dsy: xa.DataArray = self.dataset[TIC+".time"]
-			dst: xa.DataArray = self.dataset[TIC+".y"]
-			period = dsy.attrs["period"]
-			snr = dsy.attrs["sn"]
-			nanmask = ~np.isnan(dsy.values)
-			ct, cy = dst.values[nanmask], dsy.values[nanmask]
-			cz: np.ndarray = np.stack([ct,cy],axis=0)
-			if (cz.shape[1] < self.series_length) or (snr<self.snr_min) or (snr>self.snr_max) or (not self.in_range(period)):
+		dst: xa.DataArray = self.dataset[TIC+".time"]
+		dsy: xa.DataArray = self.dataset[TIC+".y"]
+		period = dsy.attrs["period"]
+		snr = dsy.attrs["sn"]
+		nanmask = ~np.isnan(dsy.values)
+		ct, cy = dst.values[nanmask], dsy.values[nanmask]
+		cz: np.ndarray = np.stack([ct,cy],axis=0)
+		if (cz.shape[1] < self.series_length) or (snr<self.snr_min) or (snr>self.snr_max) or (not self.in_range(period)):
+			return None
+		else:
+			TD = ct[-1] - ct[0]
+			TE = ct[self.series_length] - ct[0]
+			if period > TE:
+				print(f"Dropping elem-{TIC}: period={period:.3f} > TE={TE:.3f}, TD={TD:.3f}, maxP={self.period_range[1]:.3f}")
 				return None
 			else:
-				TD = ct[-1] - ct[0]
-				TE = ct[self.series_length] - ct[0]
-				if period > TE:
-					print(f"Dropping elem-{TIC}: period={period:.3f} > TE={TE:.3f}, TD={TD:.3f}, maxP={self.period_range[1]:.3f}")
-					return None
+				if 2*period > TE:
+					peak_idx: int = np.argmin(cy)
+					TP = ct[peak_idx] - ct[0]
+					i0 = 0 if (TP > period) else min( max( peak_idx - 10, 0 ), ct.shape[0] - self.series_length )
 				else:
-					if 2*period > TE:
-						peak_idx: int = np.argmin(cy)
-						TP = ct[peak_idx] - ct[0]
-						i0 = 0 if (TP > period) else min( max( peak_idx - 10, 0 ), ct.shape[0] - self.series_length )
-					else:
-						i0: int = random.randint(0, ct.shape[0] - self.series_length)
-					elem: np.ndarray = cz[:, i0:i0 + self.series_length]
-					return elem, period, snr
-		except KeyError as err:
-			print(f"KeyError for elem-{TIC}: {err} <-> dset-vars={list(self.dataset.data_vars.keys())}")
-			return None
+					i0: int = random.randint(0, ct.shape[0] - self.series_length)
+				elem: np.ndarray = cz[:, i0:i0 + self.series_length]
+				return elem, period, snr
 
 	def get_largest_block( self, TIC: str ) -> np.ndarray:
 		threshold = self.cfg.block_gap_threshold
