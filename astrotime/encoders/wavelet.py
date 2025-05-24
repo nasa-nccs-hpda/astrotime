@@ -223,7 +223,7 @@ class WaveletAnalysisLayer(EmbeddingLayer):
 
 	@property
 	def nfeatures(self):
-		return self.nharmonics + 4
+		return 2 if self.fold_harmonic else 1
 
 	def magnitude(self, embedding: Tensor) -> np.ndarray:
 		self.init_log(f" -> Embedding magnitude{embedding.shape}")
