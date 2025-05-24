@@ -213,7 +213,13 @@ class MITLoader(IterativeDataLoader):
 		nanmask = ~np.isnan(dsy.values)
 		ct, cy = dst.values[nanmask], dsy.values[nanmask]
 		cz: np.ndarray = np.stack([ct,cy],axis=0)
-		if (cz.shape[1] < self.series_length) or (snr<self.snr_min) or (snr>self.snr_max) or (not self.in_range(period)):
+		if cz.shape[1] < self.series_length:
+			print(f"Dropping elem-{TIC}: series_length={self.series_length} > data_length={cz.shape[1]}")
+			return None
+		elif not self.in_range(period):
+			print(f"Dropping elem-{TIC}: period={period} out of range={self.period_range}")
+			return None
+		elif (snr<self.snr_min) or (snr>self.snr_max):
 			return None
 		else:
 			TD = ct[-1] - ct[0]
