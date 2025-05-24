@@ -205,14 +205,35 @@ class MITLoader(IterativeDataLoader):
 			return True
 		return False
 
-	def get_elem_slice(self,TIC: str):
-		ctime: np.ndarray = self.dataset[TIC+".time"].values.squeeze()
-		cy: np.ndarray = self.dataset[TIC+".y"].values.squeeze()
-		cz = np.stack([ctime,cy],axis=0)
-		if cz.shape[1] >= self.series_length:
-			rv = cz[:,:self.series_length]
-			return rv
-		return None
+	def get_elem_slice(self,TIC: str) -> Optional[Tuple[np.ndarray,float,float]]:
+		try:
+			dsy: xa.DataArray = self.dataset[TIC+".time"]
+			dst: xa.DataArray = self.dataset[TIC+".y"]
+			period = dsy.attrs["period"]
+			snr = dsy.attrs["sn"]
+			nanmask = ~np.isnan(dsy.values)
+			ct, cy = dst.values[nanmask], dsy.values[nanmask]
+			cz: np.ndarray = np.stack([ct,cy],axis=0)
+			if (cz.shape[1] < self.series_length) or (snr<self.snr_min) or (snr>self.snr_max) or (not self.in_range(period)):
+				return None
+			else:
+				TD = ct[-1] - ct[0]
+				TE = ct[self.series_length] - ct[0]
+				if period > TE:
+					print(f"Dropping elem-{TIC}: period={period:.3f} > TE={TE:.3f}, TD={TD:.3f}, maxP={self.period_range[1]:.3f}")
+					return None
+				else:
+					if 2*period > TE:
+						peak_idx: int = np.argmin(cy)
+						TP = ct[peak_idx] - ct[0]
+						i0 = 0 if (TP > period) else min( max( peak_idx - 10, 0 ), ct.shape[0] - self.series_length )
+					else:
+						i0: int = random.randint(0, ct.shape[0] - self.series_length)
+					elem: np.ndarray = cz[:, i0:i0 + self.series_length]
+					return elem, period, snr
+		except KeyError as err:
+			print(f"KeyError for elem-{TIC}: {err} <-> dset-vars={list(self.dataset.data_vars.keys())}")
+			return None
 
 	def get_largest_block( self, TIC: str ) -> np.ndarray:
 		threshold = self.cfg.block_gap_threshold
@@ -247,22 +268,13 @@ class MITLoader(IterativeDataLoader):
 		periods, sns, tics, xp0, xp1, xt, xx  = [], [], [], 0, 0, 0, 0
 		for TIC in self._TICS:
 			if TIC+".y" in self.dataset.data_vars:
-				cy: xa.DataArray = self.dataset[TIC+".y"]
-				p  = cy.attrs["period"]
-				sn = cy.attrs["sn"]
-				if self.in_range(p):
-					eslice = self.get_elem_slice(TIC)
-					if (eslice is not None) and (sn > self.snr_min) and (sn < self.snr_max):
-						elems.append(eslice)
-						periods.append(p)
-						sns.append(sn)
-						tics.append(TIC)
-					else: xt = xt + 1
-				else:
-					if p < self.period_range[0]: xp0 = xp0 + 1
-					if p > self.period_range[1]: xp1 = xp1 + 1
-			else: xx = xx + 1
-
+				eslice = self.get_elem_slice(TIC)
+				if eslice is not None:
+					elem, period, sn = eslice
+					elems.append(elem)
+					periods.append(period)
+					sns.append(sn)
+					tics.append(TIC)
 		z = np.stack(elems,axis=0)
 		self.train_data['t'] = z[:,0,:]
 		self.train_data['y'] = z[:,1,:]
