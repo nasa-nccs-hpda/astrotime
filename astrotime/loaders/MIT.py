@@ -280,7 +280,7 @@ class MITLoader(IterativeDataLoader):
 		z = np.stack(elems,axis=0)
 		self.train_data['t'] = z[:,0,:]
 		self.train_data['y'] = z[:,1,:]
-		self.train_data['p'] = np.array(periods)
+		self.train_data['period'] = np.array(periods)
 		self.train_data['sn'] = np.array(sns)
 		ntic0, ntic1 = len(tics), len(self._TICS)
 		self._nbatches = math.ceil( self.train_data['t'].shape[0] / self.cfg.batch_size )
