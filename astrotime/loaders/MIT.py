@@ -145,7 +145,7 @@ class MITLoader(IterativeDataLoader):
 		t0 = time.time()
 		if (self.loaded_sector != sector) or (self.dataset is None):
 			self._read_TICS(sector)
-			self.log.info(f" Loading sector {sector}, loaded_sector={self.loaded_sector}, #TICS={len(self._TICS)}")
+			print(f" Loading sector {sector}, loaded_sector={self.loaded_sector}, #TICS={len(self._TICS)}, refresh={self.refresh}")
 			if self.refresh: self.dataset = None
 			else:       self._load_cache_dataset(sector)
 			if self.dataset is None:
@@ -177,7 +177,7 @@ class MITLoader(IterativeDataLoader):
 					xarrays[ edata['t'].name ] = edata['t']
 				self.dataset = xa.Dataset( xarrays, attrs=dict(ymax=ymax) )
 				t1 = time.time()
-				self.log.info(f" Loaded sector {sector} files in {t1-t0:.3f} sec")
+				print(f" Loaded sector {sector} files in {t1-t0:.3f} sec, lens={[elem[0] for elem in elems]}")
 				self.dataset.to_netcdf( self.cache_path(sector), engine="netcdf4" )
 			self.loaded_sector = sector
 			return True
