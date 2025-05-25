@@ -20,7 +20,6 @@ class MITLoader(IterativeDataLoader):
 		self.sector_shuffle = list( range(self.sector_range[0],self.sector_range[1]) )
 		self.snr_min = cfg.get('snr_min',0.0)
 		self.snr_max = cfg.get('snr_max', 1e6)
-		self.series_length = cfg.series_length
 		self.period_range: Tuple[float,float] = None
 		self.current_sector = None
 		self.loaded_sector = None
@@ -216,10 +215,10 @@ class MITLoader(IterativeDataLoader):
 				if 2*period > TD:
 					peak_idx: int = np.argmin(cy)
 					TP = ct[peak_idx] - ct[0]
-					i0 = 0 if (TP > period) else min( max( peak_idx - 10, 0 ), ct.shape[0] - series_length )
+					i0 = 0 if (TP > period) else min( max( peak_idx - 10, 0 ), ct.shape[0]-series_length )
 				else:
-					i0: int = random.randint(0, ct.shape[0] - series_length)
-				elem: np.ndarray = cz[:, i0:i0 + self.series_length]
+					i0: int = random.randint(0, ct.shape[0]-series_length)
+				elem: np.ndarray = cz[:,i0:i0+series_length]
 				return elem, period, snr
 
 	def in_range(self, p: float) -> bool:
