@@ -29,7 +29,7 @@ class MITLoader(IterativeDataLoader):
 		self.synthetic = PlanetCrossingDataGenerator(cfg)
 		self.tset: TSet = None
 		self.test_mode_index = self.TestModes.index( cfg.test_mode )
-		self.refresh = kwargs.get('refresh',False)
+		self.refresh = kwargs.get('refresh',cfg.refresh)
 		self._TICS = None
 
 	def initialize(self, tset: TSet, **kwargs ):
