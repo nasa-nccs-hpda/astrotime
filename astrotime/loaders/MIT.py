@@ -166,10 +166,11 @@ class MITLoader(IterativeDataLoader):
 						if ym > ymax: ymax = ym
 						signal = dict( t=xa.DataArray( name=TIC + ".time", data=t, dims=TIC+".obs" ),
 									   y = xa.DataArray( name=TIC + ".y", data=y, dims=TIC+".obs", attrs=dict(sn=sn,period=period) ) )
-						elems.append( (y.shape[0],signal) )
+						elems.append( (int(y.shape[0]),signal) )
 
 				xarrays: Dict[str, xa.DataArray] = {}
-				for elem in sorted(elems):
+				elems = sorted(elems)
+				for elem in elems:
 					edata = elem[1]
 					xarrays[ edata['y'].name ] = edata['y']
 					xarrays[ edata['t'].name ] = edata['t']
