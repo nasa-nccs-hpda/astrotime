@@ -4,7 +4,7 @@ cache_path:  "${platform.project_root}/cache/data/MIT"
 sector_range:
   - 59
   - 83
-batch_size: 16
+batch_size: 10
 nfreq_oct: 512                     # Number of frequency values (log2 spaced) in each octave
 base_freq:  0.01                    # Start frequency of base freq range
 noctaves: 9                        # Number of octaves in base freq range
