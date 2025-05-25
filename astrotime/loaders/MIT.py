@@ -177,7 +177,7 @@ class MITLoader(IterativeDataLoader):
 					xarrays[ edata['t'].name ] = edata['t']
 				self.dataset = xa.Dataset( xarrays, attrs=dict(ymax=ymax) )
 				t1 = time.time()
-				self.log.info(f" Loaded sector {sector} files in {t1-t0:.3f} sec, vars = {list(xarrays.keys())}")
+				self.log.info(f" Loaded sector {sector} files in {t1-t0:.3f} sec")
 				self.dataset.to_netcdf( self.cache_path(sector), engine="netcdf4" )
 			self.loaded_sector = sector
 			return True
@@ -209,6 +209,7 @@ class MITLoader(IterativeDataLoader):
 					TP = ct[peak_idx] - ct[0]
 					i0 = 0 if (TP > period) else min( max( peak_idx - 10, 0 ), ct.shape[0]-series_length )
 				else:
+					print(f"Elem series_length={series_length}, ct.shape[0]={ct.shape[0]}, randint max={ct.shape[0]-series_length}")
 					i0: int = random.randint(0, ct.shape[0]-series_length)
 				elem: np.ndarray = cz[:,i0:i0+series_length]
 				return elem, period, snr
