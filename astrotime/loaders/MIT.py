@@ -167,7 +167,7 @@ class MITLoader(IterativeDataLoader):
 							if ym > ymax: ymax = ym
 							signal = dict( t=xa.DataArray( name=TIC + ".time", data=t, dims=TIC+".obs" ),
 										   y = xa.DataArray( name=TIC + ".y", data=y, dims=TIC+".obs", attrs=dict(sn=sn,period=period) ) )
-							elems.append( (int(y.shape[0]),signal) )
+							elems.append( (int(y.shape[0]),signal,TIC) )
 
 				xarrays: Dict[str, xa.DataArray] = {}
 				elems.sort(key=lambda x: x[0])
@@ -176,6 +176,7 @@ class MITLoader(IterativeDataLoader):
 					xarrays[ edata['y'].name ] = edata['y']
 					xarrays[ edata['t'].name ] = edata['t']
 				self.dataset = xa.Dataset( xarrays, attrs=dict(ymax=ymax) )
+				self._TICS = [ elem[2] for elem in elems ]
 				t1 = time.time()
 				print(f" Loaded sector {sector} files in {t1-t0:.3f} sec, lens={[elem[0] for elem in elems]}")
 				self.dataset.to_netcdf( self.cache_path(sector), engine="netcdf4" )
