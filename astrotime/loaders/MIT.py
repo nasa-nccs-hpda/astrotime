@@ -170,7 +170,7 @@ class MITLoader(IterativeDataLoader):
 							elems.append( (int(y.shape[0]),signal) )
 
 				xarrays: Dict[str, xa.DataArray] = {}
-				elems = sorted(elems)
+				elems.sort(key=lambda x: x[0])
 				for elem in elems:
 					edata = elem[1]
 					xarrays[ edata['y'].name ] = edata['y']
