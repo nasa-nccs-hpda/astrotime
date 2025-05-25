@@ -162,11 +162,12 @@ class MITLoader(IterativeDataLoader):
 						dflc = pd.read_csv( lc_file, header=None, sep='\s+')
 						nan_mask = ~np.isnan(dflc[1].values)
 						t, y = dflc[0].values[nan_mask], dflc[1].values[nan_mask]
-						ym = y.max()
-						if ym > ymax: ymax = ym
-						signal = dict( t=xa.DataArray( name=TIC + ".time", data=t, dims=TIC+".obs" ),
-									   y = xa.DataArray( name=TIC + ".y", data=y, dims=TIC+".obs", attrs=dict(sn=sn,period=period) ) )
-						elems.append( (int(y.shape[0]),signal) )
+						if y.size > 0:
+							ym = y.max()
+							if ym > ymax: ymax = ym
+							signal = dict( t=xa.DataArray( name=TIC + ".time", data=t, dims=TIC+".obs" ),
+										   y = xa.DataArray( name=TIC + ".y", data=y, dims=TIC+".obs", attrs=dict(sn=sn,period=period) ) )
+							elems.append( (int(y.shape[0]),signal) )
 
 				xarrays: Dict[str, xa.DataArray] = {}
 				elems = sorted(elems)
