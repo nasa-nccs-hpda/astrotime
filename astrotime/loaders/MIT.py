@@ -145,7 +145,7 @@ class MITLoader(IterativeDataLoader):
 		t0 = time.time()
 		if (self.loaded_sector != sector) or (self.dataset is None):
 			self._read_TICS(sector)
-			self.log.info(f" Loading sector {sector}, loaded_sector={self.loaded_sector}, #TICS={len(self._TICS)}, refresh={refresh}")
+			self.log.info(f" Loading sector {sector}, loaded_sector={self.loaded_sector}, #TICS={len(self._TICS)}")
 			if self.refresh: self.dataset = None
 			else:       self._load_cache_dataset(sector)
 			if self.dataset is None:
