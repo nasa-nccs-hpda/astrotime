@@ -192,7 +192,7 @@ class MITLoader(IterativeDataLoader):
 			return True
 		return False
 
-	def get_elem_slice(self,TIC: str) -> Optional[Tuple[np.ndarray,float,float]]:
+	def get_elem_slice(self, TIC: str, series_length: int = -1 ) -> Optional[Tuple[np.ndarray,float,float]]:
 		dst: xa.DataArray = self.dataset[TIC+".time"]
 		dsy: xa.DataArray = self.dataset[TIC+".y"]
 		period = dsy.attrs["period"]
@@ -200,34 +200,27 @@ class MITLoader(IterativeDataLoader):
 		nanmask = ~np.isnan(dsy.values)
 		ct, cy = dst.values[nanmask], dsy.values[nanmask]
 		cz: np.ndarray = np.stack([ct,cy],axis=0)
-		if cz.shape[1] < self.series_length:
-			print(f"Dropping elem-{TIC}: series_length={self.series_length} > data_length={cz.shape[1]}")
-			return None
-		elif not self.in_range(period):
+		if series_length == -1:
+			series_length = cz.shape[1]
+		if not self.in_range(period):
 			print(f"Dropping elem-{TIC}: period={period} out of range={self.period_range}")
 			return None
 		elif (snr<self.snr_min) or (snr>self.snr_max):
 			return None
 		else:
 			TD = ct[-1] - ct[0]
-			TE = ct[self.series_length] - ct[0]
-			if period > TE:
-				print(f"Dropping elem-{TIC}: period={period:.3f} > TE={TE:.3f}, TD={TD:.3f}, maxP={self.period_range[1]:.3f}, series_length={self.series_length}")
+			if period > TD:
+				print(f"Dropping elem-{TIC}: period={period:.3f} > TD={TD:.3f}, maxP={self.period_range[1]:.3f}, series_length={series_length}")
 				return None
 			else:
-				if 2*period > TE:
+				if 2*period > TD:
 					peak_idx: int = np.argmin(cy)
 					TP = ct[peak_idx] - ct[0]
-					i0 = 0 if (TP > period) else min( max( peak_idx - 10, 0 ), ct.shape[0] - self.series_length )
+					i0 = 0 if (TP > period) else min( max( peak_idx - 10, 0 ), ct.shape[0] - series_length )
 				else:
-					i0: int = random.randint(0, ct.shape[0] - self.series_length)
+					i0: int = random.randint(0, ct.shape[0] - series_length)
 				elem: np.ndarray = cz[:, i0:i0 + self.series_length]
 				return elem, period, snr
-
-	def get_batch_element(self, bz: np.ndarray) -> np.ndarray:
-		center = bz.shape[1] // 2
-		bdata = bz[:,center-self.series_length//2:center+self.series_length//2]
-		return bdata
 
 	def in_range(self, p: float) -> bool:
 		if self.period_range is None: return True
@@ -235,17 +228,18 @@ class MITLoader(IterativeDataLoader):
 
 	def get_training_batch(self, batch_start: int) -> Dict[str,np.ndarray]:
 		self.log.info(f"\nupdate_training_data(sector={self.loaded_sector}), period_range={self.period_range}\n")
-		elems, ielem = [], 0
+		elems, ielem, series_length = [], 0, -1
 		periods, sns, tics  = [], [], []
 		for ielem in range(batch_start,len(self._TICS)):
 			TIC = self._TICS[ielem]
-			eslice = self.get_elem_slice(TIC)
+			eslice = self.get_elem_slice(TIC,series_length)
 			if eslice is not None:
 				elem, period, sn = eslice
 				elems.append(elem)
 				periods.append(period)
 				sns.append(sn)
 				tics.append(TIC)
+				series_length = elem.shape[1]
 			if len(elems) >= self.cfg.batch_size: break
 		z = np.stack(elems,axis=0)
 		train_data = dict( batch_end=ielem, t=z[:,0,:], y = z[:,1,:], period = np.array(periods), sn = np.array(sns), sector=self.current_sector, TICS=np.array(tics) )
