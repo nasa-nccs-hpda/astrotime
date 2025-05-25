@@ -74,31 +74,16 @@ class MITLoader(IterativeDataLoader):
 
 		if self.current_sector >= 0:
 			self.load_sector(self.current_sector)
-			batch_start = self.sector_batch_offset
-			batch_end   = batch_start+self.cfg.batch_size
-			result: RDict = { k: self.train_data[k][batch_start:batch_end] for k in ['t','y','period','sn'] }
-			result['TICS'] = self._TICS[batch_start:batch_end]
-			result['sector'] = self.current_sector
-			self.sector_batch_offset = batch_end
+			result: RDict = self.get_training_batch( self.sector_batch_offset )
+			self.sector_batch_offset = result.pop('batch_end')+1
 			if self.test_mode_index == 2:
 				result = self.synthetic.process_batch( result, **self.params )
 			return result
 		return None
 
-	def get_batch( self, sector_index: int, batch_index: int ) -> Optional[Dict[str,np.ndarray]]:
-		self.load_sector(sector_index)
-		batch_start = self.sector_batch_offset*batch_index
-		batch_end   = batch_start+self.cfg.batch_size
-		result = { k: self.train_data[k][batch_start:batch_end] for k in ['t','y','p','sn'] }
-		result['TICS'] = self._TICS[batch_start:batch_end]
-		result['sector'] = self.current_sector
-		if self.test_mode_index == 2:
-			result = self.synthetic.process_batch(result)
-		return result
-
 	def get_element( self, sector_index: int, element_index: int ) -> Optional[Dict[str,Union[np.ndarray,float]]]:
 		self.load_sector(sector_index)
-		element_data = { k: self.train_data[k][element_index] for k in ['t','y','p','sn'] }
+		element_data = self.get_training_element( element_index )
 		if   self.test_mode_index == 1:
 			element_data['y'] = np.sin( 2*np.pi*element_data['t'] / element_data['p'] )
 		elif   self.test_mode_index == 2:
@@ -204,7 +189,6 @@ class MITLoader(IterativeDataLoader):
 				self.log.info(f" Loaded sector {sector} files in {t1-t0:.3f} sec")
 				self.dataset.to_netcdf( self.cache_path(sector), engine="netcdf4" )
 			self.loaded_sector = sector
-			self.update_training_data()
 			return True
 		return False
 
@@ -240,24 +224,6 @@ class MITLoader(IterativeDataLoader):
 				elem: np.ndarray = cz[:, i0:i0 + self.series_length]
 				return elem, period, snr
 
-	def get_largest_block( self, TIC: str ) -> np.ndarray:
-		threshold = self.cfg.block_gap_threshold
-		ctime: np.ndarray = self.dataset[TIC+".time"].values.squeeze()
-		cy: np.ndarray = self.dataset[TIC+".y"].values.squeeze()
-		diff: np.ndarray = np.diff(ctime)
-		break_indices: np.ndarray = np.nonzero(diff > threshold)[0]
-		cz = np.stack([ctime,cy],axis=0)
-		if break_indices.size == 0:
-			bz = cz
-		elif break_indices.size == 1:
-			bz = cz[:,0:break_indices[0]] if (break_indices[0] >= ctime.size//2) else cz[:,break_indices[0]:]
-		else:
-			zblocks: List[np.ndarray] = np.array_split(cz, break_indices,axis=1)
-			bsizes: np.array = np.array([break_indices[0]] + np.diff(break_indices).tolist() + [ctime.size - break_indices[-1]])
-			idx_largest_block: np.ndarray = np.argmax(bsizes)
-			bz: np.array = zblocks[ idx_largest_block ]
-		return bz
-
 	def get_batch_element(self, bz: np.ndarray) -> np.ndarray:
 		center = bz.shape[1] // 2
 		bdata = bz[:,center-self.series_length//2:center+self.series_length//2]
@@ -267,30 +233,34 @@ class MITLoader(IterativeDataLoader):
 		if self.period_range is None: return True
 		return (p >= self.period_range[0]) and (p <= self.period_range[1])
 
-	def update_training_data(self):
+	def get_training_batch(self, batch_start: int) -> Dict[str,np.ndarray]:
 		self.log.info(f"\nupdate_training_data(sector={self.loaded_sector}), period_range={self.period_range}\n")
-		elems = []
+		elems, ielem = [], 0
 		periods, sns, tics  = [], [], []
-		for TIC in self._TICS:
-			if TIC+".y" in self.dataset.data_vars:
-				eslice = self.get_elem_slice(TIC)
-				if eslice is not None:
-					elem, period, sn = eslice
-					elems.append(elem)
-					periods.append(period)
-					sns.append(sn)
-					tics.append(TIC)
+		for ielem in range(batch_start,len(self._TICS)):
+			TIC = self._TICS[ielem]
+			eslice = self.get_elem_slice(TIC)
+			if eslice is not None:
+				elem, period, sn = eslice
+				elems.append(elem)
+				periods.append(period)
+				sns.append(sn)
+				tics.append(TIC)
+			if len(elems) >= self.cfg.batch_size: break
 		z = np.stack(elems,axis=0)
-		self.train_data['t'] = z[:,0,:]
-		self.train_data['y'] = z[:,1,:]
-		self.train_data['period'] = np.array(periods)
-		self.train_data['sn'] = np.array(sns)
-		self._nbatches = math.ceil( self.train_data['t'].shape[0] / self.cfg.batch_size )
-		self._TICS = tics
-		self.log.info( f"get_training_data: nbatches={self._nbatches}, t{self.train_data['t'].shape}, y{self.train_data['y'].shape}, p{self.train_data['period'].shape}")
+		train_data = dict( batch_end=ielem, t=z[:,0,:], y = z[:,1,:], period = np.array(periods), sn = np.array(sns), sector=self.current_sector, TICS=np.array(tics) )
+		self.log.info( f"get_training_batch({batch_start}), t{train_data['t'].shape}, y{train_data['y'].shape}, p{train_data['period'].shape}")
+		return train_data
 
-	def ftics(self, n: int ):
-		return n / len(self._TICS)
+	def get_training_element(self, element_index: int) -> Dict[str,np.ndarray]:
+		self.log.info(f"\nupdate_training_data(sector={self.loaded_sector}), period_range={self.period_range}\n")
+		TIC = self._TICS[element_index]
+		eslice = self.get_elem_slice(TIC)
+		train_data = None
+		if eslice is not None:
+			elem, period, sn = eslice
+			train_data = dict( t=elem[0], y=elem[1], period=period, sn=sn, sector=self.current_sector, TIC=TIC)
+		return train_data
 
 
 class MITOctavesLoader(MITLoader):

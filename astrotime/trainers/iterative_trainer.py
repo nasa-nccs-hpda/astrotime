@@ -98,10 +98,6 @@ class IterativeTrainer(object):
             if dset is not None:
                 return self.encode_batch(dset)
 
-    def get_batch(self, dset_idx: int, ibatch: int) -> Optional[TRDict]:
-        dset: Optional[RDict] = self.loader.get_batch(dset_idx,ibatch)
-        return None if (dset is None) else self.encode_batch(dset)
-
     @property
     def mode(self) -> TSet:
         return TSet.Validation if self.cfg.mode.startswith("val") else TSet.Train
