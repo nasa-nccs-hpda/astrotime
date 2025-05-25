@@ -178,7 +178,7 @@ class MITLoader(IterativeDataLoader):
 					xarrays[ edata['t'].name ] = edata['t']
 				self.dataset = xa.Dataset( xarrays, attrs=dict(ymax=ymax) )
 				t1 = time.time()
-				self.log.info(f" Loaded sector {sector} files in {t1-t0:.3f} sec")
+				self.log.info(f" Loaded sector {sector} files in {t1-t0:.3f} sec, vars = {list(xarrays.keys())}")
 				self.dataset.to_netcdf( self.cache_path(sector), engine="netcdf4" )
 			self.loaded_sector = sector
 			return True
