@@ -16,19 +16,18 @@ class MITLoader(IterativeDataLoader):
 		super().__init__()
 		self.cfg = cfg
 		self.sector_range = cfg.sector_range
-		self.sector_index = 0
+		self.sector_index = -1
+		self.sector_batch_offset = None
 		self.sector_shuffle = list( range(self.sector_range[0],self.sector_range[1]) )
 		self.snr_min = cfg.get('snr_min',0.0)
 		self.snr_max = cfg.get('snr_max', 1e6)
 		self.period_range: Tuple[float,float] = None
 		self.current_sector = None
 		self.loaded_sector = None
-		self.sector_batch_offset = None
 		self.dataset: Optional[xa.Dataset] = None
 		self.train_data: Dict[str,np.ndarray] = {}
 		self.synthetic = PlanetCrossingDataGenerator(cfg)
 		self.tset: TSet = None
-		self._nbatches = -1
 		self.test_mode_index = self.TestModes.index( cfg.test_mode )
 		self.refresh = kwargs.get('refresh',False)
 		self._TICS = None
@@ -40,11 +39,9 @@ class MITLoader(IterativeDataLoader):
 		self.init_epoch()
 
 	def init_epoch(self):
-		self.sector_batch_offset = 0
-		self.sector_index = 0
-		self._nbatches = -1
+		self.sector_index = -1
+		self.sector_batch_offset = None
 		random.shuffle(self.sector_shuffle)
-		self.current_sector = self.sector_shuffle[self.sector_index]
 
 	def update_test_mode(self):
 		self.test_mode_index = (self.test_mode_index + 1) % len(self.TestModes)
@@ -59,8 +56,8 @@ class MITLoader(IterativeDataLoader):
 		return self.sector_range[1]-self.sector_range[0] + 1
 
 	def get_next_batch( self ) -> Optional[RDict]:
-		ibatch = self.sector_batch_offset//self.cfg.batch_size
-		if (self._nbatches > 0) and ( ibatch>= self._nbatches-1):
+		if self.sector_batch_offset is None:
+			self.sector_batch_offset = 0
 			if self.tset == TSet.Validation:
 				self.current_sector = -1
 			else:
@@ -68,13 +65,14 @@ class MITLoader(IterativeDataLoader):
 				if self.sector_index == len(self.sector_shuffle):
 					raise StopIteration
 				self.current_sector = self.sector_shuffle[self.sector_index]
-				self.sector_batch_offset = 0
 				self.log.info(f"Init Dataset: sector={self.current_sector}, sector_batch_offset={self.sector_batch_offset}")
 
 		if self.current_sector >= 0:
 			self.load_sector(self.current_sector)
 			result: RDict = self.get_training_batch( self.sector_batch_offset )
 			self.sector_batch_offset = result.pop('batch_end')+1
+			if self.sector_batch_offset >= len(self._TICS):
+				self.sector_batch_offset = None
 			if self.test_mode_index == 2:
 				result = self.synthetic.process_batch( result, **self.params )
 			return result
@@ -88,11 +86,6 @@ class MITLoader(IterativeDataLoader):
 		elif   self.test_mode_index == 2:
 			element_data['y'] = self.synthetic.signal(element_data['t'], element_data['p'], **self.params)
 		return element_data
-
-	@property
-	def nbatches(self) -> int:
-		ne = self.nelements
-		return -1 if (ne == -1) else ne//self.cfg.batch_size
 
 	@property
 	def nelements(self) -> int:
