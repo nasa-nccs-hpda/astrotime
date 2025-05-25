@@ -236,7 +236,7 @@ class MITLoader(IterativeDataLoader):
 				series_length = elem.shape[1]
 			if len(elems) >= self.cfg.batch_size: break
 		z = np.stack(elems,axis=0)
-		train_data = dict( batch_end=ielem, t=z[:,0,:], y = z[:,1,:], period = np.array(periods), sn = np.array(sns), sector=self.current_sector, TICS=np.array(tics) )
+		train_data = dict( batch_end=ielem, slen=series_length, t=z[:,0,:], y = z[:,1,:], period = np.array(periods), sn = np.array(sns), sector=self.current_sector, TICS=np.array(tics) )
 		self.log.info( f"get_training_batch({batch_start}), t{train_data['t'].shape}, y{train_data['y'].shape}, p{train_data['period'].shape}")
 		return train_data
 
