@@ -178,7 +178,7 @@ class MITLoader(IterativeDataLoader):
 				self.dataset = xa.Dataset( xarrays, attrs=dict(ymax=ymax) )
 				self._TICS = [ elem[2] for elem in elems ]
 				t1 = time.time()
-				print(f" Loaded sector {sector} files in {t1-t0:.3f} sec, lens={[elem[0] for elem in elems]}")
+				self.log.info(f" Loaded sector {sector} files in {t1-t0:.3f} sec")
 				self.dataset.to_netcdf( self.cache_path(sector), engine="netcdf4" )
 			self.loaded_sector = sector
 			return True
@@ -211,7 +211,7 @@ class MITLoader(IterativeDataLoader):
 				# 	TP = ct[peak_idx] - ct[0]
 				# 	i0 = 0 if (TP > period) else min( max( peak_idx - 10, 0 ), ct.shape[0]-series_length )
 				# else:
-				print(f"Elem-{ielem}: series_length={series_length}, ct.shape[0]={ct.shape[0]}, period={period}, TD={TD}")
+				self.log.debug(f"Elem-{ielem}: series_length={series_length}, ct.shape[0]={ct.shape[0]}, period={period}, TD={TD}")
 				i0: int = random.randint(0, ct.shape[0]-series_length)
 				elem: np.ndarray = cz[:,i0:i0+series_length]
 				return elem, period, snr, TIC
@@ -224,7 +224,7 @@ class MITLoader(IterativeDataLoader):
 		self.log.info(f"\nupdate_training_data(sector={self.loaded_sector}), period_range={self.period_range}\n")
 		elems, ielem, series_length = [], 0, -1
 		periods, sns, tics  = [], [], []
-		print(f"get_training_batch({batch_start})")
+		self.log.debug(f"get_training_batch({batch_start})")
 		for ielem in range(batch_start,len(self._TICS)):
 			eslice = self.get_elem_slice(ielem,series_length)
 			if eslice is not None:
