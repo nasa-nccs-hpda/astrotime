@@ -183,7 +183,8 @@ class MITLoader(IterativeDataLoader):
 			return True
 		return False
 
-	def get_elem_slice(self, TIC: str, series_length: int = -1 ) -> Optional[Tuple[np.ndarray,float,float]]:
+	def get_elem_slice(self, ielem: int, series_length: int = -1 ) -> Optional[Tuple[np.ndarray,float,float,str]]:
+		TIC = self._TICS[ielem]
 		dst: xa.DataArray = self.dataset[TIC+".time"]
 		dsy: xa.DataArray = self.dataset[TIC+".y"]
 		period = dsy.attrs["period"]
@@ -204,15 +205,15 @@ class MITLoader(IterativeDataLoader):
 				print(f"Dropping elem-{TIC}: period={period:.3f} > TD={TD:.3f}, maxP={self.period_range[1]:.3f}, series_length={series_length}")
 				return None
 			else:
-				if 2*period > TD:
-					peak_idx: int = np.argmin(cy)
-					TP = ct[peak_idx] - ct[0]
-					i0 = 0 if (TP > period) else min( max( peak_idx - 10, 0 ), ct.shape[0]-series_length )
-				else:
-					print(f"Elem series_length={series_length}, ct.shape[0]={ct.shape[0]}, sector={self.sector_index}, randint max={ct.shape[0]-series_length}")
-					i0: int = random.randint(0, ct.shape[0]-series_length)
+				# if 2*period > TD:
+				# 	peak_idx: int = np.argmin(cy)
+				# 	TP = ct[peak_idx] - ct[0]
+				# 	i0 = 0 if (TP > period) else min( max( peak_idx - 10, 0 ), ct.shape[0]-series_length )
+				# else:
+				print(f"Elem-{ielem}: series_length={series_length}, ct.shape[0]={ct.shape[0]}, period={period}, TD={TD}")
+				i0: int = random.randint(0, ct.shape[0]-series_length)
 				elem: np.ndarray = cz[:,i0:i0+series_length]
-				return elem, period, snr
+				return elem, period, snr, TIC
 
 	def in_range(self, p: float) -> bool:
 		if self.period_range is None: return True
@@ -224,10 +225,9 @@ class MITLoader(IterativeDataLoader):
 		periods, sns, tics  = [], [], []
 		print(f"get_training_batch({batch_start})")
 		for ielem in range(batch_start,len(self._TICS)):
-			TIC = self._TICS[ielem]
-			eslice = self.get_elem_slice(TIC,series_length)
+			eslice = self.get_elem_slice(ielem,series_length)
 			if eslice is not None:
-				elem, period, sn = eslice
+				elem, period, sn, TIC = eslice
 				elems.append(elem)
 				periods.append(period)
 				sns.append(sn)
