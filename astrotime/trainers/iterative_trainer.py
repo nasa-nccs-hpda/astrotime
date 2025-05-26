@@ -187,6 +187,17 @@ class IterativeTrainer(object):
                 L: np.array = np.array(losses)
                 print( f"Loss mean = {L.mean():.3f}, range=[{L.min():.3f} -> {L.max():.3f}]" )
 
+    def preprocess(self):
+        with self.device:
+            te = time.time()
+            self.loader.initialize(TSet.Validation)
+            self.loader.init_epoch()
+            try:
+                for ibatch in range(0,sys.maxsize):
+                    batch = self.get_next_batch()
+            except StopIteration:
+                print(f"Completed preprocess in {elapsed(te) / 60:.5f} min.")
+
 
 
 
