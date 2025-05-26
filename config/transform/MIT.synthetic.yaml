@@ -1,4 +1,3 @@
-series_length: ${data.series_length}  # Length of subset of input timeseries to process
 sparsity:   0.0                       # Fraction of observations to drop (randomly)
 batch_size: ${data.batch_size}      # Batch size for training
 nfreq_oct:  ${data.nfreq_oct}       # Number of frequency values (log2 spaced) in each octave
