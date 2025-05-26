@@ -1,12 +1,9 @@
 import hydra, torch
 from omegaconf import DictConfig
-from torch import nn
 from typing import List, Optional, Dict, Type, Union, Tuple
 from astrotime.util.series import TSet
 from astrotime.loaders.MIT import MITLoader
-from astrotime.encoders.wavelet import WaveletAnalysisLayer, embedding_space
 from astrotime.trainers.iterative_trainer import IterativeTrainer
-from astrotime.models.cnn.cnn_baseline import get_model_from_cfg, ExpLoss, ExpU
 from astrotime.config.context import astrotime_initialize
 version = "select_MIT_period"
 
