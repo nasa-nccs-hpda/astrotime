@@ -146,7 +146,7 @@ class MITLoader(IterativeDataLoader):
 		t0 = time.time()
 		if (self.loaded_sector != sector) or (self.dataset is None):
 			self._read_TICS(sector)
-			print(f" Loading sector {sector}, loaded_sector={self.loaded_sector}, #TICS={len(self._TICS)}, refresh={self.refresh}")
+			self.log.info(f" Loading sector {sector}, loaded_sector={self.loaded_sector}, #TICS={len(self._TICS)}, refresh={self.refresh}")
 			if self.refresh: self.dataset = None
 			else:       self._load_cache_dataset(sector)
 			if self.dataset is None:
@@ -171,7 +171,7 @@ class MITLoader(IterativeDataLoader):
 											   y = xa.DataArray( name=TIC + ".y", data=y, dims=TIC+".obs", attrs=dict(sn=sn,period=period) ) )
 								elems.append( (int(y.shape[0]),signal,TIC) )
 						except Exception as e:
-							print(f"Error reading sector-{iT} ({TIC}) from {lc_file}: {e}")
+							self.log.error(f"Error reading sector-{iT} ({TIC}) from {lc_file}: {e}")
 
 				xarrays: Dict[str, xa.DataArray] = {}
 				elems.sort(key=lambda x: x[0])
@@ -182,8 +182,9 @@ class MITLoader(IterativeDataLoader):
 				self.dataset = xa.Dataset( xarrays, attrs=dict(ymax=ymax) )
 				self._TICS = [ elem[2] for elem in elems ]
 				t1 = time.time()
-				self.log.info(f" Loaded sector {sector} files in {t1-t0:.3f} sec")
-				self.dataset.to_netcdf( self.cache_path(sector), engine="netcdf4" )
+				cache_file = self.cache_path(sector)
+				self.log.info(f" Loaded sector {sector} files in {(t1-t0)/60:.3f} min, saving to {cache_file}")
+				self.dataset.to_netcdf( cache_file, engine="netcdf4" )
 			self.loaded_sector = sector
 			return True
 		return False
@@ -200,14 +201,14 @@ class MITLoader(IterativeDataLoader):
 		if series_length == -1:
 			series_length = min(cz.shape[1],self.max_series_length)
 		if not self.in_range(period):
-			print(f"Dropping elem-{TIC}: period={period} out of range={self.period_range}")
+			self.log.info(f"Dropping elem-{TIC}: period={period} out of range={self.period_range}")
 			return None
 		elif (snr<self.snr_min) or (snr>self.snr_max):
 			return None
 		else:
-			TD = ct[series_length-1] - ct[0]
-			if 2*period > TD:
-				print(f"Dropping elem-{TIC}: 2*(period={period:.3f}) > TD={TD:.3f}, maxP={self.period_range[1]:.3f}, series_length={series_length}")
+			TE, TD = ct[series_length-1] - ct[0], ct[-1] - ct[0]
+			if 2*period > TE:
+				self.log.info(f"Dropping elem-{TIC}: 2*(period={period:.3f}) > TE={TE:.3f}, TD={TD:.3f}, maxP={self.period_range[1]:.3f}, series_length={series_length}")
 				return None
 			else:
 				self.log.debug(f"Elem-{ielem}: series_length={series_length}, ct.shape[0]={ct.shape[0]}, period={period}, TD={TD}")

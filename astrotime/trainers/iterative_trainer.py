@@ -18,6 +18,13 @@ def tocpu( c, idx=0 ):
     else:
         return c
 
+def check_nan(x: Tensor):
+    nnan = torch.isnan(x).sum()
+    if nnan > 0:
+        print(f"Error: {nnan} NaNs detected in tensor")
+        raise RuntimeError("NaN detected in tensor")
+    return x
+
 def tnorm(x: Tensor, dim: int=0) -> Tensor:
     m: Tensor = x.mean( dim=dim, keepdim=True)
     s: Tensor = torch.std( x, dim=dim, keepdim=True)
@@ -90,7 +97,7 @@ class IterativeTrainer(object):
             Y: Tensor = torch.FloatTensor(y).to(self.device)
             X: Tensor = torch.FloatTensor(x).to(self.device)
             Y = tnorm(Y, dim=1)
-            return torch.stack((X,Y), dim=1)
+            return check_nan( torch.stack((X,Y), dim=1) )
 
     def get_next_batch(self) -> Optional[TRDict]:
         while True:
@@ -135,9 +142,9 @@ class IterativeTrainer(object):
                         batch = self.get_next_batch()
                         if batch['z'].shape[0] > 0:
                             self.global_time = time.time()
-                            result: Tensor = self.model( batch['z'] )
+                            result: Tensor = check_nan( self.model( batch['z'] ) )
                             self.log.debug(f"result{list(result.shape)} range: [{result.min().cpu().item():.3f} -> {result.max().cpu().item():.3f}]")
-                            loss: Tensor = self.loss( result.squeeze(), batch['target'].squeeze() )
+                            loss: Tensor = check_nan( self.loss( result.squeeze(), batch['target'].squeeze() ) )
                             self.conditionally_update_weights(loss)
                             losses.append(loss.cpu().item())
                             self.log.info(f"E{epoch}.B{ibatch}: slen={batch['slen']}, result-range: [{result.min().cpu().item():.3f} -> {result.max().cpu().item():.3f}], loss={loss.cpu().item():.3f}, period range=[{batch['target'].min().cpu().item():.3f} -> {batch['target'].max().cpu().item():.3f}]")
