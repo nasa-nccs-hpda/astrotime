@@ -16,21 +16,22 @@ class MITLoader(IterativeDataLoader):
 		super().__init__()
 		self.cfg = cfg
 		self.sector_range = cfg.sector_range
-		self.sector_index = -1
-		self.sector_batch_offset = None
-		self.sector_shuffle = list( range(self.sector_range[0],self.sector_range[1]) )
-		self.snr_min = cfg.get('snr_min',0.0)
-		self.snr_max = cfg.get('snr_max', 1e6)
+		self.sector_index: int = -1
+		self.sector_batch_offset: int = None
+		self.sector_shuffle: List[int] = list( range(self.sector_range[0],self.sector_range[1]) )
+		self.snr_min: float = cfg.get('snr_min',0.0)
+		self.snr_max: float = cfg.get('snr_max', 1e6)
+		self.max_series_length: int = cfg.get('max_series_length', 80000 )
 		self.period_range: Tuple[float,float] = None
-		self.current_sector = None
-		self.loaded_sector = None
+		self.current_sector: int = None
+		self.loaded_sector: int = None
 		self.dataset: Optional[xa.Dataset] = None
 		self.train_data: Dict[str,np.ndarray] = {}
 		self.synthetic = PlanetCrossingDataGenerator(cfg)
 		self.tset: TSet = None
-		self.test_mode_index = self.TestModes.index( cfg.test_mode )
-		self.refresh = kwargs.get('refresh',cfg.refresh)
-		self._TICS = None
+		self.test_mode_index: int = self.TestModes.index( cfg.test_mode )
+		self.refresh: bool = kwargs.get('refresh',cfg.refresh)
+		self._TICS: List[str]  = None
 
 	def initialize(self, tset: TSet, **kwargs ):
 		self.tset = tset
@@ -194,23 +195,18 @@ class MITLoader(IterativeDataLoader):
 		ct, cy = dst.values[nanmask], dsy.values[nanmask]
 		cz: np.ndarray = np.stack([ct,cy],axis=0)
 		if series_length == -1:
-			series_length = cz.shape[1]
+			series_length = min(cz.shape[1],self.max_series_length)
 		if not self.in_range(period):
 			print(f"Dropping elem-{TIC}: period={period} out of range={self.period_range}")
 			return None
 		elif (snr<self.snr_min) or (snr>self.snr_max):
 			return None
 		else:
-			TD = ct[-1] - ct[0]
-			if period > TD:
-				print(f"Dropping elem-{TIC}: period={period:.3f} > TD={TD:.3f}, maxP={self.period_range[1]:.3f}, series_length={series_length}")
+			TD = ct[series_length] - ct[0]
+			if 2*period > TD:
+				print(f"Dropping elem-{TIC}: 2*(period={period:.3f}) > TD={TD:.3f}, maxP={self.period_range[1]:.3f}, series_length={series_length}")
 				return None
 			else:
-				# if 2*period > TD:
-				# 	peak_idx: int = np.argmin(cy)
-				# 	TP = ct[peak_idx] - ct[0]
-				# 	i0 = 0 if (TP > period) else min( max( peak_idx - 10, 0 ), ct.shape[0]-series_length )
-				# else:
 				self.log.debug(f"Elem-{ielem}: series_length={series_length}, ct.shape[0]={ct.shape[0]}, period={period}, TD={TD}")
 				i0: int = random.randint(0, ct.shape[0]-series_length)
 				elem: np.ndarray = cz[:,i0:i0+series_length]

@@ -11,5 +11,6 @@ noctaves: 7                        # Number of octaves in base freq range
 series_length: 3072                # Length of subset of input timeseries to process (-1 means no subsetting) 2048 4096
 test_mode: default
 refresh: false
+max_series_length: 80000
 
 

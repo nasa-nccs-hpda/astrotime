@@ -12,4 +12,4 @@ series_length: 8048                # Length of subset of input timeseries to pro
 test_mode: default
 snr_min: 100
 refresh: false
-
+max_series_length: 80000
