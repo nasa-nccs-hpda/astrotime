@@ -224,7 +224,6 @@ class MITLoader(IterativeDataLoader):
 		self.log.info(f"\nupdate_training_data(sector={self.loaded_sector}), period_range={self.period_range}\n")
 		elems, ielem, series_length = [], 0, -1
 		periods, sns, tics  = [], [], []
-		self.log.debug(f"get_training_batch({batch_start})")
 		for ielem in range(batch_start,len(self._TICS)):
 			eslice = self.get_elem_slice(ielem,series_length)
 			if eslice is not None:
@@ -236,8 +235,9 @@ class MITLoader(IterativeDataLoader):
 				series_length = elem.shape[1]
 			if len(elems) >= self.cfg.batch_size: break
 		z = np.stack(elems,axis=0)
-		train_data = dict( batch_end=ielem, slen=series_length, t=z[:,0,:], y = z[:,1,:], period = np.array(periods), sn = np.array(sns), sector=self.current_sector, TICS=np.array(tics) )
-		self.log.info( f"get_training_batch({batch_start}), t{train_data['t'].shape}, y{train_data['y'].shape}, p{train_data['period'].shape}")
+		t,y = z[:,0,:], z[:,1,:]
+		train_data = dict( batch_end=ielem, slen=series_length, t=t, y =y, period = np.array(periods), sn = np.array(sns), sector=self.current_sector, TICS=np.array(tics) )
+		self.log.info( f"get_training_batch({batch_start}), t{train_data['t'].shape}, y{train_data['y'].shape}, p{train_data['period'].shape}, TRangs={t[0][-1]-t[0][0]:.3f}")
 		return train_data
 
 	def get_training_element(self, element_index: int) -> Dict[str,np.ndarray]:
