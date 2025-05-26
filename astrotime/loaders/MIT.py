@@ -202,7 +202,7 @@ class MITLoader(IterativeDataLoader):
 		elif (snr<self.snr_min) or (snr>self.snr_max):
 			return None
 		else:
-			TD = ct[series_length] - ct[0]
+			TD = ct[series_length-1] - ct[0]
 			if 2*period > TD:
 				print(f"Dropping elem-{TIC}: 2*(period={period:.3f}) > TD={TD:.3f}, maxP={self.period_range[1]:.3f}, series_length={series_length}")
 				return None
