@@ -81,7 +81,6 @@ Here is a partial list of configuration parameters with typical default values. 
        data.batch_size: 50                                              # Batch size for training
        data.validation_fraction: 0.1                                    # Fraction of training dataset that is used for validation
        data.dset_reduction: 1.0                                         # Fraction of the full dataset that is used for training/validation
-       transform.series_length: 1536                         # Length of subset of input timeseries to process
        transform.nfeatures: 1                                # Number of feaatures to be passed to network
        transform.sparsity: 0.0                               # Fraction of observations to drop (randomly)
        model.cnn_channels: 64                                # Number of channels in first CNN layer
