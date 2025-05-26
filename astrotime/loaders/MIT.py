@@ -159,16 +159,19 @@ class MITLoader(IterativeDataLoader):
 					dfbls = dfbls.set_index('Header').T
 					period: float = np.float64(dfbls['per'].values[0])
 					if os.path.exists(lc_file):
-						sn: float = np.float64(dfbls['sn'].values[0])
-						dflc = pd.read_csv( lc_file, header=None, sep='\s+')
-						nan_mask = ~np.isnan(dflc[1].values)
-						t, y = dflc[0].values[nan_mask], dflc[1].values[nan_mask]
-						if y.size > 0:
-							ym = y.max()
-							if ym > ymax: ymax = ym
-							signal = dict( t=xa.DataArray( name=TIC + ".time", data=t, dims=TIC+".obs" ),
-										   y = xa.DataArray( name=TIC + ".y", data=y, dims=TIC+".obs", attrs=dict(sn=sn,period=period) ) )
-							elems.append( (int(y.shape[0]),signal,TIC) )
+						try:
+							sn: float = np.float64(dfbls['sn'].values[0])
+							dflc = pd.read_csv( lc_file, header=None, sep='\s+')
+							nan_mask = ~np.isnan(dflc[1].values)
+							t, y = dflc[0].values[nan_mask], dflc[1].values[nan_mask]
+							if y.size > 0:
+								ym = y.max()
+								if ym > ymax: ymax = ym
+								signal = dict( t=xa.DataArray( name=TIC + ".time", data=t, dims=TIC+".obs" ),
+											   y = xa.DataArray( name=TIC + ".y", data=y, dims=TIC+".obs", attrs=dict(sn=sn,period=period) ) )
+								elems.append( (int(y.shape[0]),signal,TIC) )
+						except Exception as e:
+							print(f"Error reading sector-{iT} ({TIC}) from {lc_file}: {e}")
 
 				xarrays: Dict[str, xa.DataArray] = {}
 				elems.sort(key=lambda x: x[0])
