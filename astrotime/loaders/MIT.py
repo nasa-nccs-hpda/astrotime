@@ -202,24 +202,23 @@ class MITLoader(IterativeDataLoader):
 		dst: xa.DataArray = self.dataset[TIC+".time"]
 		dsy: xa.DataArray = self.dataset[TIC+".y"]
 		period = dsy.attrs["period"]
-		self.log.info(f"* ELEM-{ielem} ({TIC}): period={period:.2f} series_length={series_length}, data_length={dst.shape[0]}")
 		snr = dsy.attrs["sn"]
 		cz: np.ndarray = np.stack([dst.values,dsy.values],axis=0)
 		if series_length == -1:
 			series_length = min(dst.shape[0],self.max_series_length)
 		if not self.in_range(period):
-			self.log.info(f"Dropping elem-{TIC}: period={period} out of range={self.period_range}")
+			self.log.info(f"   --- Dropping elem{ielem} ({TIC}): period={period} out of range={self.period_range}")
 			return None
 		elif (snr<self.snr_min) or (snr>self.snr_max):
-			self.log.info(f"Dropping elem-{TIC}: snr={snr:.3f} out of range=[{self.snr_min:.3f},{self.snr_max:.3f}]")
+			self.log.info(f"   --- Dropping elem{ielem} ({TIC}): snr={snr:.3f} out of range=[{self.snr_min:.3f},{self.snr_max:.3f}]")
 			return None
 		else:
 			TE, TD = dst.values[series_length-1] - dst.values[0], dst.values[-1] - dst.values[0]
 			if 2*period > TE:
-				self.log.info(f"Dropping elem-{TIC}: 2*(period={period:.3f}) > TE={TE:.3f}, TD={TD:.3f}, maxP={self.period_range[1]:.3f}, series_length={series_length}")
+				self.log.info(f"   --- Dropping elem{ielem} ({TIC}): 2*(period={period:.3f}) > TE={TE:.3f}, TD={TD:.3f}, maxP={self.period_range[1]:.3f}, series_length={series_length}")
 				return None
 			else:
-				self.log.debug(f"Elem-{ielem}: series_length={series_length}, ct.shape[0]={dst.shape[0]}, period={period}, TD={TD}")
+				self.log.info(f"* ELEM-{ielem} ({TIC}): period={period:.2f} series_length={series_length}, data_length={dst.shape[0]}, TE={TE:.3f}, TD={TD:.3f}")
 				i0: int = random.randint(0, dst.shape[0]-series_length)
 				elem: np.ndarray = cz[:,i0:i0+series_length]
 				return elem, period, snr, TIC
