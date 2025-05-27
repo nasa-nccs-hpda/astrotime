@@ -140,7 +140,6 @@ class MITLoader(IterativeDataLoader):
 				self.log.info( f"Opened cache dataset from {dspath} in in {time.time()-t0:.3f} sec, nvars = {len(self.dataset.data_vars)}")
 			else:
 				self.log.info( f"Cache file not found: {dspath}")
-		return self.dataset
 
 	def size(self, sector_index) -> int:
 		self.load_sector(sector_index)
@@ -153,13 +152,14 @@ class MITLoader(IterativeDataLoader):
 	def load_sector( self, sector: int, **kwargs ) -> bool:
 		t0 = time.time()
 		if (self.loaded_sector != sector) or (self.dataset is None):
-			self._read_TICS(sector)
 			self.log.info(f" Loading sector {sector}, loaded_sector={self.loaded_sector}, #TICS={len(self._TICS)}, refresh={self.refresh}")
 			if self.refresh: self.dataset = None
-			else:       self._load_cache_dataset(sector)
+			else:
+				self._load_cache_dataset(sector)
 			if self.dataset is None:
 				ymax = 0.0
 				elems = []
+				self._read_TICS(sector)
 				for iT, TIC in enumerate(self._TICS):
 					data_file = self.bls_file_path(sector,TIC)
 					lc_file = self.lc_file_path(sector, TIC)
