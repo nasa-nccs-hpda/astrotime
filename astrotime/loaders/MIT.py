@@ -203,7 +203,8 @@ class MITLoader(IterativeDataLoader):
 		dsy: xa.DataArray = self.dataset[TIC+".y"]
 		period = dsy.attrs["period"]
 		snr = dsy.attrs["sn"]
-		cz: np.ndarray = np.stack([dst.values,dsy.values],axis=0)
+		nanmask = np.isnan(dsy.values)
+		cz: np.ndarray = np.stack([dst.values[~nanmask],dsy.values[~nanmask]],axis=0)
 		if series_length == -1:
 			series_length = min(dst.shape[0],self.max_series_length)
 		if not self.in_range(period):
