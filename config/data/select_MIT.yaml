@@ -11,4 +11,4 @@ noctaves: 9                        # Number of octaves in base freq range
 test_mode: default
 snr_min: 100
 refresh: false
-max_series_length: 80000
+max_series_length: 60000
