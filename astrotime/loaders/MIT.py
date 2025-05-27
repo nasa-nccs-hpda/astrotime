@@ -136,6 +136,7 @@ class MITLoader(IterativeDataLoader):
 			dspath: str = self.cache_path(sector_index)
 			if os.path.exists(dspath):
 				self.dataset = xa.open_dataset( dspath, engine="netcdf4" )
+				self._TICS = self.dataset.attrs['TICS']
 				self.log.info( f"Opened cache dataset from {dspath} in in {time.time()-t0:.3f} sec, nvars = {len(self.dataset.data_vars)}")
 			else:
 				self.log.info( f"Cache file not found: {dspath}")
@@ -182,12 +183,12 @@ class MITLoader(IterativeDataLoader):
 
 				xarrays: Dict[str, xa.DataArray] = {}
 				elems.sort(key=lambda x: x[0])
+				self._TICS = [elem[2] for elem in elems]
 				for elem in elems:
 					edata = elem[1]
 					xarrays[ edata['y'].name ] = edata['y']
 					xarrays[ edata['t'].name ] = edata['t']
-				self.dataset = xa.Dataset( xarrays, attrs=dict(ymax=ymax) )
-				self._TICS = [ elem[2] for elem in elems ]
+				self.dataset = xa.Dataset( xarrays, attrs=dict(ymax=ymax,TICS=self._TICS,sector=sector) )
 				t1 = time.time()
 				cache_file = self.cache_path(sector)
 				self.log.info(f" Loaded sector {sector} files in {(t1-t0)/60:.3f} min, saving to {cache_file}")
@@ -227,7 +228,6 @@ class MITLoader(IterativeDataLoader):
 		return (p >= self.period_range[0]) and (p <= self.period_range[1])
 
 	def get_training_batch(self, batch_start: int) -> Dict[str,np.ndarray]:
-		self.log.info(f"\nupdate_training_data(sector={self.loaded_sector}), period_range={self.period_range}\n")
 		elems, ielem, series_length = [], 0, -1
 		periods, sns, tics  = [], [], []
 		for ielem in range(batch_start,len(self._TICS)):
@@ -247,7 +247,6 @@ class MITLoader(IterativeDataLoader):
 		return train_data
 
 	def get_training_element(self, element_index: int) -> Dict[str,np.ndarray]:
-		self.log.info(f"\nupdate_training_data(sector={self.loaded_sector}), period_range={self.period_range}\n")
 		TIC = self._TICS[element_index]
 		eslice = self.get_elem_slice(TIC)
 		train_data = None
