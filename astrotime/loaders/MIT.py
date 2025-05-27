@@ -178,7 +178,7 @@ class MITLoader(IterativeDataLoader):
 											   y = xa.DataArray( name=TIC + ".y", data=y, dims=TIC+".obs", attrs=dict(sn=sn,period=period) ) )
 								elems.append( (int(y.shape[0]),signal,TIC) )
 						except Exception as e:
-							self.log.error(f"Error reading sector-{iT} ({TIC}) from {lc_file}: {e}")
+							self.log.error(f"Error reading LC-{iT} ({TIC}) from sector-{sector} file={lc_file}: {e}")
 
 				xarrays: Dict[str, xa.DataArray] = {}
 				elems.sort(key=lambda x: x[0])
