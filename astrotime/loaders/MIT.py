@@ -211,6 +211,7 @@ class MITLoader(IterativeDataLoader):
 			self.log.info(f"Dropping elem-{TIC}: period={period} out of range={self.period_range}")
 			return None
 		elif (snr<self.snr_min) or (snr>self.snr_max):
+			self.log.info(f"Dropping elem-{TIC}: snr={snr:.3f} out of range=[{self.snr_min:.3f},{self.snr_max:.3f}]")
 			return None
 		else:
 			TE, TD = dst.values[series_length-1] - dst.values[0], dst.values[-1] - dst.values[0]

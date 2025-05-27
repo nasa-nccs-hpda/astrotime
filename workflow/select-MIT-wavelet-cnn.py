@@ -14,8 +14,6 @@ version = "select_MIT_period"
 def my_app(cfg: DictConfig) -> None:
 	device: torch.device = astrotime_initialize( cfg, version )
 	embedding_space_array, embedding_space_tensor = embedding_space(cfg.transform, device)
-	cfg.data['sector_range'] = [70,71]
-	cfg.platform['gpu'] = -1
 
 	data_loader = MITLoader(cfg.data)
 	data_loader.initialize(TSet.Train)
