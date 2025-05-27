@@ -33,6 +33,13 @@ class MITLoader(IterativeDataLoader):
 		self.refresh: bool = kwargs.get('refresh',cfg.refresh)
 		self._TICS: List[str]  = None
 
+	def preprocess(self):
+		self.refresh = True
+		for isector in self.sector_shuffle:
+			print( f"Processing sector {isector}")
+			self.load_sector(isector)
+		print(f"\n --- Done --- \n")
+
 	def initialize(self, tset: TSet, **kwargs ):
 		self.tset = tset
 		self.period_range = self.get_period_range()
