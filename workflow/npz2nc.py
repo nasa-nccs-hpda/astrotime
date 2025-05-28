@@ -5,37 +5,26 @@ import xarray as xa
 rootdir = "/explore/nobackup/projects/ilab/data/astrotime/synthetic/"
 dset = "astro_signals_with_noise"
 
-fstart = 0
 nfiles = 10
 ncfilesize = 1000
+archive_size = 100000
+files_per_archive: int = archive_size // ncfilesize
 
-for archive_idx in range(fstart, fstart+nfiles):
+for archive_idx in range(nfiles):
     npz_path = f"{rootdir}/npz/{dset}_{archive_idx}.npz"
     t0 = time.time()
-    data=np.load( npz_path, allow_pickle=True )
-    signals: np.ndarray = data["signals"]
-    times: np.ndarray = data["times"]
-    types: np.ndarray = data["types"]
-    periods: np.ndarray = data["periods"]
-    archive_size: int = signals.shape[0]
-    files_per_archive: int = archive_size // ncfilesize
+    data=np.load( npz_path, allow_pickle=True, mmap_mode="r" )
     print( f"Loaded data[{archive_idx}] from {npz_path}, archive_size={archive_size}, ncfilesize={ncfilesize}, files_per_archive={files_per_archive}, in {time.time()-t0:.3f}s" )
 
-    for file_idx in range(files_per_archive):
-        try:
-            t1 = time.time()
-            brng: Tuple[int,int] = (file_idx * ncfilesize, (file_idx+1) * ncfilesize)
-            xvars = {}
-            for vid, sidx in enumerate(range(*brng)):
-                signal,tvar,period,stype = signals[sidx].astype(np.float32), times[sidx].astype(np.float32), periods[sidx], types[sidx]
-                tcoord, sname =f"t{archive_idx}{vid}", f"s{archive_idx}{vid}"
-                xvars[sname] = xa.DataArray(signal, dims=[tcoord], coords={tcoord:tvar}, attrs=dict(period=period, type=stype) )
-            ncf_idx = archive_idx * files_per_archive + file_idx
-            ncpath = f"{rootdir}/nc/{dset}_{ncf_idx}.nc"
+    xvars = {}
+    for vid in range(archive_size):
+        signal, tvar, period, stype = data["signals"][vid].astype(np.float32), data["times"][vid].astype(np.float32), data["periods"][vid], data["types"][vid]
+        tcoord, sname = f"t{archive_idx}{vid}", f"s{archive_idx}{vid}"
+        xvars[sname] = xa.DataArray(signal, dims=[tcoord], coords={tcoord: tvar}, attrs=dict(period=period, type=stype))
+        if (vid>0) and ((vid % ncfilesize) == 0):
+            file_idx = (vid-1)//files_per_archive + archive_idx*files_per_archive
+            ncpath = f"{rootdir}/nc/{dset}-{file_idx}.nc"
             xa.Dataset( xvars ).to_netcdf(ncpath)
-            print( f" ----> Wrote file {ncpath} in {(time.time()-t1):.2f}s" )
-        except Exception as e:
-            print(f"FILE {archive_idx}-{file_idx} Error-> {e}")
-            traceback.print_exc(limit=100)
-            break
+            print( f" ----> Wrote file {ncpath}" )
+
 
