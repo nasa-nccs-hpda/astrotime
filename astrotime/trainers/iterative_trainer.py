@@ -1,7 +1,7 @@
 from typing import List, Optional, Dict, Type, Tuple, Union
 from omegaconf import DictConfig
 from .checkpoints import CheckpointManager
-from astrotime.encoders.base import Encoder
+from astrotime.util.tensor_ops import check_nan
 from astrotime.util.math import shp
 from astrotime.loaders.base import IterativeDataLoader, RDict
 import time, sys, torch, logging, numpy as np
@@ -17,13 +17,6 @@ def tocpu( c, idx=0 ):
         return ct.item()
     else:
         return c
-
-def check_nan(x: Tensor):
-    nnan = torch.isnan(x).sum()
-    if nnan > 0:
-        print(f"Error: {nnan} NaNs detected in tensor")
-        raise RuntimeError("NaN detected in tensor")
-    return x
 
 def tnorm(x: Tensor, dim: int=0) -> Tensor:
     m: Tensor = x.mean( dim=dim, keepdim=True)

@@ -5,13 +5,7 @@ from astrotime.encoders.embedding import EmbeddingLayer
 from typing import Any, Dict, List, Optional, Tuple, Mapping
 from astrotime.models.spectral.peak_finder import SpectralPeakSelector
 import torch.nn.functional as F
-
-def check_nan(x: torch.Tensor):
-	nnan = torch.isnan(x).sum()
-	if nnan > 0:
-		print(f"Error: {nnan} NaNs detected in tensor")
-		raise RuntimeError("NaN detected in tensor")
-	return x
+from astrotime.util.tensor_ops import check_nan
 
 class ExpU(nn.Module):
 

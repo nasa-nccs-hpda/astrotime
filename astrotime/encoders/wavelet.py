@@ -7,8 +7,7 @@ from torch import Tensor, device, nn
 from .embedding import EmbeddingLayer
 from astrotime.util.math import log2space, tnorm
 from astrotime.util.logging import elapsed
-from astrotime.util.interpolation import interp1d
-
+from astrotime.util.tensor_ops import check_nan
 def clamp( idx: int ) -> int: return max( 0, idx )
 
 def tclamp( x: Tensor ) -> Tensor:
@@ -145,6 +144,8 @@ class WaveletAnalysisLayer(EmbeddingLayer):
 		return ts[sbr[0]:sbr[1]], ys[sbr[0]:sbr[1]]
 
 	def embed(self, ts: torch.Tensor, ys: torch.Tensor, **kwargs) -> Tensor:
+		check_nan(ts)
+		check_nan(ys)
 		if ys.ndim == 1:
 			return self.embed_subbatch( ts[None,:], ys[None,:] )
 		elif self.subbatch_size <= 0:
@@ -152,7 +153,9 @@ class WaveletAnalysisLayer(EmbeddingLayer):
 		else:
 			nsubbatches = math.ceil(ys.shape[0]/self.subbatch_size)
 			subbatches = [ self.embed_subbatch( *self.sbatch(ts,ys,i), **kwargs ) for i in range(nsubbatches) ]
-			return torch.concat( subbatches, dim=0 )
+			result = torch.concat( subbatches, dim=0 )
+			check_nan(result)
+			return result
 
 	def embed_subbatch(self, ts: torch.Tensor, ys: torch.Tensor, **kwargs ) -> Tensor:
 		t0 = time.time()

@@ -6,6 +6,13 @@ from torch.fft import irfft, rfft
 _ROOT_TWO_INVERSE = 1.0 / math.sqrt(2.0)
 CHOLESKY_RELATIVE_JITTER = 4.0  # in units of finfo.eps
 
+def check_nan(x: torch.Tensor):
+    nnan = torch.isnan(x).sum()
+    if nnan > 0:
+        print(f"Error: {nnan} NaNs detected in tensor")
+        raise RuntimeError("NaN detected in tensor")
+    return x
+
 def as_complex(x):
     """
     Similar to :func:`torch.view_as_complex` but copies data in case strides
