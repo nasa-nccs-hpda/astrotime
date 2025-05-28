@@ -43,7 +43,7 @@ class PeriodMarkers:
 		self.markers: List[Line2D] = []
 		self.yrange = kwargs.get('yrange', (-1,1) )
 		self.npm: int = kwargs.get('npm', 16 )
-		self.color: str = kwargs.get('color', 'yellow' )
+		self.color: str = kwargs.get('color', 'red' )
 		self.alpha: float = kwargs.get('alpha', 0.75 )
 		self.linestyle: str = kwargs.get('linestyle', '-')
 
@@ -162,7 +162,6 @@ class RawDatasetPlot(SignalPlot):
 		self.origin = xdata[np.argmax(np.abs(ydata))]
 		self.plot.set_ydata(ydata)
 		self.plot.set_xdata(xdata)
-		self.plot.set_linewidth( 1 if (self.fold_period is None) else 0)
 		active_period = self.period
 		title = f"{self.name}({stype},{self.sector},{self.element}): TP={active_period:.3f} (TF={1 / active_period:.3f}), MP={self.model_period:.3f} (MF={1/self.model_period:.3f})"
 		self.ax.title.set_text( kwargs.get('title',title) )
