@@ -6,6 +6,13 @@ from typing import Any, Dict, List, Optional, Tuple, Mapping
 from astrotime.models.spectral.peak_finder import SpectralPeakSelector
 import torch.nn.functional as F
 
+def check_nan(x: torch.Tensor):
+	nnan = torch.isnan(x).sum()
+	if nnan > 0:
+		print(f"Error: {nnan} NaNs detected in tensor")
+		raise RuntimeError("NaN detected in tensor")
+	return x
+
 class ExpU(nn.Module):
 
 	def __init__(self, cfg: DictConfig) -> None:
@@ -13,7 +20,10 @@ class ExpU(nn.Module):
 		self.f0: float = cfg.base_freq
 
 	def forward(self, x: torch.Tensor) -> torch.Tensor:
-		return self.f0 * ( torch.pow(2,x) - 1 )
+		check_nan(x)
+		result = self.f0 * ( torch.pow(2,x) - 1 )
+		check_nan(result)
+		return result
 
 class ExpLoss(nn.Module):
 	def __init__(self, cfg: DictConfig):
@@ -21,7 +31,11 @@ class ExpLoss(nn.Module):
 		self.f0: float = cfg.base_freq
 
 	def forward(self, product: torch.Tensor, target: torch.Tensor)-> torch.Tensor:
-		return torch.abs( torch.log2( (product+self.f0)/(target+self.f0) ) ).mean()
+		check_nan(product)
+		check_nan(target)
+		result = torch.abs( torch.log2( (product+self.f0)/(target+self.f0) ) ).mean()
+		check_nan(result)
+		return result
 
 def add_cnn_block( cfg: DictConfig, model: nn.Sequential, nchannels: int, num_input_features: int ) -> int:
 	block_input_channels = num_input_features if (num_input_features > 0) else nchannels
@@ -45,6 +59,7 @@ def add_dense_block( cfg: DictConfig, model: nn.Sequential, in_channels:int ):
 	model.append( nn.Linear( in_channels, cfg.dense_channels ) )  # 64
 	model.append( nn.ELU() )
 	model.append( nn.Linear( cfg.dense_channels, cfg.out_channels ) )
+
 
 def get_model_from_cfg( cfg: DictConfig, device: torch.device, embedding_layer: EmbeddingLayer, scale: nn.Module = None  ) -> nn.Module:
 	model: nn.Sequential = nn.Sequential( embedding_layer )

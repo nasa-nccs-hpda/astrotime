@@ -16,6 +16,7 @@ class MITLoader(IterativeDataLoader):
 		super().__init__()
 		self.cfg = cfg
 		self.sector_range = cfg.sector_range
+	#	self.f0: float = cfg.base_freq
 		self.sector_index: int = -1
 		self.sector_batch_offset: int = None
 		self.sector_shuffle: List[int] = list( range(self.sector_range[0],self.sector_range[1]) )
