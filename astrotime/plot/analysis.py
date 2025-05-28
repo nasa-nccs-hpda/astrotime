@@ -81,7 +81,6 @@ class RawDatasetPlot(SignalPlot):
 		self.transax = None
 		self.origin = None
 		self.period = None
-		self.model_period: float = 0.0
 
 	@exception_handled
 	def update_period_marker(self) -> str:
@@ -112,7 +111,6 @@ class RawDatasetPlot(SignalPlot):
 				period = event_data['period']
 				pm = self.period_markers.setdefault(pm_name, PeriodMarkers(pm_name, self.ax, color=event_data['color']))
 				pm.update( self.origin, period )
-				self.model_period = period
 				title = f"{self.name}({self.sector},{self.element}): TP={self.period:.3f} (TF={1/self.period:.3f}), MP={period:.3f} (MF={1/period:.3f})"
 				self.ax.title.set_text(title)
 
@@ -164,8 +162,7 @@ class RawDatasetPlot(SignalPlot):
 		self.origin = xdata[np.argmax(np.abs(ydata))]
 		self.plot.set_ydata(ydata)
 		self.plot.set_xdata(xdata)
-		active_period = self.period
-		title = f"{self.name}({stype},{self.sector},{self.element}): TP={active_period:.3f} (TF={1 / active_period:.3f}), MP={self.model_period:.3f} (MF={1/self.model_period:.3f})"
+		title = f"{self.name}({stype},{self.sector},{self.element}): TP={self.period:.3f}"
 		self.ax.title.set_text( kwargs.get('title',title) )
 		self.log.info(f"1")
 		self.update_period_marker()
