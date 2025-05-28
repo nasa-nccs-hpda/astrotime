@@ -13,7 +13,7 @@ files_per_archive: int = archive_size // ncfilesize
 for archive_idx in range(nfiles):
     npz_path = f"{rootdir}/npz/{dset}_{archive_idx}.npz"
     t0 = time.time()
-    data=np.load( npz_path, allow_pickle=True, mmap_mode="r" )
+    data=np.load( npz_path, allow_pickle=True ) # , mmap_mode="r" )
     print( f"Loaded data[{archive_idx}] from {npz_path}, archive_size={archive_size}, ncfilesize={ncfilesize}, files_per_archive={files_per_archive}, in {time.time()-t0:.3f}s" )
 
     xvars = {}
