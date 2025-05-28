@@ -42,8 +42,8 @@ class PeriodMarkers:
 		self.period: float = None
 		self.markers: List[Line2D] = []
 		self.yrange = kwargs.get('yrange', (-1,1) )
-		self.npm: int = kwargs.get('npm', 7 )
-		self.color: str = kwargs.get('color', 'grey' )
+		self.npm: int = kwargs.get('npm', 16 )
+		self.color: str = kwargs.get('color', 'yellow' )
 		self.alpha: float = kwargs.get('alpha', 0.75 )
 		self.linestyle: str = kwargs.get('linestyle', '-')
 
