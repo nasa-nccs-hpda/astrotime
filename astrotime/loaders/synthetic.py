@@ -10,11 +10,6 @@ class RawElementLoader(ElementLoader):
 
 	def __init__(self, cfg: DictConfig, archive: int=0, **kwargs ):
 		super().__init__(cfg,archive)
-		self.cfg = cfg
-		self.rootdir = cfg.dataset_root
-		self.dset = cfg.source
-		self.archive: int = archive
-		self.data = None
 
 	def load_data(self):
 		if self.data is None:
