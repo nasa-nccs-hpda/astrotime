@@ -79,12 +79,15 @@ class MITLoader(IterativeDataLoader):
 		if self.current_sector >= 0:
 			self.load_sector(self.current_sector)
 			result: RDict = self.get_training_batch( self.sector_batch_offset )
-			self.sector_batch_offset = result.pop('batch_end')+1
-			if self.sector_batch_offset >= len(self._TICS):
+			if result is None:
 				self.sector_batch_offset = None
-			if self.test_mode_index == 2:
-				result = self.synthetic.process_batch( result, **self.params )
-			return result
+			else:
+				self.sector_batch_offset = result.pop('batch_end')+1
+				if self.sector_batch_offset >= len(self._TICS):
+					self.sector_batch_offset = None
+				if self.test_mode_index == 2:
+					result = self.synthetic.process_batch( result, **self.params )
+				return result
 		return None
 
 	def get_element( self, sector_index: int, element_index: int ) -> Optional[Dict[str,Union[np.ndarray,float]]]:
@@ -220,7 +223,7 @@ class MITLoader(IterativeDataLoader):
 				self.log.info(f"   --- Dropping elem{ielem} ({TIC}): 2*(period={period:.3f}) > TE={TE:.3f}, TD={TD:.3f}, maxP={self.period_range[1]:.3f}, series_length={series_length}")
 				return None
 			else:
-				self.log.info(f"* ELEM-{ielem} ({TIC}): period={period:.2f} series_length={series_length}, data_length={dst.shape[0]}, TE={TE:.3f}, TD={TD:.3f}")
+				self.log.info(f"* ELEM-{ielem} ({TIC}): period={period:.2f} snr={snr:.2f} series_length={series_length}, data_length={dst.shape[0]}, TE={TE:.3f}, TD={TD:.3f}")
 				i0: int = random.randint(0, dst.shape[0]-series_length)
 				elem: np.ndarray = cz[:,i0:i0+series_length]
 				return elem, period, snr, TIC
@@ -229,7 +232,7 @@ class MITLoader(IterativeDataLoader):
 		if self.period_range is None: return True
 		return (p >= self.period_range[0]) and (p <= self.period_range[1])
 
-	def get_training_batch(self, batch_start: int) -> Dict[str,np.ndarray]:
+	def get_training_batch(self, batch_start: int) -> Optional[Dict[str,np.ndarray]]:
 		elems, ielem, series_length = [], 0, -1
 		periods, sns, tics  = [], [], []
 		for ielem in range(batch_start,len(self._TICS)):
@@ -242,6 +245,7 @@ class MITLoader(IterativeDataLoader):
 				tics.append(TIC)
 				series_length = elem.shape[1]
 			if len(elems) >= self.cfg.batch_size: break
+		if len(elems) == 0: return None
 		z = np.stack(elems,axis=0)
 		t,y = z[:,0,:], z[:,1,:]
 		train_data = dict( batch_end=ielem, slen=series_length, t=t, y =y, period = np.array(periods), sn = np.array(sns), sector=self.current_sector, TICS=np.array(tics) )
