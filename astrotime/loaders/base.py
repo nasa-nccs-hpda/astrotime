@@ -2,6 +2,7 @@ import numpy as np, xarray as xa
 from astrotime.util.series import TSet
 from typing import List, Optional, Dict, Type, Tuple, Union
 import logging
+from omegaconf import DictConfig, OmegaConf
 
 class DataLoader:
 
@@ -36,6 +37,32 @@ class DataLoader:
 		return self.nbatches(TSet.Train) * self.batch_size
 
 RDict = Dict[str,Union[List[str],int,np.ndarray]]
+
+class ElementLoader:
+
+	def __init__(self, cfg: DictConfig, archive: int=0, **kwargs ):
+		super().__init__()
+		self.cfg = cfg
+		self.rootdir = cfg.dataset_root
+		self.dset = cfg.dset
+		self.archive: int = archive
+		self.data = None
+
+	def set_archive(self, archive: int):
+		if archive != self.archive:
+			self.archive = archive
+			self.data = None
+
+	def load_data(self):
+		raise NotImplementedError(f"The class '{self.__class__.__name__}' does not implement the 'load_data' method")
+
+	@property
+	def nelem(self):
+		raise NotImplementedError(f"The class '{self.__class__.__name__}' does not implement the 'nelem' method")
+
+	def load_element( self, elem_index: int ) -> Optional[RDict]:
+		raise NotImplementedError(f"The class '{self.__class__.__name__}' does not implement the 'load_element' method")
+
 
 class IterativeDataLoader:
 

@@ -1,10 +1,37 @@
 import time, os, math, numpy as np, xarray as xa, random
-from astrotime.loaders.base import IterativeDataLoader, RDict
+from astrotime.loaders.base import IterativeDataLoader, RDict, ElementLoader
 from typing import List, Optional, Dict, Type, Union, Tuple, Any
 import torch
 from glob import glob
 from omegaconf import DictConfig, OmegaConf
 from astrotime.util.series import TSet
+
+class RawElementLoader(ElementLoader):
+
+	def __init__(self, cfg: DictConfig, archive: int=0, **kwargs ):
+		super().__init__(cfg,archive)
+		self.cfg = cfg
+		self.rootdir = cfg.dataset_root
+		self.dset = cfg.dset
+		self.archive: int = archive
+		self.data = None
+
+	def load_data(self):
+		if self.data is None:
+			npz_path = f"{self.rootdir}/npz/{self.dset}_{self.archive}.npz"
+			self.data = np.load(npz_path, allow_pickle=True)
+
+	@property
+	def nelem(self):
+		self.load_data()
+		return self.data["signals"].shape[0]
+
+	def load_element( self, elem_index: int ) -> Optional[RDict]:
+		signals: np.ndarray = self.data["signals"]
+		times: np.ndarray = self.data["times"]
+		types: np.ndarray = self.data["types"]
+		periods: np.ndarray = self.data["periods"]
+		return dict( t=times[elem_index], y=signals[elem_index], p=periods[elem_index], type=types[elem_index] )
 
 class SyntheticLoader(IterativeDataLoader):
 
