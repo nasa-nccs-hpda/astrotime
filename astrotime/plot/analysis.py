@@ -158,6 +158,7 @@ class RawDatasetPlot(SignalPlot):
 
 	@exception_handled
 	def update(self, val=0, **kwargs ):
+		self.log.info(f" * DatasetPlot-> update: ")
 		xdata, ydata, self.period, snr, stype = self.get_element_data()
 		self.origin = xdata[np.argmax(np.abs(ydata))]
 		self.plot.set_ydata(ydata)
@@ -169,7 +170,7 @@ class RawDatasetPlot(SignalPlot):
 		self.ax.set_xlim(xdata.min(),xdata.max())
 		try:  self.ax.set_ylim(ydata.min(),ydata.max())
 		except: self.log.info( f" ------------------ Error in y bounds: {ydata.min()} -> {ydata.max()}" )
-		self.log.info( f" ---- DatasetPlot-> update({self.element}: xlim=({xdata.min():.3f},{xdata.max():.3f}), ylim=({ydata.min():.3f},{ydata.max():.3f}), xdata.shape={self.plot.get_xdata().shape} origin={self.origin} ---" )
+		self.log.info( f" ---- ----> E-{self.element}: xlim=({xdata.min():.3f},{xdata.max():.3f}), ylim=({ydata.min():.3f},{ydata.max():.3f}), xdata.shape={self.plot.get_xdata().shape} origin={self.origin} ---" )
 		self.ax.figure.canvas.draw_idle()
 
 class DatasetPlot(SignalPlot):
