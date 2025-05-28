@@ -14,7 +14,7 @@ class RawElementLoader(ElementLoader):
 	def load_data(self):
 		if self.data is None:
 			npz_path = f"{self.rootdir}/npz/{self.dset}_{self.archive}.npz"
-			self.data = np.load(npz_path, allow_pickle=True)
+			self.data = np.load( npz_path, allow_pickle=True, mmap_mode="r" )
 
 	@property
 	def nelem(self):
@@ -22,11 +22,11 @@ class RawElementLoader(ElementLoader):
 		return self.data["signals"].shape[0]
 
 	def load_element( self, elem_index: int ) -> Optional[RDict]:
-		signals: np.ndarray = self.data["signals"]
-		times: np.ndarray = self.data["times"]
-		types: np.ndarray = self.data["types"]
-		periods: np.ndarray = self.data["periods"]
-		return dict( t=times[elem_index], y=signals[elem_index], p=periods[elem_index], type=types[elem_index] )
+		y: np.ndarray = self.data["signals"][elem_index]
+		t: np.ndarray = self.data["times"][elem_index]
+		stype: str = self.data["types"][elem_index]
+		p: float = self.data["periods"][elem_index]
+		return dict( t=t, y=y, p=p, type=stype )
 
 class SyntheticLoader(IterativeDataLoader):
 
