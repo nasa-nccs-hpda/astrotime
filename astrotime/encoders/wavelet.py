@@ -154,7 +154,6 @@ class WaveletAnalysisLayer(EmbeddingLayer):
 			nsubbatches = math.ceil(ys.shape[0]/self.subbatch_size)
 			subbatches = [ self.embed_subbatch( *self.sbatch(ts,ys,i), **kwargs ) for i in range(nsubbatches) ]
 			result = torch.concat( subbatches, dim=0 )
-			check_nan(result)
 			return result
 
 	def embed_subbatch(self, ts: torch.Tensor, ys: torch.Tensor, **kwargs ) -> Tensor:
@@ -187,7 +186,9 @@ class WaveletAnalysisLayer(EmbeddingLayer):
 		embedding: Tensor = torch.stack( features, dim=1)
 		self.init_log(f" Completed embedding{list(embedding.shape)} in {elapsed(t0):.5f} sec: nfeatures={embedding.shape[1]}")
 		self.init_state = False
-		return tnorm(embedding,dim=2)
+		result = tnorm(embedding,dim=2)
+		check_nan(result)
+		return result
 
 	def fold_harmonic_layer(self, mag: Tensor) -> Tensor:      # [Batch,NF]
 		l0: Tensor = mag[:,:self.nf]

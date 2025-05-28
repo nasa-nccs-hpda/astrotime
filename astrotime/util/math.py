@@ -29,12 +29,12 @@ def tmag(x: Tensor) -> float:
 def tnorm(x: Tensor, dim: int=0) -> Tensor:
 	m: Tensor = x.mean( dim=dim, keepdim=True)
 	s: Tensor = torch.std( x, dim=dim, keepdim=True)
-	return (x - m) / s
+	return (x - m) / (s + 1e-4)
 
 def npnorm(x: np.ndarray, dim: int) -> np.ndarray:
 	m: np.ndarray = x.mean( axis=dim, keepdims=True)
 	s: np.ndarray = x.std( axis=dim, keepdims=True)
-	return (x - m) / s
+	return (x - m) / (s + 1e-4)
 
 def nnan(x: Array) -> int:
 	if type(x) is xa.DataArray: x = x.values
