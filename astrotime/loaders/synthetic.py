@@ -1,6 +1,5 @@
 import time, os, math, numpy as np, xarray as xa, random
 from astrotime.loaders.base import IterativeDataLoader, RDict
-from astrotime.loaders.pcross import PlanetCrossingDataGenerator
 from typing import List, Optional, Dict, Type, Union, Tuple, Any
 import torch
 from glob import glob
@@ -83,8 +82,8 @@ class SyntheticLoader(IterativeDataLoader):
 		result['sector'] = self.current_sector
 		return result
 
-	def get_element( self, sector_index: int, element_index: int ) -> Optional[Dict[str,Any]]:
-		self.load_sector(sector_index)
+	def get_element( self, sector_index: int, element_index: int, **kwargs ) -> Optional[Dict[str,Any]]:
+		self.load_sector(sector_index, **kwargs)
 		element_data: Dict[str,Any] = { k: self.train_data[k][element_index] for k in ['t','y','period','stype'] }
 		element_data['offset'] = element_index
 		element_data['sector'] = self.current_sector
@@ -142,11 +141,11 @@ class SyntheticLoader(IterativeDataLoader):
 			self._load_cache_dataset(sector)
 			if self.dataset is not None:
 				self.loaded_sector = sector
-				self.update_training_data()
+				self.update_training_data(**kwargs)
 			return True
 		return False
 
-	def get_elem_slice(self, svid: str) -> Optional[Tuple[np.ndarray,float,str]]:
+	def get_elem_slice(self, svid: str, **kwargs ) -> Optional[Tuple[np.ndarray,float,str]]:
 		try:
 			dsy: xa.DataArray = self.dataset['s'+svid]
 			dst: xa.DataArray = self.dataset['t'+svid]
@@ -154,23 +153,26 @@ class SyntheticLoader(IterativeDataLoader):
 			stype = dsy.attrs["type"]
 			ct, cy = dst.values, dsy.values
 			cz: np.ndarray = np.stack([ct,cy],axis=0)
-			if cz.shape[1] < self.series_length:
-				return None
-			else:
-				TD = ct[-1] - ct[0]
-				TE = ct[self.series_length] - ct[0]
-				if period > TE:
-					print(f"Dropping elem-{svid}: period={period:.3f} > TE={TE:.3f}, TD={TD:.3f}, maxP={self.period_range[1]:.3f}")
+			if kwargs.get('filtered',True):
+				if cz.shape[1] < self.series_length:
 					return None
 				else:
-					if 2*period > TE:
-						peak_idx: int = np.argmin(cy)
-						TP = ct[peak_idx] - ct[0]
-						i0 = 0 if (TP > period) else min( max( peak_idx - 10, 0 ), ct.shape[0] - self.series_length )
+					TD = ct[-1] - ct[0]
+					TE = ct[self.series_length] - ct[0]
+					if period > TE:
+						print(f"Dropping elem-{svid}: period={period:.3f} > TE={TE:.3f}, TD={TD:.3f}, maxP={self.period_range[1]:.3f}")
+						return None
 					else:
-						i0: int = random.randint(0, ct.shape[0] - self.series_length)
-					elem: np.ndarray = cz[:, i0:i0 + self.series_length]
-					return elem, period, stype
+						if 2*period > TE:
+							peak_idx: int = np.argmin(cy)
+							TP = ct[peak_idx] - ct[0]
+							i0 = 0 if (TP > period) else min( max( peak_idx - 10, 0 ), ct.shape[0] - self.series_length )
+						else:
+							i0: int = random.randint(0, ct.shape[0] - self.series_length)
+						elem: np.ndarray = cz[:, i0:i0 + self.series_length]
+						return elem, period, stype
+			else:
+				return cz, period, stype
 		except KeyError as err:
 			print(f"KeyError for elem-{svid}: {err} <-> dset-vars={list(self.dataset.data_vars.keys())}")
 			return None
@@ -180,11 +182,11 @@ class SyntheticLoader(IterativeDataLoader):
 		bdata = bz[:,center-self.series_length//2:center+self.series_length//2]
 		return bdata
 
-	def update_training_data(self):
+	def update_training_data(self, **kwargs):
 		periods, stypes, elems  = [], [], []
 		svids = [ vid[1:] for vid in self.dataset.data_vars.keys() if vid[0]=='s']
 		for svid in svids:
-			signal = self.get_elem_slice(svid)
+			signal = self.get_elem_slice(svid,**kwargs)
 			if signal is not None:
 				eslice, period, stype = signal
 				if self.in_range(period):

@@ -61,7 +61,7 @@ class IterativeDataLoader:
 	def get_batch( self, dset_idx: int, batch_index ) -> Optional[RDict]:
 		raise NotImplementedError(f"The class '{self.__class__.__name__}' does not implement the 'get_batch' method")
 
-	def get_element(self, dset_idx: int, element_index) -> Optional[RDict]:
+	def get_element(self, dset_idx: int, element_index, **kwargs) -> Optional[RDict]:
 		raise NotImplementedError(f"The class '{self.__class__.__name__}' does not implement the 'get_element' method")
 
 	def update_test_mode(self):

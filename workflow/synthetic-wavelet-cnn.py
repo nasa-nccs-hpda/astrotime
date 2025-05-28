@@ -2,7 +2,6 @@ import hydra, torch
 from omegaconf import DictConfig
 from torch import nn
 from typing import List, Optional, Dict, Type, Union, Tuple
-from astrotime.encoders.baseline import ValueEncoder
 from astrotime.util.series import TSet
 from astrotime.encoders.wavelet import WaveletAnalysisLayer, embedding_space
 from astrotime.trainers.iterative_trainer import IterativeTrainer
