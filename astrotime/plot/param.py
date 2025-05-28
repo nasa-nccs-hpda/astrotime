@@ -149,6 +149,7 @@ class STIntParam(STParam):
 		self.vrange: Tuple[int, int] = vrange
 		self.step: int = kwargs.get( 'step', 1 )
 		self._widget: Slider = None
+		self.log.info( f" STIntParam: vrange = {self.vrange}" )
 
 	def process_key_press(self, key: str ):
 		if   key == "right": self.set_value( self.value_selected() + 1 )
