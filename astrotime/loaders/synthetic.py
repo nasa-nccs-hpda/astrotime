@@ -12,7 +12,7 @@ class RawElementLoader(ElementLoader):
 		super().__init__(cfg,archive)
 		self.cfg = cfg
 		self.rootdir = cfg.dataset_root
-		self.dset = cfg.dset
+		self.dset = cfg.source
 		self.archive: int = archive
 		self.data = None
 
