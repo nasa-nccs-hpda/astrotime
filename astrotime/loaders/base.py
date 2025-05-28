@@ -64,6 +64,9 @@ class IterativeDataLoader:
 	def get_element(self, dset_idx: int, element_index, **kwargs) -> Optional[RDict]:
 		raise NotImplementedError(f"The class '{self.__class__.__name__}' does not implement the 'get_element' method")
 
+	def get_single_element(self, dset_idx: int, element_index, **kwargs) -> Optional[RDict]:
+		raise NotImplementedError(f"The class '{self.__class__.__name__}' does not implement the 'get_single_element' method")
+
 	def update_test_mode(self):
 		pass
 

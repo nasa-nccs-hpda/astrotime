@@ -82,7 +82,6 @@ class DatasetPlot(SignalPlot):
 		self.transax = None
 		self.origin = None
 		self.period = None
-		self.fold_period: float = None
 		self.model_period: float = 0.0
 		self.registered_elements: Dict[Tuple[int,int],Tuple[float,float]] = self.load_registered_elements()
 
@@ -191,13 +190,11 @@ class DatasetPlot(SignalPlot):
 	@exception_handled
 	def get_element_data(self) -> Tuple[np.ndarray,np.ndarray,float,float]:
 		self.data_loader.set_params( { pn: pv.value_selected() for pn, pv in self._sparms.items()} )
-		element: Dict[str,Union[np.ndarray,float]] = self.data_loader.get_element(self.sector,self.element,filtered=False) # , refresh=self.refresh )
+		element: Dict[str,Union[np.ndarray,float]] = self.data_loader.get_single_element(self.sector,self.element) # , refresh=self.refresh )
 		ydata: np.ndarray = element['y']
 		xdata: np.ndarray = element['t']
-		target: float = element['p'] if ('p' in element) else element['period']
+		target: float = element['p']
 		snr: float = element.get('sn',0.0)
-		if self.fold_period is not None:
-			xdata = xdata - np.floor(xdata/self.fold_period)*self.fold_period
 		return xdata, znorm(ydata.squeeze()), target, snr
 
 	@exception_handled

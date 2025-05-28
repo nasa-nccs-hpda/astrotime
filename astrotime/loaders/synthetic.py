@@ -141,9 +141,17 @@ class SyntheticLoader(IterativeDataLoader):
 			self._load_cache_dataset(sector)
 			if self.dataset is not None:
 				self.loaded_sector = sector
-				self.update_training_data(**kwargs)
+				if kwargs.get('training',True):
+					self.update_training_data(**kwargs)
 			return True
 		return False
+
+	def get_single_element(self, sector, elem_index, **kwargs ):
+		self.load_sector(sector,training=False)
+		svids = [ vid[1:] for vid in self.dataset.data_vars.keys() if vid[0]=='s']
+		dsy: xa.DataArray = self.dataset['s' + svids[elem_index]]
+		dst: xa.DataArray = self.dataset['t' + svids[elem_index]]
+		return dict( t=dst.values, y=dsy.values, p=dsy.attrs["period"], type=dsy.attrs["type"], sector=sector, elem=elem_index )
 
 	def get_elem_slice(self, svid: str, **kwargs ) -> Optional[Tuple[np.ndarray,float,str]]:
 		try:
