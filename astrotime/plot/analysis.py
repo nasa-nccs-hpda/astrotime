@@ -160,13 +160,16 @@ class RawDatasetPlot(SignalPlot):
 	def update(self, val=0, **kwargs ):
 		self.log.info(f" * DatasetPlot-> update: ")
 		xdata, ydata, self.period, snr, stype = self.get_element_data()
+		self.log.info(f" ---------> get_element_data: xdata{xdata.shape}, ydata{ydata.shape}, period={self.period:.3f}, snr={snr:.3f}, stype={stype}")
 		self.origin = xdata[np.argmax(np.abs(ydata))]
 		self.plot.set_ydata(ydata)
 		self.plot.set_xdata(xdata)
 		active_period = self.period
 		title = f"{self.name}({stype},{self.sector},{self.element}): TP={active_period:.3f} (TF={1 / active_period:.3f}), MP={self.model_period:.3f} (MF={1/self.model_period:.3f})"
 		self.ax.title.set_text( kwargs.get('title',title) )
+		self.log.info(f"1")
 		self.update_period_marker()
+		self.log.info(f"2")
 		self.ax.set_xlim(xdata.min(),xdata.max())
 		try:  self.ax.set_ylim(ydata.min(),ydata.max())
 		except: self.log.info( f" ------------------ Error in y bounds: {ydata.min()} -> {ydata.max()}" )
