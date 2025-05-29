@@ -9,10 +9,10 @@ nfiles = 10
 ncfilesize = 1000
 archive_size = 100000
 files_per_archive: int = archive_size // ncfilesize
-file_idx = 0
 start_archive = 1
 
 for archive_idx in range(start_archive,nfiles):
+    file_idx = archive_idx * files_per_archive
     archive_path = f"{rootdir}/npz/{dset}_{archive_idx}.npz"
     tmp_path = f"{os.path.expanduser('~')}/tmp/{dset}.npz"
     if os.path.exists(tmp_path): os.remove(tmp_path)
