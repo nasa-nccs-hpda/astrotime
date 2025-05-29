@@ -1,6 +1,5 @@
-import time, argparse, traceback, numpy as np
+import time, os, shutil, argparse, traceback, numpy as np
 from typing import Any, Dict, List, Tuple, Type, Optional, Union
-from numpy.lib.format import open_memmap
 import xarray as xa
 
 rootdir = "/explore/nobackup/projects/ilab/data/astrotime/synthetic/"
@@ -12,11 +11,13 @@ archive_size = 100000
 files_per_archive: int = archive_size // ncfilesize
 
 for archive_idx in range(1,nfiles):
-    npz_path = f"{rootdir}/npz/{dset}_{archive_idx}.npz"
-    t0 = time.time()
-    data = open_memmap( npz_path )
+    archive_path = f"{rootdir}/npz/{dset}_{archive_idx}.npz"
+    tmp_path = f"{os.path.expanduser('~')}/{dset}.npz"
+    shutil.copyfile( archive_path, tmp_path)
+    data = np.load( tmp_path, allow_pickle=True, mmap_mode='r+' )
     archive_segment_idx = 0
-    print( f"Loaded data[{archive_idx}] from {npz_path}, archive_size={archive_size}, ncfilesize={ncfilesize}, files_per_archive={files_per_archive}, in {time.time()-t0:.3f}s" )
+    os.remove(tmp_path)
+    print( f"Loaded data[{archive_idx}] from {archive_path}, archive_size={archive_size}, ncfilesize={ncfilesize}, files_per_archive={files_per_archive}" )
 
     xvars = {}
     for vid in range(archive_size):
