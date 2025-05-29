@@ -3,7 +3,7 @@ from omegaconf import DictConfig
 from .checkpoints import CheckpointManager
 from astrotime.util.tensor_ops import check_nan
 from astrotime.util.math import shp
-from astrotime.loaders.base import IterativeDataLoader, RDict
+from astrotime.loaders.base import Loader, RDict
 import time, sys, torch, logging, numpy as np
 from torch import nn, optim, Tensor
 from astrotime.util.series import TSet
@@ -25,9 +25,9 @@ def tnorm(x: Tensor, dim: int=0) -> Tensor:
 
 class IterativeTrainer(object):
 
-    def __init__(self, cfg: DictConfig, device: torch.device, loader: IterativeDataLoader, model: nn.Module, loss: nn.Module = nn.L1Loss() ):
+    def __init__(self, cfg: DictConfig, device: torch.device, loader: Loader, model: nn.Module, loss: nn.Module = nn.L1Loss() ):
         self.device: torch.device = device
-        self.loader: IterativeDataLoader = loader
+        self.loader: Loader = loader
         self.cfg: DictConfig = cfg
         self.model: nn.Module = model
         self.optimizer: optim.Optimizer = None
@@ -145,7 +145,7 @@ class IterativeTrainer(object):
                             if (self.mode == TSet.Train) and ((ibatch % log_interval == 0) or ((ibatch < 5) and (epoch==0))):
                                 aloss = np.array(losses)
                                 mean_loss = aloss.mean()
-                                print(f"E-{epoch} B-{ibatch} S-{self.loader.dset_idx} loss={mean_loss:.3f} (slen={batch['slen']}, range=({aloss.min():.3f} -> {aloss.max():.3f}), dt/batch={elapsed(t0):.5f} sec")
+                                print(f"E-{epoch} B-{ibatch} loss={mean_loss:.3f} (slen={batch['slen']}, range=({aloss.min():.3f} -> {aloss.max():.3f}), dt/batch={elapsed(t0):.5f} sec")
                                 losses = []
                 except StopIteration:
                     print( f"Completed epoch {epoch} in {elapsed(te)/60:.5f} min, mean-loss= {np.array(losses).mean():.3f}")

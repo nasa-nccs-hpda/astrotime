@@ -38,12 +38,25 @@ class DataLoader:
 
 RDict = Dict[str,Union[List[str],int,np.ndarray]]
 
-class ElementLoader:
+class Loader:
 
 	def __init__(self, cfg: DictConfig,  **kwargs ):
-		super().__init__()
 		self.log = logging.getLogger()
 		self.cfg = cfg
+
+	def init_epoch(self):
+		pass
+
+	def initialize(self, tset: TSet) -> xa.Dataset:
+		pass
+
+	def get_next_batch( self ) -> Optional[RDict]:
+		raise NotImplementedError(f"The class '{self.__class__.__name__}' does not implement the 'get_next_batch' method")
+
+class ElementLoader(Loader):
+
+	def __init__(self, cfg: DictConfig,  **kwargs ):
+		super().__init__(cfg,**kwargs)
 		self.rootdir = cfg.dataset_root
 		self.dset = cfg.source
 		self.files_per_archive: int = cfg.files_per_archive
@@ -70,10 +83,10 @@ class ElementLoader:
 	def get_next_batch( self ) -> Optional[RDict]:
 		raise NotImplementedError(f"The class '{self.__class__.__name__}' does not implement the 'get_next_batch' method")
 
-class IterativeDataLoader:
+class IterativeDataLoader(Loader):
 
-	def __init__(self):
-		self.log = logging.getLogger()
+	def __init__(self, cfg: DictConfig,  **kwargs):
+		super().__init__(cfg, **kwargs)
 		self.params: Dict[str,float] = {}
 
 	def set_params(self, params: Dict[str,float] ):
@@ -81,12 +94,6 @@ class IterativeDataLoader:
 
 	def get_dataset( self, *args ) -> xa.Dataset:
 		raise NotImplementedError(f"The class '{self.__class__.__name__}' does not implement the 'get_dataset' method")
-
-	def initialize(self, tset: TSet) -> xa.Dataset:
-		raise NotImplementedError(f"The class '{self.__class__.__name__}' does not implement the 'initialize' method")
-
-	def init_epoch(self):
-		raise NotImplementedError(f"The class '{self.__class__.__name__}' does not implement the 'init_epoch' method")
 
 	def get_next_batch(self) -> Optional[RDict]:
 		raise NotImplementedError(f"The class '{self.__class__.__name__}' does not implement the 'get_next_batch' method")
