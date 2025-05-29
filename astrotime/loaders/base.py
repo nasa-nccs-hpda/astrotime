@@ -46,6 +46,7 @@ class ElementLoader:
 		self.cfg = cfg
 		self.rootdir = cfg.dataset_root
 		self.dset = cfg.source
+		self.files_per_archive: int = cfg.files_per_archive
 		self.archive: int = archive
 		self.data = None
 

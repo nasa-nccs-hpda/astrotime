@@ -33,6 +33,7 @@ class SyntheticElementLoader(ElementLoader):
 	def __init__(self, cfg: DictConfig, archive: int = 0, **kwargs):
 		super().__init__(cfg, archive)
 		self._load_cache_dataset()
+		self.file_index = kwargs.get('fidx',0)
 
 	@property
 	def nelem(self):
@@ -44,7 +45,8 @@ class SyntheticElementLoader(ElementLoader):
 		return dict(t=dst.values, y=dsy.values, p=dsy.attrs["period"], type=dsy.attrs["type"])
 
 	def _load_cache_dataset( self ):
-		dspath: str = f"{self.rootdir}/nc/{self.dset}-{self.archive}.nc"
+		ifile = self.files_per_archive * self.archive + self.file_index
+		dspath: str = f"{self.rootdir}/nc/{self.dset}-{ifile}.nc"
 		if os.path.exists(dspath):
 			try:
 				self.data = xa.open_dataset( dspath, engine="netcdf4" )
