@@ -10,10 +10,12 @@ ncfilesize = 1000
 archive_size = 100000
 files_per_archive: int = archive_size // ncfilesize
 file_idx = 0
+start_archive = 1
 
-for archive_idx in range(0,nfiles):
+for archive_idx in range(start_archive,nfiles):
     archive_path = f"{rootdir}/npz/{dset}_{archive_idx}.npz"
     tmp_path = f"{os.path.expanduser('~')}/tmp/{dset}.npz"
+    if os.path.exists(tmp_path): os.remove(tmp_path)
     shutil.copyfile( archive_path, tmp_path)
     data = np.load( tmp_path, allow_pickle=True )
     print( f"Loaded data[{archive_idx}] from {archive_path}, archive_size={archive_size}, ncfilesize={ncfilesize}, files_per_archive={files_per_archive}" )
