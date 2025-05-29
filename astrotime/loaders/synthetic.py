@@ -32,8 +32,8 @@ class SyntheticElementLoader(ElementLoader):
 
 	def __init__(self, cfg: DictConfig, archive: int = 0, **kwargs):
 		super().__init__(cfg, archive)
-		self._load_cache_dataset()
 		self.file_index = kwargs.get('fidx',0)
+		self._load_cache_dataset()
 
 	@property
 	def nelem(self):
