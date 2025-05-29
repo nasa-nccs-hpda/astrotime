@@ -6,6 +6,9 @@ from glob import glob
 from omegaconf import DictConfig, OmegaConf
 from astrotime.util.series import TSet
 
+def merge( arrays: List[np.ndarray], slen: int ) -> np.ndarray:
+	return np.stack( [ array[:slen] for array in arrays ], axis=0 )
+
 class RawElementLoader(ElementLoader):
 
 	def __init__(self, cfg: DictConfig, archive: int=0, **kwargs ):
@@ -57,7 +60,7 @@ class SyntheticElementLoader(ElementLoader):
 
 		if self.data is not None:
 			batch_end = min(batch_start + self.batch_size, self.file_size)
-			t,y,p,stype,result = [],[],[],[],{}
+			t,y,p,stype,result,tlen = [],[],[],[],{},1000000
 			for ielem in range(batch_start, batch_end):
 				elem = self.load_element(ielem)
 				if elem is not None:
@@ -65,8 +68,9 @@ class SyntheticElementLoader(ElementLoader):
 					y.append(elem['y'])
 					p.append(elem['p'])
 					stype.append(elem['type'])
-			result['t'] = np.stack(t,axis=0)
-			result['y'] = np.stack(y,axis=0)
+					if t[-1].size < tlen: tlen = t[-1].size
+			result['t'] = merge(t,tlen)
+			result['y'] = merge(y,tlen)
 			result['period'] = np.array(p)
 			result['stype'] = np.array(stype)
 			result['offset'] = batch_start
