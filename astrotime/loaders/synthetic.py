@@ -30,18 +30,50 @@ class RawElementLoader(ElementLoader):
 
 class SyntheticElementLoader(ElementLoader):
 
-	def __init__(self, cfg: DictConfig, archive: int = 0, **kwargs):
-		super().__init__(cfg, archive)
-		self._load_cache_dataset()
+	def __init__(self, cfg: DictConfig, **kwargs):
+		super().__init__(cfg, **kwargs)
+		self.batch_index = 0
+		self.batch_size =self.cfg.batch_size
 
 	@property
 	def nelem(self):
-		return len(self.data.data_vars.keys())//2
+		return self.file_size
 
 	def load_element(self, elem_index: int) -> RDict:
 		dsy: xa.DataArray = self.data[ f's{elem_index}' ]
 		dst: xa.DataArray = self.data[ f't{elem_index}' ]
 		return dict(t=dst.values, y=dsy.values, p=dsy.attrs["period"], type=dsy.attrs["type"])
+
+	def get_next_batch( self ) -> Optional[Dict[str,Any]]:
+		batch_start = self.batch_index*self.batch_size
+		if batch_start >= self.file_size:
+			self.archive = self.archive + 1
+			if self.archive == self.narchives:
+				raise StopIteration
+			self.batch_index = 0
+
+		if self.batch_index == 0:
+			self._load_cache_dataset()
+
+		if self.data is not None:
+			batch_end = min(batch_start + self.batch_size, self.file_size)
+			t,y,p,stype,result = [],[],[],[],{}
+			for ielem in range(batch_start, batch_end):
+				elem = self.load_element(ielem)
+				if elem is not None:
+					t.append(elem['t'])
+					y.append(elem['y'])
+					p.append(elem['p'])
+					stype.append(elem['type'])
+			result['t'] = np.stack(t,axis=0)
+			result['y'] = np.stack(y,axis=0)
+			result['period'] = np.array(p)
+			result['stype'] = np.array(stype)
+			result['offset'] = batch_start
+			result['archive'] = self.archive
+			self.batch_index += 1
+			return result
+		return None
 
 	def _load_cache_dataset( self ):
 		dspath: str = f"{self.rootdir}/nc/{self.dset}-{self.archive}.nc"

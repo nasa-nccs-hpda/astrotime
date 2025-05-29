@@ -40,14 +40,16 @@ RDict = Dict[str,Union[List[str],int,np.ndarray]]
 
 class ElementLoader:
 
-	def __init__(self, cfg: DictConfig, archive: int=0, **kwargs ):
+	def __init__(self, cfg: DictConfig,  **kwargs ):
 		super().__init__()
 		self.log = logging.getLogger()
 		self.cfg = cfg
 		self.rootdir = cfg.dataset_root
 		self.dset = cfg.source
 		self.files_per_archive: int = cfg.files_per_archive
-		self.archive: int = archive
+		self.file_size: int = cfg.file_size
+		self.narchives = cfg.narchives
+		self.archive: int = kwargs.get('archive',0)
 		self.data = None
 
 	def set_archive(self, archive: int):
@@ -65,6 +67,8 @@ class ElementLoader:
 	def load_element( self, elem_index: int ) -> Optional[RDict]:
 		raise NotImplementedError(f"The class '{self.__class__.__name__}' does not implement the 'load_element' method")
 
+	def get_next_batch( self ) -> Optional[RDict]:
+		raise NotImplementedError(f"The class '{self.__class__.__name__}' does not implement the 'get_next_batch' method")
 
 class IterativeDataLoader:
 
