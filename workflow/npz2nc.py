@@ -13,12 +13,12 @@ file_idx = 0
 
 for archive_idx in range(0,nfiles):
     archive_path = f"{rootdir}/npz/{dset}_{archive_idx}.npz"
-    tmp_path = f"{os.path.expanduser('~')}/{dset}.npz"
+    tmp_path = f"{os.path.expanduser('~')}/tmp/{dset}.npz"
     shutil.copyfile( archive_path, tmp_path)
     data = np.load( tmp_path, allow_pickle=True )
-    os.remove(tmp_path)
     print( f"Loaded data[{archive_idx}] from {archive_path}, archive_size={archive_size}, ncfilesize={ncfilesize}, files_per_archive={files_per_archive}" )
     y,t,p,st = data["signals"], data["times"], data["periods"], data["types"]
+
     xvars, var_idx = {}, 0
     for vid in range(archive_size):
         signal, tvar, period, stype = y[vid].astype(np.float32), t[vid].astype(np.float32), p[vid], st[vid]
@@ -31,5 +31,7 @@ for archive_idx in range(0,nfiles):
             print( f" * Wrote file: {ncpath}" )
         else:
             var_idx += 1
+
+    os.remove(tmp_path)
 
 
