@@ -28,6 +28,32 @@ class RawElementLoader(ElementLoader):
 		p: float = self.data["periods"][elem_index]
 		return dict( t=t, y=y, p=p, type=stype )
 
+class SyntheticElementLoader(ElementLoader):
+
+	def __init__(self, cfg: DictConfig, archive: int = 0, **kwargs):
+		super().__init__(cfg, archive)
+		self._load_cache_dataset()
+
+	@property
+	def nelem(self):
+		return len(self.data.data_vars.keys())//2
+
+	def load_element(self, elem_index: int) -> RDict:
+		dsy: xa.DataArray = self.data[ f's{self.archive}{elem_index}' ]
+		dst: xa.DataArray = self.data[ f't{self.archive}{elem_index}' ]
+		return dict(t=dst.values, y=dsy.values, p=dsy.attrs["period"], type=dsy.attrs["type"])
+
+	def _load_cache_dataset( self ):
+		dspath: str = f"{self.rootdir}/{self.dset}-{self.archive}.nc"
+		if os.path.exists(dspath):
+			try:
+				self.data = xa.open_dataset( dspath, engine="netcdf4" )
+				self.log.info( f"Opened cache dataset from {dspath}, nvars = {len(self.data.data_vars)}")
+			except KeyError as ex:
+				self.log.error(f"Error reading file: {dspath}: {ex}")
+		else:
+			self.log.info( f"Cache file not found: {dspath}")
+
 class SyntheticLoader(IterativeDataLoader):
 
 	def __init__(self, cfg: DictConfig, **kwargs ):

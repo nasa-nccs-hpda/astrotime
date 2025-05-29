@@ -42,6 +42,7 @@ class ElementLoader:
 
 	def __init__(self, cfg: DictConfig, archive: int=0, **kwargs ):
 		super().__init__()
+		self.log = logging.getLogger()
 		self.cfg = cfg
 		self.rootdir = cfg.dataset_root
 		self.dset = cfg.source
