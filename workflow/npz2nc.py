@@ -28,6 +28,7 @@ for archive_idx in range(start_archive,nfiles):
         xvars[sname] = xa.DataArray(signal, name=sname, dims=[tcoord], coords={tcoord: tvar}, attrs=dict(period=period, type=stype))
         if var_idx == ncfilesize-1:
             ncpath = f"{rootdir}/nc/{dset}-{file_idx}.nc"
+            if os.path.exists(ncpath): os.remove(ncpath)
             xa.Dataset( xvars ).to_netcdf(ncpath)
             xvars, file_idx, var_idx = {}, file_idx+1, 0
             print( f" * Wrote file: {ncpath}" )
