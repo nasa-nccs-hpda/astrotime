@@ -44,15 +44,15 @@ class SyntheticElementLoader(ElementLoader):
 		return dict(t=dst.values, y=dsy.values, p=dsy.attrs["period"], type=dsy.attrs["type"])
 
 	def _load_cache_dataset( self ):
-		dspath: str = f"{self.rootdir}/{self.dset}-{self.archive}.nc"
+		dspath: str = f"{self.rootdir}/nc/{self.dset}-{self.archive}.nc"
 		if os.path.exists(dspath):
 			try:
 				self.data = xa.open_dataset( dspath, engine="netcdf4" )
-				self.log.info( f"Opened cache dataset from {dspath}, nvars = {len(self.data.data_vars)}")
+				print( f"Opened cache dataset from {dspath}, nvars = {len(self.data.data_vars)}")
 			except KeyError as ex:
-				self.log.error(f"Error reading file: {dspath}: {ex}")
+				print(f"Error reading file: {dspath}: {ex}")
 		else:
-			self.log.info( f"Cache file not found: {dspath}")
+			print( f"Cache file not found: {dspath}")
 
 class SyntheticLoader(IterativeDataLoader):
 
