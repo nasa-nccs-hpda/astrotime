@@ -32,7 +32,6 @@ class SyntheticElementLoader(ElementLoader):
 
 	def __init__(self, cfg: DictConfig, archive: int = 0, **kwargs):
 		super().__init__(cfg, archive)
-		self.file_index = kwargs.get('fidx',0)
 		self._load_cache_dataset()
 
 	@property
@@ -40,13 +39,12 @@ class SyntheticElementLoader(ElementLoader):
 		return len(self.data.data_vars.keys())//2
 
 	def load_element(self, elem_index: int) -> RDict:
-		dsy: xa.DataArray = self.data[ f's{self.archive}{elem_index}' ]
-		dst: xa.DataArray = self.data[ f't{self.archive}{elem_index}' ]
+		dsy: xa.DataArray = self.data[ f's{elem_index}' ]
+		dst: xa.DataArray = self.data[ f't{elem_index}' ]
 		return dict(t=dst.values, y=dsy.values, p=dsy.attrs["period"], type=dsy.attrs["type"])
 
 	def _load_cache_dataset( self ):
-		ifile = self.files_per_archive * self.archive + self.file_index
-		dspath: str = f"{self.rootdir}/nc/{self.dset}-{ifile}.nc"
+		dspath: str = f"{self.rootdir}/nc/{self.dset}-{self.archive}.nc"
 		if os.path.exists(dspath):
 			try:
 				self.data = xa.open_dataset( dspath, engine="netcdf4" )
