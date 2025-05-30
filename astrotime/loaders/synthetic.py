@@ -9,28 +9,6 @@ from astrotime.util.series import TSet
 def merge( arrays: List[np.ndarray], slen: int ) -> np.ndarray:
 	return np.stack( [ array[:slen] for array in arrays ], axis=0 )
 
-class RawElementLoader(ElementLoader):
-
-	def __init__(self, cfg: DictConfig,**kwargs):
-		super().__init__(cfg,**kwargs)
-
-	def load_data(self):
-		if self.data is None:
-			npz_path = f"{self.rootdir}/npz/{self.dset}_{self.archive}.npz"
-			self.data = np.load( npz_path, allow_pickle=True, mmap_mode="r" )
-
-	@property
-	def nelem(self):
-		self.load_data()
-		return self.data["signals"].shape[0]
-
-	def load_element( self, elem_index: int ) -> Optional[RDict]:
-		y: np.ndarray = self.data["signals"][elem_index]
-		t: np.ndarray = self.data["times"][elem_index]
-		stype: str = self.data["types"][elem_index]
-		p: float = self.data["periods"][elem_index]
-		return dict( t=t, y=y, p=p, type=stype )
-
 class SyntheticElementLoader(ElementLoader):
 
 	def __init__(self, cfg: DictConfig, **kwargs):
@@ -54,9 +32,13 @@ class SyntheticElementLoader(ElementLoader):
 		return self.get_batch_element( elem_index ) if self.use_batches else self.get_raw_element( elem_index )
 
 	def get_raw_element(self, elem_index: int) -> RDict:
-		dsy: xa.DataArray = self.data[ f's{elem_index}' ]
-		dst: xa.DataArray = self.data[ f't{elem_index}' ]
-		return dict(t=dst.values, y=dsy.values, p=dsy.attrs["period"], type=dsy.attrs["type"])
+		try:
+			dsy: xa.DataArray = self.data[ f's{elem_index}' ]
+			dst: xa.DataArray = self.data[ f't{elem_index}' ]
+			return dict(t=dst.values, y=dsy.values, p=dsy.attrs["period"], type=dsy.attrs["type"])
+		except KeyError as ex:
+			print(f"\n    Error getting elem-{elem_index} from dataset({self.dspath}): vars = {list(self.data.data_vars.keys())}\n")
+			raise ex
 
 	def get_batch_element(self, elem_index: int) -> RDict:
 		batch_idx = elem_index // self.batch_size
@@ -101,16 +83,19 @@ class SyntheticElementLoader(ElementLoader):
 			return result
 		return None
 
+	@property
+	def dspath(self) -> str:
+		return f"{self.rootdir}/nc/{self.dset}-{self.ifile}.nc"
+
 	def _load_cache_dataset( self ):
-		dspath: str = f"{self.rootdir}/nc/{self.dset}-{self.ifile}.nc"
-		if os.path.exists(dspath):
+		if os.path.exists(self.dspath):
 			try:
-				self.data = xa.open_dataset( dspath, engine="netcdf4" )
-				print( f"Opened cache dataset from {dspath}, nvars = {len(self.data.data_vars)}")
+				self.data = xa.open_dataset( self.dspath, engine="netcdf4" )
+				print( f"Opened cache dataset from {self.dspath}, nvars = {len(self.data.data_vars)}")
 			except KeyError as ex:
-				print(f"Error reading file: {dspath}: {ex}")
+				print(f"Error reading file: {self.dspath}: {ex}")
 		else:
-			print( f"Cache file not found: {dspath}")
+			print( f"Cache file not found: {self.dspath}")
 
 class SyntheticLoader(IterativeDataLoader):
 
