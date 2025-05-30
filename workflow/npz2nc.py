@@ -5,11 +5,11 @@ import xarray as xa
 rootdir = "/explore/nobackup/projects/ilab/data/astrotime/synthetic/"
 dset = "astro_signals_with_noise"
 
-nfiles = 2
+nfiles = 10
 ncfilesize = 1000
 archive_size = 100000
 files_per_archive: int = archive_size // ncfilesize
-start_archive = 1
+start_archive = 9
 
 for archive_idx in range(start_archive,nfiles):
     file_idx = archive_idx * files_per_archive
