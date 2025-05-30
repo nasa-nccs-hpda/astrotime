@@ -43,8 +43,8 @@ class CheckpointManager(object):
 				log.info(f"Loaded model checkpoint from {cppath}, update_model = {update_model}", )
 				if update_model:
 					self.model.load_state_dict( train_state.pop('model_state_dict') )
-					if self.optimizer is not None:
-						self.optimizer.load_state_dict( train_state.pop('optimizer_state_dict') )
+					if self.optimizer is None:  print( f"WARNING: No optimizer found when loading checkpoint, cannot complete model update.")
+					else:                       self.optimizer.load_state_dict( train_state.pop('optimizer_state_dict') )
 			except Exception as e:
 				log.info(f"Unable to load model from {cppath}: {e}", )
 				traceback.print_exc()
