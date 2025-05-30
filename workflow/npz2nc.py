@@ -1,15 +1,15 @@
-import time, os, shutil, argparse, traceback, numpy as np
+import time, os, shutil, sys, argparse, traceback, numpy as np
 from typing import Any, Dict, List, Tuple, Type, Optional, Union
 import xarray as xa
 
 rootdir = "/explore/nobackup/projects/ilab/data/astrotime/synthetic/"
 dset = "astro_signals_with_noise"
 
-narchives = 10
+narchives = 1
 ncfilesize = 1000
 archive_size = 100000
 files_per_archive: int = archive_size // ncfilesize
-start_archive = 9
+start_archive = 0
 
 for archive_idx in range(start_archive,narchives):
     file_idx = archive_idx * files_per_archive
@@ -33,6 +33,7 @@ for archive_idx in range(start_archive,narchives):
             if nvars > 0:
                 xa.Dataset( xvars ).to_netcdf(ncpath)
                 print(f" * A{archive_idx}.V{vid//nvars}: Wrote {nvars} vars to file: {ncpath}")
+                sys.exit(0)
             xvars, file_idx, var_idx = {}, file_idx+1, 0
         else:
             var_idx += 1
