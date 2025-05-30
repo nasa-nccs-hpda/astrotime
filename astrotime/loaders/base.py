@@ -59,15 +59,14 @@ class ElementLoader(Loader):
 		super().__init__(cfg,**kwargs)
 		self.rootdir = cfg.dataset_root
 		self.dset = cfg.source
-		self.files_per_archive: int = cfg.files_per_archive
 		self.file_size: int = cfg.file_size
-		self.narchives = cfg.narchives
-		self.archive: int = kwargs.get('archive',0)
+		self.nfiles = cfg.narchives
+		self.ifile: int = kwargs.get('file',0)
 		self.data = None
 
-	def set_archive(self, archive: int):
-		if archive != self.archive:
-			self.archive = archive
+	def set_file(self, file_idx: int):
+		if file_idx != self.ifile:
+			self.ifile = file_idx
 			self.data = None
 
 	def load_data(self):

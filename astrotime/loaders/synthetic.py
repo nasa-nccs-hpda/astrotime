@@ -41,9 +41,9 @@ class SyntheticElementLoader(ElementLoader):
 		self.use_batches = kwargs.get('use_batches',True)
 		self._load_cache_dataset()
 
-	def set_archive(self, archive: int):
-		if (archive != self.archive) or (self.data is None):
-			self.archive = archive
+	def set_file(self, file_idx: int):
+		if (file_idx != self.ifile) or (self.data is None):
+			self.ifile = file_idx
 			self._load_cache_dataset()
 
 	@property
@@ -69,8 +69,8 @@ class SyntheticElementLoader(ElementLoader):
 	def get_next_batch( self ) -> Optional[Dict[str,Any]]:
 		batch_start = self.batch_index*self.batch_size
 		if batch_start >= self.file_size:
-			self.archive = self.archive + 1
-			if self.archive == self.narchives:
+			self.ifile += 1
+			if self.ifile == self.nfiles:
 				raise StopIteration
 			self.batch_index = 0
 			self._load_cache_dataset()
@@ -97,12 +97,12 @@ class SyntheticElementLoader(ElementLoader):
 			result['period'] = np.array(p)
 			result['stype'] = np.array(stype)
 			result['offset'] = batch_start
-			result['archive'] = self.archive
+			result['file'] = self.ifile
 			return result
 		return None
 
 	def _load_cache_dataset( self ):
-		dspath: str = f"{self.rootdir}/nc/{self.dset}-{self.archive}.nc"
+		dspath: str = f"{self.rootdir}/nc/{self.dset}-{self.ifile}.nc"
 		if os.path.exists(dspath):
 			try:
 				self.data = xa.open_dataset( dspath, engine="netcdf4" )

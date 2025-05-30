@@ -75,7 +75,7 @@ class RawDatasetPlot(SignalPlot):
 		self.ofac = kwargs.get('upsample_factor',1)
 		self.plot: Line2D = None
 		self.add_param( STIntParam('element', (0,self.data_loader.nelem), key_press_mode=1 ) )
-		self.add_param( STIntParam('archive', (0, self.data_loader.narchives), key_press_mode=2 ) )
+		self.add_param( STIntParam('file', (0, self.data_loader.nfiles), key_press_mode=2 ) )
 		self.period_markers: Dict[str,PeriodMarkers] = {}
 		self.ext_pm_ids: Set[str] = set()
 		self.transax = None
@@ -111,7 +111,7 @@ class RawDatasetPlot(SignalPlot):
 				period = event_data['period']
 				pm = self.period_markers.setdefault(pm_name, PeriodMarkers(pm_name, self.ax, color=event_data['color']))
 				pm.update( self.origin, period )
-				title = f"{self.name},{self.archive},{self.element}): TP={self.period:.3f} (TF={1/self.period:.3f}), MP={period:.3f} (MF={1/period:.3f})"
+				title = f"{self.name},{self.file},{self.element}): TP={self.period:.3f} (TF={1/self.period:.3f}), MP={period:.3f} (MF={1/period:.3f})"
 				self.ax.title.set_text(title)
 
 	@exception_handled
@@ -134,7 +134,7 @@ class RawDatasetPlot(SignalPlot):
 		xs, ys, self.period, snr, stype = self.get_element_data()
 		self.origin = xs[np.argmax(np.abs(ys))]
 		self.plot: Line2D = self.ax.plot(xs, ys, label='y', color='blue', marker=".", linewidth=1, markersize=2, alpha=0.5)[0]
-		self.ax.title.set_text(f"{self.name}({stype},{self.archive},{self.element}): TP={self.period:.3f} (F={1/self.period:.3f})")
+		self.ax.title.set_text(f"{self.name}({stype},{self.file},{self.element}): TP={self.period:.3f} (F={1/self.period:.3f})")
 		self.ax.title.set_fontsize(8)
 		self.ax.title.set_fontweight('bold')
 		self.ax.set_xlim(xs[0],xs[-1])
@@ -143,7 +143,7 @@ class RawDatasetPlot(SignalPlot):
 
 	@exception_handled
 	def get_element_data(self) -> Tuple[np.ndarray,np.ndarray,float,float,str]:
-		self.data_loader.set_archive(self.archive)
+		self.data_loader.set_file(self.file)
 		element: Dict[str,Union[np.ndarray,float]] = self.data_loader.get_element(self.element)
 		ydata: np.ndarray = element['y']
 		xdata: np.ndarray = element['t']
@@ -160,7 +160,7 @@ class RawDatasetPlot(SignalPlot):
 		self.origin = xdata[np.argmax(np.abs(ydata))]
 		self.plot.set_ydata(ydata)
 		self.plot.set_xdata(xdata)
-		title = f"{self.name}({stype},{self.archive},{self.element}): TP={self.period:.3f}"
+		title = f"{self.name}({stype},{self.file},{self.element}): TP={self.period:.3f}"
 		self.ax.title.set_text( kwargs.get('title',title) )
 		self.log.info(f"1")
 		self.update_period_marker()
