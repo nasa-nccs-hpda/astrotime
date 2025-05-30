@@ -1,4 +1,6 @@
 import time, os, math, numpy as np, xarray as xa, random
+from ssl import socket_error
+
 from astrotime.loaders.base import IterativeDataLoader, RDict, ElementLoader
 from typing import List, Optional, Dict, Type, Union, Tuple, Any
 import torch
@@ -16,6 +18,7 @@ class SyntheticElementLoader(ElementLoader):
 		self.batch_index = 0
 		self.batch_size =self.cfg.batch_size
 		self.current_batch = None
+		self.elem_sort = None
 		self.use_batches = kwargs.get('use_batches',True)
 		self._load_cache_dataset()
 
@@ -33,12 +36,23 @@ class SyntheticElementLoader(ElementLoader):
 
 	def get_raw_element(self, elem_index: int) -> RDict:
 		try:
-			dsy: xa.DataArray = self.data[ f's{elem_index}' ]
-			dst: xa.DataArray = self.data[ f't{elem_index}' ]
+			eidx = self.elem_sort[elem_index][0]
+			dsy: xa.DataArray = self.data[ f's{eidx}' ]
+			dst: xa.DataArray = self.data[ f't{eidx}' ]
 			return dict(t=dst.values, y=dsy.values, p=dsy.attrs["period"], type=dsy.attrs["type"])
 		except KeyError as ex:
 			print(f"\n    Error getting elem-{elem_index} from dataset({self.dspath}): vars = {list(self.data.data_vars.keys())}\n")
 			raise ex
+
+	def get_sort_ordering(self):
+		t0 = time.time()
+		sort_ordering = []
+		for ielem in range(self.file_size):
+			dsy: xa.DataArray = self.data[ f's{ielem}' ]
+			sort_ordering.append( (ielem,dsy.size) )
+		sort_ordering.sort(key=lambda x: x[1])
+		self.log.info(f"get_sort_ordering: {time.time()-t0:.3f} sec")
+		return sort_ordering
 
 	def get_batch_element(self, elem_index: int) -> RDict:
 		batch_idx = elem_index // self.batch_size
@@ -93,6 +107,7 @@ class SyntheticElementLoader(ElementLoader):
 		if os.path.exists(self.dspath):
 			try:
 				self.data = xa.open_dataset( self.dspath, engine="netcdf4" )
+				self.elem_sort = self.get_sort_ordering()
 				self.log.info( f"Opened cache dataset from {self.dspath}, nvars = {len(self.data.data_vars)}")
 			except KeyError as ex:
 				print(f"Error reading file: {self.dspath}: {ex}")
