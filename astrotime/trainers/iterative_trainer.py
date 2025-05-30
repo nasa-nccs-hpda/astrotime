@@ -121,9 +121,10 @@ class IterativeTrainer(object):
     def training(self) -> bool:
         return not self.cfg.mode.startswith("val")
 
-    def compute(self):
+    def compute(self,version):
         print(f"SignalTrainer[{self.mode}]: , {self.nepochs} epochs, device={self.device}")
         self.optimizer = self.get_optimizer()
+        self.initialize_checkpointing(version)
         with self.device:
             for epoch in range(*self.epoch_range):
                 te = time.time()

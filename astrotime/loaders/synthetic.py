@@ -45,13 +45,11 @@ class SyntheticElementLoader(ElementLoader):
 			raise ex
 
 	def get_sort_ordering(self):
-		t0 = time.time()
 		sort_ordering = []
 		for ielem in range(self.file_size):
 			dsy: xa.DataArray = self.data[ f's{ielem}' ]
 			sort_ordering.append( (ielem,dsy.size) )
 		sort_ordering.sort(key=lambda x: x[1])
-		self.log.info(f"get_sort_ordering: {time.time()-t0:.3f} sec")
 		return sort_ordering
 
 	def get_batch_element(self, elem_index: int) -> RDict:
