@@ -9,7 +9,7 @@ nfiles = 10
 ncfilesize = 1000
 archive_size = 100000
 files_per_archive: int = archive_size // ncfilesize
-start_archive = 1
+start_archive = 2
 
 for archive_idx in range(start_archive,nfiles):
     file_idx = archive_idx * files_per_archive
