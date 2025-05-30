@@ -150,12 +150,15 @@ class STIntParam(STParam):
 		self.step: int = kwargs.get( 'step', 1 )
 		self._widget: Slider = None
 		self.log.info( f" STIntParam: vrange = {self.vrange}" )
+		self.key_press_mode = kwargs.get('key_press_mode', 1)
 
 	def process_key_press(self, key: str ):
-		if   key == "right": self.set_value( self.value_selected() + 1 )
-		elif key == "left":  self.set_value( self.value_selected() - 1 )
-		elif key == "up":    self.set_value( self.value_selected() + 10 )
-		elif key == "down":  self.set_value( self.value_selected() - 10 )
+		if self.key_press_mode == 1:
+			if   key == "right": self.set_value( self.value_selected() + 1 )
+			elif key == "left":  self.set_value( self.value_selected() - 1 )
+		elif self.key_press_mode == 2:
+			if key == "up":      self.set_value( self.value_selected() + 1 )
+			elif key == "down":  self.set_value( self.value_selected() - 1 )
 
 	@exception_handled
 	def set_value(self , val):
