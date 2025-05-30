@@ -51,12 +51,12 @@ class SyntheticElementLoader(ElementLoader):
 		return self.file_size
 
 	def get_element(self, elem_index: int) -> RDict:
-		if self.use_batches:
-			return self.get_batch_element( elem_index )
-		else:
-			dsy: xa.DataArray = self.data[ f's{elem_index}' ]
-			dst: xa.DataArray = self.data[ f't{elem_index}' ]
-			return dict(t=dst.values, y=dsy.values, p=dsy.attrs["period"], type=dsy.attrs["type"])
+		return self.get_batch_element( elem_index ) if self.use_batches else self.get_raw_element( elem_index )
+
+	def get_raw_element(self, elem_index: int) -> RDict:
+		dsy: xa.DataArray = self.data[ f's{elem_index}' ]
+		dst: xa.DataArray = self.data[ f't{elem_index}' ]
+		return dict(t=dst.values, y=dsy.values, p=dsy.attrs["period"], type=dsy.attrs["type"])
 
 	def get_batch_element(self, elem_index: int) -> RDict:
 		batch_idx = elem_index // self.batch_size
@@ -85,7 +85,7 @@ class SyntheticElementLoader(ElementLoader):
 			batch_end = min(batch_start + self.batch_size, self.file_size)
 			t,y,p,stype,result,tlen = [],[],[],[],{},1000000
 			for ielem in range(batch_start, batch_end):
-				elem = self.get_element(ielem)
+				elem = self.get_raw_element(ielem)
 				if elem is not None:
 					t.append(elem['t'])
 					y.append(elem['y'])
