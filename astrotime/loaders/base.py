@@ -77,7 +77,7 @@ class ElementLoader(Loader):
 	def nelem(self):
 		raise NotImplementedError(f"The class '{self.__class__.__name__}' does not implement the 'nelem' method")
 
-	def load_element( self, elem_index: int ) -> Optional[RDict]:
+	def get_element( self, elem_index: int ) -> Optional[RDict]:
 		raise NotImplementedError(f"The class '{self.__class__.__name__}' does not implement the 'load_element' method")
 
 	def get_next_batch( self ) -> Optional[RDict]:

@@ -11,8 +11,8 @@ def merge( arrays: List[np.ndarray], slen: int ) -> np.ndarray:
 
 class RawElementLoader(ElementLoader):
 
-	def __init__(self, cfg: DictConfig, archive: int=0, **kwargs ):
-		super().__init__(cfg,archive)
+	def __init__(self, cfg: DictConfig,**kwargs):
+		super().__init__(cfg,**kwargs)
 
 	def load_data(self):
 		if self.data is None:
@@ -37,15 +37,34 @@ class SyntheticElementLoader(ElementLoader):
 		super().__init__(cfg, **kwargs)
 		self.batch_index = 0
 		self.batch_size =self.cfg.batch_size
+		self.current_batch = None
+		self.use_batches = kwargs.get('use_batches',True)
+		self._load_cache_dataset()
+
+	def set_archive(self, archive: int):
+		if (archive != self.archive) or (self.data is None):
+			self.archive = archive
+			self._load_cache_dataset()
 
 	@property
 	def nelem(self):
 		return self.file_size
 
-	def load_element(self, elem_index: int) -> RDict:
-		dsy: xa.DataArray = self.data[ f's{elem_index}' ]
-		dst: xa.DataArray = self.data[ f't{elem_index}' ]
-		return dict(t=dst.values, y=dsy.values, p=dsy.attrs["period"], type=dsy.attrs["type"])
+	def get_element(self, elem_index: int) -> RDict:
+		if self.use_batches:
+			return self.get_batch_element( elem_index )
+		else:
+			dsy: xa.DataArray = self.data[ f's{elem_index}' ]
+			dst: xa.DataArray = self.data[ f't{elem_index}' ]
+			return dict(t=dst.values, y=dsy.values, p=dsy.attrs["period"], type=dsy.attrs["type"])
+
+	def get_batch_element(self, elem_index: int) -> RDict:
+		batch_idx = elem_index // self.batch_size
+		if batch_idx != self.current_batch:
+			self.current_batch = self.get_batch(batch_idx)
+			self.batch_index = batch_idx
+		ib, b = elem_index % self.batch_size, self.current_batch
+		return dict(t=b['t'][ib], y=b['y'][ib], p=b['period'][ib], type=b['stype'][ib])
 
 	def get_next_batch( self ) -> Optional[Dict[str,Any]]:
 		batch_start = self.batch_index*self.batch_size
@@ -54,15 +73,19 @@ class SyntheticElementLoader(ElementLoader):
 			if self.archive == self.narchives:
 				raise StopIteration
 			self.batch_index = 0
-
-		if self.batch_index == 0:
 			self._load_cache_dataset()
+		batch: Optional[Dict[str,Any]] = self.get_batch(self.batch_index)
+		if batch is not None:
+			self.batch_index += 1
+		return batch
 
+	def get_batch( self, batch_index: int ) -> Optional[Dict[str,Any]]:
 		if self.data is not None:
+			batch_start = batch_index * self.batch_size
 			batch_end = min(batch_start + self.batch_size, self.file_size)
 			t,y,p,stype,result,tlen = [],[],[],[],{},1000000
 			for ielem in range(batch_start, batch_end):
-				elem = self.load_element(ielem)
+				elem = self.get_element(ielem)
 				if elem is not None:
 					t.append(elem['t'])
 					y.append(elem['y'])
@@ -75,7 +98,6 @@ class SyntheticElementLoader(ElementLoader):
 			result['stype'] = np.array(stype)
 			result['offset'] = batch_start
 			result['archive'] = self.archive
-			self.batch_index += 1
 			return result
 		return None
 

@@ -29,9 +29,10 @@ for archive_idx in range(start_archive,nfiles):
             tcoord, sname = f"t{var_idx}", f"s{var_idx}"
             xvars[sname] = xa.DataArray(signal, name=sname, dims=[tcoord], coords={tcoord: tvar}, attrs=dict(period=period, type=stype))
         if var_idx == ncfilesize-1:
-            if len(xvars) > 0:
+            nvars = len(xvars)
+            if nvars > 0:
                 xa.Dataset( xvars ).to_netcdf(ncpath)
-                print(f" * A{archive_idx}.V{vid}: Wrote {len(xvars)} vars to file: {ncpath}")
+                print(f" * A{archive_idx}.V{vid//nvars}: Wrote {nvars} vars to file: {ncpath}")
             xvars, file_idx, var_idx = {}, file_idx+1, 0
         else:
             var_idx += 1
