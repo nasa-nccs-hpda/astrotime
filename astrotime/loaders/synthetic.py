@@ -65,7 +65,7 @@ class SyntheticElementLoader(ElementLoader):
 		if self.data is not None:
 			batch_start = batch_index * self.batch_size
 			batch_end = min(batch_start + self.batch_size, self.file_size)
-			t,y,p,stype,result,tlen = [],[],[],[],{},1000000
+			t,y,p,stype,result,tlen0,tlen1 = [],[],[],[],{},1000000,0
 			for ielem in range(batch_start, batch_end):
 				elem = self.get_raw_element(ielem)
 				if elem is not None:
@@ -73,13 +73,15 @@ class SyntheticElementLoader(ElementLoader):
 					y.append(elem['y'])
 					p.append(elem['p'])
 					stype.append(elem['type'])
-					if t[-1].size < tlen: tlen = t[-1].size
-			result['t'] = merge(t,tlen)
-			result['y'] = merge(y,tlen)
+					if t[-1].size < tlen0: tlen0 = t[-1].size
+					if t[-1].size > tlen1: tlen1 = t[-1].size
+			result['t'] = merge(t,tlen0)
+			result['y'] = merge(y,tlen0)
 			result['period'] = np.array(p)
 			result['stype'] = np.array(stype)
 			result['offset'] = batch_start
 			result['file'] = self.ifile
+			self.log.info(f"get_batch(F{self.ifile}.B{batch_index}): y{result['y'].shape}, t{result['t'].shape}, len-diff={tlen1-tlen0}, pmax={result['period'].max():.3f}")
 			return result
 		return None
 
