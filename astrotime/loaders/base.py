@@ -60,7 +60,7 @@ class ElementLoader(Loader):
 		self.rootdir = cfg.dataset_root
 		self.dset = cfg.source
 		self.file_size: int = cfg.file_size
-		self.nfiles = cfg.narchives
+		self.nfiles = cfg.nfiles
 		self.ifile: int = kwargs.get('file',0)
 		self.data = None
 
