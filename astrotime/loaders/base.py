@@ -64,6 +64,10 @@ class ElementLoader(Loader):
 		self.ifile: int = kwargs.get('file',0)
 		self.data = None
 
+	def init_epoch(self):
+		self.ifile = 0
+		self.data = None
+
 	def set_file(self, file_idx: int):
 		if file_idx != self.ifile:
 			self.ifile = file_idx

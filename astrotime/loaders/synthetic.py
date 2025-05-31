@@ -1,6 +1,4 @@
 import time, os, math, numpy as np, xarray as xa, random
-from ssl import socket_error
-
 from astrotime.loaders.base import IterativeDataLoader, RDict, ElementLoader
 from typing import List, Optional, Dict, Type, Union, Tuple, Any
 import torch
@@ -19,6 +17,7 @@ class SyntheticElementLoader(ElementLoader):
 		self.batch_size =self.cfg.batch_size
 		self.current_batch = None
 		self.elem_sort = None
+		self.file_sort = list(range(self.nfiles))
 		self.use_batches = kwargs.get('use_batches',True)
 		self._load_cache_dataset()
 
@@ -26,6 +25,12 @@ class SyntheticElementLoader(ElementLoader):
 		if (file_idx != self.ifile) or (self.data is None):
 			self.ifile = file_idx
 			self._load_cache_dataset()
+
+	def init_epoch(self):
+		random.shuffle(self.file_sort)
+		self.ifile = 0
+		self.batch_index = 0
+		self._load_cache_dataset()
 
 	@property
 	def nelem(self):
@@ -64,9 +69,9 @@ class SyntheticElementLoader(ElementLoader):
 		batch_start = self.batch_index*self.batch_size
 		if batch_start >= self.file_size:
 			self.ifile += 1
+			self.batch_index = 0
 			if self.ifile == self.nfiles:
 				raise StopIteration
-			self.batch_index = 0
 			self._load_cache_dataset()
 		batch: Optional[Dict[str,Any]] = self.get_batch(self.batch_index)
 		if batch is not None:
@@ -99,7 +104,7 @@ class SyntheticElementLoader(ElementLoader):
 
 	@property
 	def dspath(self) -> str:
-		return f"{self.rootdir}/nc/{self.dset}-{self.ifile}.nc"
+		return f"{self.rootdir}/nc/{self.dset}-{self.file_sort[self.ifile]}.nc"
 
 	def _load_cache_dataset( self ):
 		if os.path.exists(self.dspath):
