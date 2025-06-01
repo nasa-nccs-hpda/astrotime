@@ -2,7 +2,7 @@ from typing import List, Optional, Dict, Type, Tuple, Union
 from omegaconf import DictConfig
 import xarray as xa
 from astrotime.encoders.embedding import EmbeddingLayer
-from astrotime.loaders.base import IterativeDataLoader, RDict
+from astrotime.loaders.base import RDict, ElementLoader
 import time, sys, torch, logging, numpy as np
 from torch import nn, optim, Tensor
 from astrotime.trainers.checkpoints import CheckpointManager
@@ -17,9 +17,9 @@ def tnorm(x: Tensor, dim: int=0) -> Tensor:
 
 class ModelEvaluator(object):
 
-    def __init__(self, cfg: DictConfig, version: str, loader: IterativeDataLoader, embedding: EmbeddingLayer, device, **kwargs ):
+    def __init__(self, cfg: DictConfig, version: str, loader: ElementLoader, embedding: EmbeddingLayer, device, **kwargs ):
         self.embedding: EmbeddingLayer = embedding
-        self.loader: IterativeDataLoader = loader
+        self.loader: ElementLoader = loader
         self.cfg: DictConfig = cfg
         self.log = logging.getLogger()
         self.model: nn.Module = kwargs.get( 'model', get_model_from_cfg( cfg.model, device, embedding ) )
@@ -41,8 +41,8 @@ class ModelEvaluator(object):
     def xdata(self) -> Tensor:
         return self.embedding.xdata.squeeze()
 
-    def get_element(self, dset_idx: int, element: int) -> Optional[TRDict]:
-        dset: Optional[RDict] = self.loader.get_element(dset_idx,element)
+    def get_element(self, element: int) -> Optional[TRDict]:
+        dset: Optional[RDict] = self.loader.get_element(element)
         return None if (dset is None) else self.encode_element(dset)
 
     def encode_element(self, batch: RDict) -> TRDict:
@@ -56,8 +56,8 @@ class ModelEvaluator(object):
             X: Tensor = torch.FloatTensor(x).to(self.device)
             return torch.stack((X,tnorm(Y)), dim=0).unsqueeze(0)
 
-    def evaluate(self, sector: int, element: int) -> np.ndarray:
-        element: TRDict = self.get_element(sector, element)
+    def evaluate(self, element: int) -> np.ndarray:
+        element: TRDict = self.get_element( element)
         result: Tensor = self.model( element['z'] )
         self._target_freq = element['target']
         self._model_freq  = result.cpu().item()

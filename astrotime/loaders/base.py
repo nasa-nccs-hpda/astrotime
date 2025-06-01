@@ -131,5 +131,5 @@ class IterativeDataLoader(Loader):
 		raise NotImplementedError(f"The class '{self.__class__.__name__}' does not implement the 'nelements' property")
 
 	@property
-	def ndsets(self) -> int:
-		raise NotImplementedError(f"The class '{self.__class__.__name__}' does not implement the 'ndsets' property")
+	def nfiles(self) -> int:
+		raise NotImplementedError(f"The class '{self.__class__.__name__}' does not implement the 'nfiles' property")

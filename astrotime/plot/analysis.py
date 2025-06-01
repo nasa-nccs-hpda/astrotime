@@ -445,7 +445,7 @@ class EvaluatorPlot(SignalPlot):
 		self.plots: List[Line2D] = []
 		self.target_marker: Line2D = None
 		self.model_marker: Line2D = None
-		self.nfiles = self.evalautor.loader.nfiles
+		self.nfiles = self.evaluator.loader.nfiles
 		self.add_param( STIntParam('element', (0,self.nelements)  ) )
 		self.add_param(STIntParam('file', (0, self.nfiles), key_press_mode=2))
 		self.transax = None
@@ -461,7 +461,7 @@ class EvaluatorPlot(SignalPlot):
 
 	@exception_handled
 	def _setup(self):
-		tdata = self.evaluator.evaluate(self.file, self.element).squeeze()
+		tdata = self.evaluator.evaluate(self.element).squeeze()
 		target_freq = self.evaluator.target_frequency
 		model_freq = self.evaluator.model_frequency
 		x = self.evaluator.xdata.cpu().numpy()
@@ -506,7 +506,7 @@ class EvaluatorPlot(SignalPlot):
 
 	@exception_handled
 	def update(self, val=0):
-		tdata = self.evaluator.evaluate(self.file, self.element).squeeze()
+		tdata = self.evaluator.evaluate(self.element).squeeze()
 		target_freq = self.evaluator.target_frequency
 		model_freq = self.evaluator.model_frequency
 		x = self.evaluator.xdata.cpu().numpy()
