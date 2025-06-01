@@ -475,7 +475,7 @@ class EvaluatorPlot(SignalPlot):
 
 		self.target_marker: Line2D = self.ax.axvline( target_freq, 0.0, 1.0, color=self.marker_colors[0], linestyle='-', linewidth=2, alpha=0.7)
 		self.model_marker: Line2D  = self.ax.axvline( model_freq, 0.0, 1.0, color=self.marker_colors[1], linestyle='-', linewidth=2, alpha=0.7)
-		self.ax.title.set_text(f"{self.name}: target({self.sector},{self.element})={target_freq:.3f} model({self.marker_colors[1]})={model_freq:.3f}")
+		self.ax.title.set_text(f"{self.name}: target({self.file},{self.element})={target_freq:.3f} model({self.marker_colors[1]})={model_freq:.3f}")
 		self.ax.title.set_fontsize(8)
 		self.ax.title.set_fontweight('bold')
 		self.ax.set_xscale('log')
