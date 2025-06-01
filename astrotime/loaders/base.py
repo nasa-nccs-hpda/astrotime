@@ -77,8 +77,9 @@ class ElementLoader(Loader):
 		raise NotImplementedError(f"The class '{self.__class__.__name__}' does not implement the 'load_data' method")
 
 	@property
-	def nelem(self):
-		raise NotImplementedError(f"The class '{self.__class__.__name__}' does not implement the 'nelem' method")
+	def nelements(self) -> int:
+		return self.nfiles * self.file_size
+
 
 	def get_element( self, elem_index: int ) -> Optional[RDict]:
 		raise NotImplementedError(f"The class '{self.__class__.__name__}' does not implement the 'load_element' method")
