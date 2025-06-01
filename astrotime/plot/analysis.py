@@ -434,10 +434,9 @@ class TransformPlot(SignalPlot):
 
 class EvaluatorPlot(SignalPlot):
 
-	def __init__(self, name: str, evaluator: ModelEvaluator, sector:int=0, **kwargs):
+	def __init__(self, name: str, evaluator: ModelEvaluator, **kwargs):
 		SignalPlot.__init__(self, **kwargs)
 		self.name = name
-		self.sector: int = sector
 		self.evaluator: ModelEvaluator = evaluator
 		self.annotations: List[str] = tolower( kwargs.get('annotations',None) )
 		self.colors = [ 'red', 'blue', 'magenta', 'cyan', 'darkviolet', 'darkorange', 'saddlebrown', 'darkturquoise' ]
@@ -447,6 +446,7 @@ class EvaluatorPlot(SignalPlot):
 		self.target_marker: Line2D = None
 		self.model_marker: Line2D = None
 		self.add_param( STIntParam('element', (0,self.nelements)  ) )
+		self.add_param(STIntParam('file', (0, self.data_loader.nfiles), key_press_mode=2))
 		self.transax = None
 		self.nlines = -1
 
@@ -458,12 +458,9 @@ class EvaluatorPlot(SignalPlot):
 	def tname(self):
 		return self.evaluator.tname
 
-	def set_sector(self, sector: int ):
-		self.sector = sector
-
 	@exception_handled
 	def _setup(self):
-		tdata = self.evaluator.evaluate(self.sector, self.element).squeeze()
+		tdata = self.evaluator.evaluate(self.file, self.element).squeeze()
 		target_freq = self.evaluator.target_frequency
 		model_freq = self.evaluator.model_frequency
 		x = self.evaluator.xdata.cpu().numpy()
@@ -508,7 +505,7 @@ class EvaluatorPlot(SignalPlot):
 
 	@exception_handled
 	def update(self, val=0):
-		tdata = self.evaluator.evaluate(self.sector, self.element).squeeze()
+		tdata = self.evaluator.evaluate(self.file, self.element).squeeze()
 		target_freq = self.evaluator.target_frequency
 		model_freq = self.evaluator.model_frequency
 		x = self.evaluator.xdata.cpu().numpy()
@@ -524,6 +521,6 @@ class EvaluatorPlot(SignalPlot):
 		self.target_marker.set_xdata([target_freq,target_freq])
 		self.model_marker.set_xdata( [model_freq, model_freq] )
 		self.process_event(id="period-update", period=1/model_freq, ax=str(id(self.ax)), color=self.marker_colors[1])
-		self.ax.title.set_text(f"{self.name}({self.sector},{self.element}): target_freq={target_freq:.3f} (model_freq={model_freq:.3f})")
+		self.ax.title.set_text(f"{self.name}({self.file},{self.element}): target_freq={target_freq:.3f} (model_freq={model_freq:.3f})")
 		self.ax.figure.canvas.draw_idle()
 
