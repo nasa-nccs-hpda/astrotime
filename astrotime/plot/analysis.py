@@ -445,8 +445,9 @@ class EvaluatorPlot(SignalPlot):
 		self.plots: List[Line2D] = []
 		self.target_marker: Line2D = None
 		self.model_marker: Line2D = None
+		self.nfiles = self.evalautor.loader.nfiles
 		self.add_param( STIntParam('element', (0,self.nelements)  ) )
-		self.add_param(STIntParam('file', (0, self.data_loader.nfiles), key_press_mode=2))
+		self.add_param(STIntParam('file', (0, self.nfiles), key_press_mode=2))
 		self.transax = None
 		self.nlines = -1
 
