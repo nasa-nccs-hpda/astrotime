@@ -28,8 +28,9 @@ class ModelEvaluator(object):
         self.device = device
         self._target_freq = None
         self._model_freq = None
-        self._checkpoint_manager = CheckpointManager( version, self.model, None, self.cfg.train )
-        self.train_state = self._checkpoint_manager.load_checkpoint( update_model=True )
+        if self.mtype == "cnn":
+            self._checkpoint_manager = CheckpointManager( version, self.model, None, self.cfg.train )
+            self.train_state = self._checkpoint_manager.load_checkpoint( update_model=True )
 
     @property
     def nelements(self) -> int:
