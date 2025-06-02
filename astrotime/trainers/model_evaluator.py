@@ -1,13 +1,12 @@
 from typing import List, Optional, Dict, Type, Tuple, Union
 from omegaconf import DictConfig
-import xarray as xa
+from astrotime.encoders.wavelet import WaveletAnalysisLayer, embedding_space
 from astrotime.encoders.embedding import EmbeddingLayer
 from astrotime.loaders.base import RDict, ElementLoader
 import time, sys, torch, logging, numpy as np
 from torch import nn, optim, Tensor
 from astrotime.trainers.checkpoints import CheckpointManager
-from astrotime.models.cnn.cnn_baseline import get_model_from_cfg
-from astrotime.encoders.baseline import ValueEncoder
+from astrotime.models.cnn.cnn_baseline import get_model_from_cfg, get_spectral_peak_selector_from_cfg
 TRDict = Dict[str,Union[List[str],int,torch.Tensor]]
 
 def tnorm(x: Tensor, dim: int=0) -> Tensor:
@@ -17,12 +16,15 @@ def tnorm(x: Tensor, dim: int=0) -> Tensor:
 
 class ModelEvaluator(object):
 
-    def __init__(self, cfg: DictConfig, version: str, loader: ElementLoader, embedding: EmbeddingLayer, device, **kwargs ):
-        self.embedding: EmbeddingLayer = embedding
+    def __init__(self, cfg: DictConfig, version: str, loader: ElementLoader, device, **kwargs ):
+        self.embedding_space: Tensor = embedding_space(cfg.transform, device)[1]
+        self.embedding: EmbeddingLayer = WaveletAnalysisLayer('analysis', cfg.transform, self.embedding_space, device)
         self.loader: ElementLoader = loader
         self.cfg: DictConfig = cfg
         self.log = logging.getLogger()
-        self.model: nn.Module = kwargs.get( 'model', get_model_from_cfg( cfg.model, device, embedding ) )
+        self.mtype = kwargs.get( 'mtype', "cnn" )
+        if self.mtype == "peakfinder": self.model: nn.Module = get_spectral_peak_selector_from_cfg(cfg.model, device, self.embedding)
+        elif self.mtype == "cnn":      self.model: nn.Module = get_model_from_cfg(cfg.model, device, self.embedding)
         self.device = device
         self._target_freq = None
         self._model_freq = None

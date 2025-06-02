@@ -181,6 +181,32 @@ class IterativeTrainer(object):
                 L: np.array = np.array(losses)
                 print( f"Loss mean = {L.mean():.3f}, range=[{L.min():.3f} -> {L.max():.3f}]" )
 
+    def evaluate_peakfinder(self, version: Optional[str] = None ):
+        print(f"SignalTrainer[{self.mode}]: device={self.device}")
+        self.cfg["mode"] = "val"
+        with self.device:
+            te = time.time()
+            if version is not None:
+                self.initialize_checkpointing(version)
+            self.loader.initialize(self.mode)
+            self.model.train(False)
+            self.loader.init_epoch()
+            losses = []
+            try:
+                for ibatch in range(0,sys.maxsize):
+                    batch = self.get_next_batch()
+                    if batch['z'].shape[0] > 0:
+                        self.global_time = time.time()
+                        result: Tensor = self.model(batch['z'])
+                        loss: Tensor = self.loss(result.squeeze(), batch['target'].squeeze())
+                        losses.append(loss.cpu().item())
+
+            except StopIteration:
+                print( f"Completed evaluation in {elapsed(te)/60:.5f} min.")
+                L: np.array = np.array(losses)
+                print( f"Loss mean = {L.mean():.3f}, range=[{L.min():.3f} -> {L.max():.3f}]" )
+
+
     def preprocess(self):
         with self.device:
             te = time.time()

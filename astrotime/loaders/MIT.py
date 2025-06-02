@@ -252,15 +252,14 @@ class MITLoader(IterativeDataLoader):
 		self.log.info( f"get_training_batch({batch_start}), t{train_data['t'].shape}, y{train_data['y'].shape}, p{train_data['period'].shape}, TRangs={t[0][-1]-t[0][0]:.3f}")
 		return train_data
 
-	def get_training_element(self, element_index: int) -> Dict[str,np.ndarray]:
-		TIC = self._TICS[element_index]
-		eslice = self.get_elem_slice(TIC)
+	def get_training_element(self, sector: int, element_index: int) -> Dict[str,np.ndarray]:
+		self.load_sector(sector)
+		eslice = self.get_elem_slice(element_index)
 		train_data = None
 		if eslice is not None:
 			elem, period, sn = eslice
-			train_data = dict( t=elem[0], y=elem[1], period=period, sn=sn, sector=self.current_sector, TIC=TIC)
+			train_data = dict( t=elem[0], y=elem[1], period=period, sn=sn, sector=self.current_sector )
 		return train_data
-
 
 class MITOctavesLoader(MITLoader):
 
