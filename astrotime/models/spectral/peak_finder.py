@@ -6,6 +6,7 @@ import logging, torch
 import time, sys, numpy as np
 from omegaconf import DictConfig
 from torch import nn
+from astrotime.util.tensor_ops import check_nan
 from typing import List, Optional, Dict, Type, Union, Tuple
 from astrotime.loaders.base import ElementLoader, RDict
 TRDict = Dict[str,Union[List[str],int,torch.Tensor]]
@@ -48,7 +49,10 @@ class Evaluator:
         with (self.device):
             Y: Tensor = torch.FloatTensor(y).unsqueeze(0).to(self.device)
             X: Tensor = torch.FloatTensor(x).unsqueeze(0).to(self.device)
+            check_nan(X)
+            check_nan(Y)
             Y = tnorm(Y)
+            check_nan(Y)
             return torch.stack((X,Y), dim=1)
 
     def get_element(self,ibatch) -> Optional[TRDict]:
