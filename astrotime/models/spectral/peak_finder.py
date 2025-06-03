@@ -49,10 +49,7 @@ class Evaluator:
         with (self.device):
             Y: Tensor = torch.FloatTensor(y).unsqueeze(0).to(self.device)
             X: Tensor = torch.FloatTensor(x).unsqueeze(0).to(self.device)
-            check_nan(X)
-            check_nan(Y)
-            Y = tnorm(Y)
-            check_nan(Y)
+            Y = tnorm(Y, dim=1)
             return torch.stack((X,Y), dim=1)
 
     def get_element(self,ibatch) -> Optional[TRDict]:
