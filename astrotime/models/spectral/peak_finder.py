@@ -67,15 +67,15 @@ class Evaluator:
         self.cfg["mode"] = "val"
         with self.device:
             losses = []
-            for ibatch in range(0, self.loader.nelements):
-                element: Optional[TRDict] =  self.get_element(ibatch)
+            for ielem in range(0, self.loader.nelements):
+                element: Optional[TRDict] =  self.get_element(ielem)
                 if element is not None:
                     result: Tensor = self.model(element['z'])
                     y,t = result.item(), element['target']
                     h = harmonic(y,t)
                     loss: float = self.loss(y,t*h)
                     losses.append(loss)
-                    print(f" * Batch-{ibatch}: yt=({y:.3f},{t:.3f}), H= {sH(h)}, yLoss= {loss:.5f}")
+                    print(f" * Elem-{ielem}: yt=({y:.3f},{t:.3f}), H= {sH(h)}, yLoss= {loss:.5f}")
             L: np.array = np.array(losses)
             print(f"Loss mean = {L.mean():.3f}, range=[{L.min():.3f} -> {L.max():.3f}]")
 
