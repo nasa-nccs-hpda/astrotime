@@ -117,7 +117,7 @@ class SyntheticElementLoader(ElementLoader):
 		else:
 			print( f"Cache file not found: {self.dspath}")
 
-class SyntheticLoader(IterativeDataLoader):
+class SyntheticLoader():
 
 	def __init__(self, cfg: DictConfig, **kwargs ):
 		super().__init__()

@@ -7,7 +7,7 @@ from astrotime.encoders.wavelet import WaveletAnalysisLayer, embedding_space
 from astrotime.trainers.iterative_trainer import IterativeTrainer
 from astrotime.models.cnn.cnn_baseline import get_spectral_peak_selector_from_cfg, ExpLoss, ExpHLoss
 from astrotime.config.context import astrotime_initialize
-from astrotime.loaders.synthetic import SyntheticLoader
+from astrotime.loaders.synthetic import SyntheticElementLoader
 
 version = "synthetic_period"
 
@@ -16,13 +16,13 @@ def my_app(cfg: DictConfig) -> None:
 	device: torch.device = astrotime_initialize( cfg, version )
 	embedding_space_array, embedding_space_tensor = embedding_space(cfg.transform, device)
 
-	data_loader = SyntheticLoader(cfg.data)
+	data_loader = SyntheticElementLoader(cfg.data)
 	data_loader.initialize(TSet.Train)
 
 	embedding = WaveletAnalysisLayer( 'analysis', cfg.transform, embedding_space_tensor, device )
 	model: nn.Module = get_spectral_peak_selector_from_cfg( cfg.model, device, embedding )
 
-	trainer = IterativeTrainer( cfg.train, device, data_loader, model, ExpLoss )
+	trainer = IterativeTrainer( cfg.train, device, data_loader, model, ExpLoss(cfg.data) )
 	trainer.evaluate()
 
 if __name__ == "__main__":
