@@ -18,7 +18,7 @@ class SyntheticElementLoader(ElementLoader):
 		self.current_batch = None
 		self.elem_sort = None
 		self.file_sort = list(range(self.nfiles))
-		self.use_batches = kwargs.get('use_batches',True)
+		self.use_batches = kwargs.get('use_batches',False)
 		self._load_cache_dataset()
 
 	def set_file(self, file_idx: int):
@@ -36,10 +36,10 @@ class SyntheticElementLoader(ElementLoader):
 	def nelem(self):
 		return self.file_size
 
-	def get_element(self, elem_index: int) -> RDict:
+	def get_element(self, elem_index: int) -> Optional[RDict]:
 		return self.get_batch_element( elem_index ) if self.use_batches else self.get_raw_element( elem_index )
 
-	def get_raw_element(self, elem_index: int) -> RDict:
+	def get_raw_element(self, elem_index: int) -> Optional[RDict]:
 		try:
 			eidx = self.elem_sort[elem_index][0]
 			dsy: xa.DataArray = self.data[ f's{eidx}' ]
@@ -57,13 +57,16 @@ class SyntheticElementLoader(ElementLoader):
 		sort_ordering.sort(key=lambda x: x[1])
 		return sort_ordering
 
-	def get_batch_element(self, elem_index: int) -> RDict:
-		batch_idx = elem_index // self.batch_size
-		if batch_idx != self.current_batch:
-			self.current_batch = self.get_batch(batch_idx)
-			self.batch_index = batch_idx
-		ib, b = elem_index % self.batch_size, self.current_batch
-		return dict(t=b['t'][ib], y=b['y'][ib], p=b['period'][ib], type=b['stype'][ib])
+	def get_batch_element(self, elem_index: int) -> Optional[RDict]:
+		try:
+			batch_idx = elem_index // self.batch_size
+			if batch_idx != self.current_batch:
+				self.current_batch = self.get_batch(batch_idx)
+				self.batch_index = batch_idx
+			ib, b = elem_index % self.batch_size, self.current_batch
+			return dict(t=b['t'][ib], y=b['y'][ib], p=b['period'][ib], type=b['stype'][ib])
+		except IndexError:
+			return None
 
 	def get_next_batch( self ) -> Optional[Dict[str,Any]]:
 		batch_start = self.batch_index*self.batch_size
