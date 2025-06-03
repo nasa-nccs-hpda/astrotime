@@ -137,9 +137,9 @@ class IterativeTrainer(object):
                         batch = self.get_next_batch()
                         if batch['z'].shape[0] > 0:
                             self.global_time = time.time()
-                            result: Tensor = check_nan( self.model( batch['z'] ) )
+                            result: Tensor = self.model( batch['z'] )
                             self.log.debug(f"result{list(result.shape)} range: [{result.min().cpu().item():.3f} -> {result.max().cpu().item():.3f}]")
-                            loss: Tensor = check_nan( self.loss( result.squeeze(), batch['target'].squeeze() ) )
+                            loss: Tensor =  self.loss( result.squeeze(), batch['target'].squeeze() )
                             self.conditionally_update_weights(loss)
                             losses.append(loss.cpu().item())
                             if (self.mode == TSet.Train) and ((ibatch % log_interval == 0) or ((ibatch < 5) and (epoch==0))):
@@ -176,31 +176,6 @@ class IterativeTrainer(object):
                         loss: float = self.loss(result.squeeze(), batch['target'].squeeze()).cpu().item()
                         print( f" *B-{ibatch}: Loss = {loss:.3f}")
                         losses.append(loss)
-
-            except StopIteration:
-                print( f"Completed evaluation in {elapsed(te)/60:.5f} min.")
-                L: np.array = np.array(losses)
-                print( f"Loss mean = {L.mean():.3f}, range=[{L.min():.3f} -> {L.max():.3f}]" )
-
-    def evaluate_peakfinder(self, version: Optional[str] = None ):
-        print(f"SignalTrainer[{self.mode}]: device={self.device}")
-        self.cfg["mode"] = "val"
-        with self.device:
-            te = time.time()
-            if version is not None:
-                self.initialize_checkpointing(version)
-            self.loader.initialize(self.mode)
-            self.model.train(False)
-            self.loader.init_epoch()
-            losses = []
-            try:
-                for ibatch in range(0,sys.maxsize):
-                    batch = self.get_next_batch()
-                    if batch['z'].shape[0] > 0:
-                        self.global_time = time.time()
-                        result: Tensor = self.model(batch['z'])
-                        loss: Tensor = self.loss(result.squeeze(), batch['target'].squeeze())
-                        losses.append(loss.cpu().item())
 
             except StopIteration:
                 print( f"Completed evaluation in {elapsed(te)/60:.5f} min.")
