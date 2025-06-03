@@ -18,7 +18,7 @@ class SyntheticElementLoader(ElementLoader):
 		self.current_batch = None
 		self.elem_sort = None
 		self.file_sort = list(range(self.nfiles))
-		self.use_batches = kwargs.get('use_batches',False)
+		self.use_batches = kwargs.get('use_batches',True)
 		self._load_cache_dataset()
 
 	def set_file(self, file_idx: int):
