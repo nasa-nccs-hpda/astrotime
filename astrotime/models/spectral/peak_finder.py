@@ -39,7 +39,7 @@ class Evaluator:
         self.loss = loss
 
     def encode_element(self, element: RDict) -> TRDict:
-        t,y,p = element.pop('t'), element.pop('y'), element.pop('period')
+        t,y,p = element.pop('t'), element.pop('y'), element.pop('p')
         print( f"encode_element: t{t.shape}, y{y.shape}, p{p.shape}")
         targp: Tensor = torch.from_numpy(p).to(self.device)
         z: Tensor = self.to_tensor(t,y)
