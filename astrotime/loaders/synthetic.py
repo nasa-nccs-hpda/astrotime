@@ -7,6 +7,7 @@ from omegaconf import DictConfig, OmegaConf
 from astrotime.util.series import TSet
 
 def merge( arrays: List[np.ndarray], slen: int ) -> np.ndarray:
+	if len( arrays ) == 0: raise IndexError
 	return np.stack( [ array[:slen] for array in arrays ], axis=0 )
 
 class SyntheticElementLoader(ElementLoader):
