@@ -4,8 +4,10 @@ from omegaconf import DictConfig, OmegaConf
 from astrotime.encoders.embedding import EmbeddingLayer
 from typing import Any, Dict, List, Optional, Tuple, Mapping
 from astrotime.models.spectral.peak_finder import SpectralPeakSelector
-import torch.nn.functional as F
-from astrotime.util.tensor_ops import check_nan
+
+def harmonic( y: float, t: float) -> float:
+	if y > t: return round(y / t)
+	else:     return 1 / round(t / y)
 
 class ExpU(nn.Module):
 
@@ -14,9 +16,7 @@ class ExpU(nn.Module):
 		self.f0: float = cfg.base_freq
 
 	def forward(self, x: torch.Tensor) -> torch.Tensor:
-		check_nan(x)
 		result = self.f0 * ( torch.pow(2,x) - 1 )
-		check_nan(result)
 		return result
 
 class ExpLoss(nn.Module):
@@ -25,10 +25,17 @@ class ExpLoss(nn.Module):
 		self.f0: float = cfg.base_freq
 
 	def forward(self, product: torch.Tensor, target: torch.Tensor)-> torch.Tensor:
-		check_nan(product)
-		check_nan(target)
 		result = torch.abs( torch.log2( (product+self.f0)/(target+self.f0) ) ).mean()
-		check_nan(result)
+		return result
+
+class ExpHLoss(nn.Module):
+	def __init__(self, cfg: DictConfig):
+		super(ExpHLoss, self).__init__()
+		self.f0: float = cfg.base_freq
+
+	def forward(self, product: torch.Tensor, target: torch.Tensor)-> torch.Tensor:
+		h: float = harmonic( product.item(), target.item() )
+		result = torch.abs( torch.log2( (product+self.f0)/(h*target+self.f0) ) ).mean()
 		return result
 
 def add_cnn_block( cfg: DictConfig, model: nn.Sequential, nchannels: int, num_input_features: int ) -> int:
