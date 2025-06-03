@@ -13,6 +13,12 @@ def harmonic( y: float, t: float) -> float:
     if y > t: return round(y/t)
     else:     return 1.0 / round(t/y)
 
+def sH(h:float) -> str:
+    if h > 1: return str(round(h))
+    else:
+        sh = round(1/h)
+        return f"1/{sh}" if sh > 1 else str(sh)
+
 class SpectralPeakSelector(Module):
 
     def __init__(self, cfg: DictConfig, device: device, fspace: Tensor, feature: int = 0 ) -> None:
@@ -69,8 +75,7 @@ class Evaluator:
                     h = harmonic(y,t)
                     loss: float = self.loss(y,t*h)
                     losses.append(loss)
-                    sH = str(round(h)) if (h>1) else f"1/{round(1/h)}"
-                    print(f" * Batch-{ibatch}: yt=({y:.3f},{t:.3f}), H= {sH}, yLoss= {loss:.5f}")
+                    print(f" * Batch-{ibatch}: yt=({y:.3f},{t:.3f}), H= {sH(h)}, yLoss= {loss:.5f}")
             L: np.array = np.array(losses)
             print(f"Loss mean = {L.mean():.3f}, range=[{L.min():.3f} -> {L.max():.3f}]")
 
