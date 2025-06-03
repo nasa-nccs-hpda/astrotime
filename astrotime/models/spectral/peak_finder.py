@@ -70,7 +70,7 @@ class Evaluator:
                     loss: float = self.loss(y,t*h)
                     losses.append(loss)
                     sH = str(round(h)) if h > 0 else f"1/{round(1/h)}"
-                    print(f" * Batch-{ibatch}: yt=({y:.3f},{t:.3f}), H= {sH}, yLoss= {loss:.3f}")
+                    print(f" * Batch-{ibatch}: yt=({y:.3f},{t:.3f}), H= {sH}, yLoss= {loss:.5f}")
             L: np.array = np.array(losses)
             print(f"Loss mean = {L.mean():.3f}, range=[{L.min():.3f} -> {L.max():.3f}]")
 
