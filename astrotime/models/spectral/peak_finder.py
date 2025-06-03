@@ -41,9 +41,8 @@ class Evaluator:
     def encode_element(self, element: RDict) -> TRDict:
         t,y,p = element.pop('t'), element.pop('y'), element.pop('p')
         print( f"encode_element: t{t.shape}, y{y.shape}, p{p.shape}")
-        targp: Tensor = torch.FloatTensor(p).to(self.device)
         z: Tensor = self.to_tensor(t,y)
-        return dict( z=z, target=1/targp, **element )
+        return dict( z=z, target=1/p, **element )
 
     def to_tensor(self, x: np.ndarray, y: np.ndarray) -> Tensor:
         with (self.device):
@@ -64,7 +63,7 @@ class Evaluator:
                 element: Optional[TRDict] =  self.get_element(ibatch)
                 if element is not None:
                     result: Tensor = self.model(element['z'])
-                    loss: Tensor = self.loss(result.squeeze(), element['target'].squeeze())
+                    loss: Tensor = self.loss(result.item(), element['target'])
                     losses.append(loss.cpu().item())
             print(f"Completed evaluation")
             L: np.array = np.array(losses)

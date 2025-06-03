@@ -28,6 +28,15 @@ class ExpLoss(nn.Module):
 		result = torch.abs( torch.log2( (product+self.f0)/(target+self.f0) ) ).mean()
 		return result
 
+class ElemExpLoss(nn.Module):
+	def __init__(self, cfg: DictConfig):
+		super(ElemExpLoss, self).__init__()
+		self.f0: float = cfg.base_freq
+
+	def forward(self, product: float, target: float)-> float:
+		result = abs( math.log2( (product+self.f0)/(target+self.f0) ) )
+		return result
+
 class ExpHLoss(nn.Module):
 	def __init__(self, cfg: DictConfig):
 		super(ExpHLoss, self).__init__()
