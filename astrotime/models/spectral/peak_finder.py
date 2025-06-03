@@ -64,9 +64,9 @@ class Evaluator:
                 element: Optional[TRDict] =  self.get_element(ibatch)
                 if element is not None:
                     result: Tensor = self.model(element['z'])
-                    loss: Tensor = self.loss(result.item(), element['target'])
-                    losses.append(loss.cpu().item())
-            print(f"Completed evaluation")
+                    loss: float = self.loss(result.item(), element['target'])
+                    losses.append(loss)
+                    print(f" * Batch-{ibatch}: Loss = {loss:.3f}")
             L: np.array = np.array(losses)
             print(f"Loss mean = {L.mean():.3f}, range=[{L.min():.3f} -> {L.max():.3f}]")
 
