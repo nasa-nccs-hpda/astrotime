@@ -61,7 +61,7 @@ class Evaluator:
         with self.device:
             losses = []
             for ibatch in range(0, self.loader.nelements):
-                element: Optional[TRDict] =  self.loader.get_element(ibatch)
+                element: Optional[TRDict] =  self.get_element(ibatch)
                 if element is not None:
                     result: Tensor = self.model(element['z'])
                     loss: Tensor = self.loss(result.squeeze(), element['target'].squeeze())
