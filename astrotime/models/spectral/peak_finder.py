@@ -1,15 +1,17 @@
 from torch import Tensor, device
 from torch.nn.modules import Module
-from omegaconf import DictConfig, OmegaConf
 from astrotime.util.math import tnorm
 import logging, torch
 import time, sys, numpy as np
 from omegaconf import DictConfig
 from torch import nn
-from astrotime.models.cnn.cnn_baseline import harmonic
 from typing import List, Optional, Dict, Type, Union, Tuple
 from astrotime.loaders.base import ElementLoader, RDict
 TRDict = Dict[str,Union[List[str],int,torch.Tensor]]
+
+def harmonic( y: float, t: float) -> float:
+    if y > t: return round(y/t)
+    else:     return 1 / round(t/y)
 
 class SpectralPeakSelector(Module):
 

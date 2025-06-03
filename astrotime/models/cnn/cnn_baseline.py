@@ -3,11 +3,7 @@ import torch, math
 from omegaconf import DictConfig, OmegaConf
 from astrotime.encoders.embedding import EmbeddingLayer
 from typing import Any, Dict, List, Optional, Tuple, Mapping
-from astrotime.models.spectral.peak_finder import SpectralPeakSelector
-
-def harmonic( y: float, t: float) -> float:
-	if y > t: return round(y/t)
-	else:     return 1 / round(t/y)
+from astrotime.models.spectral.peak_finder import SpectralPeakSelector, harmonic
 
 class ExpU(nn.Module):
 
