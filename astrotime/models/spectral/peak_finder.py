@@ -41,7 +41,6 @@ class Evaluator:
 
     def encode_element(self, element: RDict) -> TRDict:
         t,y,p = element.pop('t'), element.pop('y'), element.pop('p')
-        print( f"encode_element: t{t.shape}, y{y.shape}, p{p.shape}")
         z: Tensor = self.to_tensor(t,y)
         return dict( z=z, target=1/p, **element )
 
