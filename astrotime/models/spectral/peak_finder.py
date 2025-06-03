@@ -6,7 +6,7 @@ import logging, torch
 import time, sys, numpy as np
 from omegaconf import DictConfig
 from torch import nn
-from astrotime.util.tensor_ops import check_nan
+from astrotime.models.cnn.cnn_baseline import harmonic
 from typing import List, Optional, Dict, Type, Union, Tuple
 from astrotime.loaders.base import ElementLoader, RDict
 TRDict = Dict[str,Union[List[str],int,torch.Tensor]]
@@ -63,9 +63,11 @@ class Evaluator:
                 element: Optional[TRDict] =  self.get_element(ibatch)
                 if element is not None:
                     result: Tensor = self.model(element['z'])
-                    loss: float = self.loss(result.item(), element['target'])
+                    y,t = result.item(), element['target']
+                    h = harmonic(y,t)
+                    loss: float = self.loss(y,t*h)
                     losses.append(loss)
-                    print(f" * Batch-{ibatch}: Loss = {loss:.3f}")
+                    print(f" * Batch-{ibatch}: H={h:.2f}, Loss = {loss:.3f}")
             L: np.array = np.array(losses)
             print(f"Loss mean = {L.mean():.3f}, range=[{L.min():.3f} -> {L.max():.3f}]")
 

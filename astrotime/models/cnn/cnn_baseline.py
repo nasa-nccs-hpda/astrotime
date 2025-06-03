@@ -6,8 +6,8 @@ from typing import Any, Dict, List, Optional, Tuple, Mapping
 from astrotime.models.spectral.peak_finder import SpectralPeakSelector
 
 def harmonic( y: float, t: float) -> float:
-	if y > t: return round(y / t)
-	else:     return 1 / round(t / y)
+	if y > t: return round(y/t)
+	else:     return 1 / round(t/y)
 
 class ExpU(nn.Module):
 
