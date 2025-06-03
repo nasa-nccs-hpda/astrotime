@@ -16,8 +16,9 @@ class SpectralPeakSelector(Module):
 
     def forward(self, input: Tensor) -> Tensor:
         spectrum: Tensor = input[:,self.feature,:].squeeze()
-        print( f"SpectralPeakSelector: input{list(input.shape)} spectrum{list(spectrum.shape)}")
         speak: Tensor = spectrum.argmax(dim=-1).squeeze()
-        return self.fspace[speak]
+        result = self.fspace[speak]
+        print(f"SpectralPeakSelector: input{list(input.shape)} spectrum{list(spectrum.shape)} result{list(result.shape)}")
+        return result
 
 
