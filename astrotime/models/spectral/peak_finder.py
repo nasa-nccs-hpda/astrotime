@@ -11,7 +11,7 @@ TRDict = Dict[str,Union[List[str],int,torch.Tensor]]
 
 def harmonic( y: float, t: float) -> float:
     if y > t: return round(y/t)
-    else:     return 1 / round(t/y)
+    else:     return 1.0 / round(t/y)
 
 class SpectralPeakSelector(Module):
 
@@ -69,8 +69,7 @@ class Evaluator:
                     h = harmonic(y,t)
                     loss: float = self.loss(y,t*h)
                     losses.append(loss)
-                    hstr = str(int(h)) if h > 0 else f"{h:.3f}"
-                    print(f" * Batch-{ibatch}: yt=({y:.3f},{t:.3f}), H= {hstr}, yLoss= {loss:.3f}")
+                    print(f" * Batch-{ibatch}: yt=({y:.3f},{t:.3f}), H= {h:.3f}, yLoss= {loss:.3f}")
             L: np.array = np.array(losses)
             print(f"Loss mean = {L.mean():.3f}, range=[{L.min():.3f} -> {L.max():.3f}]")
 
