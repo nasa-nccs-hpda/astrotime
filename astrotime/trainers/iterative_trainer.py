@@ -173,8 +173,9 @@ class IterativeTrainer(object):
                     if batch['z'].shape[0] > 0:
                         self.global_time = time.time()
                         result: Tensor = self.model(batch['z'])
-                        loss: Tensor = self.loss(result.squeeze(), batch['target'].squeeze())
-                        losses.append(loss.cpu().item())
+                        loss: float = self.loss(result.squeeze(), batch['target'].squeeze()).cpu().item()
+                        print( f" *B-{ibatch}: Loss = {loss:.3f}")
+                        losses.append(loss)
 
             except StopIteration:
                 print( f"Completed evaluation in {elapsed(te)/60:.5f} min.")
