@@ -13,8 +13,7 @@ class MITLoader(IterativeDataLoader):
 	TestModes: List = [ "default", 'sinusoid', 'planet_crossing' ]
 
 	def __init__(self, cfg: DictConfig, **kwargs ):
-		super().__init__()
-		self.cfg = cfg
+		super().__init__(cfg)
 		self.sector_range = cfg.sector_range
 	#	self.f0: float = cfg.base_freq
 		self.sector_index: int = -1
