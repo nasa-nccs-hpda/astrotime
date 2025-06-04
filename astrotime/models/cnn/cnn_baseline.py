@@ -52,6 +52,7 @@ class ExpHLoss(nn.Module):
 
 	def harmonic(self, y: torch.Tensor, t: torch.Tensor) -> torch.Tensor:
 		result: torch.Tensor = torch.where( y>t, torch.round(y/t), 1/torch.round(t/y) ).detach()
+		result: torch.Tensor = torch.where( result>0, result, torch.ones_like(result) )
 		self._harmonics = result if (self._harmonics is None) else torch.concat( (self._harmonics, result.squeeze()) )
 		return result
 
