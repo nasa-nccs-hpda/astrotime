@@ -50,7 +50,7 @@ class ExpHLoss(nn.Module):
 		self._harmonics = None
 
 	def harmonic(self, y: torch.Tensor, t: torch.Tensor) -> torch.Tensor:
-		result: torch.Tensor = torch.where( y>t, torch.round(y/t), 1/torch.round(t/y) )
+		result: torch.Tensor = torch.where( y>t, torch.round(y/t), 1/torch.round(t/y) ).detach()
 		self._harmonics = result if (self._harmonics is None) else torch.concat( (self._harmonics, result.squeeze()) )
 		return result
 
@@ -62,7 +62,7 @@ class ExpHLoss(nn.Module):
 	def harmonics(self) -> np.ndarray:
 		rv: torch.Tensor = self._harmonics
 		self._harmonics = None
-		return rv.detach().cpu().numpy()
+		return rv.cpu().numpy()
 
 def add_cnn_block( cfg: DictConfig, model: nn.Sequential, nchannels: int, num_input_features: int ) -> int:
 	block_input_channels = num_input_features if (num_input_features > 0) else nchannels
