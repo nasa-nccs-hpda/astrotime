@@ -78,7 +78,7 @@ class Evaluator:
                         loss: float = self.loss(y,t*h)
                         losses.append(loss)
                         if loss > 0.02:
-                            print(f" * F-{ifile} Elem-{ielem}: yt=({y:.3f},{t:.3f}), H= {sH(h)}, yLoss= {loss:.5f}")
+                            print(f" * F-{ifile} Elem-{ielem}: yt=({y:.3f},{t*h:.3f},{t:.3f}), H= {sH(h)}, yLoss= {loss:.5f}")
             L: np.array = np.array(losses)
             print(f"Loss mean = {L.mean():.3f}, range=[{L.min():.3f} -> {L.max():.3f}]")
 
