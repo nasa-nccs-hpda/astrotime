@@ -2,6 +2,7 @@ from torch import nn
 import torch, math, numpy as np
 from omegaconf import DictConfig, OmegaConf
 from astrotime.encoders.embedding import EmbeddingLayer
+from astrotime.util.math import shp
 from typing import Any, Dict, List, Optional, Tuple, Mapping
 from astrotime.models.spectral.peak_finder import SpectralPeakSelector, harmonic
 
@@ -51,6 +52,7 @@ class ExpHLoss(nn.Module):
 
 	def harmonic(self, y: torch.Tensor, t: torch.Tensor) -> torch.Tensor:
 		result: torch.Tensor = torch.where( y>t, torch.round(y/t), 1/torch.round(t/y) ).detach()
+		print( f"harmonic: y{shp(y)}, t{shp(t)}, result{shp(result)}")
 		self._harmonics = result if (self._harmonics is None) else torch.concat( (self._harmonics, result.squeeze()) )
 		return result
 

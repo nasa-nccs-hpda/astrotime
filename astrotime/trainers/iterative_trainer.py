@@ -2,7 +2,6 @@ from typing import List, Optional, Dict, Type, Tuple, Union
 from omegaconf import DictConfig
 from .checkpoints import CheckpointManager
 from astrotime.util.tensor_ops import check_nan
-from astrotime.util.math import shp
 from astrotime.loaders.base import Loader, RDict
 import time, sys, torch, logging, numpy as np
 from torch import nn, optim, Tensor
