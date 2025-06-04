@@ -34,6 +34,21 @@ class ElemExpLoss(nn.Module):
 		result = abs( math.log2( (product+self.f0)/(target+self.f0) ) )
 		return result
 
+class ElemExpHLoss(nn.Module):
+	def __init__(self, cfg: DictConfig):
+		super(ElemExpHLoss, self).__init__()
+		self.f0: float = cfg.base_freq
+		self.maxh = cfg.maxh
+
+	def harmonic(self, y: float, t: float) -> float:
+		h: float = round(y/t) if (y>t) else 1.0/round(t/y)
+		return h if ((round(1/h)<=self.maxh) and (h<=self.maxh)) else 1.0
+
+	def forward(self, product: float, target: float)-> float:
+		h: float = self.harmonic(product, target)
+		result = abs( math.log2( (product+self.f0)/(h*target+self.f0) ) )
+		return result
+
 class ExpHLoss(nn.Module):
 	def __init__(self, cfg: DictConfig):
 		super(ExpHLoss, self).__init__()
