@@ -1,5 +1,5 @@
 from torch import nn
-import torch, math
+import torch, math, numpy as np
 from omegaconf import DictConfig, OmegaConf
 from astrotime.encoders.embedding import EmbeddingLayer
 from typing import Any, Dict, List, Optional, Tuple, Mapping
@@ -35,7 +35,7 @@ class ElemExpLoss(nn.Module):
 
 class ElemExpHLoss(nn.Module):
 	def __init__(self, cfg: DictConfig):
-		super(ExpHLoss, self).__init__()
+		super(ElemExpHLoss, self).__init__()
 		self.f0: float = cfg.base_freq
 
 	def forward(self, product: torch.Tensor, target: torch.Tensor)-> torch.Tensor:
@@ -47,15 +47,22 @@ class ExpHLoss(nn.Module):
 	def __init__(self, cfg: DictConfig):
 		super(ExpHLoss, self).__init__()
 		self.f0: float = cfg.base_freq
+		self._harmonics = None
 
-	@classmethod
-	def harmonic(cls, y: torch.Tensor, t: torch.Tensor) -> torch.Tensor:
-		return torch.where( y>t, torch.round(y/t), 1/torch.round(t/y) )
+	def harmonic(self, y: torch.Tensor, t: torch.Tensor) -> torch.Tensor:
+		result: torch.Tensor = torch.where( y>t, torch.round(y/t), 1/torch.round(t/y) )
+		self._harmonics = result if (self._harmonics is None) else torch.concat( (self._harmonics, result.squeeze()) )
+		return result
 
 	def forward(self, product: torch.Tensor, target: torch.Tensor)-> torch.Tensor:
 		h: torch.Tensor = self.harmonic( product, target )
 		result = torch.abs( torch.log2( (product+self.f0)/(h*target+self.f0) ) ).mean()
 		return result
+
+	def harmonics(self) -> np.ndarray:
+		rv: torch.Tensor = self._harmonics
+		self._harmonics = None
+		return rv.numpy()
 
 def add_cnn_block( cfg: DictConfig, model: nn.Sequential, nchannels: int, num_input_features: int ) -> int:
 	block_input_channels = num_input_features if (num_input_features > 0) else nchannels
