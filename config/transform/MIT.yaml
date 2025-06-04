@@ -8,7 +8,7 @@ time_scale:   1.0                   # Time rescale factor for shifted frequency 
 decay_factor: 0.0                   # Time envelope decay factor
 fold_harmonic: true                  # Add folded harmonic as additional features of output
 sum_features: false                  # Output the sum over harmonics at each freq
-subbatch_size: 5                     # If>0: Split batches into (serially computed) subbatches in order to fit into gpu memory
+subbatch_size: 2                     # If>0: Split batches into (serially computed) subbatches in order to fit into gpu memory
 
 
 
