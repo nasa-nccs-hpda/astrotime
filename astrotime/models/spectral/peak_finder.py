@@ -67,15 +67,18 @@ class Evaluator:
         self.cfg["mode"] = "val"
         with self.device:
             losses = []
-            for ielem in range(0, self.loader.nelements):
-                element: Optional[TRDict] =  self.get_element(ielem)
-                if element is not None:
-                    result: Tensor = self.model(element['z'])
-                    y,t = result.item(), element['target']
-                    h = harmonic(y,t)
-                    loss: float = self.loss(y,t*h)
-                    losses.append(loss)
-                    print(f" * Elem-{ielem}: yt=({y:.3f},{t:.3f}), H= {sH(h)}, yLoss= {loss:.5f}")
+            for ifile in range(0,self.loader.nfiles):
+                self.loader.set_file(ifile)
+                for ielem in range(0,self.loader.file_size):
+                    element: Optional[TRDict] =  self.get_element(ielem)
+                    if element is not None:
+                        result: Tensor = self.model(element['z'])
+                        y,t = result.item(), element['target']
+                        h = harmonic(y,t)
+                        loss: float = self.loss(y,t*h)
+                        losses.append(loss)
+                        if loss > 0.02:
+                            print(f" * F-{ifile} Elem-{ielem}: yt=({y:.3f},{t:.3f}), H= {sH(h)}, yLoss= {loss:.5f}")
             L: np.array = np.array(losses)
             print(f"Loss mean = {L.mean():.3f}, range=[{L.min():.3f} -> {L.max():.3f}]")
 
