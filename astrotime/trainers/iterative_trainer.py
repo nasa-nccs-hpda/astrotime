@@ -149,7 +149,7 @@ class IterativeTrainer(object):
                                     losses = []
                                     if type(self.loss) == ExpHLoss:
                                         h = self.loss.harmonics()
-                                        print(f"E-{epoch} B-{ibatch} loss={mean_loss:.3f}, range=({aloss.min():.3f} -> {aloss.max():.3f}), hrange=({h.min():.3f} -> {int(h.max())}), dt/batch={elapsed(t0):.5f} sec")
+                                        print(f"E-{epoch} B-{ibatch} loss={mean_loss:.3f}, range=({aloss.min():.3f} -> {aloss.max():.3f}), hrange=(1/{round(1/h.min())} -> {round(h.max())}), dt/batch={elapsed(t0):.5f} sec")
                                     else:
                                         print(f"E-{epoch} B-{ibatch} loss={mean_loss:.3f}, range=({aloss.min():.3f} -> {aloss.max():.3f}), dt/batch={elapsed(t0):.5f} sec")
 
