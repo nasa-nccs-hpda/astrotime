@@ -10,4 +10,5 @@ test_mode: default
 file_size: 1000
 nfiles: 1000
 refresh: false
+maxh: 10
 

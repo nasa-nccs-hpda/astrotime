@@ -34,27 +34,19 @@ class ElemExpLoss(nn.Module):
 		result = abs( math.log2( (product+self.f0)/(target+self.f0) ) )
 		return result
 
-class ElemExpHLoss(nn.Module):
-	def __init__(self, cfg: DictConfig):
-		super(ElemExpHLoss, self).__init__()
-		self.f0: float = cfg.base_freq
-
-	def forward(self, product: torch.Tensor, target: torch.Tensor)-> torch.Tensor:
-		h: float = harmonic( product.item(), target.item() )
-		result = torch.abs( torch.log2( (product+self.f0)/(h*target+self.f0) ) ).mean()
-		return result
-
 class ExpHLoss(nn.Module):
 	def __init__(self, cfg: DictConfig):
 		super(ExpHLoss, self).__init__()
 		self.f0: float = cfg.base_freq
+		self.maxh = cfg.maxh
 		self._harmonics = None
 
 	def harmonic(self, y: torch.Tensor, t: torch.Tensor) -> torch.Tensor:
-		result: torch.Tensor = torch.where( y>t, torch.round(y/t), 1/torch.round(t/y) ).detach()
-		result: torch.Tensor = torch.where( result>0, result, torch.ones_like(result) )
-		self._harmonics = result if (self._harmonics is None) else torch.concat( (self._harmonics, result.squeeze()) )
-		return result
+		h: torch.Tensor = torch.where( y>t, torch.round(y/t), 1/torch.round(t/y) ).detach()
+		valid: torch.Tensor = torch.logical_and( h>1/self.maxh, h<self.maxh )
+		h: torch.Tensor = torch.where( valid, h, torch.ones_like(h) )
+		self._harmonics = h if (self._harmonics is None) else torch.concat( (self._harmonics, h.squeeze()) )
+		return h
 
 	def forward(self, product: torch.Tensor, target: torch.Tensor)-> torch.Tensor:
 		h: torch.Tensor = self.harmonic( product, target )

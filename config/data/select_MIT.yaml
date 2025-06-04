@@ -12,5 +12,6 @@ test_mode: default
 snr_min: 100
 refresh: false
 max_series_length: 60000
+maxh: 10
 
 
