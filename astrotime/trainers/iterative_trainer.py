@@ -137,20 +137,21 @@ class IterativeTrainer(object):
                         if batch['z'].shape[0] > 0:
                             self.global_time = time.time()
                             result: Tensor = self.model( batch['z'] )
-                            self.log.debug(f"result{list(result.shape)} range: [{result.min().cpu().item():.3f} -> {result.max().cpu().item():.3f}]")
-                            loss: Tensor =  self.loss( result.squeeze(), batch['target'].squeeze() )
-                            self.conditionally_update_weights(loss)
-                            losses.append(loss.cpu().item())
-                            if (self.mode == TSet.Train) and ((ibatch % log_interval == 0) or ((ibatch < 5) and (epoch==0))):
-                                from astrotime.models.cnn.cnn_baseline import ExpHLoss
-                                aloss = np.array(losses)
-                                mean_loss = aloss.mean()
-                                losses = []
-                                if type(self.loss) == ExpHLoss:
-                                    h = self.loss.harmonics()
-                                    print(f"E-{epoch} B-{ibatch} loss={mean_loss:.3f}, range=({aloss.min():.3f} -> {aloss.max():.3f}), hrange=({h.min():.3f} -> {int(h.max())}), dt/batch={elapsed(t0):.5f} sec")
-                                else:
-                                    print(f"E-{epoch} B-{ibatch} loss={mean_loss:.3f}, range=({aloss.min():.3f} -> {aloss.max():.3f}), dt/batch={elapsed(t0):.5f} sec")
+                            if result.squeeze().ndim > 0:
+                                self.log.debug(f"result{list(result.shape)} range: [{result.min().cpu().item():.3f} -> {result.max().cpu().item():.3f}]")
+                                loss: Tensor =  self.loss( result.squeeze(), batch['target'].squeeze() )
+                                self.conditionally_update_weights(loss)
+                                losses.append(loss.cpu().item())
+                                if (self.mode == TSet.Train) and ((ibatch % log_interval == 0) or ((ibatch < 5) and (epoch==0))):
+                                    from astrotime.models.cnn.cnn_baseline import ExpHLoss
+                                    aloss = np.array(losses)
+                                    mean_loss = aloss.mean()
+                                    losses = []
+                                    if type(self.loss) == ExpHLoss:
+                                        h = self.loss.harmonics()
+                                        print(f"E-{epoch} B-{ibatch} loss={mean_loss:.3f}, range=({aloss.min():.3f} -> {aloss.max():.3f}), hrange=({h.min():.3f} -> {int(h.max())}), dt/batch={elapsed(t0):.5f} sec")
+                                    else:
+                                        print(f"E-{epoch} B-{ibatch} loss={mean_loss:.3f}, range=({aloss.min():.3f} -> {aloss.max():.3f}), dt/batch={elapsed(t0):.5f} sec")
 
                 except StopIteration:
                     print( f"Completed epoch {epoch} in {elapsed(te)/60:.5f} min, mean-loss= {np.array(losses).mean():.3f}")
