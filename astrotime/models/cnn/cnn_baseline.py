@@ -62,7 +62,7 @@ class ExpHLoss(nn.Module):
 	def harmonics(self) -> np.ndarray:
 		rv: torch.Tensor = self._harmonics
 		self._harmonics = None
-		return rv.cpu().numpy()
+		return rv.detach().cpu().numpy()
 
 def add_cnn_block( cfg: DictConfig, model: nn.Sequential, nchannels: int, num_input_features: int ) -> int:
 	block_input_channels = num_input_features if (num_input_features > 0) else nchannels
