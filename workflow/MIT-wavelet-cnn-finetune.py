@@ -8,7 +8,7 @@ from astrotime.encoders.wavelet import WaveletAnalysisLayer, embedding_space
 from astrotime.trainers.iterative_trainer import IterativeTrainer
 from astrotime.models.cnn.cnn_baseline import get_model_from_cfg, ExpLoss, ExpU
 from astrotime.config.context import astrotime_initialize
-version = "MIT_period"
+version = "select_MIT_period"
 ckp_version = "synthetic_period"
 
 @hydra.main(version_base=None, config_path="../config", config_name=version)
