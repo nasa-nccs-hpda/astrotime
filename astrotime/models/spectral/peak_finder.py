@@ -67,7 +67,7 @@ class Evaluator:
         self.cfg["mode"] = "val"
         with self.device:
             losses = []
-            for ifile in range(0,self.loader.nfiles):
+            for ifile in range(0,10):
                 self.loader.set_file(ifile)
                 for ielem in range(0,self.loader.file_size):
                     element: Optional[TRDict] =  self.get_element(ielem)
