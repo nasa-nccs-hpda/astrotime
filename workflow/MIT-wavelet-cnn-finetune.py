@@ -23,7 +23,7 @@ def my_app(cfg: DictConfig) -> None:
 	model: nn.Module = get_model_from_cfg( cfg.model, device, embedding, ExpU(cfg) )
 
 	trainer = IterativeTrainer( cfg.train, device, data_loader, model, ExpLoss(cfg) )
-	trainer.compute(ckp_version)
+	trainer.compute(version,ckp_version)
 
 if __name__ == "__main__":
 	my_app()

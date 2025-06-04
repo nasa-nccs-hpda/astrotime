@@ -35,7 +35,11 @@ class CheckpointManager(object):
 
 	def load_checkpoint( self,  **kwargs ) -> Optional[Dict[str,Any]]:
 		update_model = kwargs.get('update_model', False)
+		init_version = kwargs.get('init_version')
 		cppath = self.checkpoint_path()
+		if init_version is not None:
+			init_cppath = self.checkpoint_path(init_version)
+			shutil.copyfile(init_cppath, cppath)
 		train_state, cp_exists = {}, os.path.exists( cppath )
 		if cp_exists:
 			try:
@@ -63,8 +67,9 @@ class CheckpointManager(object):
 		except FileNotFoundError: pass
 
 
-	def checkpoint_path( self, ext: str = "pt", backup=False ) -> str:
-		cpath = f"{self.cfg.results_path}/checkpoints/{self.version}"
+	def checkpoint_path( self, version: str = None, ext: str = "pt", backup=False ) -> str:
+		if version is None: version = self.version
+		cpath = f"{self.cfg.results_path}/checkpoints/{version}"
 		if backup: cpath = f"{cpath}.backup"
 		os.makedirs(os.path.dirname(cpath), 0o777, exist_ok=True)
 		return cpath + '.' + ext
