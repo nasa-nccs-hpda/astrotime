@@ -19,9 +19,9 @@ def my_app(cfg: DictConfig) -> None:
 	data_loader.initialize(TSet.Train)
 
 	embedding = WaveletAnalysisLayer( 'analysis', cfg.transform, embedding_space_tensor, device )
-	model: nn.Module = get_model_from_cfg( cfg.model, device, embedding, ExpU(cfg.model) )
+	model: nn.Module = get_model_from_cfg( cfg.model, device, embedding, ExpU(cfg.data) )
 
-	trainer = IterativeTrainer( cfg.train, device, data_loader, model, ExpLoss(cfg.train) )
+	trainer = IterativeTrainer( cfg.train, device, data_loader, model, ExpLoss(cfg.data) )
 	trainer.initialize_checkpointing(version)
 	trainer.compute()
 
