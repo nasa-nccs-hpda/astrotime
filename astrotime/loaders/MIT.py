@@ -307,9 +307,9 @@ class MITElementLoader(ElementLoader):
 		if os.path.exists(dspath):
 			self.data = xa.open_dataset( dspath, engine="netcdf4" )
 			self._TICS = self.data.attrs['TICS']
-			self.log.info( f"Opened cache dataset from {dspath}, nvars = {len(self.data.data_vars)//2}")
+			print( f"Opened cache dataset from {dspath}, nvars = {len(self.data.data_vars)//2}")
 		else:
-			self.log.info( f"Cache file not found: {dspath}")
+			print( f"Cache file not found: {dspath}")
 
 	def load_data( self ) -> bool:
 		if (self.loaded_file != self.ifile) or (self.data is None):
@@ -321,8 +321,7 @@ class MITElementLoader(ElementLoader):
 	@property
 	def file_size(self):
 		self.load_data()
-		ndvars = len(self.data.data_vars)
-		return ndvars//2
+		return len(self._TICS)
 
 	def get_element( self, elem_index: int, filters=False ) -> Optional[RDict]:
 		self.load_data()
