@@ -278,6 +278,7 @@ class MITElementLoader(ElementLoader):
 		super().__init__(cfg)
 		self.sector_range = cfg.sector_range
 		self.loaded_file = -1
+		self.filters = kwargs.get('filters',True)
 		self.snr_min: float = cfg.get('snr_min',0.0)
 		self.max_series_length: int = cfg.get('max_series_length', 80000 )
 		self.period_range: Tuple[float,float] = self.get_period_range()
@@ -300,7 +301,8 @@ class MITElementLoader(ElementLoader):
 	@property
 	def cache_path(self) -> str:
 		os.makedirs(self.cfg.cache_path, exist_ok=True)
-		return f"{self.cfg.cache_path}/sector-{self.cfg.sector_range[self.ifile]}.nc"
+		isector = self.cfg.sector_range[0] + self.ifile
+		return f"{self.cfg.cache_path}/sector-{isector}.nc"
 
 	def _load_cache_dataset( self ):
 		dspath: str = self.cache_path
@@ -319,21 +321,21 @@ class MITElementLoader(ElementLoader):
 		return False
 
 	@property
-	def file_size(self):
+	def file_size(self) -> int:
 		self.load_data()
 		return len(self._TICS)
 
 	@property
-	def nfiles(self):
+	def nfiles(self) -> int:
 		return self.cfg.sector_range[1] - self.cfg.sector_range[0]
 
-	def get_element( self, elem_index: int, filters=False ) -> Optional[RDict]:
+	def get_element( self, elem_index: int ) -> Optional[RDict]:
 		self.load_data()
 		TIC = self._TICS[elem_index]
 		dsy: xa.DataArray = self.data[TIC+".y"]
 		period = dsy.attrs["period"]
 		sn = dsy.attrs["sn"]
-		if (self.in_range(period) and sn>self.snr_min) or not filters:
+		if not self.filters or (self.in_range(period) and (sn>self.snr_min)):
 			nanmask = np.isnan(dsy.values)
 			dst: xa.DataArray = self.data[TIC + ".time"]
 			train_data = dict( t=dst.values[~nanmask], y=dsy.values[~nanmask], period=period, sn=sn, sector=self.ifile, tic=TIC )
@@ -348,7 +350,7 @@ class MITElementLoader(ElementLoader):
 		elems, ielem, series_length = [], 0, -1
 		periods, sns, tics, ts, ys, slens  = [], [], [], [], [], []
 		for ielem in range(self.batch_offset,len(self._TICS)):
-			elem: RDict = self.get_element(ielem,filters=True)
+			elem: RDict = self.get_element(ielem)
 			if elem is not None:
 				ts.append(elem['t'])
 				ys.append(elem['y'])
