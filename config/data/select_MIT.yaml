@@ -3,7 +3,7 @@ dataset_root:  "/explore/nobackup/people/bppowel1/mit_lcs/"    # Location of pro
 cache_path:  "${platform.project_root}/cache/data/MIT"
 sector_range:
   - 59
-  - 83
+  - 82
 batch_size: 16
 nfreq_oct: 512                     # Number of frequency values (log2 spaced) in each octave
 base_freq:  0.025                    # Start frequency of base freq range
