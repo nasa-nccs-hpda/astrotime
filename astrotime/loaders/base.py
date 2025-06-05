@@ -59,11 +59,17 @@ class ElementLoader(Loader):
 		super().__init__(cfg,**kwargs)
 		self.rootdir = cfg.dataset_root
 		self.dset = cfg.source
-		self.file_size: int = cfg.file_size
-		self.nfiles = cfg.nfiles
 		self.ifile: int = kwargs.get('file',0)
 		self.data = None
 		self.batch_offset = 0
+
+	@property
+	def file_size(self):
+		return self.cfg.file_size
+
+	@property
+	def nfiles(self):
+		return self.cfg.nfiles
 
 	def init_epoch(self):
 		self.ifile = 0

@@ -318,6 +318,12 @@ class MITElementLoader(ElementLoader):
 			return True
 		return False
 
+	@property
+	def file_size(self):
+		self.load_data()
+		ndvars = len(self.dataset.data_vars)
+		return ndvars//2
+
 	def get_element( self, elem_index: int, filters=False ) -> Optional[RDict]:
 		self.load_data()
 		TIC = self._TICS[elem_index]
