@@ -325,7 +325,7 @@ class MITElementLoader(ElementLoader):
 
 	@property
 	def nfiles(self):
-		return self.cfg.sector_range[1] - self.cfg.sector_range[0] + 1
+		return self.cfg.sector_range[1] - self.cfg.sector_range[0]
 
 	def get_element( self, elem_index: int, filters=False ) -> Optional[RDict]:
 		self.load_data()
