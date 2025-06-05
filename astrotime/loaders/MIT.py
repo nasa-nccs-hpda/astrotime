@@ -3,7 +3,7 @@ from astrotime.loaders.base import IterativeDataLoader, RDict
 from astrotime.loaders.pcross import PlanetCrossingDataGenerator
 from typing import List, Optional, Dict, Type, Union, Tuple
 import pandas as pd
-from enum import Enum
+from astrotime.loaders.base import ElementLoader, RDict
 from glob import glob
 from omegaconf import DictConfig, OmegaConf
 from astrotime.util.series import TSet
@@ -271,5 +271,88 @@ class MITOctavesLoader(MITLoader):
 		f0 = self.base_freq
 		f1 = f0 * pow(2,self.noctaves)
 		return 1/f1, 1/f0
+
+class MITElementLoader(ElementLoader):
+
+	def __init__(self, cfg: DictConfig, **kwargs ):
+		super().__init__(cfg)
+		self.sector_range = cfg.sector_range
+		self.loaded_file = -1
+		self.snr_min: float = cfg.get('snr_min',0.0)
+		self.max_series_length: int = cfg.get('max_series_length', 80000 )
+		self.period_range: Tuple[float,float] = self.get_period_range()
+		self._TICS: List[str]  = None
+
+	def get_period_range(self) -> Tuple[float,float]:
+		f0 = self.cfg.base_freq
+		f1 = f0 + f0 * 2**self.cfg.noctaves
+		return 1/f1, 1/f0
+
+	@property
+	def batch_size(self) -> int:
+		return self.cfg.batch_size
+
+	@property
+	def TICS( self ) -> List[str]:
+		self.load_data()
+		return self._TICS
+
+	@property
+	def cache_path(self) -> str:
+		os.makedirs(self.cfg.cache_path, exist_ok=True)
+		return f"{self.cfg.cache_path}/sector-{self.ifile}.nc"
+
+	def _load_cache_dataset( self ):
+		dspath: str = self.cache_path
+		if os.path.exists(dspath):
+			self.dataset = xa.open_dataset( dspath, engine="netcdf4" )
+			self._TICS = self.dataset.attrs['TICS']
+			self.log.info( f"Opened cache dataset from {dspath}, nvars = {len(self.dataset.data_vars)}")
+		else:
+			self.log.info( f"Cache file not found: {dspath}")
+
+	def load_data( self ) -> bool:
+		if (self.loaded_file != self.ifile) or (self.data is None):
+			self._load_cache_dataset()
+			self.loaded_file = self.ifile
+			return True
+		return False
+
+	def get_element( self, elem_index: int, filters=False ) -> Optional[RDict]:
+		self.load_data()
+		TIC = self._TICS[elem_index]
+		dsy: xa.DataArray = self.dataset[TIC+".y"]
+		period = dsy.attrs["period"]
+		sn = dsy.attrs["sn"]
+		if (self.in_range(period) and sn>self.snr_min) or not filters:
+			nanmask = np.isnan(dsy.values)
+			dst: xa.DataArray = self.dataset[TIC + ".time"]
+			train_data = dict( t=dst.values[~nanmask], y=dsy.values[~nanmask], period=period, sn=sn, sector=self.ifile, tic=TIC )
+			return train_data
+		return None
+
+	def in_range(self, p: float) -> bool:
+		if self.period_range is None: return True
+		return (p >= self.period_range[0]) and (p <= self.period_range[1])
+
+	def get_next_batch(self) -> Optional[Dict[str,np.ndarray]]:
+		elems, ielem, series_length = [], 0, -1
+		periods, sns, tics, ts, ys, slens  = [], [], [], [], [], []
+		for ielem in range(self.batch_offset,len(self._TICS)):
+			elem: RDict = self.get_element(ielem,filters=True)
+			if elem is not None:
+				ts.append(elem['t'])
+				ys.append(elem['y'])
+				periods.append(elem['period'])
+				sns.append(elem['sn'])
+				tics.append(elem['tic'])
+				slens.append( elem['y'].size )
+			if len(elems) >= self.cfg.batch_size: break
+		if len(elems) == 0: return None
+		slen = np.array(slens).min()
+		yn = np.stack( [ y[:slen] for y in ys], axis=0 )
+		tn = np.stack( [ t[:slen] for t in ts], axis=0 )
+		self.batch_offset += len(ys)
+		return dict( t=tn, y=yn, period=np.array(periods), sn=np.array(sns), TICS=np.array(tics) )
 
 
