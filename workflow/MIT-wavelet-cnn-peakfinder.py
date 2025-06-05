@@ -2,7 +2,6 @@ import hydra, torch
 from omegaconf import DictConfig
 from torch import nn
 from typing import List, Optional, Dict, Type, Union, Tuple
-from astrotime.util.series import TSet
 from astrotime.loaders.MIT import MITElementLoader
 from astrotime.encoders.wavelet import WaveletAnalysisLayer, embedding_space
 from astrotime.models.spectral.peak_finder import Evaluator
