@@ -300,7 +300,7 @@ class MITElementLoader(ElementLoader):
 	@property
 	def cache_path(self) -> str:
 		os.makedirs(self.cfg.cache_path, exist_ok=True)
-		return f"{self.cfg.cache_path}/sector-{self.ifile}.nc"
+		return f"{self.cfg.cache_path}/sector-{self.cfg.sector_range[self.ifile]}.nc"
 
 	def _load_cache_dataset( self ):
 		dspath: str = self.cache_path
@@ -322,6 +322,10 @@ class MITElementLoader(ElementLoader):
 	def file_size(self):
 		self.load_data()
 		return len(self._TICS)
+
+	@property
+	def nfiles(self):
+		return self.cfg.sector_range[1] - self.cfg.sector_range[0] + 1
 
 	def get_element( self, elem_index: int, filters=False ) -> Optional[RDict]:
 		self.load_data()
