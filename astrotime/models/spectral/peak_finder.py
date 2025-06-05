@@ -48,7 +48,7 @@ class Evaluator:
         self.loss = loss
 
     def encode_element(self, element: RDict) -> TRDict:
-        t,y,p = element.pop('t'), element.pop('y'), element.pop('p')
+        t,y,p = element.pop('t'), element.pop('y'), element.pop('period')
         z: Tensor = self.to_tensor(t,y)
         return dict( z=z, target=1/p, **element )
 
