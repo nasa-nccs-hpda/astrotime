@@ -305,9 +305,9 @@ class MITElementLoader(ElementLoader):
 	def _load_cache_dataset( self ):
 		dspath: str = self.cache_path
 		if os.path.exists(dspath):
-			self.dataset = xa.open_dataset( dspath, engine="netcdf4" )
-			self._TICS = self.dataset.attrs['TICS']
-			self.log.info( f"Opened cache dataset from {dspath}, nvars = {len(self.dataset.data_vars)}")
+			self.data = xa.open_dataset( dspath, engine="netcdf4" )
+			self._TICS = self.data.attrs['TICS']
+			self.log.info( f"Opened cache dataset from {dspath}, nvars = {len(self.data.data_vars)//2}")
 		else:
 			self.log.info( f"Cache file not found: {dspath}")
 
@@ -321,18 +321,18 @@ class MITElementLoader(ElementLoader):
 	@property
 	def file_size(self):
 		self.load_data()
-		ndvars = len(self.dataset.data_vars)
+		ndvars = len(self.data.data_vars)
 		return ndvars//2
 
 	def get_element( self, elem_index: int, filters=False ) -> Optional[RDict]:
 		self.load_data()
 		TIC = self._TICS[elem_index]
-		dsy: xa.DataArray = self.dataset[TIC+".y"]
+		dsy: xa.DataArray = self.data[TIC+".y"]
 		period = dsy.attrs["period"]
 		sn = dsy.attrs["sn"]
 		if (self.in_range(period) and sn>self.snr_min) or not filters:
 			nanmask = np.isnan(dsy.values)
-			dst: xa.DataArray = self.dataset[TIC + ".time"]
+			dst: xa.DataArray = self.data[TIC + ".time"]
 			train_data = dict( t=dst.values[~nanmask], y=dsy.values[~nanmask], period=period, sn=sn, sector=self.ifile, tic=TIC )
 			return train_data
 		return None
