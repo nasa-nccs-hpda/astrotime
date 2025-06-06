@@ -376,7 +376,7 @@ class MITElementLoader(ElementLoader):
 				break
 		if len(ts) == 0: return None
 		nsl = np.array(slens)
-		self.log.info( f"get_next_batch({b0}/{nb}), t{ts[0].shape}, y{ys[0].shape}, slens: {nsl.min()}->{nsl.max()} (int({nsl.mean()}))")
+		# self.log.info( f"get_next_batch({b0}/{nb}), t{ts[0].shape}, y{ys[0].shape}, slens: {nsl.min()}->{nsl.max()} (int({nsl.mean()}))")
 		self.batch_offset = ielem + 1
 		slen = np.array(slens).min()
 		yn = np.stack( [ y[:slen] for y in ys], axis=0 )
