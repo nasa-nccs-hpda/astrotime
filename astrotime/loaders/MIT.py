@@ -308,10 +308,11 @@ class MITElementLoader(ElementLoader):
 		dspath: str = self.cache_path
 		if os.path.exists(dspath):
 			self.data = xa.open_dataset( dspath, engine="netcdf4" )
-			self.get_sorted_TICS()
-			print( f"Opened cache dataset from {dspath}, nvars = {len(self.data.data_vars)//2}")
+			# self.get_sorted_TICS()
+			self._TICS = self.data.attrs['TICS']
+			self.log.info( f"Opened cache dataset from {dspath}, nvars = {len(self.data.data_vars)//2}")
 		else:
-			print( f"Cache file not found: {dspath}")
+			self.log.info( f"Cache file not found: {dspath}")
 
 	def load_data( self ) -> bool:
 		if (self.loaded_file != self.ifile) or (self.data is None):
@@ -374,7 +375,7 @@ class MITElementLoader(ElementLoader):
 			if len(ts) >= self.cfg.batch_size:
 				break
 		if len(ts) == 0: return None
-		self.log.info( f"get_next_batch({self.batch_offset}/{len(self._TICS)}), t{ts[0].shape}, y{ys[0].shape}, slen-std={np.array(slens).std():.3f}")
+		# self.log.info( f"get_next_batch({self.batch_offset}/{len(self._TICS)}), t{ts[0].shape}, y{ys[0].shape}, slen-std={np.array(slens).std():.3f}")
 		self.batch_offset = ielem + 1
 		slen = np.array(slens).min()
 		yn = np.stack( [ y[:slen] for y in ys], axis=0 )
