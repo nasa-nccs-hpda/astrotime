@@ -308,8 +308,8 @@ class MITElementLoader(ElementLoader):
 		dspath: str = self.cache_path
 		if os.path.exists(dspath):
 			self.data = xa.open_dataset( dspath, engine="netcdf4" )
-			# self.get_sorted_TICS()
-			self._TICS = self.data.attrs['TICS']
+			self.get_sorted_TICS()
+			# self._TICS = self.data.attrs['TICS']
 			self.log.info( f"Opened cache dataset from {dspath}, nvars = {len(self.data.data_vars)//2}")
 		else:
 			self.log.info( f"Cache file not found: {dspath}")
@@ -361,9 +361,9 @@ class MITElementLoader(ElementLoader):
 		self._TICS = [elem[1] for elem in elems]
 
 	def get_next_batch(self) -> Optional[Dict[str,np.ndarray]]:
-		ielem, periods, sns, tics, ts, ys, slens  = 0, [], [], [], [], [], []
+		ielem, periods, sns, tics, ts, ys, slens, b0, nb  = 0, [], [], [], [], [], [], self.batch_offset, len(self._TICS)
 		self.update_file()
-		for ielem in range( self.batch_offset, len(self._TICS) ):
+		for ielem in range( b0, nb ):
 			elem: RDict = self.get_element(ielem)
 			if elem is not None:
 				ts.append(elem['t'])
@@ -375,7 +375,8 @@ class MITElementLoader(ElementLoader):
 			if len(ts) >= self.cfg.batch_size:
 				break
 		if len(ts) == 0: return None
-		# self.log.info( f"get_next_batch({self.batch_offset}/{len(self._TICS)}), t{ts[0].shape}, y{ys[0].shape}, slen-std={np.array(slens).std():.3f}")
+		nsl = np.array(slens)
+		self.log.info( f"get_next_batch({b0}/{nb}), t{ts[0].shape}, y{ys[0].shape}, slens: {nsl.min()}->{nsl.max()} (int({nsl.mean()}))")
 		self.batch_offset = ielem + 1
 		slen = np.array(slens).min()
 		yn = np.stack( [ y[:slen] for y in ys], axis=0 )
