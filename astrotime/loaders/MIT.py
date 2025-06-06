@@ -355,9 +355,9 @@ class MITElementLoader(ElementLoader):
 			self.load_data()
 
 	def get_next_batch(self) -> Optional[Dict[str,np.ndarray]]:
-		periods, sns, tics, ts, ys, slens  = [], [], [], [], [], []
+		periods, sns, tics, ts, ys, slens, b0, nb  = [], [], [], [], [], [], self.batch_offset, len(self._TICS)
 		self.update_file()
-		for ielem in range( self.batch_offset, len(self._TICS) ):
+		for ielem in range( b0, nb ):
 			elem: RDict = self.get_element(ielem)
 			if elem is not None:
 				ts.append(elem['t'])
@@ -370,6 +370,7 @@ class MITElementLoader(ElementLoader):
 				self.batch_offset = ielem+1
 				break
 		if len(ts) == 0: return None
+		self.log.info( f"get_next_batch({b0}/{nb}), t{ts[0].shape}, y{ys[0].shape}, slen-std={np.array(slens).std():.3f}")
 		slen = np.array(slens).min()
 		yn = np.stack( [ y[:slen] for y in ys], axis=0 )
 		tn = np.stack( [ t[:slen] for t in ts], axis=0 )
