@@ -6,7 +6,7 @@ from astrotime.loaders.base import RDict, ElementLoader
 import time, sys, torch, logging, numpy as np
 from torch import nn, optim, Tensor
 from astrotime.trainers.checkpoints import CheckpointManager
-from astrotime.models.cnn.cnn_baseline import get_model_from_cfg, get_spectral_peak_selector_from_cfg
+from astrotime.models.cnn.cnn_baseline import get_model_from_cfg, get_spectral_peak_selector_from_cfg, ExpU
 TRDict = Dict[str,Union[List[str],int,torch.Tensor]]
 
 def tnorm(x: Tensor, dim: int=0) -> Tensor:
@@ -17,14 +17,15 @@ def tnorm(x: Tensor, dim: int=0) -> Tensor:
 class ModelEvaluator(object):
 
     def __init__(self, cfg: DictConfig, version: str, loader: ElementLoader, device, **kwargs ):
-        self.embedding_space: Tensor = embedding_space(cfg.transform, device)[1]
-        self.embedding: EmbeddingLayer = WaveletAnalysisLayer('analysis', cfg.transform, self.embedding_space, device)
+        espace = embedding_space(cfg.transform, device)
+        self.freqspace: np.ndarray = espace[0]
+        self.embedding: EmbeddingLayer = WaveletAnalysisLayer('analysis', cfg.transform, espace[1], device)
         self.loader: ElementLoader = loader
         self.cfg: DictConfig = cfg
         self.log = logging.getLogger()
         self.mtype = kwargs.get( 'mtype', "cnn" )
         if self.mtype == "peakfinder": self.model: nn.Module = get_spectral_peak_selector_from_cfg(cfg.model, device, self.embedding)
-        elif self.mtype == "cnn":      self.model: nn.Module = get_model_from_cfg(cfg.model, device, self.embedding)
+        elif self.mtype == "cnn":      self.model: nn.Module = get_model_from_cfg( cfg.model, device, self.embedding, ExpU(cfg.data) )
         self.device = device
         self._target_freq = None
         self._model_freq = None
