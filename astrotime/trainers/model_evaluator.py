@@ -34,9 +34,10 @@ class ModelEvaluator(object):
             self.train_state = self._checkpoint_manager.load_checkpoint( update_model=True )
 
     def get_optimizer(self) -> optim.Optimizer:
-        if   self.cfg.train.optim == "rms":  return optim.RMSprop( self.model.parameters(), lr=self.cfg.lr )
-        elif self.cfg.train.optim == "adam": return optim.Adam(    self.model.parameters(), lr=self.cfg.lr, weight_decay=self.cfg.weight_decay )
-        else: raise RuntimeError( f"Unknown optimizer: {self.cfg.optim}")
+        cfg = self.cfg.train
+        if   cfg.optim == "rms":  return optim.RMSprop( self.model.parameters(), lr=cfg.lr )
+        elif cfg.optim == "adam": return optim.Adam(    self.model.parameters(), lr=cfg.lr, weight_decay=cfg.weight_decay )
+        else: raise RuntimeError( f"Unknown optimizer: {cfg.optim}")
 
     @property
     def nelements(self) -> int:
