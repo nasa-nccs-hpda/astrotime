@@ -7,7 +7,7 @@ from astrotime.encoders.wavelet import WaveletAnalysisLayer, embedding_space
 from astrotime.models.spectral.peak_finder import Evaluator
 from astrotime.models.cnn.cnn_baseline import get_spectral_peak_selector_from_cfg, ElemExpHLoss
 from astrotime.config.context import astrotime_initialize
-version = "select_MIT_period"
+version = "MIT_period"  # "select_MIT_period"
 
 @hydra.main(version_base=None, config_path="../config", config_name=version)
 def my_app(cfg: DictConfig) -> None:
