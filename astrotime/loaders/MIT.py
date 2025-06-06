@@ -346,9 +346,18 @@ class MITElementLoader(ElementLoader):
 		if self.period_range is None: return True
 		return (p >= self.period_range[0]) and (p <= self.period_range[1])
 
+	def update_file(self):
+		if self.batch_offset >= len(self._TICS)-1:
+			self.batch_offset = 0
+			self.ifile += 1
+			if self.ifile >= self.nfiles:
+				raise StopIteration
+			self.load_data()
+
 	def get_next_batch(self) -> Optional[Dict[str,np.ndarray]]:
 		elems, ielem, series_length = [], 0, -1
 		periods, sns, tics, ts, ys, slens  = [], [], [], [], [], []
+		self.update_file()
 		for ielem in range(self.batch_offset,len(self._TICS)):
 			elem: RDict = self.get_element(ielem)
 			if elem is not None:

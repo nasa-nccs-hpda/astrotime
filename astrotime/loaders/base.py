@@ -75,6 +75,7 @@ class ElementLoader(Loader):
 		self.ifile = 0
 		self.data = None
 		self.batch_offset = 0
+		self.load_data()
 
 	def set_file(self, file_idx: int):
 		if file_idx != self.ifile:
