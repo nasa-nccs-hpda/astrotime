@@ -139,7 +139,6 @@ class RawDatasetPlot(SignalPlot):
 		self.update_period_marker()
 		self.ax.set_ylim(ys.min(),ys.max())
 
-	@exception_handled
 	def get_element_data(self) -> Tuple[np.ndarray,np.ndarray,float,float,str]:
 		self.data_loader.set_file(self.file)
 		element: Dict[str,Union[np.ndarray,float]] = self.data_loader.get_element(self.element)
@@ -150,7 +149,6 @@ class RawDatasetPlot(SignalPlot):
 		snr: float = element.get('sn',0.0)
 		return xdata, znorm(ydata.squeeze()), target, snr, stype
 
-	@exception_handled
 	def update(self, val=0, **kwargs ):
 		self.log.info(f" * DatasetPlot-> update: ")
 		xdata, ydata, self.period, snr, stype = self.get_element_data()
