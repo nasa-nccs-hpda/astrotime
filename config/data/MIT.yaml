@@ -12,6 +12,8 @@ test_mode: default
 refresh: false
 max_series_length: 60000
 maxh: 5
+snr_min: 0.0
+snr_max: 1.0e9
 # series_length: 5120                 # Length of subset of input timeseries to process (-1 means no subsetting) 2048 4096
 
 

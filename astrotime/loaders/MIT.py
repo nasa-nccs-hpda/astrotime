@@ -279,7 +279,8 @@ class MITElementLoader(ElementLoader):
 		self.sector_range = cfg.sector_range
 		self.loaded_file = -1
 		self.filters = kwargs.get('filters',True)
-		self.snr_min: float = cfg.get('snr_min',0.0)
+		self.snr_min: float = cfg.get('snr_min',0.0 )
+		self.snr_max: float = cfg.get('snr_max', 1.0e9 )
 		self.max_series_length: int = cfg.get('max_series_length', 80000 )
 		self.period_range: Tuple[float,float] = self.get_period_range()
 		self._TICS: List[str]  = None
@@ -336,7 +337,7 @@ class MITElementLoader(ElementLoader):
 		dsy: xa.DataArray = self.data[TIC+".y"]
 		period = dsy.attrs["period"]
 		sn = dsy.attrs["sn"]
-		if not self.filters or (self.in_range(period) and (sn>self.snr_min)):
+		if not self.filters or (self.in_range(period) and (sn>self.snr_min) and (sn<self.snr_max)):
 			nanmask = np.isnan(dsy.values)
 			dst: xa.DataArray = self.data[TIC + ".time"]
 			train_data = dict( t=dst.values[~nanmask], y=dsy.values[~nanmask], period=period, sn=sn, sector=self.ifile, tic=TIC )
