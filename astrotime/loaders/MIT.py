@@ -284,9 +284,8 @@ class MITElementLoader(ElementLoader):
 		self.max_series_length: int = cfg.get('max_series_length', 80000 )
 		self.period_range: Tuple[float,float] = self.get_period_range()
 		self._TICS: List[str]  = None
-		self.use_batches = kwargs.get('use_batches',False)
-		self.batches = []
-		self._n_batched_elems = 0
+		self.preload = kwargs.get('preload',False)
+		self.elems = []
 
 	def get_period_range(self) -> Tuple[float,float]:
 		f0 = self.cfg.base_freq
@@ -313,8 +312,6 @@ class MITElementLoader(ElementLoader):
 		if os.path.exists(dspath):
 			self.data = xa.open_dataset( dspath, engine="netcdf4" )
 			self.get_sorted_TICS()
-			if self.use_batches:
-				self.load_batches()
 			self.log.info( f"Opened cache dataset from {dspath}, nvars = {len(self.data.data_vars)//2}")
 		else:
 			self.log.info( f"Cache file not found: {dspath}")
@@ -323,6 +320,8 @@ class MITElementLoader(ElementLoader):
 		if (self.loaded_file != self.ifile) or (self.data is None):
 			self._load_cache_dataset()
 			self.loaded_file = self.ifile
+			if self.preload:
+				self.preload_elems()
 			return True
 		return False
 
@@ -336,15 +335,14 @@ class MITElementLoader(ElementLoader):
 		return self.cfg.sector_range[1] - self.cfg.sector_range[0]
 
 	def get_element(self, elem_index: int) -> Optional[RDict]:
-		if self.use_batches: return self.get_batch_element(elem_index)
-		else:                return self.get_raw_element(elem_index)
+		self.load_data()
+		if self.preload: return self.get_loaded_element(elem_index)
+		else:            return self.get_raw_element(elem_index)
 
-	def get_batch_element(self, elem_index: int) -> Optional[RDict]:
-		ibatch, ielem = elem_index // self.batch_size, elem_index%self.batch_size
-		return { bk: bv[ielem] for bk,bv in self.batches[ibatch].items() }
+	def get_loaded_element(self, elem_index: int) -> Optional[RDict]:
+		return self.elems[elem_index]
 
 	def get_raw_element( self, elem_index: int ) -> Optional[RDict]:
-		self.load_data()
 		TIC = self._TICS[elem_index]
 		dsy: xa.DataArray = self.data[TIC+".y"]
 		period = dsy.attrs["period"]
@@ -373,17 +371,8 @@ class MITElementLoader(ElementLoader):
 		elems.sort(key=lambda x: x[0])
 		self._TICS = [elem[1] for elem in elems]
 
-	def load_batches(self):
-		self.batches = []
-		self._n_batched_elems = 0
-		while True:
-			b = self.get_next_batch(update_file=False)
-			if b is None: break
-			self.batches.append(b)
-			self._n_batched_elems += b['TICS'].size
-
-	def n_batched_elems(self) -> int:
-		return self._n_batched_elems
+	def n_loaded_elems(self) -> int:
+		return len(self.elems)
 
 	def get_next_batch(self, update_file=True ) -> Optional[Dict[str,np.ndarray]]:
 		ielem, periods, sns, tics, ts, ys, slens, b0, nb  = 0, [], [], [], [], [], [], self.batch_offset, len(self._TICS)
@@ -403,12 +392,17 @@ class MITElementLoader(ElementLoader):
 			if len(ts) >= self.cfg.batch_size:
 				break
 		if len(ts) == 0: return None
-		nsl = np.array(slens)
-		# self.log.info( f"get_next_batch({b0}/{nb}), t{ts[0].shape}, y{ys[0].shape}, slens: {nsl.min()}->{nsl.max()} (int({nsl.mean()}))")
 		self.batch_offset = ielem + 1
 		slen = np.array(slens).min()
 		yn = np.stack( [ y[:slen] for y in ys], axis=0 )
 		tn = np.stack( [ t[:slen] for t in ts], axis=0 )
 		return dict( t=tn, y=yn, period=np.array(periods), sn=np.array(sns), TICS=np.array(tics) )
+
+	def preload_elems(self) -> Optional[Dict[str,np.ndarray]]:
+		self.elems = []
+		nb  = len(self._TICS)
+		for ielem in range( 0, nb ):
+			elem: RDict = self.get_raw_element(ielem)
+			self.elems.append( elem )
 
 
