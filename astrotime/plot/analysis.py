@@ -1,6 +1,4 @@
 import logging, os, csv, pickle, numpy as np
-import xarray as xa
-import pandas as pd
 from .param import STIntParam, STFloatParam
 from matplotlib import ticker
 from torch import nn, optim, Tensor, FloatTensor
@@ -8,7 +6,7 @@ from .base import SignalPlot, bounds
 from matplotlib.axes import Axes
 from matplotlib.lines import Line2D
 from matplotlib.backend_bases import KeyEvent, MouseEvent, MouseButton
-from astrotime.loaders.base import IterativeDataLoader, ElementLoader
+from astrotime.loaders.base import IterativeDataLoader, ElementLoader, RDict
 from astrotime.util.logging import exception_handled
 from astrotime.encoders.embedding import Transform
 from astrotime.trainers.model_evaluator import ModelEvaluator
@@ -297,7 +295,7 @@ class DatasetPlot(SignalPlot):
 	@exception_handled
 	def get_element_data(self) -> Tuple[np.ndarray,np.ndarray,float,float,str]:
 		self.data_loader.set_params( { pn: pv.value_selected() for pn, pv in self._sparms.items()} )
-		element: Dict[str,Union[np.ndarray,float]] = self.data_loader.get_single_element(self.sector,self.element) # , refresh=self.refresh )
+		element: Optional[RDict] = self.data_loader.get_element(self.sector,self.element) # , refresh=self.refresh )
 		ydata: np.ndarray = element['y']
 		xdata: np.ndarray = element['t']
 		stype = element.get('type','LC')
