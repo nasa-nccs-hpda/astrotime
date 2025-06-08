@@ -146,7 +146,7 @@ class RawDatasetPlot(SignalPlot):
 		ydata: np.ndarray = element['y']
 		xdata: np.ndarray = element['t']
 		stype = element.get('type','LC')
-		target: float = element['p']
+		target: float = element['p'] if ('p' in element) else element['period']
 		snr: float = element.get('sn',0.0)
 		return xdata, znorm(ydata.squeeze()), target, snr, stype
 
@@ -299,7 +299,7 @@ class DatasetPlot(SignalPlot):
 		ydata: np.ndarray = element['y']
 		xdata: np.ndarray = element['t']
 		stype = element.get('type','LC')
-		target: float = element['p']
+		target: float = element['p'] if ('p' in element) else element['period']
 		snr: float = element.get('sn',0.0)
 		return xdata, znorm(ydata.squeeze()), target, snr, stype
 
