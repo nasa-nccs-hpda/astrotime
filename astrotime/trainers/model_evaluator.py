@@ -57,7 +57,7 @@ class ModelEvaluator(object):
         return None if (dset is None) else self.encode_element(dset)
 
     def encode_element(self, batch: RDict) -> TRDict:
-        p: float = batch.pop('p')
+        p: float = batch.pop('p') if ('p' in batch) else batch.pop('period')
         z: Tensor = self.to_tensor(batch.pop('t'), batch.pop('y'))
         return dict( z=z, target=1/p, **batch )
 

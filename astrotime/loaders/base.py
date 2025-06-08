@@ -62,6 +62,10 @@ class ElementLoader(Loader):
 		self.ifile: int = kwargs.get('file',0)
 		self.data = None
 		self.batch_offset = 0
+		self.params: Dict[str, float] = {}
+
+	def set_params(self, params: Dict[str, float]):
+		self.params = params
 
 	@property
 	def file_size(self):
