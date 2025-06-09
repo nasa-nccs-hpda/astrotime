@@ -340,7 +340,6 @@ class MITElementLoader(ElementLoader):
 		else:            return self.get_raw_element(elem_index)
 
 	def get_loaded_element(self, elem_index: int) -> Optional[RDict]:
-		print( f"get_loaded_element({elem_index}), nelems = {len(self.elems)}")
 		return self.elems[elem_index]
 
 	def get_raw_element( self, elem_index: int ) -> Optional[RDict]:
@@ -402,7 +401,6 @@ class MITElementLoader(ElementLoader):
 	def preload_elems(self) -> Optional[Dict[str,np.ndarray]]:
 		self.elems = []
 		nb  = len(self._TICS)
-		print(f"preload_elems({nb})")
 		for ielem in range( 0, nb ):
 			elem: Optional[RDict] = self.get_raw_element(ielem)
 			if elem is not None:
