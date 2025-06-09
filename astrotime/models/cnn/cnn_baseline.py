@@ -66,6 +66,7 @@ class ExpHLoss(nn.Module):
 	def forward(self, product: torch.Tensor, target: torch.Tensor)-> torch.Tensor:
 		h: torch.Tensor = self.harmonic( product, target )
 		result = torch.abs( torch.log2( (product+self.f0)/(h*target+self.f0) ) ).mean()
+		print( f"ExpHLoss: f0={self.f0:.3f}, h={h.cpu().numpy().tolist()}")
 		return result
 
 	def harmonics(self) -> np.ndarray:
