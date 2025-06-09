@@ -404,7 +404,8 @@ class MITElementLoader(ElementLoader):
 		nb  = len(self._TICS)
 		print(f"preload_elems({nb})")
 		for ielem in range( 0, nb ):
-			elem: RDict = self.get_raw_element(ielem)
-			self.elems.append( elem )
+			elem: Optional[RDict] = self.get_raw_element(ielem)
+			if elem is not None:
+				self.elems.append( elem )
 
 
