@@ -9,7 +9,7 @@ CHOLESKY_RELATIVE_JITTER = 4.0  # in units of finfo.eps
 def check_nan(x: torch.Tensor):
     nnan = torch.isnan(x).sum()
     if nnan > 0:
-        print(f"Error: {nnan} NaNs detected in tensor")
+        print(f"Error: {nnan} NaNs detected in tensor: {x.detach().cpu().numpy().tolist()}")
         raise RuntimeError("NaN detected in tensor")
     return x
 
