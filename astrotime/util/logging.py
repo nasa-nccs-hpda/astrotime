@@ -18,6 +18,7 @@ def exception_handled(func):
             log = logging.getLogger()
             log.error( f" Error in {func}:" )
             log.error( traceback.format_exc(100) )
+            return None
     return wrapper
 
 def log_timing(f):
