@@ -120,6 +120,17 @@ class IterativeTrainer(object):
     def training(self) -> bool:
         return not self.cfg.mode.startswith("val")
 
+    def test_model(self,version,ckp_version=None):
+        print(f"SignalTrainer[{self.mode}]: , {self.nepochs} epochs, device={self.device}")
+        self.optimizer = self.get_optimizer()
+        self.initialize_checkpointing(version,ckp_version)
+        with self.device:
+            self.set_train_status()
+            self.loader.init_epoch()
+            batch: Optional[TRDict] = self.get_next_batch()
+            result: Tensor = self.model( batch['z'] )
+            print( f" ** (batch{list(batch['z'].shape)}, target{list(batch['target'].shape)}) ->  result{list(result.shape)}")
+
     def compute(self,version,ckp_version=None):
         print(f"SignalTrainer[{self.mode}]: , {self.nepochs} epochs, device={self.device}")
         self.optimizer = self.get_optimizer()
@@ -136,13 +147,10 @@ class IterativeTrainer(object):
                         batch = self.get_next_batch()
                         if batch['z'].shape[0] > 0:
                             self.global_time = time.time()
-                            check_nan(batch['z'])
                             result: Tensor = self.model( batch['z'] )
                             if result.squeeze().ndim > 0:
-                                check_nan(result)
                                 self.log.debug(f"result{list(result.shape)} range: [{result.min().cpu().item()} -> {result.max().cpu().item()}]")
                                 loss: Tensor =  self.loss( result.squeeze(), batch['target'].squeeze() )
-                                check_nan(loss)
                                 self.conditionally_update_weights(loss)
                                 losses.append(loss.cpu().item())
                                 if (self.mode == TSet.Train) and ((ibatch % log_interval == 0) or ((ibatch < 5) and (epoch==0))):

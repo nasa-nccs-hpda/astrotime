@@ -7,7 +7,7 @@ from .embedding import EmbeddingLayer
 from astrotime.util.math import tnorm
 from astrotime.util.logging import elapsed
 from torch import Tensor
-import logging
+import logging, math
 from .wavelet import WaveletAnalysisLayer
 log = logging.getLogger()
 
@@ -75,6 +75,79 @@ class CorrelationAnalysisLayer(WaveletAnalysisLayer):
 	def get_target_freq( self, target_period: float ) -> float:
 		f0 = 1/target_period
 		return f0
+
+class AutoCorrelationLayer(EmbeddingLayer):
+
+	def __init__(self, name: str,  cfg, embedding_space: Tensor, device: device):
+		EmbeddingLayer.__init__(self, name, cfg, embedding_space, device)
+		self.init_log(f"AutoCorrelationLayer: nfreq={self.nfreq} ")
+		self.subbatch_size: int = cfg.get('subbatch_size',-1)
+		self.noctaves: int = self.cfg.noctaves
+		self.nfreq_oct: int = self.cfg.nfreq_oct
+
+	@property
+	def xdata(self) -> Tensor:
+		return self._embedding_space[:self.output_series_length]
+
+	@property
+	def output_series_length(self) -> int:
+		return self.nf
+
+	def sbatch(self, ts: torch.Tensor, ys: torch.Tensor, subbatch: int) -> tuple[Tensor,Tensor]:
+		sbr = [ subbatch*self.subbatch_size, (subbatch+1)*self.subbatch_size ]
+		return ts[sbr[0]:sbr[1]], ys[sbr[0]:sbr[1]]
+
+	def embed(self, ts: torch.Tensor, ys: torch.Tensor, **kwargs) -> Tensor:
+		if ys.ndim == 1:
+			return self.embed_subbatch( ts[None,:], ys[None,:] )
+		elif self.subbatch_size <= 0:
+			return self.embed_subbatch( ts, ys )
+		else:
+			nsubbatches = math.ceil(ys.shape[0]/self.subbatch_size)
+			subbatches = [ self.embed_subbatch( *self.sbatch(ts,ys,i), **kwargs ) for i in range(nsubbatches) ]
+			result = torch.concat( subbatches, dim=0 )
+			return result
+
+	def embed_subbatch(self, ts: torch.Tensor, ys: torch.Tensor, **kwargs ) -> Tensor:
+		t0 = time.time()
+		omega = self._embedding_space * 2.0 * math.pi
+		omega_: Tensor = omega[None, :, None]  # broadcast-to(self.batch_size,self.nfreq,slen)
+		ts: Tensor = ts[:, None, :]  # broadcast-to(self.batch_size,self.nfreq,slen)
+		dz: Tensor = omega_ * ts
+
+		self.init_log(f"AutoCorrelationLayer shapes: ts{list(ts.shape)} ys{list(ys.shape)} dz{list(dz.shape)}")
+
+		def w_prod( x0: Tensor, x1: Tensor) -> Tensor:
+			return torch.sum( x0 * x1, dim=-1)
+
+		pw1: Tensor = torch.sin(dz)  # B, F, SLEN
+		pw2: Tensor = torch.cos(dz)
+		p1: Tensor = w_prod(ys, pw1)
+		p2: Tensor = w_prod(ys, pw2)
+		mag: Tensor =  torch.sqrt( p1**2 + p2**2 )
+		self.init_log(f" --> mag{list(mag.shape)} pw1{list(pw1.shape)} p1{list(p1.shape)}")
+
+		p: Tensor = torch.flip( 1/self._embedding_space, [0] )
+		dz: Tensor = omega_ * p
+		pw1: Tensor = torch.sin(dz)
+		pw2: Tensor = torch.cos(dz)
+
+		embedding: Tensor = mag
+		self.init_log(f" Completed embedding{list(embedding.shape)} in {elapsed(t0):.5f} sec: nfeatures={embedding.shape[1]}")
+		self.init_state = False
+		return embedding
+
+	@property
+	def nf(self):
+		return self.noctaves * self.nfreq_oct
+
+	@property
+	def nfeatures(self):
+		return 1
+
+	def magnitude(self, embedding: Tensor) -> np.ndarray:
+		self.init_log(f" -> Embedding magnitude{embedding.shape}")
+		return embedding.cpu().numpy()
 
 
 
