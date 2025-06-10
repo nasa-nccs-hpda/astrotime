@@ -22,7 +22,7 @@ def my_app(cfg: DictConfig) -> None:
 	model: nn.Sequential = nn.Sequential( embedding )
 
 	trainer = IterativeTrainer( cfg.train, device, data_loader, model, ExpHLoss(cfg.data) )
-	trainer.test_model(version)
+	trainer.test_model()
 
 if __name__ == "__main__":
 	my_app()
