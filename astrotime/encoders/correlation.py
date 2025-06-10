@@ -117,8 +117,8 @@ class AutoCorrelationLayer(EmbeddingLayer):
 
 		self.init_log(f"AutoCorrelationLayer shapes: ts{list(ts.shape)} ys{list(ys.shape)} dz{list(dz.shape)}")
 
-		def w_prod( x0: Tensor, x1: Tensor) -> Tensor:
-			return torch.sum( x0 * x1, dim=-1)
+		def w_prod( x0: Tensor, x1: Tensor, dim=-1) -> Tensor:
+			return torch.sum( x0 * x1, dim=dim)
 
 		pw1: Tensor = torch.sin(dz)  # B, F, SLEN
 		pw2: Tensor = torch.cos(dz)
@@ -128,15 +128,13 @@ class AutoCorrelationLayer(EmbeddingLayer):
 		self.init_log(f" --> mag{list(mag.shape)} pw1{list(pw1.shape)} p1{list(p1.shape)}  omega_{list(omega_.shape)}")
 
 		p: Tensor = torch.flip( 1/self._embedding_space, [0] )
-		dz: Tensor = omega_ * p
+		dz: Tensor = omega_ * p[:, None, :]
 		pw1: Tensor = torch.sin(dz)
 		pw2: Tensor = torch.cos(dz)
-#		p1: Tensor = w_prod(p, pw1)
-#		p2: Tensor = w_prod(ys, pw2)
-#		mag: Tensor =  torch.sqrt( p1**2 + p2**2 )
-		self.init_log(f" --> p{list(p.shape)} dz{list(dz.shape)} pw1{list(pw1.shape)} pw2{list(pw2.shape)}")
-
-		embedding: Tensor = mag
+		p1: Tensor = w_prod(mag, pw1, 1)
+		p2: Tensor = w_prod(mag, pw2, 1)
+		embedding: Tensor =  torch.sqrt( p1**2 + p2**2 )
+		self.init_log(f" --> mag{list(mag.shape)}  p{list(p.shape)} dz{list(dz.shape)} pw1{list(pw1.shape)} pw2{list(pw2.shape)}")
 		self.init_log(f" Completed embedding{list(embedding.shape)} in {elapsed(t0):.5f} sec: nfeatures={embedding.shape[1]}")
 		self.init_state = False
 		return embedding
