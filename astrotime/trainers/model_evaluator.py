@@ -7,6 +7,8 @@ import time, sys, torch, logging, numpy as np
 from torch import nn, optim, Tensor
 from astrotime.trainers.checkpoints import CheckpointManager
 from astrotime.models.cnn.cnn_baseline import get_model_from_cfg, get_spectral_peak_selector_from_cfg, ExpU
+from encoders.correlation import AutoCorrelationLayer
+
 TRDict = Dict[str,Union[List[str],int,torch.Tensor]]
 
 def tnorm(x: Tensor, dim: int=0) -> Tensor:
@@ -19,13 +21,19 @@ class ModelEvaluator(object):
     def __init__(self, cfg: DictConfig, version: str, loader: ElementLoader, device, **kwargs ):
         espace = embedding_space(cfg.transform, device)
         self.freqspace: np.ndarray = espace[0]
-        self.embedding: EmbeddingLayer = WaveletAnalysisLayer('analysis', cfg.transform, espace[1], device)
         self.loader: ElementLoader = loader
         self.cfg: DictConfig = cfg
         self.log = logging.getLogger()
         self.mtype = kwargs.get( 'mtype', "cnn" )
-        if self.mtype == "peakfinder": self.model: nn.Module = get_spectral_peak_selector_from_cfg(cfg.model, device, self.embedding)
-        elif self.mtype == "cnn":      self.model: nn.Module = get_model_from_cfg( cfg.model, device, self.embedding, ExpU(cfg.data) )
+        if self.mtype == "peakfinder":
+            self.embedding: EmbeddingLayer = WaveletAnalysisLayer('analysis', cfg.transform, espace[1], device)
+            self.model: nn.Module = get_spectral_peak_selector_from_cfg(cfg.model, device, self.embedding)
+        elif self.mtype == "cnn":
+            self.embedding: EmbeddingLayer = WaveletAnalysisLayer('analysis', cfg.transform, espace[1], device)
+            self.model: nn.Module = get_model_from_cfg( cfg.model, device, self.embedding, ExpU(cfg.data) )
+        elif self.mtype == "autocor":
+            self.embedding: EmbeddingLayer = AutoCorrelationLayer('autocor', cfg.transform, espace[1], device)
+            self.model: nn.Module = nn.Sequential( self.embedding )
         self.device = device
         self._target_freq = None
         self._model_freq = None
