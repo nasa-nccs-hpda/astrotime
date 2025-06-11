@@ -87,7 +87,7 @@ class AutoCorrelationLayer(EmbeddingLayer):
 
 	@property
 	def xdata(self) -> Tensor:
-		return self._embedding_space[:self.output_series_length]
+		return self._embedding_space
 
 	@property
 	def output_series_length(self) -> int:
@@ -141,7 +141,7 @@ class AutoCorrelationLayer(EmbeddingLayer):
 
 	@property
 	def nf(self):
-		return self.noctaves * self.nfreq_oct
+		return self._embedding_space.shape[0]
 
 	@property
 	def nfeatures(self):
