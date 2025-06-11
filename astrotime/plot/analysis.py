@@ -79,6 +79,7 @@ class RawDatasetPlot(SignalPlot):
 		self.transax = None
 		self.origin = None
 		self.period = None
+		self.fold_period = None
 
 	@exception_handled
 	def update_period_marker(self) -> str:
@@ -124,6 +125,14 @@ class RawDatasetPlot(SignalPlot):
 		pass
 
 	@exception_handled
+	def key_press(self, event: KeyEvent) -> Any:
+		if event.key in ['ctrl+f','alt+ƒ']:
+			if self.fold_period is None:    self.fold_period = self.period if (event.key == 'ctrl+f') else self.get_ext_period()
+			else :                          self.fold_period = None
+			self.log.info(f"                 DatasetPlot-> key_press({event.key}), fold period = {self.fold_period} ")
+			self.update(period=self.fold_period)
+
+	@exception_handled
 	def on_motion(self, event: MouseEvent) -> Any:
 		pass
 
@@ -147,6 +156,8 @@ class RawDatasetPlot(SignalPlot):
 		stype = element.get('type','LC')
 		target: float = element['p'] if ('p' in element) else element['period']
 		snr: float = element.get('sn',0.0)
+		if self.fold_period is not None:
+			xdata = xdata - np.floor(xdata/self.fold_period)*self.fold_period
 		return xdata, znorm(ydata.squeeze()), target, snr, stype
 
 	@exception_handled
@@ -157,7 +168,9 @@ class RawDatasetPlot(SignalPlot):
 		self.origin = xdata[np.argmax(np.abs(ydata))]
 		self.plot.set_ydata(ydata)
 		self.plot.set_xdata(xdata)
-		title = f"{self.name}({stype},{self.file},{self.element}): TP={self.period:.3f}"
+		fold_period = kwargs.get('period')
+		active_period = self.period if (fold_period is None) else fold_period
+		title = f"{self.name}({stype},{self.file},{self.element}): TP={active_period:.3f}"
 		self.ax.title.set_text( kwargs.get('title',title) )
 		self.log.info(f"1")
 		self.update_period_marker()
