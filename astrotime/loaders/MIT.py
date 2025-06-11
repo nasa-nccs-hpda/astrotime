@@ -406,7 +406,7 @@ class MITElementLoader(ElementLoader):
 		for ielem in range( 0, nb ):
 			elem: Optional[RDict] = self.get_raw_element(ielem)
 			if elem is not None:
-				self.log.info(f" -> E-{ielem}: {list(elem.keys())}")
+				self.log.info(f" ------>-> E-{len(self.elems)}: {list(elem.keys())}")
 				self.elems.append( elem )
 
 
