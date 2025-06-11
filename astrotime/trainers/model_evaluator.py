@@ -33,7 +33,7 @@ class ModelEvaluator(object):
             self.model: nn.Module = get_model_from_cfg( cfg.model, device, self.embedding, ExpU(cfg.data) )
         elif self.mtype == "autocor":
             self.embedding: EmbeddingLayer = AutoCorrelationLayer('autocor', cfg.transform, espace[1], device)
-            self.model: nn.Module = nn.Sequential( self.embedding )
+            self.model: nn.Module = get_model_from_cfg( cfg.model, device, self.embedding, ExpU(cfg.data) )
         self.device = device
         self._target_freq = None
         self._model_freq = None
