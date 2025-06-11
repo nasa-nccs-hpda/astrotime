@@ -322,12 +322,11 @@ class DatasetPlot(SignalPlot):
 
 class TransformPlot(SignalPlot):
 
-	def __init__(self, name: str, data_loader: IterativeDataLoader, transform: Transform, sector:int=0, **kwargs):
+	def __init__(self, name: str, data_loader: ElementLoader, transform: Transform, **kwargs):
 		SignalPlot.__init__(self, **kwargs)
 		self.name = name
-		self.sector: int = sector
 		self.transform: Transform = transform
-		self.data_loader: IterativeDataLoader = data_loader
+		self.data_loader: ElementLoader = data_loader
 		self.annotations: List[str] = tolower( kwargs.get('annotations',None) )
 		self.colors = [ 'black', 'red', 'green', 'blue', 'yellow', 'magenta', 'cyan', 'darkviolet', 'darkorange', 'saddlebrown', 'darkturquoise' ]
 		self.ofac = kwargs.get('upsample_factor',1)
@@ -347,7 +346,7 @@ class TransformPlot(SignalPlot):
 
 	@exception_handled
 	def _setup(self):
-		series_data: Dict[str,Union[np.ndarray,float]] = self.data_loader.get_element(self.sector, self.element)
+		series_data: Dict[str,Union[np.ndarray,float]] = self.data_loader.get_element(self.element)
 		period: float = series_data['p']
 		freq = 1.0 / period
 		tdata: np.ndarray = self.apply_transform(series_data).squeeze()
@@ -409,7 +408,7 @@ class TransformPlot(SignalPlot):
 
 	@exception_handled
 	def update(self, val=0):
-		series_data: Dict[str,Union[np.ndarray,float]] = self.data_loader.get_element(self.sector, self.element)
+		series_data: Dict[str,Union[np.ndarray,float]] = self.data_loader.get_element(self.element)
 		target_period: float = series_data['p']
 		tdata: np.ndarray = self.apply_transform(series_data).squeeze()
 		x = self.transform.xdata.squeeze()
