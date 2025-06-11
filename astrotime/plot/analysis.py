@@ -149,6 +149,7 @@ class RawDatasetPlot(SignalPlot):
 		snr: float = element.get('sn',0.0)
 		return xdata, znorm(ydata.squeeze()), target, snr, stype
 
+	@exception_handled
 	def update(self, val=0, **kwargs ):
 		self.log.info(f" * DatasetPlot-> update: ")
 		xdata, ydata, self.period, snr, stype = self.get_element_data()
