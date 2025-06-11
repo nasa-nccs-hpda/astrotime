@@ -7,7 +7,7 @@ import time, sys, torch, logging, numpy as np
 from torch import nn, optim, Tensor
 from astrotime.trainers.checkpoints import CheckpointManager
 from astrotime.models.cnn.cnn_baseline import get_model_from_cfg, get_spectral_peak_selector_from_cfg, ExpU
-from encoders.correlation import AutoCorrelationLayer
+from astrotime.encoders.correlation import AutoCorrelationLayer
 
 TRDict = Dict[str,Union[List[str],int,torch.Tensor]]
 
