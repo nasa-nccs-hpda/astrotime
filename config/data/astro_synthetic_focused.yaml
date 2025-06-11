@@ -3,8 +3,8 @@ dataset_root:  "${platform.project_root}/synthetic"    # Location of processed n
 cache_path:  "${platform.project_root}/cache/data/synthetic"
 batch_size: 16
 nfreq_oct: 512                      # Number of frequency values (log2 spaced) in each octave
-base_freq:  0.2                     # Start frequency of base freq range
-noctaves: 3                         # Number of octaves in base freq range
+base_freq:  0.025                     # Start frequency of base freq range
+noctaves: 9                         # Number of octaves in base freq range
 test_mode: default
 file_size: 1000
 nfiles: 1000
