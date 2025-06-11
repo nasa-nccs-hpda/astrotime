@@ -151,6 +151,7 @@ class RawDatasetPlot(SignalPlot):
 	def get_element_data(self) -> Tuple[np.ndarray,np.ndarray,float,float,str]:
 		self.data_loader.set_file(self.file)
 		element: Dict[str,Union[np.ndarray,float]] = self.data_loader.get_element(self.element)
+		self.log.info(f" * DatasetPlot-> get_element_data: keys={list(element.keys())}")
 		ydata: np.ndarray = element['y']
 		xdata: np.ndarray = element['t']
 		stype = element.get('type','LC')
