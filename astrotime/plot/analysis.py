@@ -159,13 +159,12 @@ class RawDatasetPlot(SignalPlot):
 		snr: float = element.get('sn',0.0)
 		if self.fold_period is not None:
 			xdata = xdata - np.floor(xdata/self.fold_period)*self.fold_period
-		return xdata, znorm(ydata.squeeze()), target, snr, stype
+		return xdata, ydata.squeeze(), target, snr, stype
 
 	@exception_handled
 	def update(self, val=0, **kwargs ):
-		self.log.info(f" * DatasetPlot-> update: ")
 		xdata, ydata, self.period, snr, stype = self.get_element_data()
-		self.log.info(f" ---------> get_element_data: xdata{xdata.shape}, ydata{ydata.shape}, period={self.period:.3f}, snr={snr:.3f}, stype={stype}")
+		self.log.debug(f" ---------> get_element_data: xdata{xdata.shape}, ydata{ydata.shape}, period={self.period:.3f}, snr={snr:.3f}, stype={stype}")
 		self.origin = xdata[np.argmax(np.abs(ydata))]
 		self.plot.set_ydata(ydata)
 		self.plot.set_xdata(xdata)
@@ -173,10 +172,9 @@ class RawDatasetPlot(SignalPlot):
 		active_period = self.period if (fold_period is None) else fold_period
 		title = f"{self.name}({stype},{self.file},{self.element}): TP={active_period:.3f}"
 		self.ax.title.set_text( kwargs.get('title',title) )
-		self.log.info(f"1")
 		self.update_period_marker()
-		self.log.info(f"2")
 		self.ax.set_xlim(xdata.min(),xdata.max())
+		self.ax.set_ylim(ydata.min(), ydata.max())
 		try:  self.ax.set_ylim(ydata.min(),ydata.max())
 		except: self.log.info( f" ------------------ Error in y bounds: {ydata.min()} -> {ydata.max()}" )
 		self.log.info( f" ---- ----> E-{self.element}: xlim=({xdata.min():.3f},{xdata.max():.3f}), ylim=({ydata.min():.3f},{ydata.max():.3f}), xdata.shape={self.plot.get_xdata().shape} origin={self.origin} ---" )

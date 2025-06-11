@@ -401,12 +401,10 @@ class MITElementLoader(ElementLoader):
 
 	def preload_elems(self) -> Optional[Dict[str,np.ndarray]]:
 		self.elems = []
-		self.log.info(f" *** ElementLoader->preload_elems:")
 		nb  = len(self._TICS)
 		for ielem in range( 0, nb ):
 			elem: Optional[RDict] = self.get_raw_element(ielem)
 			if elem is not None:
-				self.log.info(f" ------>-> E-{len(self.elems)}: {list(elem.keys())}")
 				self.elems.append( elem )
 
 
