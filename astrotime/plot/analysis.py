@@ -435,7 +435,7 @@ class EvaluatorPlot(SignalPlot):
 		self.evaluator: ModelEvaluator = evaluator
 		self.annotations: List[str] = tolower( kwargs.get('annotations',None) )
 		self.colors = [ 'red', 'blue', 'magenta', 'cyan', 'darkviolet', 'darkorange', 'saddlebrown', 'darkturquoise' ]
-		self.marker_colors = ['black', 'green']
+		self.marker_colors = ['black', 'red']
 		self.ofac = kwargs.get('upsample_factor',1)
 		self.plots: List[Line2D] = []
 		self.target_marker: Line2D = None
