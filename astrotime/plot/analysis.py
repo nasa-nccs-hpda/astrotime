@@ -83,7 +83,7 @@ class RawDatasetPlot(SignalPlot):
 	@exception_handled
 	def update_period_marker(self) -> str:
 		pm_name= str(id(self.ax))
-		pm = self.period_markers.setdefault( pm_name, PeriodMarkers( pm_name, self.ax ) )
+		pm = self.period_markers.setdefault( pm_name, PeriodMarkers( pm_name, self.ax, color="black" ) )
 		pm.update( self.origin, self.period )
 		self.log.info( f" ---- DatasetPlot-> update_period_marker origin={self.origin:.3f} period={self.period:.3f} ---")
 		self.update_pm_origins()
@@ -470,7 +470,7 @@ class EvaluatorPlot(SignalPlot):
 		self.ax.set_ylim( y.min(), y.max() )
 
 		self.target_marker: Line2D = self.ax.axvline( target_freq, 0.0, 1.0, color=self.marker_colors[0], linestyle='-', linewidth=2, alpha=0.7)
-		self.model_marker: Line2D  = self.ax.axvline( model_freq, 0.0, 1.0, color=self.marker_colors[1], linestyle='-', linewidth=2, alpha=0.7)
+		self.model_marker: Line2D  = self.ax.axvline( model_freq,  0.0, 1.0, color=self.marker_colors[1], linestyle='-', linewidth=2, alpha=0.7)
 		self.ax.title.set_text(f"{self.name}: target({self.file},{self.element})={target_freq:.3f} model({self.marker_colors[1]})={model_freq:.3f}")
 		self.ax.title.set_fontsize(8)
 		self.ax.title.set_fontweight('bold')
@@ -517,7 +517,7 @@ class EvaluatorPlot(SignalPlot):
 
 		self.target_marker.set_xdata([target_freq,target_freq])
 		self.model_marker.set_xdata( [model_freq, model_freq] )
-		self.process_event(id="period-update", period=1/model_freq, ax=str(id(self.ax)), color=self.marker_colors[1])
+		self.process_event(id="period-update", period=1/model_freq,  ax=str(id(self.ax)), color=self.marker_colors[1])
 		self.ax.title.set_text(f"{self.name}({self.file},{self.element}): target_freq={target_freq:.3f} (model_freq={model_freq:.3f})")
 		self.ax.figure.canvas.draw_idle()
 
