@@ -340,7 +340,9 @@ class MITElementLoader(ElementLoader):
 		else:            return self.get_raw_element(elem_index)
 
 	def get_loaded_element(self, elem_index: int) -> Optional[RDict]:
-		return self.elems[elem_index]
+		elem = self.elems[elem_index]
+		self.log.info( f" *** ElementLoader->get_loaded_element: keys={list(elem.keys())}")
+		return elem
 
 	def get_raw_element( self, elem_index: int ) -> Optional[RDict]:
 		TIC = self._TICS[elem_index]
