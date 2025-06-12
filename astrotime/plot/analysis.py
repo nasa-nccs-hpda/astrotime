@@ -40,9 +40,9 @@ class PeriodMarkers:
 		self.period: float = None
 		self.markers: List[Line2D] = []
 		self.yrange = kwargs.get('yrange', (-1,1) )
-		self.npm: int = kwargs.get('npm', 16 )
+		self.npm: int = kwargs.get('npm', 32 )
 		self.color: str = kwargs.get('color', 'red' )
-		self.alpha: float = kwargs.get('alpha', 0.75 )
+		self.alpha: float = kwargs.get('alpha', 0.35 )
 		self.linestyle: str = kwargs.get('linestyle', '-')
 
 	def update(self, origin: float, period: float = None ):
