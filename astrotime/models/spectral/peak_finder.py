@@ -35,6 +35,7 @@ class SpectralPeakSelector(Module):
         self.feature = (self.feature + 1) % self.nf
 
     def process_key_event(self, key: str):
+        self.log.info(f"     SpectralPeakSelector.process_key_event: {key}, feature={self.feature}")
         if key == 'ctrl+t':
             self.toggle_feature()
 
