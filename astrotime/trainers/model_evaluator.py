@@ -45,6 +45,13 @@ class ModelEvaluator(object):
             self._checkpoint_manager = CheckpointManager( version, self.model, self.optimizer, self.cfg.train )
             self.train_state = self._checkpoint_manager.load_checkpoint( update_model=True )
 
+    @property
+    def model_feature(self) -> int:
+        if self.peak_selector is not None:
+            return self.peak_selector.feature
+        else:
+            return 0
+
     def get_optimizer(self) -> optim.Optimizer:
         cfg = self.cfg.train
         if   cfg.optim == "rms":  return optim.RMSprop( self.model.parameters(), lr=cfg.lr )
