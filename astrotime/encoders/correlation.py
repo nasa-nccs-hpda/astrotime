@@ -11,6 +11,11 @@ import logging, math
 from .wavelet import WaveletAnalysisLayer
 log = logging.getLogger()
 
+def delta( x: Tensor ) -> Tensor:
+	dx: Tensor = (x[1:] - x[:-1]) / (x[-1] - x[0])
+	dx[0] = dx[1]
+	return dx
+
 class PolyEmbeddingLayer(EmbeddingLayer):
 
 	def __init__(self, cfg, device: device):
@@ -110,7 +115,8 @@ class AutoCorrelationLayer(EmbeddingLayer):
 
 	def embed_subbatch(self, ts: torch.Tensor, ys: torch.Tensor, **kwargs ) -> Tensor:
 		t0 = time.time()
-		omega = self._embedding_space * 2.0 * math.pi
+		f: Tensor = self._embedding_space
+		omega = 2.0 * math.pi * f
 		omega_: Tensor = omega[None, :, None]  # broadcast-to(self.batch_size,self.nfreq,slen)
 		ts: Tensor = ts[:, None, :]  # broadcast-to(self.batch_size,self.nfreq,slen)
 		dz: Tensor = omega_ * ts
@@ -127,8 +133,9 @@ class AutoCorrelationLayer(EmbeddingLayer):
 		mag: Tensor =  torch.sqrt( p1**2 + p2**2 ) # B, F,
 		self.init_log(f" --> mag{list(mag.shape)} pw1{list(pw1.shape)} p1{list(p1.shape)}  omega_{list(omega_.shape)}")
 
-		p: Tensor = torch.flip( 1/self._embedding_space, [0] ) # P
-		dz: Tensor = omega[:, None] * p[None, :] # F, P
+		fdf: Tensor = f*delta(f)
+		p: Tensor = torch.flip( 1/f, [0] ) # P
+		dz: Tensor = fdf[:, None] * p[None, :] # F, P
 		pw1: Tensor = torch.sin(dz) # F, P
 		pw2: Tensor = torch.cos(dz) # F, P
 		p1: Tensor = w_prod( mag[:, :, None], pw1[None, :, :], 1 ) # B, P
