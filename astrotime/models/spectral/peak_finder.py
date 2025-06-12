@@ -21,14 +21,14 @@ def sH(h:float) -> str:
 
 class SpectralPeakSelector(Module):
 
-    def __init__(self, cfg: DictConfig, device: device, fspace: Tensor, feature: int = 0 ) -> None:
+    def __init__(self, cfg: DictConfig, device: device, fspace: Tensor ) -> None:
         super().__init__()
         self.requires_grad_(False)
         self.device: device = device
         self.cfg: DictConfig = cfg
         self.log = logging.getLogger()
         self.fspace = fspace
-        self.feature: int = feature
+        self.feature: int = cfg.feature
         self.nf = 2
 
     def toggle_feature(self):
