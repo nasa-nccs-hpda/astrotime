@@ -531,7 +531,7 @@ class EvaluatorPlot(SignalPlot):
 			self.plots[ip].set_xdata(x)
 		self.ax.set_xlim( x.min(), x.max() )
 		self.ax.set_ylim( y.min(), y.max() )
-		self.log.info(f"---- TransformPlot {self.tname}[{self.element})] update: y{y.shape}, x range=({x.min():.3f}->{x.max():.3f}), model_freq({self.evaluator.fe})={model_freq:.3f}  ")
+		self.log.info(f"---- TransformPlot {self.tname}[{self.element})] update: y{y.shape}, x range=({x.min():.3f}->{x.max():.3f}), model_freq={model_freq:.3f}  ")
 
 		self.target_marker.set_xdata([target_freq,target_freq])
 		self.model_marker.set_xdata( [model_freq, model_freq] )
