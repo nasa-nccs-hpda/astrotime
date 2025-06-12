@@ -29,6 +29,14 @@ class SpectralPeakSelector(Module):
         self.log = logging.getLogger()
         self.fspace = fspace
         self.feature: int = feature
+        self.nf = 2
+
+    def toggle_feature(self):
+        self.feature = (self.feature + 1) % self.nf
+
+    def process_key_event(self, key: str):
+        if key == 'ctrl+t':
+            self.toggle_feature()
 
     def forward(self, input: Tensor) -> Tensor:
         spectrum: Tensor = input[:,self.feature,:].squeeze()

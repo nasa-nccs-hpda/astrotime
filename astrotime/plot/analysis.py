@@ -80,6 +80,7 @@ class RawDatasetPlot(SignalPlot):
 		self.origin = None
 		self.period = None
 		self.fold_period = None
+		self.transforms = {}
 
 	@exception_handled
 	def update_period_marker(self) -> str:
@@ -349,6 +350,7 @@ class TransformPlot(SignalPlot):
 		self.add_param( STIntParam('element', (0,self.data_loader.nelements)  ) )
 		self.transax = None
 		self.nlines = -1
+		self.transforms = {}
 
 	@property
 	def tname(self):
@@ -458,6 +460,7 @@ class EvaluatorPlot(SignalPlot):
 		self.add_param(STIntParam('file', (0, self.nfiles), key_press_mode=2))
 		self.transax = None
 		self.nlines = -1
+		self.transforms = {}
 
 	@property
 	def nelements(self) -> int:
@@ -510,6 +513,7 @@ class EvaluatorPlot(SignalPlot):
 		if event.key.startswith( 'ctrl+'):
 			for t in self.transforms.values():
 				t.process_event( id="KeyEvent", key=event.key, ax=event.inaxes )
+			self.evaluator.process_event( id="KeyEvent", key=event.key, ax=event.inaxes )
 			self.update()
 
 	@exception_handled

@@ -5,8 +5,9 @@ from astrotime.encoders.embedding import EmbeddingLayer
 from astrotime.loaders.base import RDict, ElementLoader
 import time, sys, torch, logging, numpy as np
 from torch import nn, optim, Tensor
+from astrotime.models.spectral.peak_finder import SpectralPeakSelector
 from astrotime.trainers.checkpoints import CheckpointManager
-from astrotime.models.cnn.cnn_baseline import get_model_from_cfg, get_spectral_peak_selector_from_cfg, ExpU
+from astrotime.models.cnn.cnn_baseline import get_model_from_cfg, ExpU
 from astrotime.encoders.correlation import AutoCorrelationLayer
 
 TRDict = Dict[str,Union[List[str],int,torch.Tensor]]
@@ -25,9 +26,11 @@ class ModelEvaluator(object):
         self.cfg: DictConfig = cfg
         self.log = logging.getLogger()
         self.mtype = kwargs.get( 'mtype', "cnn" )
+        self.peak_selector: SpectralPeakSelector = None
         if self.mtype == "peakfinder":
             self.embedding: EmbeddingLayer = WaveletAnalysisLayer('analysis', cfg.transform, espace[1], device)
-            self.model: nn.Module = get_spectral_peak_selector_from_cfg(cfg.model, device, self.embedding)
+            self.peak_selector = SpectralPeakSelector( cfg.transform, device, self.embedding.xdata )
+            self.model: nn.Module =nn.Sequential( self.embedding, self.peak_selector ).to(device)
         elif self.mtype == "cnn":
             self.embedding: EmbeddingLayer = WaveletAnalysisLayer('analysis', cfg.transform, espace[1], device)
             self.model: nn.Module = get_model_from_cfg( cfg.model, device, self.embedding, ExpU(cfg.data) )
@@ -47,6 +50,13 @@ class ModelEvaluator(object):
         if   cfg.optim == "rms":  return optim.RMSprop( self.model.parameters(), lr=cfg.lr )
         elif cfg.optim == "adam": return optim.Adam(    self.model.parameters(), lr=cfg.lr, weight_decay=cfg.weight_decay )
         else: raise RuntimeError( f"Unknown optimizer: {cfg.optim}")
+
+    def process_event( self, id: str, key: str, ax=None, **kwargs ):
+        if id == "KeyEvent":
+            if self.peak_selector is not None:
+                self.peak_selector.process_key_event( key )
+                return self.peak_selector.feature
+        return None
 
     @property
     def nelements(self) -> int:
