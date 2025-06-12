@@ -29,7 +29,7 @@ class ModelEvaluator(object):
         self.peak_selector: SpectralPeakSelector = None
         if self.mtype == "peakfinder":
             self.embedding: EmbeddingLayer = WaveletAnalysisLayer('analysis', cfg.transform, espace[1], device)
-            self.peak_selector = SpectralPeakSelector( cfg.transform, device, self.embedding.xdata )
+            self.peak_selector = SpectralPeakSelector( cfg.transform, device, self.embedding.xdata, 1 )
             self.model: nn.Module =nn.Sequential( self.embedding, self.peak_selector ).to(device)
         elif self.mtype == "cnn":
             self.embedding: EmbeddingLayer = WaveletAnalysisLayer('analysis', cfg.transform, espace[1], device)
