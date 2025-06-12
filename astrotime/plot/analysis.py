@@ -477,7 +477,7 @@ class EvaluatorPlot(SignalPlot):
 		self.nlines = y.shape[0]
 		print( f"PLOT: x{x.shape} y{y.shape}")
 		for ip in range(self.nlines):
-			self.plots.append( self.ax.plot(x, y[ip], label=f"{self.tname}-{ip}", color=self.colors[ip], marker=".", linewidth=1, markersize=1, alpha=0.7/ip)[0] )
+			self.plots.append( self.ax.plot(x, y[ip], label=f"{self.tname}-{ip}", color=self.colors[ip], marker=".", linewidth=1, markersize=1, alpha=0.7/(ip+1))[0] )
 		self.ax.set_xlim( x.min(), x.max() )
 		self.ax.set_ylim( y.min(), y.max() )
 
