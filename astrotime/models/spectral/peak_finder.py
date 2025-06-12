@@ -42,7 +42,8 @@ class SpectralPeakSelector(Module):
     def forward(self, input: Tensor) -> Tensor:
         spectrum: Tensor = input[:,self.feature,:].squeeze()
         speak: Tensor = spectrum.argmax(dim=-1).squeeze()
-        result = self.fspace[speak]
+        result: Tensor = self.fspace[speak]
+        self.log.info(f"     SpectralPeakSelector.forward: feature={self.feature}, result={result.item():.3f}")
         return result
 
 class Evaluator:

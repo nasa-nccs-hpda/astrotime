@@ -1,4 +1,4 @@
-from typing import List, Optional, Dict, Type, Tuple, Union
+from typing import List, Optional, Dict, Any, Tuple, Union
 from omegaconf import DictConfig
 from astrotime.encoders.wavelet import WaveletAnalysisLayer, embedding_space
 from astrotime.encoders.embedding import EmbeddingLayer
@@ -51,11 +51,11 @@ class ModelEvaluator(object):
         elif cfg.optim == "adam": return optim.Adam(    self.model.parameters(), lr=cfg.lr, weight_decay=cfg.weight_decay )
         else: raise RuntimeError( f"Unknown optimizer: {cfg.optim}")
 
-    def process_event( self, id: str, key: str, ax=None, **kwargs ):
+    def process_event( self, id: str, key: str, ax=None, **kwargs ) -> Optional[Dict[str,Any]]:
         if id == "KeyEvent":
             if self.peak_selector is not None:
                 self.peak_selector.process_key_event( key )
-                return self.peak_selector.feature
+                return dict( peakfeature=self.peak_selector.feature )
         return None
 
     @property
