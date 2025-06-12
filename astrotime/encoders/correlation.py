@@ -13,8 +13,10 @@ log = logging.getLogger()
 
 def delta( x: Tensor ) -> Tensor:
 	dx: Tensor = (x[1:] - x[:-1]) / (x[-1] - x[0])
-	dx[0] = dx[1]
-	return dx
+	dX = torch.zeros_like(x)
+	dX[0] = dx[0]
+	dX[1:] = dx
+	return dX
 
 class PolyEmbeddingLayer(EmbeddingLayer):
 
