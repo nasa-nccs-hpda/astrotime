@@ -79,6 +79,7 @@ class Evaluator:
             losses = []
             for ifile in range(0,10):
                 self.loader.set_file(ifile)
+                elem_idx = 0
                 for ielem in range(0,self.loader.file_size):
                     element: Optional[TRDict] =  self.get_element(ielem)
                     if element is not None:
@@ -88,7 +89,8 @@ class Evaluator:
                         loss: float = self.loss(y,t*h)
                         losses.append(loss)
                         if loss > 0.1:
-                            print(f" * F-{ifile} Elem-{ielem}: yt=({y:.3f},{t*h:.3f},{t:.3f}), H= {sH(h)}, yLoss= {loss:.5f}")
+                            print(f" * F-{ifile} Elem-{elem_idx}: yt=({y:.3f},{t*h:.3f},{t:.3f}), H= {sH(h)}, yLoss= {loss:.5f}")
+                        elem_idx+=1
             L: np.array = np.array(losses)
             print(f"Loss mean = {L.mean():.3f}, range=[{L.min():.3f} -> {L.max():.3f}]")
 
