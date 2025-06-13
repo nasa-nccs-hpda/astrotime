@@ -4,7 +4,8 @@ from torch import nn
 from typing import List, Optional, Dict, Type, Union, Tuple
 from astrotime.util.series import TSet
 from astrotime.encoders.wavelet import WaveletAnalysisLayer, embedding_space
-from astrotime.models.cnn.cnn_baseline import get_spectral_peak_selector_from_cfg, ElemExpLoss, ExpHLoss
+from astrotime.trainers.loss import ExpHLoss, ElemExpLoss
+from astrotime.models.cnn.cnn_baseline import get_spectral_peak_selector_from_cfg
 from astrotime.config.context import astrotime_initialize
 from astrotime.loaders.synthetic import SyntheticElementLoader
 from astrotime.models.spectral.peak_finder import Evaluator

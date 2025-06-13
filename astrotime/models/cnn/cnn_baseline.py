@@ -15,7 +15,7 @@ class HLoss(nn.Module):
 
 	def h(self) -> np.ndarray:
 		return self._h.cpu().numpy()
-
+	
 class ExpU(nn.Module):
 
 	def __init__(self, cfg: DictConfig) -> None:

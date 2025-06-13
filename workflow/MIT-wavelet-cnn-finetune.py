@@ -4,7 +4,8 @@ from torch import nn
 from astrotime.loaders.MIT import MITElementLoader
 from astrotime.encoders.wavelet import WaveletAnalysisLayer, embedding_space
 from astrotime.trainers.iterative_trainer import IterativeTrainer
-from astrotime.models.cnn.cnn_baseline import get_model_from_cfg, ExpHLoss, ExpU
+from astrotime.trainers.loss import ExpHLoss
+from astrotime.models.cnn.cnn_baseline import get_model_from_cfg,  ExpU
 from astrotime.config.context import astrotime_initialize
 version = "select_MIT_period"
 ckp_version = "synthetic_period"

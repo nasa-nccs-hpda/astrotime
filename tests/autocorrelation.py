@@ -5,7 +5,8 @@ from typing import List, Optional, Dict, Type, Union, Tuple
 from astrotime.encoders.correlation import AutoCorrelationLayer
 from astrotime.encoders.wavelet import WaveletAnalysisLayer, embedding_space
 from astrotime.trainers.iterative_trainer import IterativeTrainer
-from astrotime.models.cnn.cnn_baseline import get_model_from_cfg, ExpLoss, ExpHLoss, ExpU
+from astrotime.trainers.loss import ExpLoss, ExpHLoss
+from astrotime.models.cnn.cnn_baseline import get_model_from_cfg, ExpU
 from astrotime.config.context import astrotime_initialize
 from astrotime.loaders.synthetic import SyntheticElementLoader
 

@@ -152,7 +152,7 @@ class IterativeTrainer(object):
                                 self.conditionally_update_weights(loss)
                                 losses.append(loss.cpu().item())
                                 if (self.mode == TSet.Train) and ((ibatch % log_interval == 0) or ((ibatch < 5) and (epoch==0))):
-                                    from astrotime.models.cnn.cnn_baseline import ExpHLoss
+                                    from astrotime.trainers.loss import ExpHLoss
                                     aloss = np.array(losses)
                                     mean_loss = aloss.mean()
                                     losses = []

@@ -7,7 +7,7 @@ from omegaconf import DictConfig
 from torch import nn
 from typing import List, Optional, Dict, Type, Union, Tuple
 from astrotime.loaders.base import ElementLoader, RDict
-from astrotime.models.cnn.cnn_baseline import HLoss
+from astrotime.trainers.loss import HLoss
 TRDict = Dict[str,Union[List[str],int,torch.Tensor]]
 
 def harmonic( y: float, t: float) -> float:
