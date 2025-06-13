@@ -76,7 +76,7 @@ class Evaluator:
     def evaluate(self):
         self.cfg["mode"] = "val"
         with self.device:
-            losses = []
+            losses, hs= [], []
             for ifile in range(0,10):
                 self.loader.set_file(ifile)
                 elem_idx = 0
@@ -88,10 +88,12 @@ class Evaluator:
                         h = harmonic(y,t)
                         loss: float = self.loss(y,t*h)
                         losses.append(loss)
+                        hs.append(h)
                         if loss > 0.1:
                             print(f" * F-{ifile} Elem-{elem_idx}: yt=({y:.3f},{t*h:.3f},{t:.3f}), H= {sH(h)}, yLoss= {loss:.5f}")
                         elem_idx+=1
             L: np.array = np.array(losses)
-            print(f"Loss mean = {L.mean():.3f}, range=[{L.min():.3f} -> {L.max():.3f}]")
+            H: np.array = np.array(hs)
+            print(f"Loss mean = {L.mean():.3f}, range=[{L.min():.3f} -> {L.max():.3f}], H range=[{H.min():.3f} -> {H.max():.3f}]")
 
 
