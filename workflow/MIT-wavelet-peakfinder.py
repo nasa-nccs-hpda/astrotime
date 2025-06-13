@@ -13,7 +13,7 @@ version  =  "select_MIT_period"  # "select_MIT_period" "MIT_period"
 @hydra.main(version_base=None, config_path="../config", config_name=version)
 def my_app(cfg: DictConfig) -> None:
 	device: torch.device = astrotime_initialize( cfg, version )
-	cfg.data['snr_min'] = 50.0
+	cfg.data['snr_min'] = 100.0
 	cfg.data['snr_max'] = 1e9
 
 	embedding_space_array, embedding_space_tensor = embedding_space(cfg.transform, device)
