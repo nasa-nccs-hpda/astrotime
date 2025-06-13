@@ -55,6 +55,7 @@ class ExpHLoss(nn.Module):
 		self.f0: float = cfg.base_freq
 		self.maxh = cfg.maxh
 		self._harmonics = None
+		self._h = None
 
 	def harmonic(self, y: torch.Tensor, t: torch.Tensor) -> torch.Tensor:
 		h: torch.Tensor = torch.where( y>t, torch.round(y/t), 1/torch.round(t/y) ).detach()
@@ -64,9 +65,12 @@ class ExpHLoss(nn.Module):
 		self._harmonics = h if (self._harmonics is None) else torch.concat( (self._harmonics, h.squeeze()) )
 		return h
 
+	def h(self) -> np.ndarray:
+		return self._h.cpu().numpy()
+
 	def forward(self, product: torch.Tensor, target: torch.Tensor)-> torch.Tensor:
-		h: torch.Tensor = self.harmonic( product, target )
-		result = torch.abs( torch.log2( (product+self.f0)/(h*target+self.f0) ) ).mean()
+		self._h: torch.Tensor = self.harmonic( product, target )
+		result = torch.abs( torch.log2( (product+self.f0)/(self._h*target+self.f0) ) ).mean()
 		return result
 
 	def harmonics(self) -> np.ndarray:

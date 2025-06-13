@@ -7,6 +7,7 @@ import time, sys, torch, logging, numpy as np
 from torch import nn, optim, Tensor
 from astrotime.models.spectral.peak_finder import SpectralPeakSelector
 from astrotime.trainers.checkpoints import CheckpointManager
+from astrotime.models.cnn.cnn_baseline import ExpHLoss
 from astrotime.models.cnn.cnn_baseline import get_model_from_cfg, ExpU
 from astrotime.encoders.correlation import AutoCorrelationLayer
 
@@ -23,6 +24,8 @@ class ModelEvaluator(object):
         espace = embedding_space(cfg.transform, device)
         self.freqspace: np.ndarray = espace[0]
         self.loader: ElementLoader = loader
+        self._loss = ExpHLoss(cfg.data)
+        self.lossdata = {}
         self.cfg: DictConfig = cfg
         self.log = logging.getLogger()
         self.mtype = kwargs.get( 'mtype', "cnn" )
@@ -97,6 +100,9 @@ class ModelEvaluator(object):
         result: Tensor = self.model( element['z'] )
         self._target_freq = element['target']
         self._model_freq  = result.cpu().item()
+        loss = self._loss.forward(result, element['target'])
+        self.lossdata = dict( loss=loss, h=self._loss.h )
+        self.log.info( f"Model loss: {loss}, h={self._loss.h}")
         return self.embedding.get_result()
 
     @property
