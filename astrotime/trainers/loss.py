@@ -25,7 +25,7 @@ class ExpU(nn.Module):
 
 class ExpLoss(nn.Module):
 	def __init__(self, cfg: DictConfig):
-		super(ExpLoss, self).__init__()
+		super().__init__()
 		self.f0: float = cfg.base_freq
 
 	def forward(self, product: torch.Tensor, target: torch.Tensor) -> torch.Tensor:
@@ -34,7 +34,7 @@ class ExpLoss(nn.Module):
 
 class ElemExpLoss(nn.Module):
 	def __init__(self, cfg: DictConfig):
-		super(ElemExpLoss, self).__init__()
+		super().__init__()
 		self.f0: float = cfg.base_freq
 
 	def forward(self, product: float, target: float) -> float:
@@ -43,8 +43,12 @@ class ElemExpLoss(nn.Module):
 
 class ElemExpHLoss(HLoss):
 	def __init__(self, cfg: DictConfig):
-		HLoss.__init__(self,cfg)
+		super().__init__(cfg)
 		self.f0: float = cfg.base_freq
+
+	@property
+	def h(self) -> np.ndarray:
+		return self._h.cpu().numpy()
 
 	def harmonic(self, y: float, t: float) -> float:
 		h: float = round(y / t) if (y > t) else 1.0 / round(t / y)
@@ -57,7 +61,7 @@ class ElemExpHLoss(HLoss):
 
 class ExpHLoss(HLoss):
 	def __init__(self, cfg: DictConfig):
-		super(ExpHLoss, self).__init__(cfg)
+		super().__init__(cfg)
 		self.f0: float = cfg.base_freq
 		self._harmonics = None
 
