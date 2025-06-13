@@ -58,11 +58,12 @@ class ExpHLoss(nn.Module):
 		self._h = None
 
 	def harmonic(self, y: torch.Tensor, t: torch.Tensor) -> torch.Tensor:
-		h: torch.Tensor = torch.where( y>t, torch.round(y/t), 1/torch.round(t/y) ).detach()
+		h: torch.Tensor = torch.where( y>t, torch.round(y/t), 1/torch.round(t/y) ).detach().squeeze()
 		valid: torch.Tensor = torch.logical_and( torch.round(1/h)<=self.maxh, h<=self.maxh )
 		valid: torch.Tensor = torch.logical_and( valid, h>0 )
 		h: torch.Tensor = torch.where( valid, h, torch.ones_like(h) )
-		self._harmonics = h if (self._harmonics is None) else torch.concat( (self._harmonics, h.squeeze()) )
+		try: self._harmonics = h if (self._harmonics is None) else torch.concat( (self._harmonics, h.squeeze()) )
+		except: print( f"ExpHLoss.harmonic.concat: h={h}, harmonics={self._harmonics}")
 		return h
 
 	def h(self) -> np.ndarray:
