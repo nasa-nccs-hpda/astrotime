@@ -10,7 +10,7 @@ class HLoss(nn.Module):
 		print(f"HLoss: maxh={self.maxh}")
 
 	@property
-	def h(self) -> np.ndarray:
+	def harmonic(self) -> np.ndarray:
 		return self._h.cpu().numpy()
 
 class ExpU(nn.Module):
@@ -46,16 +46,12 @@ class ElemExpHLoss(HLoss):
 		super().__init__(cfg)
 		self.f0: float = cfg.base_freq
 
-	@property
-	def h(self) -> np.ndarray:
-		return self._h.cpu().numpy()
-
-	def harmonic(self, y: float, t: float) -> float:
+	def get_harmonic(self, y: float, t: float) -> float:
 		h: float = round(y / t) if (y > t) else 1.0 / round(t / y)
 		return h if ((round(1 / h) <= self.maxh) and (h <= self.maxh)) else 1.0
 
 	def forward(self, product: float, target: float) -> float:
-		self._h: float = self.harmonic(product, target)
+		self._h: float = self.get_harmonic(product, target)
 		result = abs(math.log2((product + self.f0) / (self._h * target + self.f0)))
 		return result
 
@@ -65,7 +61,7 @@ class ExpHLoss(HLoss):
 		self.f0: float = cfg.base_freq
 		self._harmonics = None
 
-	def harmonic(self, y: torch.Tensor, t: torch.Tensor) -> torch.Tensor:
+	def get_harmonic(self, y: torch.Tensor, t: torch.Tensor) -> torch.Tensor:
 		h: torch.Tensor = torch.where(y > t, torch.round(y / t), 1 / torch.round(t / y)).detach().squeeze()
 		valid: torch.Tensor = torch.logical_and(torch.round(1 / h) <= self.maxh, h <= self.maxh)
 		valid: torch.Tensor = torch.logical_and(valid, h > 0)
@@ -75,7 +71,7 @@ class ExpHLoss(HLoss):
 		return h
 
 	def forward(self, product: torch.Tensor, target: torch.Tensor) -> torch.Tensor:
-		self._h: torch.Tensor = self.harmonic(product, target)
+		self._h: torch.Tensor = self.get_harmonic(product, target)
 		result = torch.abs(torch.log2((product + self.f0) / (self._h * target + self.f0))).mean()
 		return result
 
