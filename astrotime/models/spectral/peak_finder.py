@@ -88,7 +88,6 @@ class Evaluator:
                         y,t = result.item(), element['target']
                         loss: float = self.loss(y,t)
                         h = self.loss.h
-                        h: float = h[0]
                         losses.append(loss)
                         hs.append(h)
                         if loss > 0.1:

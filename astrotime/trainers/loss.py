@@ -43,8 +43,8 @@ class ElemExpHLoss(HLoss):
 		self.f0: float = cfg.base_freq
 
 	def get_harmonic(self, y: float, t: float) -> float:
-		h: float = round(y / t) if (y > t) else 1.0 / round(t / y)
-		return h if ((round(1 / h) <= self.maxh) and (h <= self.maxh)) else 1.0
+		h: float = float(round(y/t)) if (y > t) else 1.0/round(t/y)
+		return h if ((round(1/h) <= self.maxh) and (h <= self.maxh)) else 1.0
 
 	def forward(self, product: float, target: float) -> float:
 		self.h: float = self.get_harmonic(product, target)
