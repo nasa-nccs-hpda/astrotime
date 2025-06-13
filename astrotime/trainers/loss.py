@@ -9,6 +9,7 @@ class HLoss(nn.Module):
 		self._h: torch.Tensor = None
 		print(f"HLoss: maxh={self.maxh}")
 
+	@property
 	def h(self) -> np.ndarray:
 		return self._h.cpu().numpy()
 
