@@ -6,6 +6,16 @@ from astrotime.util.math import shp
 from typing import Any, Dict, List, Optional, Tuple, Mapping
 from astrotime.models.spectral.peak_finder import SpectralPeakSelector, harmonic
 
+class HLoss(nn.Module):
+	def __init__(self, cfg: DictConfig):
+		super(HLoss, self).__init__()
+		self.maxh = cfg.maxh
+		self._h: torch.Tensor = None
+		print( f"HLoss: maxh={self.maxh}")
+
+	def h(self) -> np.ndarray:
+		return self._h.cpu().numpy()
+
 class ExpU(nn.Module):
 
 	def __init__(self, cfg: DictConfig) -> None:
@@ -34,28 +44,25 @@ class ElemExpLoss(nn.Module):
 		result = abs( math.log2( (product+self.f0)/(target+self.f0) ) )
 		return result
 
-class ElemExpHLoss(nn.Module):
+class ElemExpHLoss(HLoss):
 	def __init__(self, cfg: DictConfig):
-		super(ElemExpHLoss, self).__init__()
+		super(ElemExpHLoss, self).__init__(cfg)
 		self.f0: float = cfg.base_freq
-		self.maxh = cfg.maxh
 
 	def harmonic(self, y: float, t: float) -> float:
 		h: float = round(y/t) if (y>t) else 1.0/round(t/y)
 		return h if ((round(1/h)<=self.maxh) and (h<=self.maxh)) else 1.0
 
 	def forward(self, product: float, target: float)-> float:
-		h: float = self.harmonic(product, target)
-		result = abs( math.log2( (product+self.f0)/(h*target+self.f0) ) )
+		self._h: float = self.harmonic(product, target)
+		result = abs( math.log2( (product+self.f0)/(self._h*target+self.f0) ) )
 		return result
 
-class ExpHLoss(nn.Module):
+class ExpHLoss(HLoss):
 	def __init__(self, cfg: DictConfig):
-		super(ExpHLoss, self).__init__()
+		super(ExpHLoss, self).__init__(cfg)
 		self.f0: float = cfg.base_freq
-		self.maxh = cfg.maxh
 		self._harmonics = None
-		self._h = None
 
 	def harmonic(self, y: torch.Tensor, t: torch.Tensor) -> torch.Tensor:
 		h: torch.Tensor = torch.where( y>t, torch.round(y/t), 1/torch.round(t/y) ).detach().squeeze()
@@ -63,11 +70,8 @@ class ExpHLoss(nn.Module):
 		valid: torch.Tensor = torch.logical_and( valid, h>0 )
 		h: torch.Tensor = torch.where( valid, h, torch.ones_like(h) )
 		try: self._harmonics = h if (self._harmonics is None) else torch.concat( (self._harmonics, h.squeeze()) )
-		except: print( f"ExpHLoss.harmonic.concat: h={h}, harmonics={self._harmonics}")
+		except RuntimeError: print( f"ExpHLoss.harmonic.concat: h={h}, harmonics={self._harmonics}")
 		return h
-
-	def h(self) -> np.ndarray:
-		return self._h.cpu().numpy()
 
 	def forward(self, product: torch.Tensor, target: torch.Tensor)-> torch.Tensor:
 		self._h: torch.Tensor = self.harmonic( product, target )

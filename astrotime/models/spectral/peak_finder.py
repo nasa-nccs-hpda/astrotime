@@ -7,6 +7,7 @@ from omegaconf import DictConfig
 from torch import nn
 from typing import List, Optional, Dict, Type, Union, Tuple
 from astrotime.loaders.base import ElementLoader, RDict
+from astrotime.models.cnn.cnn_baseline import HLoss
 TRDict = Dict[str,Union[List[str],int,torch.Tensor]]
 
 def harmonic( y: float, t: float) -> float:
@@ -48,14 +49,14 @@ class SpectralPeakSelector(Module):
 
 class Evaluator:
 
-    def __init__(self, cfg: DictConfig, device: device, loader: ElementLoader, model: nn.Module, loss: nn.Module ) -> None:
+    def __init__(self, cfg: DictConfig, device: device, loader: ElementLoader, model: nn.Module, loss: HLoss ) -> None:
         super().__init__()
         self.device: device = device
         self.cfg: DictConfig = cfg
         self.log = logging.getLogger()
         self.model = model
         self.loader = loader
-        self.loss = loss
+        self.loss: HLoss = loss
 
     def encode_element(self, element: RDict) -> TRDict:
         t,y,p = element.pop('t'), element.pop('y'), element.pop('period')
@@ -85,12 +86,11 @@ class Evaluator:
                     if element is not None:
                         result: Tensor = self.model(element['z'])
                         y,t = result.item(), element['target']
-                        h = harmonic(y,t)
-                        loss: float = self.loss(y,t*h)
+                        loss: float = self.loss(y,t)
                         losses.append(loss)
-                        hs.append(h)
+                        hs.append(loss.h)
                         if loss > 0.1:
-                            print(f" * F-{ifile} Elem-{elem_idx}: yt=({y:.3f},{t*h:.3f},{t:.3f}), H= {sH(h)}, yLoss= {loss:.5f}")
+                            print(f" * F-{ifile} Elem-{elem_idx}: yt=({y:.3f},{t*loss.h:.3f},{t:.3f}), H={sH(loss.h)}, yLoss= {loss:.5f}")
                         elem_idx+=1
             L: np.array = np.array(losses)
             H: np.array = np.array(hs)
