@@ -87,7 +87,7 @@ class Evaluator:
                         result: Tensor = self.model(element['z'])
                         y,t = result.item(), element['target']
                         loss: float = self.loss(y,t)
-                        h: np.ndarray = self.loss.harmonic
+                        h = self.loss.h
                         h: float = h[0]
                         losses.append(loss)
                         hs.append(h)

@@ -6,12 +6,8 @@ class HLoss(nn.Module):
 	def __init__(self, cfg: DictConfig):
 		super(HLoss, self).__init__()
 		self.maxh = cfg.maxh
-		self._h: torch.Tensor = None
+		self.h = None
 		print(f"HLoss: maxh={self.maxh}")
-
-	@property
-	def harmonic(self) -> np.ndarray:
-		return self._h.cpu().numpy()
 
 class ExpU(nn.Module):
 
@@ -51,8 +47,8 @@ class ElemExpHLoss(HLoss):
 		return h if ((round(1 / h) <= self.maxh) and (h <= self.maxh)) else 1.0
 
 	def forward(self, product: float, target: float) -> float:
-		self._h: float = self.get_harmonic(product, target)
-		result = abs(math.log2((product + self.f0) / (self._h * target + self.f0)))
+		self.h: float = self.get_harmonic(product, target)
+		result = abs(math.log2((product + self.f0) / (self.h*target + self.f0)))
 		return result
 
 class ExpHLoss(HLoss):
@@ -71,8 +67,8 @@ class ExpHLoss(HLoss):
 		return h
 
 	def forward(self, product: torch.Tensor, target: torch.Tensor) -> torch.Tensor:
-		self._h: torch.Tensor = self.get_harmonic(product, target)
-		result = torch.abs(torch.log2((product + self.f0) / (self._h * target + self.f0))).mean()
+		self.h: torch.Tensor = self.get_harmonic(product, target)
+		result = torch.abs(torch.log2((product + self.f0) / (self.h*target + self.f0))).mean()
 		return result
 
 	def harmonics(self) -> np.ndarray:
