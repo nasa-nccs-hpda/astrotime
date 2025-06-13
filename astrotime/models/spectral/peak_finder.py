@@ -56,7 +56,7 @@ class Evaluator:
         self.log = logging.getLogger()
         self.model = model
         self.loader = loader
-        self.loss: HLoss = loss
+        self.loss: HLoss =   loss
 
     def encode_element(self, element: RDict) -> TRDict:
         t,y,p = element.pop('t'), element.pop('y'), element.pop('period')
@@ -87,10 +87,11 @@ class Evaluator:
                         result: Tensor = self.model(element['z'])
                         y,t = result.item(), element['target']
                         loss: float = self.loss(y,t)
+                        h = self.loss.h[0]
                         losses.append(loss)
-                        hs.append(self.loss.h)
+                        hs.append(h)
                         if loss > 0.1:
-                            print(f" * F-{ifile} Elem-{elem_idx}: yt=({y:.3f},{t*self.loss.h:.3f},{t:.3f}), H={sH(self.loss.h)}, yLoss= {loss:.5f}")
+                            print(f" * F-{ifile} Elem-{elem_idx}: yt=({y:.3f},{t*h:.3f},{t:.3f}), H={sH(h)}, yLoss= {loss:.5f}")
                         elem_idx+=1
             L: np.array = np.array(losses)
             H: np.array = np.array(hs)

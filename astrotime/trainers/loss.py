@@ -43,7 +43,7 @@ class ElemExpLoss(nn.Module):
 
 class ElemExpHLoss(HLoss):
 	def __init__(self, cfg: DictConfig):
-		super(ElemExpHLoss, self).__init__(cfg)
+		HLoss.__init__(self,cfg)
 		self.f0: float = cfg.base_freq
 
 	def harmonic(self, y: float, t: float) -> float:
