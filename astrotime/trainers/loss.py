@@ -1,5 +1,6 @@
 from torch import nn
 import torch, math, numpy as np
+from typing import List, Tuple, Mapping
 from omegaconf import DictConfig
 
 class HLoss(nn.Module):
@@ -7,6 +8,7 @@ class HLoss(nn.Module):
 		super(HLoss, self).__init__()
 		self.maxh = cfg.maxh
 		self.h = None
+		self.rh = None
 		print(f"HLoss: maxh={self.maxh}")
 
 class ExpU(nn.Module):
@@ -42,12 +44,12 @@ class ElemExpHLoss(HLoss):
 		super().__init__(cfg)
 		self.f0: float = cfg.base_freq
 
-	def get_harmonic(self, y: float, t: float) -> float:
+	def get_harmonic(self, y: float, t: float) -> Tuple[float,float]:
 		h: float = float(round(y/t)) if (y > t) else 1.0/round(t/y)
-		return h if ((round(1/h) <= self.maxh) and (h <= self.maxh)) else 1.0
+		return (h, h) if ((round(1/h) <= self.maxh) and (h <= self.maxh) and (h>0)) else (1.0, h)
 
 	def forward(self, product: float, target: float) -> float:
-		self.h: float = self.get_harmonic(product, target)
+		self.h, self.rh = self.get_harmonic(product, target)
 		result = abs(math.log2((product + self.f0) / (self.h*target + self.f0)))
 		return result
 
@@ -57,17 +59,17 @@ class ExpHLoss(HLoss):
 		self.f0: float = cfg.base_freq
 		self._harmonics = None
 
-	def get_harmonic(self, y: torch.Tensor, t: torch.Tensor) -> torch.Tensor:
-		h: torch.Tensor = torch.where(y > t, torch.round(y / t), 1 / torch.round(t / y)).detach().squeeze()
-		valid: torch.Tensor = torch.logical_and(torch.round(1 / h) <= self.maxh, h <= self.maxh)
-		valid: torch.Tensor = torch.logical_and(valid, h > 0)
-		h: torch.Tensor = torch.where(valid, h, torch.ones_like(h))
+	def get_harmonic(self, y: torch.Tensor, t: torch.Tensor) -> Tuple[torch.Tensor,torch.Tensor]:
+		rh: torch.Tensor = torch.where(y > t, torch.round(y / t), 1 / torch.round(t / y)).detach().squeeze()
+		valid: torch.Tensor = torch.logical_and(torch.round(1 / rh) <= self.maxh, rh <= self.maxh)
+		valid: torch.Tensor = torch.logical_and(valid, rh > 0)
+		h: torch.Tensor = torch.where(valid, rh, torch.ones_like(rh))
 		try: self._harmonics = h if (self._harmonics is None) else torch.concat((self._harmonics, h.squeeze()))
 		except RuntimeError: print(f"ExpHLoss.harmonic.concat: h={h}, harmonics={self._harmonics}")
-		return h
+		return h, rh
 
 	def forward(self, product: torch.Tensor, target: torch.Tensor) -> torch.Tensor:
-		self.h: torch.Tensor = self.get_harmonic(product, target)
+		self.h, self.rh = self.get_harmonic(product, target)
 		result = torch.abs(torch.log2((product + self.f0) / (self.h*target + self.f0))).mean()
 		return result
 

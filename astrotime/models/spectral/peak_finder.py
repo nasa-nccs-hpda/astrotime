@@ -15,7 +15,7 @@ def harmonic( y: float, t: float) -> float:
     else:     return 1.0 / round(t/y)
 
 def sH(h:float) -> str:
-    if h > 1: return str(round(h))
+    if abs(h) > 1: return str(round(h))
     else:
         sh = round(1/h)
         return f"1/{sh}" if sh > 1 else str(sh)
@@ -87,11 +87,11 @@ class Evaluator:
                         result: Tensor = self.model(element['z'])
                         y,t = result.item(), element['target']
                         loss: float = self.loss(y,t)
-                        h = self.loss.h
+                        h, rh = self.loss.h, self.loss.rh
                         losses.append(loss)
                         hs.append(h)
                         if loss > 0.1:
-                            print(f" * F-{ifile} Elem-{elem_idx}: yt=({y:.3f},{t*h:.3f},{t:.3f}), H={sH(h)}, yLoss= {loss:.5f}")
+                            print(f" * F-{ifile} Elem-{elem_idx}: yt=({y:.3f},{t*h:.3f},{t:.3f}), H={sH(h)}({sH(rh)}), yLoss= {loss:.5f}")
                         elem_idx+=1
             L: np.array = np.array(losses)
             H: np.array = np.array(hs)
