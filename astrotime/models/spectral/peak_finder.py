@@ -88,9 +88,9 @@ class Evaluator:
                         y,t = result.item(), element['target']
                         loss: float = self.loss(y,t)
                         losses.append(loss)
-                        hs.append(loss.h)
+                        hs.append(self.loss.h)
                         if loss > 0.1:
-                            print(f" * F-{ifile} Elem-{elem_idx}: yt=({y:.3f},{t*loss.h:.3f},{t:.3f}), H={sH(loss.h)}, yLoss= {loss:.5f}")
+                            print(f" * F-{ifile} Elem-{elem_idx}: yt=({y:.3f},{t*self.loss.h:.3f},{t:.3f}), H={sH(self.loss.h)}, yLoss= {loss:.5f}")
                         elem_idx+=1
             L: np.array = np.array(losses)
             H: np.array = np.array(hs)
