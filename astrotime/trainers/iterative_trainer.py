@@ -61,7 +61,7 @@ class IterativeTrainer(object):
         elif self.cfg.optim == "adam": return optim.Adam(    self.model.parameters(), lr=self.cfg.lr, weight_decay=self.cfg.weight_decay )
         else: raise RuntimeError( f"Unknown optimizer: {self.cfg.optim}")
 
-    def initialize_checkpointing( self, version: str, init_version:Optional[str] ):
+    def initialize_checkpointing( self, version: str, init_version:Optional[str]=None ):
         self._checkpoint_manager = CheckpointManager( version, self.model, self.optimizer, self.cfg )
         if self.cfg.refresh_state:
             self._checkpoint_manager.clear_checkpoints()
@@ -177,7 +177,7 @@ class IterativeTrainer(object):
         with self.device:
             te = time.time()
             if version is not None:
-                self.initialize_checkpointing(version,version)
+                self.initialize_checkpointing(version)
             self.loader.initialize(self.mode)
             self.model.train(False)
             self.loader.init_epoch()
