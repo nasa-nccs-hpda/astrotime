@@ -14,11 +14,19 @@ from typing import List, Optional, Dict, Type, Union, Tuple, Any, Set
 from astrotime.util.math import tnorm
 log = logging.getLogger()
 
-def sH(h:float) -> str:
-    if abs(h) > 1: return str(round(h))
-    else:
-        sh = round(1/h)
-        return f"1/{sh}" if sh > 1 else str(sh)
+def sH(h: float|np.ndarray) -> str:
+	if type(h) is np.ndarray:
+		h = h[0]
+	if abs(h) > 1:
+		return str(round(h))
+	else:
+		sh = round(1/h)
+		return f"1/{sh}" if sh > 1 else str(sh)
+
+def sL(l: float|np.ndarray) -> str:
+	if type(l) is np.ndarray:
+		l = l[0]
+	return f"{l:.4f}"
 
 def tolower(ls: Optional[List[str]]) -> List[str]:
 	return [a.lower() for a in ls] if (ls is not None) else []
@@ -482,6 +490,8 @@ class EvaluatorPlot(SignalPlot):
 		tdata = self.evaluator.evaluate(self.element).squeeze()
 		target_freq = self.evaluator.target_frequency
 		model_freq = self.evaluator.model_frequency
+		loss =  self.evaluator.lossdata['loss']
+		h = self.evaluator.lossdata['h']
 		x = self.evaluator.xdata.cpu().numpy()
 		y = tdata[None,:] if (tdata.ndim == 1) else tdata
 		self.nlines = y.shape[0]
@@ -493,7 +503,7 @@ class EvaluatorPlot(SignalPlot):
 
 		self.target_marker: Line2D = self.ax.axvline( target_freq, 0.0, 1.0, color=self.marker_colors[0], linestyle='-', linewidth=2, alpha=0.7)
 		self.model_marker: Line2D  = self.ax.axvline( model_freq,  0.0, 1.0, color=self.marker_colors[1], linestyle='-', linewidth=2, alpha=0.7)
-		self.ax.title.set_text(f"{self.name}: target({self.file},{self.element})={target_freq:.3f} model({self.marker_colors[1]})={model_freq:.3f}")
+		self.ax.title.set_text(f"{self.name}: target({self.file},{self.element})={target_freq:.3f} model({self.marker_colors[1]})={model_freq:.3f}, loss={sL(loss)}, h={sH(h)}")
 		self.ax.title.set_fontsize(8)
 		self.ax.title.set_fontweight('bold')
 		self.ax.set_xscale('log')
@@ -545,6 +555,6 @@ class EvaluatorPlot(SignalPlot):
 		self.target_marker.set_xdata([target_freq,target_freq])
 		self.model_marker.set_xdata( [model_freq, model_freq] )
 		self.process_event(id="period-update", period=1/model_freq,  ax=str(id(self.ax)), color=self.marker_colors[1])
-		self.ax.title.set_text(f"{self.name}({self.file},{self.element}): target_freq={target_freq:.3f} (model_freq({self.evaluator.model_feature})={model_freq:.3f}), loss={loss:.4f}, h={sH(h)}")
+		self.ax.title.set_text(f"{self.name}({self.file},{self.element}): target_freq={target_freq:.3f} (model_freq({self.evaluator.model_feature})={model_freq:.3f}), loss={sL(loss)}, h={sH(h)}")
 		self.ax.figure.canvas.draw_idle()
 
