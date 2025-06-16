@@ -7,8 +7,8 @@ import time, sys, torch, logging, numpy as np
 from torch import nn, optim, Tensor
 from astrotime.models.spectral.peak_finder import SpectralPeakSelector
 from astrotime.trainers.checkpoints import CheckpointManager
-from astrotime.trainers.loss import ExpHLoss
-from astrotime.models.cnn.cnn_baseline import get_model_from_cfg, ExpU
+from astrotime.trainers.loss import ExpHLoss, ExpU
+from astrotime.models.cnn.cnn_baseline import get_model_from_cfg
 from astrotime.encoders.correlation import AutoCorrelationLayer
 
 TRDict = Dict[str,Union[List[str],int,torch.Tensor]]
