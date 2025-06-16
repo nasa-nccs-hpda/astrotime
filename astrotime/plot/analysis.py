@@ -14,6 +14,12 @@ from typing import List, Optional, Dict, Type, Union, Tuple, Any, Set
 from astrotime.util.math import tnorm
 log = logging.getLogger()
 
+def sH(h:float) -> str:
+    if abs(h) > 1: return str(round(h))
+    else:
+        sh = round(1/h)
+        return f"1/{sh}" if sh > 1 else str(sh)
+
 def tolower(ls: Optional[List[str]]) -> List[str]:
 	return [a.lower() for a in ls] if (ls is not None) else []
 
@@ -539,6 +545,6 @@ class EvaluatorPlot(SignalPlot):
 		self.target_marker.set_xdata([target_freq,target_freq])
 		self.model_marker.set_xdata( [model_freq, model_freq] )
 		self.process_event(id="period-update", period=1/model_freq,  ax=str(id(self.ax)), color=self.marker_colors[1])
-		self.ax.title.set_text(f"{self.name}({self.file},{self.element}): target_freq={target_freq:.3f} (model_freq({self.evaluator.model_feature})={model_freq:.3f}), loss={loss:.3f}, h={h:.3f}")
+		self.ax.title.set_text(f"{self.name}({self.file},{self.element}): target_freq={target_freq:.3f} (model_freq({self.evaluator.model_feature})={model_freq:.3f}), loss={loss:.4f}, h={sH(h)}")
 		self.ax.figure.canvas.draw_idle()
 
