@@ -177,7 +177,7 @@ class IterativeTrainer(object):
         with self.device:
             te = time.time()
             if version is not None:
-                self.initialize_checkpointing(version)
+                self.initialize_checkpointing(version,version)
             self.loader.initialize(self.mode)
             self.model.train(False)
             self.loader.init_epoch()
