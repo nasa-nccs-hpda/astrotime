@@ -16,6 +16,7 @@ def my_app(cfg: DictConfig) -> None:
 	device: torch.device = astrotime_initialize( cfg, version )
 	cfg.data['snr_min'] = 0.0
 	cfg.data['snr_max'] = 1e9
+	train = False
 
 	embedding_space_array, embedding_space_tensor = embedding_space(cfg.transform, device)
 	data_loader = MITElementLoader(cfg.data)
@@ -25,7 +26,8 @@ def my_app(cfg: DictConfig) -> None:
 	model: nn.Module = get_model_from_cfg( cfg.model, device, embedding, ExpU(cfg.data) )
 
 	trainer = IterativeTrainer( cfg.train, device, data_loader, model, ExpHLoss(cfg.data) )
-	trainer.compute(version)
+	if train: trainer.compute(version)
+	else:     trainer.evaluate(version)
 
 if __name__ == "__main__":
 	my_app()
