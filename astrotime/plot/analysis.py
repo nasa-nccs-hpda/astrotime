@@ -96,6 +96,7 @@ class RawDatasetPlot(SignalPlot):
 		self.period = None
 		self.fold_period = None
 		self.transforms = {}
+		self.snr = 0.0
 
 	@exception_handled
 	def update_period_marker(self) -> str:
@@ -126,7 +127,7 @@ class RawDatasetPlot(SignalPlot):
 				period = event_data['period']
 				pm = self.period_markers.setdefault(pm_name, PeriodMarkers(pm_name, self.ax, color=event_data['color'], linewidth=2 ) )
 				pm.update( self.origin, period )
-				title = f"{self.name},{self.file},{self.element}): TP={self.period:.3f} (TF={1/self.period:.3f}), MP={period:.3f} (MF={1/period:.3f})"
+				title = f"{self.name},{self.file},{self.element}): TP={self.period:.3f} (TF={1/self.period:.3f}), MP={period:.3f} (MF={1/period:.3f}) snr={self.snr:.3f}"
 				self.ax.title.set_text(title)
 
 	@exception_handled
@@ -154,7 +155,7 @@ class RawDatasetPlot(SignalPlot):
 
 	@exception_handled
 	def _setup(self):
-		xs, ys, self.period, snr, stype = self.get_element_data()
+		xs, ys, self.period, self.snr, stype = self.get_element_data()
 		self.origin = xs[np.argmax(np.abs(ys))]
 		self.plot: Line2D = self.ax.plot(xs, ys, label='y', color='blue', marker=".", linewidth=1, markersize=2, alpha=0.5)[0]
 		self.ax.title.set_text(f"{self.name}({stype},{self.file},{self.element}): TP={self.period:.3f} (F={1/self.period:.3f})")
@@ -179,7 +180,7 @@ class RawDatasetPlot(SignalPlot):
 
 	@exception_handled
 	def update(self, val=0, **kwargs ):
-		xdata, ydata, self.period, snr, stype = self.get_element_data()
+		xdata, ydata, self.period, self.snr, stype = self.get_element_data()
 		self.log.debug(f" ---------> get_element_data: xdata{xdata.shape}, ydata{ydata.shape}, period={self.period:.3f}, snr={snr:.3f}, stype={stype}")
 		self.origin = xdata[np.argmax(np.abs(ydata))]
 		self.plot.set_ydata(ydata)
