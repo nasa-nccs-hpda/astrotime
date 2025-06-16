@@ -101,8 +101,8 @@ class ModelEvaluator(object):
         self._target_freq = element['target']
         self._model_freq  = result.cpu().item()
         loss = self._loss.forward(result, element['target'])
-        self.lossdata = dict( loss=loss, h=self._loss.h )
-        self.log.info( f"Model loss: {loss}, h={self._loss.h}")
+        self.lossdata = dict( loss=loss.cpu().numpy(), h=self._loss.h.cpu().numpy() )
+        self.log.info( f"Model loss: {self.lossdata['loss']}, h={self.lossdata['h']}")
         return self.embedding.get_result()
 
     @property
