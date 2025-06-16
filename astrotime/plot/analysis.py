@@ -16,7 +16,7 @@ log = logging.getLogger()
 
 def sH(h: float|np.ndarray) -> str:
 	if type(h) is np.ndarray:
-		h = h[0]
+		h = h.item() if h.ndim == 0 else h[0]
 	if abs(h) > 1:
 		return str(round(h))
 	else:
@@ -25,7 +25,7 @@ def sH(h: float|np.ndarray) -> str:
 
 def sL(l: float|np.ndarray) -> str:
 	if type(l) is np.ndarray:
-		l = l[0]
+		l = l.item() if l.ndim == 0 else l[0]
 	return f"{l:.4f}"
 
 def tolower(ls: Optional[List[str]]) -> List[str]:
