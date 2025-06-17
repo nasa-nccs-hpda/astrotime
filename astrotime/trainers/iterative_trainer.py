@@ -171,7 +171,7 @@ class IterativeTrainer(object):
                     val_losses = np.array(losses)
                     print( f" Validation Loss: mean={val_losses.mean():.3f}, median={np.median(val_losses):.3f}, range=({val_losses.min():.3f} -> {val_losses.max():.3f})")
 
-    def evaluate(self, version: Optional[str] = None ):
+    def evaluate1(self, version: Optional[str] = None ):
         print(f"SignalTrainer[{self.mode}]: device={self.device}")
         self.cfg["mode"] = "val"
         with self.device:
@@ -197,6 +197,37 @@ class IterativeTrainer(object):
                 L: np.array = np.array(losses)
                 print( f"Loss mean = {L.mean():.3f}, range=[{L.min():.3f} -> {L.max():.3f}]" )
 
+    def evaluate(self, version):
+        print(f"SignalTrainer[{self.mode}]: , {self.nepochs} epochs, device={self.device}")
+        self.optimizer = self.get_optimizer()
+        self.initialize_checkpointing(version)
+        with self.device:
+            self.loader.init_epoch()
+            losses, log_interval, t0 = [], 50, time.time()
+            try:
+                for ibatch in range(0, sys.maxsize):
+                    t0 = time.time()
+                    batch = self.get_next_batch()
+                    if batch['z'].shape[0] > 0:
+                        self.global_time = time.time()
+                        result: Tensor = self.model(batch['z'])
+                        if result.squeeze().ndim > 0:
+                            loss: Tensor = self.loss(result.squeeze(), batch['target'].squeeze())
+                            losses.append(loss.cpu().item())
+                            if ibatch % log_interval == 0:
+                                from astrotime.trainers.loss import ExpHLoss
+                                aloss = np.array(losses)
+                                mean_loss = aloss.mean()
+                                losses = []
+                                if type(self.loss) == ExpHLoss:
+                                    h = self.loss.harmonics()
+                                    print(f"B-{ibatch} loss={mean_loss:.3f}, range=({aloss.min():.3f} -> {aloss.max():.3f}), hrange=(1/{round(1 / h.min())} -> {round(h.max())}), dt/batch={elapsed(t0):.5f} sec")
+                                else:
+                                    print(f"B-{ibatch} loss={mean_loss:.3f}, range=({aloss.min():.3f} -> {aloss.max():.3f}), dt/batch={elapsed(t0):.5f} sec")
+
+            except StopIteration:
+                val_losses = np.array(losses)
+                print(f" Validation Loss: mean={val_losses.mean():.3f}, median={np.median(val_losses):.3f}, range=({val_losses.min():.3f} -> {val_losses.max():.3f})")
 
     def preprocess(self):
         with self.device:
