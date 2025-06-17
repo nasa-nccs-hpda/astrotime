@@ -22,6 +22,12 @@ def pnorm( x: Tensor ) -> Tensor:
 	x1: Tensor = x.max( dim=-1, keepdim=True )[0]
 	return (x-x0)/(x1-x0)
 
+def shift( x: Tensor, distance: float, dim: int ) -> Tensor:
+	shift: int = round(distance)
+	x = torch.roll( x, shifts=shift, dims=dim )
+	x.index_fill_( dim, torch.arange(shift), 0.0)
+	return x
+
 def embedding_space( cfg: DictConfig, device: device ) -> Tuple[np.ndarray,Tensor]:
 	base_freq =  cfg.base_freq
 	fold_harmonic = cfg.get('fold_harmonic', True)
