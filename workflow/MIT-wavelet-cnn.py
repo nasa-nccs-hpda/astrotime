@@ -20,7 +20,6 @@ def my_app(cfg: DictConfig) -> None:
 
 	embedding_space_array, embedding_space_tensor = embedding_space(cfg.transform, device)
 	data_loader = MITElementLoader(cfg.data)
-	data_loader.initialize(TSet.Train)
 
 	embedding = WaveletAnalysisLayer( 'analysis', cfg.transform, embedding_space_tensor, device )
 	model: nn.Module = get_model_from_cfg( cfg.model, device, embedding, ExpU(cfg.data) )

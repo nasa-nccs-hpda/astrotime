@@ -18,6 +18,7 @@ def my_app(cfg: DictConfig) -> None:
 
 	embedding_space_array, embedding_space_tensor = embedding_space(cfg.transform, device)
 	data_loader = MITElementLoader(cfg.data)
+
 	embedding = WaveletAnalysisLayer( 'analysis', cfg.transform, embedding_space_tensor, device )
 	model: nn.Module = get_spectral_peak_selector_from_cfg( cfg.model, device, embedding )
 
