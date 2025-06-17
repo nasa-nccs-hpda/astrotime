@@ -181,7 +181,7 @@ class RawDatasetPlot(SignalPlot):
 	@exception_handled
 	def update(self, val=0, **kwargs ):
 		xdata, ydata, self.period, self.snr, stype = self.get_element_data()
-		self.log.debug(f" ---------> get_element_data: xdata{xdata.shape}, ydata{ydata.shape}, period={self.period:.3f}, snr={snr:.3f}, stype={stype}")
+		self.log.debug(f" ---------> get_element_data: xdata{xdata.shape}, ydata{ydata.shape}, period={self.period:.3f}, snr={self.snr:.3f}, stype={stype}")
 		self.origin = xdata[np.argmax(np.abs(ydata))]
 		self.plot.set_ydata(ydata)
 		self.plot.set_xdata(xdata)
