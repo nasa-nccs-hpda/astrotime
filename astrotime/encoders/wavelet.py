@@ -50,9 +50,11 @@ def fold_harmonic(cfg: DictConfig, smag: Tensor, dim: int) -> Tensor:
 		hdist = cfg.nfreq_oct * math.log2(iH)
 		x, norm = shift(smag, hdist, dim)
 		xs += x
-		print(f" * H{iH}: smean={xs.mean().item():.4f} sstd={xs.std().item():.4f}, xmean={x.mean().item():.4f} xstd={x.std().item():.4f}, nmean={ns.mean().item():.4f} nstd={ns.std().item():.4f}  ")
+		print(f" * H{iH}: xs=({xs.mean().item():.1f},{xs.std().item():.1f}), x=({x.mean().item():.1f},{x.std().item():.1f}), ns=({ns.mean().item():.1f},{ns.std().item():.1f}), smag=({smag.mean().item():.1f},{smag.std().item():.1f})  ")
 		ns += norm
-	return xs / ns
+	rv = xs / ns
+	print(f" * result: ({rv.mean().item():.1f},{rv.std().item():.1f})")
+	return rv
 
 class WaveletAnalysisLayer(EmbeddingLayer):
 
