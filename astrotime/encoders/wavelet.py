@@ -31,7 +31,7 @@ def shift( x: Tensor,  ishift: int, dim: int ) -> tuple[Tensor,Tensor]:
 	if dim == 0:   sx[0:slen]=x[ishift:];  norm[0:slen]=1
 	elif dim == 1: sx[:,0:slen]=x[:,ishift:];  norm[:,0:slen]=1
 	elif dim == 2: sx[:,:,0:slen]=x[:,:,ishift:];  norm[:,:,0:slen]=1
-	return x, norm
+	return sx, norm
 
 def embedding_space( cfg: DictConfig, device: device ) -> Tuple[np.ndarray,Tensor]:
 	nfspace = l2space( cfg.base_freq, cfg.noctaves, cfg.nfreq_oct )
