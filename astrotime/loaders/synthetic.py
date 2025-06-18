@@ -18,7 +18,7 @@ class SyntheticElementLoader(ElementLoader):
 		self.batch_size =self.cfg.batch_size
 		self.current_batch = None
 		self.elem_sort = None
-		self.file_sort = list(range(self.nfiles))
+		self.file_sort = list(range(self.ntfiles))
 		self.use_batches = kwargs.get('use_batches',True)
 		self._load_cache_dataset()
 
@@ -74,7 +74,7 @@ class SyntheticElementLoader(ElementLoader):
 		if batch_start >= self.file_size:
 			self.ifile += 1
 			self.batch_index = 0
-			if self.ifile >= self.nfiles:
+			if self.ifile >= self.ntfiles:
 				raise StopIteration
 			self._load_cache_dataset()
 		batch: Optional[Dict[str,Any]] = self.get_batch(self.batch_index)
