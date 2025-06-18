@@ -11,8 +11,12 @@ def is_power_of_two(n: int) -> bool:
 def logspace(start: float, stop: float, N: int) -> np.ndarray:
 	return np.power(10.0, np.linspace(np.log10(start), np.log10(stop), N))
 
-def log2space(start: float, stop: float, N: int) -> np.ndarray:
-	return np.power(2.0, np.linspace(np.log2(start), np.log2(stop), N))
+# def log2space__(start: float, stop: float, N: int) -> np.ndarray:
+# 	return np.power(2.0, np.linspace(np.log2(start), np.log2(stop), N))
+
+def l2space( f0: float, noctaves: int, nfo: int) -> np.ndarray:
+	exp: np.ndarray = np.array(range(noctaves*nfo)) / nfo
+	return f0 * np.power( 2.0, exp )
 
 def shp( x ) -> List[int]:
 	return list(x.shape)
