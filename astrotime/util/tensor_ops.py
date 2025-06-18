@@ -6,10 +6,10 @@ from torch.fft import irfft, rfft
 _ROOT_TWO_INVERSE = 1.0 / math.sqrt(2.0)
 CHOLESKY_RELATIVE_JITTER = 4.0  # in units of finfo.eps
 
-def check_nan(x: torch.Tensor):
+def check_nan(label: str, x: torch.Tensor):
     nnan = torch.isnan(x).sum()
     if nnan > 0:
-        print(f"Error: {nnan} NaNs detected in tensor: {x.detach().cpu().numpy().tolist()}")
+        print(f"Error({label}): {nnan} NaNs detected in tensor: {x.detach().cpu().numpy().tolist()}")
         raise RuntimeError("NaN detected in tensor")
     return x
 

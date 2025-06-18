@@ -90,7 +90,7 @@ class IterativeTrainer(object):
             Y: Tensor = torch.FloatTensor(y).to(self.device)
             X: Tensor = torch.FloatTensor(x).to(self.device)
             Y = tnorm(Y, dim=1)
-            return check_nan( torch.stack((X,Y), dim=1) )
+            return torch.stack((X,Y), dim=1)
 
     def get_next_batch(self) -> Optional[TRDict]:
         while True:
@@ -144,8 +144,10 @@ class IterativeTrainer(object):
                         t0 = time.time()
                         batch = self.get_next_batch()
                         if batch['z'].shape[0] > 0:
+                            check_nan('batch', batch['z'])
                             self.global_time = time.time()
-                            result: Tensor = self.model( batch['z'] )
+                            result: Tensor = self.model(  batch['z'] )
+                            check_nan('model', batch['z'])
                             if result.squeeze().ndim > 0:
                                 self.log.debug(f"result{list(result.shape)} range: [{result.min().cpu().item()} -> {result.max().cpu().item()}]")
                                 loss: Tensor =  self.loss( result.squeeze(), batch['target'].squeeze() )
