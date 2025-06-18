@@ -45,6 +45,7 @@ def embedding_space( cfg: DictConfig, device: device ) -> Tuple[np.ndarray,Tenso
 
 def fold_harmonic(cfg: DictConfig, smag: Tensor, dim: int) -> Tensor:
 	xs, ns = copy.deepcopy(smag), torch.ones_like(smag)
+	print( f"fold_harmonic: smag{shp(smag)} maxh={cfg.maxh} ")
 	for iH in range(2, cfg.maxh + 1):
 		hdist = cfg.nfreq_oct * math.log2(iH)
 		x, norm = shift(smag, hdist, dim)
@@ -109,7 +110,7 @@ class WaveletAnalysisLayer(EmbeddingLayer):
 		p2: Tensor = w_prod(ys, pw2)
 		mag: Tensor =  torch.sqrt( p1**2 + p2**2 )
 
-		features = [ mag, mag ] # fold_harmonic(self.cfg, mag, 1) ]
+		features = [ mag, fold_harmonic(self.cfg, mag, 1) ]
 		embedding: Tensor = torch.stack( features, dim=1)
 		self.init_log(f" Completed embedding{list(embedding.shape)} in {elapsed(t0):.5f} sec: nfeatures={embedding.shape[1]}")
 		self.init_state = False
