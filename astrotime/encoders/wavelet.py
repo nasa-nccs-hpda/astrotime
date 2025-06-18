@@ -38,24 +38,15 @@ def embedding_space( cfg: DictConfig, device: device ) -> Tuple[np.ndarray,Tenso
 	tfspace = torch.FloatTensor( nfspace ).to(device)
 	return nfspace, tfspace
 
-def fold_harmonic1(cfg: DictConfig, smag: Tensor, dim: int) -> Tensor:
+def fold_harmonics(cfg: DictConfig, smag: Tensor, dim: int) -> Tensor:
 	xs, ns = copy.deepcopy(smag), torch.ones_like(smag)
-	print( f"fold_harmonic: smag{shp(smag)} maxh={cfg.maxh} smean={smag.mean().item():.4f} sstd={smag.std().item():.4f} ")
 	for iH in range(2, cfg.maxh + 1):
 		ishift: int = round( cfg.nfreq_oct * math.log2(iH) )
 		x, norm = shift(smag, ishift, dim)
 		xs += x
-		print(f" * H{iH}: xs=({xs.mean().item():.1f},{xs.std().item():.1f}), x=({x.mean().item():.1f},{x.std().item():.1f}), ns=({ns.mean().item():.1f},{ns.std().item():.1f}), smag=({smag.mean().item():.1f},{smag.std().item():.1f})  ")
 		ns += norm
 	rv = xs / ns
-	print(f" * result: ({rv.mean().item():.1f},{rv.std().item():.1f})")
 	return rv
-
-def fold_harmonic(cfg: DictConfig, smag: Tensor, dim: int) -> Tensor:
-	iH = 2
-	ishift: int = round( cfg.nfreq_oct * math.log2(iH) )
-	x, norm = shift(smag, ishift, dim)
-	return x
 
 class WaveletAnalysisLayer(EmbeddingLayer):
 
@@ -114,7 +105,7 @@ class WaveletAnalysisLayer(EmbeddingLayer):
 		p2: Tensor = w_prod(ys, pw2)
 		mag: Tensor =  torch.sqrt( p1**2 + p2**2 )
 
-		features = [ mag, fold_harmonic(self.cfg, mag, 1) ]
+		features = [ mag, fold_harmonics(self.cfg, mag, 1) ]
 		embedding: Tensor = torch.stack( features, dim=1)
 		self.init_log(f" Completed embedding{list(embedding.shape)} in {elapsed(t0):.5f} sec: nfeatures={embedding.shape[1]}")
 		self.init_state = False
