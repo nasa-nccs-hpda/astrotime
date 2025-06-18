@@ -5,9 +5,7 @@ base_freq:  ${data.base_freq}       # Start frequency of base octave
 noctaves:   ${data.noctaves}        # Number of octaves in base frequency space
 test_mode:  ${data.test_mode}
 maxh:       ${data.maxh}
-time_scale:   1.0                   # Time rescale factor for shifted frequency range
 decay_factor: 0.0                   # Time envelope decay factor
-sum_features: false                  # Output the sum over harmonics at each freq
 subbatch_size: 2                     # If>0: Split batches into (serially computed) subbatches in order to fit into gpu memory
 feature: 0
 
