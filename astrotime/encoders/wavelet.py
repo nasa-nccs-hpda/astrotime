@@ -35,6 +35,7 @@ def zfill( x: Tensor, offset: int, dim: int ) -> tuple[Tensor,Tensor]:
 def shift( x: Tensor, distance: float, dim: int ) -> tuple[Tensor,Tensor]:
 	shift: int = -round(distance)
 	z = copy.deepcopy(x)
+	print(f"shift: z{shp(z)} distance={distance} shift={shift} dim={dim}")
 	torch.roll( z, shifts=shift, dims=dim )
 	return zfill(z,shift,dim)
 
