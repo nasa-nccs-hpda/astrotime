@@ -12,9 +12,10 @@ def merge( arrays: List[np.ndarray], slen: int ) -> np.ndarray:
 
 class SyntheticElementLoader(ElementLoader):
 
-	def __init__(self, cfg: DictConfig, **kwargs):
+	def __init__(self, cfg: DictConfig, tset: TSet, **kwargs):
 		super().__init__(cfg, **kwargs)
 		self.batch_index = 0
+		self.tset = tset
 		self.batch_size =self.cfg.batch_size
 		self.current_batch = None
 		self.elem_sort = None
@@ -29,7 +30,7 @@ class SyntheticElementLoader(ElementLoader):
 
 	def init_epoch(self):
 		random.shuffle(self.file_sort)
-		self.ifile = 0
+		self.ifile = 0 if (self.tset == TSet.Train) else self.ntfiles
 		self.batch_index = 0
 		self._load_cache_dataset()
 
@@ -69,13 +70,17 @@ class SyntheticElementLoader(ElementLoader):
 		except IndexError:
 			return None
 
+	def check_epoch_end(self):
+		end_index = self.ntfiles if (self.tset == TSet.Train) else self.nfiles
+		if self.ifile >= end_index:
+			raise StopIteration
+
 	def get_next_batch( self ) -> Optional[Dict[str,Any]]:
 		batch_start = self.batch_index*self.batch_size
 		if batch_start >= self.file_size:
 			self.ifile += 1
 			self.batch_index = 0
-			if self.ifile >= self.ntfiles:
-				raise StopIteration
+			self.check_epoch_end()
 			self._load_cache_dataset()
 		batch: Optional[Dict[str,Any]] = self.get_batch(self.batch_index)
 		if batch is not None:

@@ -2,31 +2,31 @@ import hydra, torch
 from omegaconf import DictConfig
 from torch import nn
 from typing import List, Optional, Dict, Type, Union, Tuple
-from astrotime.encoders.baseline import ValueEncoder
 from astrotime.util.series import TSet
-from astrotime.loaders.MIT import MITLoader
+from astrotime.loaders.MIT import MITElementLoader
 from astrotime.encoders.wavelet import WaveletAnalysisLayer, embedding_space
 from astrotime.trainers.iterative_trainer import IterativeTrainer
+from astrotime.trainers.loss import ExpHLoss, ExpU
 from astrotime.models.cnn.cnn_baseline import get_model_from_cfg
 from astrotime.config.context import astrotime_initialize
-version = "MIT_period.synthetic.folded"
+version = "select_MIT_period"
 
-@hydra.main(version_base=None, config_path="../config", config_name=version)
+@hydra.main(version_base=None, config_path="../../config", config_name=version)
 def my_app(cfg: DictConfig) -> None:
 	device: torch.device = astrotime_initialize( cfg, version )
-	embedding_space_array, embedding_space_tensor = embedding_space(cfg.transform, device)
-	cfg.data['test_mode'] = 'planet_crossing'
+	cfg.data['snr_min'] = 0.0
+	cfg.data['snr_max'] = 1e9
+	train = False
 
-	encoder = ValueEncoder( cfg.transform, device )
-	data_loader = MITLoader(cfg.data)
-	data_loader.initialize(TSet.Train)
+	embedding_space_array, embedding_space_tensor = embedding_space(cfg.transform, device)
+	data_loader = MITElementLoader(cfg.data)
 
 	embedding = WaveletAnalysisLayer( 'analysis', cfg.transform, embedding_space_tensor, device )
-	model: nn.Module = get_model_from_cfg( cfg.model, device, embedding )
+	model: nn.Module = get_model_from_cfg( cfg.model, device, embedding, ExpU(cfg.data) )
 
-	trainer = IterativeTrainer( cfg.train, data_loader, encoder, model )
-	trainer.initialize_checkpointing(version)
-	trainer.compute()
+	trainer = IterativeTrainer( cfg.train, device, data_loader, model, ExpHLoss(cfg.data) )
+	if train: trainer.compute(version)
+	else:     trainer.evaluate(version)
 
 if __name__ == "__main__":
 	my_app()

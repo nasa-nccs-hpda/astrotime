@@ -6,7 +6,7 @@ from astrotime.loaders.MIT import MITLoader
 from astrotime.config.context import astrotime_initialize
 version = "select_MIT_period"
 
-@hydra.main(version_base=None, config_path="../config", config_name=version)
+@hydra.main(version_base=None, config_path="../../config", config_name=version)
 def my_app(cfg: DictConfig) -> None:
 	astrotime_initialize( cfg, version )
 	data_loader = MITLoader(cfg.data)

@@ -11,7 +11,7 @@ from hydra import initialize, compose
 
 version = "synthetic_period"
 overrides = []
-initialize(version_base=None, config_path="../config" )
+initialize(version_base=None, config_path="../../config")
 cfg = compose( config_name=version, overrides=overrides )
 device: torch.device = astrotime_initialize(cfg,version+".plot")
 embedding_space_array, embedding_space_tensor = embedding_space(cfg.transform, device)
