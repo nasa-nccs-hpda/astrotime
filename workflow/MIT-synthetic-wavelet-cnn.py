@@ -17,16 +17,14 @@ def my_app(cfg: DictConfig) -> None:
 	embedding_space_array, embedding_space_tensor = embedding_space(cfg.transform, device)
 	cfg.data['test_mode'] = 'planet_crossing'
 
-	encoder = ValueEncoder( cfg.transform, device )
 	data_loader = MITLoader(cfg.data)
 	data_loader.initialize(TSet.Train)
 
 	embedding = WaveletAnalysisLayer( 'analysis', cfg.transform, embedding_space_tensor, device )
-	model: nn.Module = get_model_from_cfg( cfg.model, device, embedding )
+	model: nn.Module = get_model_from_cfg( cfg.model, device, embedding, ExpU(cfg.data) )
 
-	trainer = IterativeTrainer( cfg.train, data_loader, encoder, model )
-	trainer.initialize_checkpointing(version)
-	trainer.compute()
+	trainer = IterativeTrainer( cfg.train, device, data_loader, model, ExpHLoss(cfg.data) )
+	trainer.compute(version)
 
 if __name__ == "__main__":
 	my_app()
