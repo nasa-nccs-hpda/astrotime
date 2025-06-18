@@ -25,19 +25,13 @@ def pnorm( x: Tensor ) -> Tensor:
 	x1: Tensor = x.max( dim=-1, keepdim=True )[0]
 	return (x-x0)/(x1-x0)
 
-def zfill( x: Tensor, offset: int, dim: int ) -> tuple[Tensor,Tensor]:
-	norm = torch.ones_like(x)
-	if dim == 0:   x[offset:] = 0.0;     norm[offset:] = 0
-	elif dim == 1: x[:,offset:] = 0.0;   norm[:,offset:] = 0
-	elif dim == 2: x[:,:,offset:] = 0.0; norm[:,:,offset:] = 0
+def shift( x: Tensor,  ishift: int, dim: int ) -> tuple[Tensor,Tensor]:
+	slen =  x.shape[dim] - ishift
+	norm, sx = torch.zeros_like(x), torch.zeros_like(x)
+	if dim == 0:   sx[0:slen]=x[ishift:];  norm[0:slen]=1
+	elif dim == 1: sx[:,0:slen]=x[:,ishift:];  norm[:,0:slen]=1
+	elif dim == 2: sx[:,:,0:slen]=x[:,:,ishift:];  norm[:,:,0:slen]=1
 	return x, norm
-
-def shift( x: Tensor, distance: float, dim: int ) -> tuple[Tensor,Tensor]:
-	shift: int = -round(distance)
-	z = copy.deepcopy(x)
-	print(f"shift: z{shp(z)} distance={distance} shift={shift} dim={dim}")
-	torch.roll( z, shifts=shift, dims=dim )
-	return zfill(z,shift,dim)
 
 def embedding_space( cfg: DictConfig, device: device ) -> Tuple[np.ndarray,Tensor]:
 	nfspace = l2space( cfg.base_freq, cfg.noctaves, cfg.nfreq_oct )
@@ -48,8 +42,8 @@ def fold_harmonic1(cfg: DictConfig, smag: Tensor, dim: int) -> Tensor:
 	xs, ns = copy.deepcopy(smag), torch.ones_like(smag)
 	print( f"fold_harmonic: smag{shp(smag)} maxh={cfg.maxh} smean={smag.mean().item():.4f} sstd={smag.std().item():.4f} ")
 	for iH in range(2, cfg.maxh + 1):
-		hdist = cfg.nfreq_oct * math.log2(iH)
-		x, norm = shift(smag, hdist, dim)
+		ishift: int = round( cfg.nfreq_oct * math.log2(iH) )
+		x, norm = shift(smag, ishift, dim)
 		xs += x
 		print(f" * H{iH}: xs=({xs.mean().item():.1f},{xs.std().item():.1f}), x=({x.mean().item():.1f},{x.std().item():.1f}), ns=({ns.mean().item():.1f},{ns.std().item():.1f}), smag=({smag.mean().item():.1f},{smag.std().item():.1f})  ")
 		ns += norm
@@ -59,8 +53,8 @@ def fold_harmonic1(cfg: DictConfig, smag: Tensor, dim: int) -> Tensor:
 
 def fold_harmonic(cfg: DictConfig, smag: Tensor, dim: int) -> Tensor:
 	iH = 2
-	hdist = cfg.nfreq_oct * math.log2(iH)
-	x, norm = shift(smag, hdist, dim)
+	ishift: int = round( cfg.nfreq_oct * math.log2(iH) )
+	x, norm = shift(smag, ishift, dim)
 	return x
 
 class WaveletAnalysisLayer(EmbeddingLayer):
