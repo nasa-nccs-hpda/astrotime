@@ -1,5 +1,5 @@
 import random, time, numpy as np
-import torch, math
+import torch, math, copy
 from astropy.utils.masked.function_helpers import ones_like
 
 from astrotime.util.math import shp
@@ -34,8 +34,9 @@ def zfill( x: Tensor, offset: int, dim: int ) -> tuple[Tensor,Tensor]:
 
 def shift( x: Tensor, distance: float, dim: int ) -> tuple[Tensor,Tensor]:
 	shift: int = -round(distance)
-	x = torch.roll( x, shifts=shift, dims=dim )
-	return zfill(x,shift,dim)
+	z = copy.deepcopy(x)
+	torch.roll( z, shifts=shift, dims=dim )
+	return zfill(z,shift,dim)
 
 def embedding_space( cfg: DictConfig, device: device ) -> Tuple[np.ndarray,Tensor]:
 	nfspace = l2space( cfg.base_freq, cfg.noctaves, cfg.nfreq_oct )
