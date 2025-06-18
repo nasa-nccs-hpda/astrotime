@@ -10,7 +10,6 @@ class EmbeddingLayer(Transform):
 		Transform.__init__(self, name, cfg, device )
 		self.nfreq: int = embedding_space.shape[0]
 		self.batch_size: int = cfg.batch_size
-		self.time_scale: float = self.cfg.time_scale
 		self._embedding_space: Tensor = embedding_space.to(self.device)
 		self.init_state: bool = True
 		self._result: torch.Tensor = None
