@@ -43,7 +43,7 @@ def embedding_space( cfg: DictConfig, device: device ) -> Tuple[np.ndarray,Tenso
 	tfspace = torch.FloatTensor( nfspace ).to(device)
 	return nfspace, tfspace
 
-def fold_harmonic(cfg: DictConfig, smag: Tensor, dim: int) -> Tensor:
+def fold_harmonic1(cfg: DictConfig, smag: Tensor, dim: int) -> Tensor:
 	xs, ns = copy.deepcopy(smag), torch.ones_like(smag)
 	print( f"fold_harmonic: smag{shp(smag)} maxh={cfg.maxh} smean={smag.mean().item():.4f} sstd={smag.std().item():.4f} ")
 	for iH in range(2, cfg.maxh + 1):
@@ -55,6 +55,12 @@ def fold_harmonic(cfg: DictConfig, smag: Tensor, dim: int) -> Tensor:
 	rv = xs / ns
 	print(f" * result: ({rv.mean().item():.1f},{rv.std().item():.1f})")
 	return rv
+
+def fold_harmonic(cfg: DictConfig, smag: Tensor, dim: int) -> Tensor:
+	iH = 2
+	hdist = cfg.nfreq_oct * math.log2(iH)
+	x, norm = shift(smag, hdist, dim)
+	return x
 
 class WaveletAnalysisLayer(EmbeddingLayer):
 
