@@ -1,5 +1,7 @@
 import random, time, numpy as np
 import torch, math
+from astropy.utils.masked.function_helpers import ones_like
+
 from astrotime.util.math import shp
 from typing import List, Tuple, Mapping
 from omegaconf import DictConfig, OmegaConf
@@ -22,11 +24,26 @@ def pnorm( x: Tensor ) -> Tensor:
 	x1: Tensor = x.max( dim=-1, keepdim=True )[0]
 	return (x-x0)/(x1-x0)
 
-def shift( x: Tensor, distance: float, dim: int ) -> Tensor:
-	shift: int = round(distance)
+def zfill( x: Tensor, offset: int, dim: int ) -> tuple[Tensor,Tensor]:
+	norm = torch.ones_like(x)
+	if dim == 0:   x[offset:] = 0.0;     norm[offset:] = 0
+	elif dim == 1: x[:,offset:] = 0.0;   norm[:,offset:] = 0
+	elif dim == 2: x[:,:,offset:] = 0.0; norm[:,:,offset:] = 0
+	return x, norm
+
+def shift( x: Tensor, distance: float, dim: int ) -> tuple[Tensor,Tensor]:
+	shift: int = -round(distance)
 	x = torch.roll( x, shifts=shift, dims=dim )
-	x.index_fill_( dim, torch.arange(shift), 0.0)
-	return x
+	return zfill(x,shift,dim)
+
+def fold_harmonic( cfg: DictConfig, smag: Tensor, dim: int ) -> Tensor:
+	xs, ns = smag, torch.ones_like(smag)
+	for iH in range(2,cfg.maxh+1):
+		hdist = cfg.nfreq_oct * math.log2(iH)
+		x, norm = shift( smag, hdist, dim )
+		xs += x
+		ns += norm
+	return xs/ns
 
 def embedding_space( cfg: DictConfig, device: device ) -> Tuple[np.ndarray,Tensor]:
 	base_freq =  cfg.base_freq
