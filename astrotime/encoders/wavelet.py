@@ -44,7 +44,7 @@ def embedding_space( cfg: DictConfig, device: device ) -> Tuple[np.ndarray,Tenso
 	return nfspace, tfspace
 
 def fold_harmonic(cfg: DictConfig, smag: Tensor, dim: int) -> Tensor:
-	xs, ns = smag, torch.ones_like(smag)
+	xs, ns = copy.deepcopy(smag), torch.ones_like(smag)
 	for iH in range(2, cfg.maxh + 1):
 		hdist = cfg.nfreq_oct * math.log2(iH)
 		x, norm = shift(smag, hdist, dim)
