@@ -23,7 +23,7 @@ def my_app(cfg: DictConfig) -> None:
 	model: nn.Module = get_spectral_peak_selector_from_cfg( cfg.model, device, embedding)
 
 	trainer = IterativeTrainer( cfg.train, device, data_loader, model, embedding, ExpLoss(cfg.data) )
-	trainer.evaluate(version)
+	trainer.evaluate(version, with_checkpoint=False)
 
 if __name__ == "__main__":
 	my_app()

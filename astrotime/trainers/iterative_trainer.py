@@ -167,10 +167,11 @@ class IterativeTrainer(object):
                 epoch_losses = np.array(losses)
                 print(f" ------ Epoch Loss: mean={epoch_losses.mean():.3f}, median={np.median(epoch_losses):.3f}, range=({epoch_losses.min():.3f} -> {epoch_losses.max():.3f})")
 
-    def evaluate(self, version):
+    def evaluate(self, version, with_checkpoint=True):
         print(f"SignalTrainer[{self.mode}]: , {self.nepochs} epochs, device={self.device}")
-        self.optimizer = self.get_optimizer()
-        self.initialize_checkpointing(version)
+        if with_checkpoint:
+            self.optimizer = self.get_optimizer()
+            self.initialize_checkpointing(version)
         with self.device:
             self.loader.init_epoch()
             losses, log_interval, t0 = [], 50, time.time()
