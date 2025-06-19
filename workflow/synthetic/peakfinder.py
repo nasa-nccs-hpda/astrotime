@@ -5,12 +5,13 @@ from astrotime.util.series import TSet
 from typing import List, Optional, Dict, Type, Union, Tuple
 from astrotime.encoders.wavelet import WaveletAnalysisLayer, embedding_space
 from astrotime.trainers.iterative_trainer import IterativeTrainer
-from astrotime.trainers.loss import ExpLoss, ExpU
+from astrotime.trainers.loss import ExpLoss, ExpHLoss, ExpU
 from astrotime.models.cnn.cnn_baseline import get_spectral_peak_selector_from_cfg
 from astrotime.config.context import astrotime_initialize
 from astrotime.loaders.synthetic import SyntheticElementLoader
 
 version = "synthetic_period"
+use_hloss = True
 
 @hydra.main(version_base=None, config_path="../../config", config_name=version)
 def my_app(cfg: DictConfig) -> None:
@@ -22,7 +23,8 @@ def my_app(cfg: DictConfig) -> None:
 	embedding = WaveletAnalysisLayer( 'analysis', cfg.transform, embedding_space_tensor, device )
 	model: nn.Module = get_spectral_peak_selector_from_cfg( cfg.model, device, embedding )
 
-	trainer = IterativeTrainer( cfg.train, device, data_loader, model, embedding, ExpLoss(cfg.data) )
+	lossf = ExpHLoss if use_hloss else ExpLoss
+	trainer = IterativeTrainer( cfg.train, device, data_loader, model, embedding, lossf(cfg.data) )
 	trainer.evaluate(version, with_checkpoint=False)
 
 if __name__ == "__main__":
