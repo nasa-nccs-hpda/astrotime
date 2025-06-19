@@ -156,7 +156,7 @@ class IterativeTrainer(object):
                                 loss: Tensor =  self.loss( result.squeeze(), batch['target'].squeeze() )
                                 self.conditionally_update_weights(loss)
                                 losses.append(loss.cpu().item())
-                                if (self.mode == TSet.Train) and (ibatch % log_interval == 0):
+                                if ibatch % log_interval == 0:
                                     aloss = np.array(losses[-log_interval:])
                                     print(f"E-{epoch} B-{ibatch} loss={aloss.mean():.3f}, range=({aloss.min():.3f} -> {aloss.max():.3f}), dt/batch={elapsed(t0):.5f} sec")
                                     self._checkpoint_manager.save_checkpoint(epoch, ibatch, meanval=self.embedding.meanval)
@@ -166,32 +166,6 @@ class IterativeTrainer(object):
 
                 epoch_losses = np.array(losses)
                 print(f" ------ Epoch Loss: mean={epoch_losses.mean():.3f}, median={np.median(epoch_losses):.3f}, range=({epoch_losses.min():.3f} -> {epoch_losses.max():.3f})")
-
-    def evaluate1(self, version: Optional[str] = None ):
-        print(f"SignalTrainer[{self.mode}]: device={self.device}")
-        self.cfg["mode"] = "val"
-        with self.device:
-            te = time.time()
-            if version is not None:
-                self.initialize_checkpointing(version)
-            self.loader.initialize(self.mode)
-            self.model.train(False)
-            self.loader.init_epoch()
-            losses = []
-            try:
-                for ibatch in range(0,sys.maxsize):
-                    batch = self.get_next_batch()
-                    if batch['z'].shape[0] > 0:
-                        self.global_time = time.time()
-                        result: Tensor = self.model(batch['z'])
-                        loss: float = self.loss(result.squeeze(), batch['target'].squeeze()).cpu().item()
-                        print( f" *B-{ibatch}: Loss = {loss:.3f}")
-                        losses.append(loss)
-
-            except StopIteration:
-                print( f"Completed evaluation in {elapsed(te)/60:.5f} min.")
-                L: np.array = np.array(losses)
-                print( f"Loss mean = {L.mean():.3f}, range=[{L.min():.3f} -> {L.max():.3f}]" )
 
     def evaluate(self, version):
         print(f"SignalTrainer[{self.mode}]: , {self.nepochs} epochs, device={self.device}")
@@ -211,19 +185,13 @@ class IterativeTrainer(object):
                             loss: Tensor = self.loss(result.squeeze(), batch['target'].squeeze())
                             losses.append(loss.cpu().item())
                             if ibatch % log_interval == 0:
-                                from astrotime.trainers.loss import ExpHLoss
-                                aloss = np.array(losses)
+                                aloss = np.array(losses[-log_interval:])
                                 mean_loss = aloss.mean()
-                                losses = []
-                                if type(self.loss) == ExpHLoss:
-                                    h = self.loss.harmonics()
-                                    print(f"B-{ibatch} loss={mean_loss:.3f}, range=({aloss.min():.3f} -> {aloss.max():.3f}), hrange=(1/{round(1 / h.min())} -> {round(h.max())}), dt/batch={elapsed(t0):.5f} sec")
-                                else:
-                                    print(f"B-{ibatch} loss={mean_loss:.3f}, range=({aloss.min():.3f} -> {aloss.max():.3f}), dt/batch={elapsed(t0):.5f} sec")
+                                print(f"B-{ibatch} loss={mean_loss:.3f}, range=({aloss.min():.3f} -> {aloss.max():.3f}), dt/batch={elapsed(t0):.5f} sec")
 
             except StopIteration:
                 val_losses = np.array(losses)
-                print(f" Validation Loss: mean={val_losses.mean():.3f}, median={np.median(val_losses):.3f}, range=({val_losses.min():.3f} -> {val_losses.max():.3f})")
+                print(f" Validation Loss ({val_losses.size} batches): mean={val_losses.mean():.3f}, median={np.median(val_losses):.3f}, range=({val_losses.min():.3f} -> {val_losses.max():.3f})")
 
     def preprocess(self):
         with self.device:
