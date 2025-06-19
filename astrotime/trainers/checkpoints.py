@@ -18,8 +18,8 @@ class CheckpointManager(object):
 		self.cfg = cfg
 		self.optimizer = optimizer
 
-	def save_checkpoint(self, epoch: int, batch: int  ) -> str:
-		checkpoint = dict(  model_state_dict=self.model.state_dict(), epoch=epoch, batch=batch )
+	def save_checkpoint(self, epoch: int, batch: int, **kwargs  ) -> str:
+		checkpoint = dict(  model_state_dict=self.model.state_dict(), epoch=epoch, batch=batch, **kwargs )
 		if self.optimizer is not None: checkpoint['optimizer_state_dict'] = self.optimizer.state_dict()
 		cpath = self.checkpoint_path()
 		if os.path.isfile(cpath):

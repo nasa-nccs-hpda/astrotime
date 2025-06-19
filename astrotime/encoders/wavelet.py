@@ -68,7 +68,6 @@ class WaveletAnalysisLayer(EmbeddingLayer):
 		self.subbatch_size: int = cfg.get('subbatch_size',-1)
 		self.noctaves: int = self.cfg.noctaves
 		self.nfreq_oct: int = self.cfg.nfreq_oct
-		self.meanval = None
 
 	@property
 	def xdata(self) -> Tensor:

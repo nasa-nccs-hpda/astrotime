@@ -3,6 +3,7 @@ from omegaconf import DictConfig
 from .checkpoints import CheckpointManager
 from astrotime.util.tensor_ops import check_nan
 from astrotime.loaders.base import Loader, RDict
+from astrotime.encoders.embedding import EmbeddingLayer
 import time, sys, torch, logging, numpy as np
 from torch import nn, optim, Tensor
 from astrotime.util.series import TSet
@@ -24,9 +25,10 @@ def tnorm(x: Tensor, dim: int=0) -> Tensor:
 
 class IterativeTrainer(object):
 
-    def __init__(self, cfg: DictConfig, device: torch.device, loader: Loader, model: nn.Module, loss: nn.Module = nn.L1Loss() ):
+    def __init__(self, cfg: DictConfig, device: torch.device, loader: Loader, model: nn.Module, embedding: EmbeddingLayer, loss: nn.Module = nn.L1Loss() ):
         self.device: torch.device = device
         self.loader: Loader = loader
+        self.embedding = embedding
         self.cfg: DictConfig = cfg
         self.model: nn.Module = model
         self.optimizer: optim.Optimizer = None
@@ -70,6 +72,7 @@ class IterativeTrainer(object):
             self.train_state = self._checkpoint_manager.load_checkpoint( init_version=init_version, update_model=True )
             self.epoch0      = self.train_state.get('epoch', 0)
             self.start_batch = self.train_state.get('batch', 0)
+            self.embedding.meanval = self.train_state.get('meanval')
             self.start_epoch = int(self.epoch0)
             print(f"\n      Loading checkpoint from {self._checkpoint_manager.checkpoint_path()}: epoch={self.start_epoch}, batch={self.start_batch}\n")
 
@@ -168,7 +171,8 @@ class IterativeTrainer(object):
                     print( f"Completed epoch {epoch} in {elapsed(te)/60:.5f} min, mean-loss= {np.array(losses).mean():.3f}")
 
                 if self.mode == TSet.Train:
-                    self._checkpoint_manager.save_checkpoint( epoch, 0 )
+                    self._checkpoint_manager.save_checkpoint( epoch, 0, meanval=self.embedding.meanval )
+                    print( f"Checkpoint saved: epoch={epoch}, batch={0}" )
                 else:
                     val_losses = np.array(losses)
                     print( f" Validation Loss: mean={val_losses.mean():.3f}, median={np.median(val_losses):.3f}, range=({val_losses.min():.3f} -> {val_losses.max():.3f})")

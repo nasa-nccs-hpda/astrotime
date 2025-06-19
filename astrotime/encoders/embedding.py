@@ -6,13 +6,14 @@ from .base import Transform
 
 class EmbeddingLayer(Transform):
 
-	def __init__(self, name: str, cfg, embedding_space: Tensor, device: device):
+	def __init__(self, name: str, cfg, embedding_space: Tensor, device: device ):
 		Transform.__init__(self, name, cfg, device )
 		self.nfreq: int = embedding_space.shape[0]
 		self.batch_size: int = cfg.batch_size
 		self._embedding_space: Tensor = embedding_space.to(self.device)
 		self.init_state: bool = True
 		self._result: torch.Tensor = None
+		self.meanval = None
 
 	def init_log(self, msg: str):
 		if self.init_state: self.log.info(msg)
