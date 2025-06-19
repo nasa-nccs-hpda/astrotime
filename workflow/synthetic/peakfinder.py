@@ -11,26 +11,23 @@ from astrotime.config.context import astrotime_initialize
 from astrotime.loaders.synthetic import SyntheticElementLoader
 
 version = "synthetic_period"
-use_hloss = False
-reduce_type = 0
+hloss_maxh = 5
 
 @hydra.main(version_base=None, config_path="../../config", config_name=version)
 def my_app(cfg: DictConfig) -> None:
 
 	device: torch.device = astrotime_initialize( cfg, version+".pf" )
 	embedding_space_array, embedding_space_tensor = embedding_space(cfg.transform, device)
-
 	data_loader = SyntheticElementLoader(cfg.data, TSet.Validation)
-
 	embedding = WaveletAnalysisLayer( 'analysis', cfg.transform, embedding_space_tensor, device )
 
 	print( f"PeakFinder Validation({version}):")
 	for reduce_type in [0,1]:
 		for use_hloss in [False, True]:
-			print(f" ------ reduce_type={reduce_type}, hloss={use_hloss}  ------ ")
+			print(f" ------ reduce_type={reduce_type}, hloss={use_hloss}, hloss_maxh={hloss_maxh}  ------ ")
 			model: nn.Module = get_spectral_peak_selector_from_cfg( cfg.model, device, embedding, reduce_type=reduce_type )
-			lossf = ExpHLoss if use_hloss else ExpLoss
-			trainer = IterativeTrainer( cfg.train, device, data_loader, model, embedding, lossf(cfg.data) )
+			lossf = ExpHLoss(cfg.data, maxh=hloss_maxh) if use_hloss else ExpLoss(cfg.data)
+			trainer = IterativeTrainer( cfg.train, device, data_loader, model, embedding, lossf )
 			trainer.evaluate(version, with_checkpoint=False)
 
 if __name__ == "__main__":

@@ -4,12 +4,11 @@ from typing import List, Tuple, Mapping
 from omegaconf import DictConfig
 
 class HLoss(nn.Module):
-	def __init__(self, cfg: DictConfig):
+	def __init__(self, cfg: DictConfig,**kwargs):
 		super(HLoss, self).__init__()
-		self.maxh = cfg.maxh
+		self.maxh = kwargs.get('maxh',cfg.maxh)
 		self.h = None
 		self.rh = None
-		print(f"HLoss: maxh={self.maxh}")
 
 class ExpU(nn.Module):
 
@@ -54,8 +53,8 @@ class ElemExpHLoss(HLoss):
 		return result
 
 class ExpHLoss(HLoss):
-	def __init__(self, cfg: DictConfig):
-		super().__init__(cfg)
+	def __init__(self, cfg: DictConfig,**kwargs):
+		super().__init__(cfg,**kwargs)
 		self.f0: float = cfg.base_freq
 		self._harmonics = None
 
