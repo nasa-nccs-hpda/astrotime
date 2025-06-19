@@ -7,7 +7,7 @@ from typing import List, Tuple, Mapping
 from omegaconf import DictConfig, OmegaConf
 from torch import Tensor, device, nn
 from .embedding import EmbeddingLayer
-from astrotime.util.math import l2space, tnorm
+from astrotime.util.math import l2space
 from astrotime.util.logging import elapsed
 from astrotime.util.tensor_ops import check_nan
 
@@ -20,10 +20,9 @@ def pnorm1( x: Tensor ) -> Tensor:
 	x = torch.where( x < 0.0, torch.zeros_like(x), x )
 	return x / torch.sum( x, dim=-1, keepdim=True )
 
-def pnorm( x: Tensor ) -> Tensor:
-	x0: Tensor = x.min( dim=-1, keepdim=True )[0]
-	x1: Tensor = x.max( dim=-1, keepdim=True )[0]
-	return (x-x0)/(x1-x0)
+def stdnorm(x: Tensor, dim: int=0) -> Tensor:
+	s: Tensor = torch.std( x, dim=dim, keepdim=True)
+	return x / (s + 1e-4)
 
 def shift( x: Tensor,  ishift: int, dim: int ) -> tuple[Tensor,Tensor]:
 	slen =  x.shape[dim] - ishift
@@ -38,7 +37,7 @@ def embedding_space( cfg: DictConfig, device: device ) -> Tuple[np.ndarray,Tenso
 	tfspace = torch.FloatTensor( nfspace ).to(device)
 	return nfspace, tfspace
 
-def fold_harmonics(cfg: DictConfig, smag: Tensor, dim: int) -> Tensor:
+def accum_folded_harmonics(cfg: DictConfig, smag: Tensor, dim: int) -> List[Tensor]:
 	xs, ns = copy.deepcopy(smag), torch.ones_like(smag)
 	for iH in range(2, cfg.maxh + 1):
 		ishift: int = round( cfg.nfreq_oct * math.log2(iH) )
@@ -46,7 +45,19 @@ def fold_harmonics(cfg: DictConfig, smag: Tensor, dim: int) -> Tensor:
 		xs += x
 		ns += norm
 	rv = xs / ns
-	return rv
+	return [smag, rv ]
+
+def folded_harmonic_features(cfg: DictConfig, smag: Tensor, dim: int) -> List[Tensor]:
+	features = [ smag ]
+	for iH in range(2, cfg.maxh + 1):
+		ishift: int = round( cfg.nfreq_oct * math.log2(iH) )
+		x, norm = shift(smag, ishift, dim)
+		features.append( x )
+	return features
+
+def fold_harmonics(cfg: DictConfig, smag: Tensor, dim: int) -> List[Tensor]:
+	if cfg.accumh:  return accum_folded_harmonics(   cfg, smag, dim )
+	else:           return folded_harmonic_features( cfg, smag, dim )
 
 class WaveletAnalysisLayer(EmbeddingLayer):
 
@@ -57,6 +68,7 @@ class WaveletAnalysisLayer(EmbeddingLayer):
 		self.subbatch_size: int = cfg.get('subbatch_size',-1)
 		self.noctaves: int = self.cfg.noctaves
 		self.nfreq_oct: int = self.cfg.nfreq_oct
+		self.meanval = None
 
 	@property
 	def xdata(self) -> Tensor:
@@ -72,14 +84,16 @@ class WaveletAnalysisLayer(EmbeddingLayer):
 
 	def embed(self, ts: torch.Tensor, ys: torch.Tensor, **kwargs) -> Tensor:
 		if ys.ndim == 1:
-			return self.embed_subbatch( ts[None,:], ys[None,:] )
+			result = self.embed_subbatch( ts[None,:], ys[None,:] )
 		elif self.subbatch_size <= 0:
-			return self.embed_subbatch( ts, ys )
+			result = self.embed_subbatch( ts, ys )
 		else:
 			nsubbatches = math.ceil(ys.shape[0]/self.subbatch_size)
 			subbatches = [ self.embed_subbatch( *self.sbatch(ts,ys,i), **kwargs ) for i in range(nsubbatches) ]
 			result = torch.concat( subbatches, dim=0 )
-			return result
+		if self.maxval is None:
+			self.meanval = torch.mean(result)
+		return result/self.meanval
 
 	def embed_subbatch(self, ts: torch.Tensor, ys: torch.Tensor, **kwargs ) -> Tensor:
 		t0 = time.time()
@@ -105,12 +119,11 @@ class WaveletAnalysisLayer(EmbeddingLayer):
 		p2: Tensor = w_prod(ys, pw2)
 		mag: Tensor =  torch.sqrt( p1**2 + p2**2 )
 
-		features = [ mag, fold_harmonics(self.cfg, mag, 1) ]
+		features = fold_harmonics(self.cfg, mag, 1)
 		embedding: Tensor = torch.stack( features, dim=1)
 		self.init_log(f" Completed embedding{list(embedding.shape)} in {elapsed(t0):.5f} sec: nfeatures={embedding.shape[1]}")
 		self.init_state = False
-		result = tnorm(embedding,dim=2)
-		return result
+		return embedding
 
 	@property
 	def nf(self):
@@ -118,7 +131,7 @@ class WaveletAnalysisLayer(EmbeddingLayer):
 
 	@property
 	def nfeatures(self):
-		return 2
+		return 2 if self.cfg.accumh else self.cfg.maxh
 
 	def magnitude(self, embedding: Tensor) -> np.ndarray:
 		self.init_log(f" -> Embedding magnitude{embedding.shape}")

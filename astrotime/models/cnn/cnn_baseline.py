@@ -1,11 +1,12 @@
 from torch import nn
-import torch, math, numpy as np
+import torch, math, logging
 from omegaconf import DictConfig, OmegaConf
 from astrotime.encoders.embedding import EmbeddingLayer
 from astrotime.util.math import shp
 from typing import Any, Dict, List, Optional, Tuple, Mapping
 
 def add_cnn_block( cfg: DictConfig, model: nn.Sequential, nchannels: int, num_input_features: int ) -> int:
+	log = logging.getLogger()
 	block_input_channels = num_input_features if (num_input_features > 0) else nchannels
 	in_channels = block_input_channels
 	out_channels = nchannels
@@ -18,17 +19,19 @@ def add_cnn_block( cfg: DictConfig, model: nn.Sequential, nchannels: int, num_in
 	model.append(nn.ELU())
 	model.append( nn.BatchNorm1d(out_channels) )
 	model.append( nn.MaxPool1d(cfg.pool_size) )
-	print(f"CNN: add_cnn_block: in_channels={block_input_channels}, out_channels={out_channels}")
+	log.info(f"CNN: add_cnn_block: in_channels={block_input_channels}, out_channels={out_channels}")
 	return out_channels
 
 def add_dense_block( cfg: DictConfig, model: nn.Sequential, in_channels:int ):
-	print(f"CNN: add_dense_block: in_channels={in_channels}, hidden_channels={cfg.dense_channels}, out_channels={cfg.out_channels}")
+	log = logging.getLogger()
+	log.info(f"CNN: add_dense_block: in_channels={in_channels}, hidden_channels={cfg.dense_channels}, out_channels={cfg.out_channels}")
 	model.append( nn.Flatten() )
 	model.append( nn.Linear( in_channels, cfg.dense_channels ) )  # 64
 	model.append( nn.ELU() )
 	model.append( nn.Linear( cfg.dense_channels, cfg.out_channels ) )
 
 def get_model_from_cfg( cfg: DictConfig, device: torch.device, embedding_layer: EmbeddingLayer, scale: nn.Module = None  ) -> nn.Module:
+	log = logging.getLogger()
 	model: nn.Sequential = nn.Sequential( embedding_layer )
 	cnn_channels = cfg.cnn_channels
 	num_input_features = embedding_layer.nfeatures
@@ -36,7 +39,7 @@ def get_model_from_cfg( cfg: DictConfig, device: torch.device, embedding_layer: 
 		cnn_channels = add_cnn_block( cfg, model, cnn_channels, num_input_features )
 		num_input_features = -1
 	reduced_series_len = embedding_layer.output_series_length // int( math.pow(cfg.pool_size, cfg.num_blocks) )
-	print(f"CNN: reduced_series_len={reduced_series_len}, cnn_channels={cnn_channels}, output_series_length={embedding_layer.output_series_length}")
+	log.info(f"CNN: reduced_series_len={reduced_series_len}, cnn_channels={cnn_channels}, output_series_length={embedding_layer.output_series_length}")
 	add_dense_block( cfg, model, cnn_channels*reduced_series_len  )
 	if scale is not None: model.append(scale)
 	return model.to(device)
