@@ -16,6 +16,7 @@ reduce_type = 0
 
 @hydra.main(version_base=None, config_path="../../config", config_name=version)
 def my_app(cfg: DictConfig) -> None:
+	print( f"PeakFinder Validation({version}): Using reduce_type={reduce_type}, hloss={use_hloss}")
 	device: torch.device = astrotime_initialize( cfg, version+".pf" )
 	embedding_space_array, embedding_space_tensor = embedding_space(cfg.transform, device)
 
