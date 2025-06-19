@@ -71,7 +71,7 @@ class WaveletAnalysisLayer(EmbeddingLayer):
 
 	@property
 	def xdata(self) -> Tensor:
-		return self._embedding_space[:self.output_series_length]
+		return self._embedding_space
 
 	@property
 	def output_series_length(self) -> int:

@@ -20,7 +20,7 @@ def my_app(cfg: DictConfig) -> None:
 	data_loader = SyntheticElementLoader(cfg.data, TSet.Validation)
 
 	embedding = WaveletAnalysisLayer( 'analysis', cfg.transform, embedding_space_tensor, device )
-	model: nn.Module = get_spectral_peak_selector_from_cfg( cfg.model, device, embedding)
+	model: nn.Module = get_spectral_peak_selector_from_cfg( cfg.model, device, embedding )
 
 	trainer = IterativeTrainer( cfg.train, device, data_loader, model, embedding, ExpLoss(cfg.data) )
 	trainer.evaluate(version, with_checkpoint=False)

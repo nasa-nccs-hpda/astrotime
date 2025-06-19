@@ -41,7 +41,7 @@ class SpectralPeakSelector(Module):
         hsmean: Tensor = hsmag.mean(dim=1).squeeze()
         hspeak: Tensor = hsmean.argmax(dim=-1).squeeze()
         result: Tensor = self.fspace[hspeak]
-        self.log.info(f"     SpectralPeakSelector.forward: result={result.item():.3f}")
+        print(f"     SpectralPeakSelector.forward: result[{result.shape}], hspeak[{hspeak.shape}], hsmean[{hsmean.shape}]")
         return result
 
 class Evaluator:
