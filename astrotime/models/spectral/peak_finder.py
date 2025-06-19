@@ -29,21 +29,18 @@ class SpectralPeakSelector(Module):
         self.cfg: DictConfig = cfg
         self.log = logging.getLogger()
         self.fspace = fspace
-        self.feature: int = cfg.feature
-        self.nf = 2
 
-    def toggle_feature(self):
-        self.feature = (self.feature + 1) % self.nf
+    def toggle_peak_calculation(self):
+        pass
 
     def process_key_event(self, key: str):
-        self.log.info(f"     SpectralPeakSelector.process_key_event: {key}, feature={self.feature}")
         if key == 'ctrl+t':
-            self.toggle_feature()
+            self.toggle_peak_calculation()
 
-    def forward(self, input: Tensor) -> Tensor:
-        spectrum: Tensor = input[:,self.feature,:].squeeze()
-        speak: Tensor = spectrum.argmax(dim=-1).squeeze()
-        result: Tensor = self.fspace[speak]
+    def forward(self, hsmag: Tensor) -> Tensor:
+        hsmean: Tensor = hsmag.mean(dim=1).squeeze()
+        hspeak: Tensor = hsmean.argmax(dim=-1).squeeze()
+        result: Tensor = self.fspace[hspeak]
         self.log.info(f"     SpectralPeakSelector.forward: feature={self.feature}, result={result.item():.3f}")
         return result
 
