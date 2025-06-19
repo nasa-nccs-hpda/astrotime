@@ -5,6 +5,7 @@ import logging, torch
 import time, sys, numpy as np
 from omegaconf import DictConfig
 from torch import nn
+from astrotime.util.math import shp
 from typing import List, Optional, Dict, Type, Union, Tuple
 from astrotime.loaders.base import ElementLoader, RDict
 from astrotime.trainers.loss import HLoss
@@ -41,7 +42,7 @@ class SpectralPeakSelector(Module):
         hsmean: Tensor = hsmag.mean(dim=1).squeeze()
         hspeak: Tensor = hsmean.argmax(dim=-1).squeeze()
         result: Tensor = self.fspace[hspeak]
-        print(f"     SpectralPeakSelector.forward: result[{result.shape}], hspeak[{hspeak.shape}], hsmean[{hsmean.shape}]")
+        print(f" SpectralPeakSelector.forward: result{shp(result)}, hspeak{shp(hspeak)}, hsmean{shp(hsmean)}, hsmag{shp(hsmag)}")
         return result
 
 class Evaluator:
