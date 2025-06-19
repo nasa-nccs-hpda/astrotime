@@ -39,7 +39,7 @@ class SpectralPeakSelector(Module):
             self.toggle_peak_calculation()
 
     def forward(self, hsmag: Tensor) -> Tensor:
-        hsmean: Tensor = hsmag.mean(dim=1).squeeze()
+        hsmean: Tensor = hsmag[:,0,:].squeeze() # hsmag.mean(dim=1).squeeze()
         hspeak: Tensor = hsmean.argmax(dim=-1).squeeze()
         result: Tensor = self.fspace[hspeak]
         print(f" SpectralPeakSelector.forward: result{shp(result)}, hspeak{shp(hspeak)}, hsmean{shp(hsmean)}, hsmag{shp(hsmag)}, fspace{shp(self.fspace)}")
