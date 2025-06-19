@@ -23,26 +23,29 @@ def sH(h:float) -> str:
 
 class SpectralPeakSelector(Module):
 
-    def __init__(self, cfg: DictConfig, device: device, fspace: Tensor ) -> None:
+    def __init__(self, cfg: DictConfig, device: device, fspace: Tensor, **kwargs ) -> None:
         super().__init__()
         self.requires_grad_(False)
         self.device: device = device
         self.cfg: DictConfig = cfg
         self.log = logging.getLogger()
         self.fspace = fspace
+        self.reduce_type = kwargs.get('reduce_type',0)
+        self.hsr: Tensor = None
 
     def toggle_peak_calculation(self):
-        pass
+        self.reduce_type = self.reduce_type+1 % 2
 
     def process_key_event(self, key: str):
         if key == 'ctrl+t':
             self.toggle_peak_calculation()
 
     def forward(self, hsmag: Tensor) -> Tensor:
-        hsmean: Tensor = hsmag.mean(dim=1).squeeze() # hsmag.mean(dim=1) or hsmag[:,0,:]
-        hspeak: Tensor = hsmean.argmax(dim=-1).squeeze()
+        if    self.reduce_type == 0: self.hsr = hsmag[:, 0, :].squeeze()
+        elif  self.reduce_type == 1: self.hsr = hsmag.mean(dim=1).squeeze()
+        hspeak: Tensor = self.hsr.argmax(dim=-1).squeeze()
         result: Tensor = self.fspace[hspeak]
-        self.log.info(f" SpectralPeakSelector.forward: result{shp(result)}, hspeak{shp(hspeak)}, hsmean{shp(hsmean)}, hsmag{shp(hsmag)}, fspace{shp(self.fspace)}")
+        self.log.info(f" SpectralPeakSelector.forward: result{shp(result)}, hspeak{shp(hspeak)}, hsr{shp(self.hsr)}, hsmag{shp(hsmag)}, fspace{shp(self.fspace)}")
         return result
 
 class Evaluator:

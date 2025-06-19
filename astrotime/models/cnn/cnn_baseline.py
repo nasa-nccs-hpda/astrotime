@@ -44,8 +44,8 @@ def get_model_from_cfg( cfg: DictConfig, device: torch.device, embedding_layer: 
 	if scale is not None: model.append(scale)
 	return model.to(device)
 
-def get_spectral_peak_selector_from_cfg( cfg: DictConfig, device: torch.device, embedding_layer: EmbeddingLayer  ) -> nn.Module:
+def get_spectral_peak_selector_from_cfg( cfg: DictConfig, device: torch.device, embedding_layer: EmbeddingLayer, **kwargs ) -> nn.Module:
 	from astrotime.models.spectral.peak_finder import SpectralPeakSelector
 	model: nn.Sequential = nn.Sequential( embedding_layer )
-	model.append( SpectralPeakSelector( cfg, device, embedding_layer.xdata ) )
+	model.append( SpectralPeakSelector( cfg, device, embedding_layer.xdata, **kwargs ) )
 	return model.to(device)

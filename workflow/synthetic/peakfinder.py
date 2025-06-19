@@ -11,7 +11,8 @@ from astrotime.config.context import astrotime_initialize
 from astrotime.loaders.synthetic import SyntheticElementLoader
 
 version = "synthetic_period"
-use_hloss = True
+use_hloss = False
+reduce_type = 0
 
 @hydra.main(version_base=None, config_path="../../config", config_name=version)
 def my_app(cfg: DictConfig) -> None:
@@ -21,7 +22,7 @@ def my_app(cfg: DictConfig) -> None:
 	data_loader = SyntheticElementLoader(cfg.data, TSet.Validation)
 
 	embedding = WaveletAnalysisLayer( 'analysis', cfg.transform, embedding_space_tensor, device )
-	model: nn.Module = get_spectral_peak_selector_from_cfg( cfg.model, device, embedding )
+	model: nn.Module = get_spectral_peak_selector_from_cfg( cfg.model, device, embedding, reduce_type=reduce_type )
 
 	lossf = ExpHLoss if use_hloss else ExpLoss
 	trainer = IterativeTrainer( cfg.train, device, data_loader, model, embedding, lossf(cfg.data) )
