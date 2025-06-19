@@ -71,7 +71,7 @@ class SyntheticElementLoader(ElementLoader):
 			return None
 
 	def check_epoch_end(self):
-		end_index = self.ntfiles if (self.tset == TSet.Train) else self.nfiles
+		end_index = self.ntfiles if (self.tset == TSet.Train) else 1
 		if self.ifile >= end_index:
 			raise StopIteration
 
@@ -113,7 +113,6 @@ class SyntheticElementLoader(ElementLoader):
 
 	@property
 	def dspath(self) -> str:
-		print( f"dspath: ifile={self.ifile} nfiles={len(self.file_sort)}")
 		return f"{self.rootdir}/nc/{self.dset}-{self.file_sort[self.ifile]}.nc"
 
 	def _load_cache_dataset( self ):
