@@ -113,6 +113,7 @@ class SyntheticElementLoader(ElementLoader):
 
 	@property
 	def dspath(self) -> str:
+		print( f"dspath: ifile={self.ifile} nfiles={len(self.file_sort)}")
 		return f"{self.rootdir}/nc/{self.dset}-{self.file_sort[self.ifile]}.nc"
 
 	def _load_cache_dataset( self ):
