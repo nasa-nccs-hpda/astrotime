@@ -16,18 +16,22 @@ reduce_type = 0
 
 @hydra.main(version_base=None, config_path="../../config", config_name=version)
 def my_app(cfg: DictConfig) -> None:
-	print( f"PeakFinder Validation({version}): Using reduce_type={reduce_type}, hloss={use_hloss}")
+
 	device: torch.device = astrotime_initialize( cfg, version+".pf" )
 	embedding_space_array, embedding_space_tensor = embedding_space(cfg.transform, device)
 
 	data_loader = SyntheticElementLoader(cfg.data, TSet.Validation)
 
 	embedding = WaveletAnalysisLayer( 'analysis', cfg.transform, embedding_space_tensor, device )
-	model: nn.Module = get_spectral_peak_selector_from_cfg( cfg.model, device, embedding, reduce_type=reduce_type )
 
-	lossf = ExpHLoss if use_hloss else ExpLoss
-	trainer = IterativeTrainer( cfg.train, device, data_loader, model, embedding, lossf(cfg.data) )
-	trainer.evaluate(version, with_checkpoint=False)
+	print( f"PeakFinder Validation({version}):")
+	for reduce_type in [0,1]:
+		for use_hloss in [False, True]:
+			print(f" ------ reduce_type={reduce_type}, hloss={use_hloss}  ------ ")
+			model: nn.Module = get_spectral_peak_selector_from_cfg( cfg.model, device, embedding, reduce_type=reduce_type )
+			lossf = ExpHLoss if use_hloss else ExpLoss
+			trainer = IterativeTrainer( cfg.train, device, data_loader, model, embedding, lossf(cfg.data) )
+			trainer.evaluate(version, with_checkpoint=False)
 
 if __name__ == "__main__":
 	my_app()

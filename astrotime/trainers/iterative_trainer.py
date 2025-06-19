@@ -168,16 +168,14 @@ class IterativeTrainer(object):
                 print(f" ------ Epoch Loss: mean={epoch_losses.mean():.3f}, median={np.median(epoch_losses):.3f}, range=({epoch_losses.min():.3f} -> {epoch_losses.max():.3f})")
 
     def evaluate(self, version, with_checkpoint=True):
-        print(f"SignalTrainer[{self.mode}]: , {self.nepochs} epochs, device={self.device}")
         if with_checkpoint:
             self.optimizer = self.get_optimizer()
             self.initialize_checkpointing(version)
         with self.device:
             self.loader.init_epoch()
-            losses, log_interval, t0 = [], 50, time.time()
+            losses, log_interval = [], 50
             try:
                 for ibatch in range(0, sys.maxsize):
-                    t0 = time.time()
                     batch = self.get_next_batch()
                     if batch['z'].shape[0] > 0:
                         self.global_time = time.time()
@@ -185,14 +183,10 @@ class IterativeTrainer(object):
                         if result.squeeze().ndim > 0:
                             loss: Tensor = self.loss(result.squeeze(), batch['target'].squeeze())
                             losses.append(loss.cpu().item())
-                            if ibatch % log_interval == 0:
-                                aloss = np.array(losses[-log_interval:])
-                                mean_loss = aloss.mean()
-                                print(f"B-{ibatch} loss={mean_loss:.3f}, range=({aloss.min():.3f} -> {aloss.max():.3f}), dt/batch={elapsed(t0):.5f} sec")
 
             except StopIteration:
                 val_losses = np.array(losses)
-                print(f" Validation Loss ({val_losses.size} batches): mean={val_losses.mean():.3f}, median={np.median(val_losses):.3f}, range=({val_losses.min():.3f} -> {val_losses.max():.3f})")
+                print(f" *** Validation Loss ({val_losses.size} batches): mean={val_losses.mean():.3f}, median={np.median(val_losses):.3f}, range=({val_losses.min():.3f} -> {val_losses.max():.3f})")
 
     def preprocess(self):
         with self.device:
