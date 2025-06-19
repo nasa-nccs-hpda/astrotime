@@ -147,35 +147,25 @@ class IterativeTrainer(object):
                         t0 = time.time()
                         batch = self.get_next_batch()
                         if batch['z'].shape[0] > 0:
-                            check_nan('batch', batch['z'])
+                            # check_nan('batch', batch['z'])
                             self.global_time = time.time()
                             result: Tensor = self.model(  batch['z'] )
-                            check_nan('model', batch['z'])
+                            # check_nan('model', batch['z'])
                             if result.squeeze().ndim > 0:
                                 self.log.debug(f"result{list(result.shape)} range: [{result.min().cpu().item()} -> {result.max().cpu().item()}]")
                                 loss: Tensor =  self.loss( result.squeeze(), batch['target'].squeeze() )
                                 self.conditionally_update_weights(loss)
                                 losses.append(loss.cpu().item())
-                                if (self.mode == TSet.Train) and ((ibatch % log_interval == 0) or ((ibatch < 5) and (epoch==0))):
-                                    from astrotime.trainers.loss import ExpHLoss
-                                    aloss = np.array(losses)
-                                    mean_loss = aloss.mean()
-                                    losses = []
-                                    if type(self.loss) == ExpHLoss:
-                                        h = self.loss.harmonics()
-                                        print(f"E-{epoch} B-{ibatch} loss={mean_loss:.3f}, range=({aloss.min():.3f} -> {aloss.max():.3f}), hrange=(1/{round(1/h.min())} -> {round(h.max())}), dt/batch={elapsed(t0):.5f} sec")
-                                    else:
-                                        print(f"E-{epoch} B-{ibatch} loss={mean_loss:.3f}, range=({aloss.min():.3f} -> {aloss.max():.3f}), dt/batch={elapsed(t0):.5f} sec")
+                                if (self.mode == TSet.Train) and (ibatch % log_interval == 0):
+                                    aloss = np.array(losses[-log_interval:])
+                                    print(f"E-{epoch} B-{ibatch} loss={aloss.mean():.3f}, range=({aloss.min():.3f} -> {aloss.max():.3f}), dt/batch={elapsed(t0):.5f} sec")
+                                    self._checkpoint_manager.save_checkpoint(epoch, ibatch, meanval=self.embedding.meanval)
 
                 except StopIteration:
                     print( f"Completed epoch {epoch} in {elapsed(te)/60:.5f} min, mean-loss= {np.array(losses).mean():.3f}")
 
-                if self.mode == TSet.Train:
-                    self._checkpoint_manager.save_checkpoint( epoch, 0, meanval=self.embedding.meanval )
-                    print( f"Checkpoint saved: epoch={epoch}, batch={0}" )
-                else:
-                    val_losses = np.array(losses)
-                    print( f" Validation Loss: mean={val_losses.mean():.3f}, median={np.median(val_losses):.3f}, range=({val_losses.min():.3f} -> {val_losses.max():.3f})")
+                epoch_losses = np.array(losses)
+                print(f" ------ Epoch Loss: mean={epoch_losses.mean():.3f}, median={np.median(epoch_losses):.3f}, range=({epoch_losses.min():.3f} -> {epoch_losses.max():.3f})")
 
     def evaluate1(self, version: Optional[str] = None ):
         print(f"SignalTrainer[{self.mode}]: device={self.device}")
