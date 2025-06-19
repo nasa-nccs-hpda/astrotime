@@ -19,7 +19,7 @@ class SyntheticElementLoader(ElementLoader):
 		self.batch_size =self.cfg.batch_size
 		self.current_batch = None
 		self.elem_sort = None
-		self.file_sort = list(range(self.ntfiles))
+		self.file_sort = list(range(self.ntfiles)) if (tset == TSet.Train) else [self.ntfiles]
 		self.use_batches = kwargs.get('use_batches',True)
 		self._load_cache_dataset()
 
@@ -30,7 +30,7 @@ class SyntheticElementLoader(ElementLoader):
 
 	def init_epoch(self):
 		random.shuffle(self.file_sort)
-		self.ifile = 0 if (self.tset == TSet.Train) else self.ntfiles
+		self.ifile = 0
 		self.batch_index = 0
 		self._load_cache_dataset()
 

@@ -77,7 +77,7 @@ class ElementLoader(Loader):
 
 	@property
 	def ntfiles(self):
-		return self.cfg.nfiles-self.cfg.get('nvfiles',1)
+		return self.cfg.nfiles-1
 
 	def init_epoch(self):
 		self.ifile = 0
