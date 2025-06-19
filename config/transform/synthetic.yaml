@@ -5,6 +5,7 @@ base_freq:  ${data.base_freq}       # Start frequency of base octave
 noctaves:   ${data.noctaves}        # Number of octaves in base frequency space
 test_mode:  ${data.test_mode}
 maxh:       ${data.maxh}
+accumh:     false
 decay_factor: 0.0                   # Time envelope decay factor
 subbatch_size: 0                     # If>0: Split batches into (serially computed) subbatches in order to fit into gpu memory
 
