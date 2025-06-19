@@ -11,7 +11,7 @@ from astrotime.config.context import astrotime_initialize
 from astrotime.loaders.synthetic import SyntheticElementLoader
 
 version = "synthetic_period"
-use_hloss = True
+use_hloss = False
 reduce_type = 0
 
 @hydra.main(version_base=None, config_path="../../config", config_name=version)
