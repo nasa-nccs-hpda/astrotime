@@ -2,7 +2,7 @@ defaults:
   - platform: "explore"
   - train: "MIT_cnn"
   - transform: "MIT"
-  - data: "select_MIT"
+  - data: "MIT"
   - model: "wp_cnn"
   - _self_
   - override hydra/hydra_logging: disabled

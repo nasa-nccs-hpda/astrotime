@@ -2,7 +2,7 @@ defaults:
   - platform: "explore"
   - train: "synthetic_cnn"
   - transform: "synthetic"
-  - data: "astro_synthetic_focused"
+  - data: "synthetic"
   - model: "wp_cnn"
   - _self_
   - override hydra/hydra_logging: disabled
