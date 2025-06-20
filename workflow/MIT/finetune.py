@@ -8,7 +8,7 @@ from astrotime.trainers.iterative_trainer import IterativeTrainer
 from astrotime.trainers.loss import ExpLoss, ExpU
 from astrotime.models.cnn.cnn_baseline import get_model_from_cfg
 from astrotime.config.context import astrotime_initialize
-version = "select_MIT_period"
+version = "MIT_period"
 ckp_version = "synthetic_period"
 
 @hydra.main(version_base=None, config_path="../../config", config_name=version)
