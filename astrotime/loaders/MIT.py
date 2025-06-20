@@ -274,10 +274,11 @@ class MITOctavesLoader(MITLoader):
 
 class MITElementLoader(ElementLoader):
 
-	def __init__(self, cfg: DictConfig, **kwargs ):
+	def __init__(self, cfg: DictConfig, tset: TSet, **kwargs ):
 		super().__init__(cfg)
 		self.sector_range = cfg.sector_range
 		self.loaded_file = -1
+		self.tset = tset
 		self.filters = kwargs.get('filters',True)
 		self.snr_min: float = cfg.get('snr_min',0.0 )
 		self.snr_max: float = cfg.get('snr_max', 1.0e9 )
@@ -287,6 +288,7 @@ class MITElementLoader(ElementLoader):
 		self._TICS: List[str]  = None
 		self.preload = kwargs.get('preload',False)
 		self.elems = []
+		self.file_sort = list(range(self.ntfiles)) if (tset == TSet.Train) else [self.ntfiles]
 
 	def get_period_range(self) -> Tuple[float,float]:
 		f0 = self.cfg.base_freq
@@ -302,10 +304,16 @@ class MITElementLoader(ElementLoader):
 		self.load_data()
 		return self._TICS
 
+	def init_epoch(self):
+		random.shuffle(self.file_sort)
+		self.ifile = 0
+		self.batch_offset = 0
+		self._load_cache_dataset()
+
 	@property
 	def cache_path(self) -> str:
 		os.makedirs(self.cfg.cache_path, exist_ok=True)
-		isector = self.cfg.sector_range[0] + self.ifile
+		isector = self.cfg.sector_range[0] + self.file_sort[self.ifile]
 		return f"{self.cfg.cache_path}/sector-{isector}.nc"
 
 	def _load_cache_dataset( self ):
@@ -334,6 +342,10 @@ class MITElementLoader(ElementLoader):
 	@property
 	def nfiles(self) -> int:
 		return self.cfg.sector_range[1] - self.cfg.sector_range[0]
+
+	@property
+	def ntfiles(self) -> int:
+		return self.nfiles-1
 
 	def get_element(self, elem_index: int) -> Optional[RDict]:
 		self.load_data()
@@ -364,7 +376,7 @@ class MITElementLoader(ElementLoader):
 		if self.batch_offset >= len(self._TICS)-1:
 			self.batch_offset = 0
 			self.ifile += 1
-			if self.ifile >= self.nfiles:
+			if (self.ifile >= self.ntfiles) or (self.tset == TSet.Validation):
 				raise StopIteration
 			self.load_data()
 
