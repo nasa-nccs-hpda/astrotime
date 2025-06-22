@@ -14,7 +14,7 @@ version = "MIT_period"
 @hydra.main(version_base=None, config_path="../../config", config_name=version)
 def my_app(cfg: DictConfig) -> None:
 	device: torch.device = astrotime_initialize( cfg, version+".eval" )
-	cfg.data['snr_min'] = 100.0
+	cfg.data['snr_min'] = 80.0
 
 	embedding_space_array, embedding_space_tensor = embedding_space(cfg.transform, device)
 	data_loader = MITElementLoader(cfg.data, TSet.Validation)
