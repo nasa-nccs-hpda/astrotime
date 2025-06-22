@@ -186,7 +186,7 @@ class IterativeTrainer(object):
 
             except StopIteration:
                 val_losses = np.array(losses)
-                print(f"       *** Validation Loss ({val_losses.size} batches): mean={val_losses.mean():.3f}, median={np.median(val_losses):.3f}, range=({val_losses.min():.3f} -> {val_losses.max():.3f})")
+                print(f"       *** Validation Loss ({val_losses.size} batches): mean={val_losses.mean():.4f}, median={np.median(val_losses):.4f}, range=({val_losses.min():.4f} -> {val_losses.max():.4f})")
 
     def preprocess(self):
         with self.device:
