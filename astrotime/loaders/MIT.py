@@ -340,6 +340,10 @@ class MITElementLoader(ElementLoader):
 		return len(self._TICS)
 
 	@property
+	def nelements(self) -> int:
+		return len(self._TICS)
+
+	@property
 	def nfiles(self) -> int:
 		return self.cfg.sector_range[1] - self.cfg.sector_range[0]
 
@@ -374,7 +378,7 @@ class MITElementLoader(ElementLoader):
 		return (p >= self.period_range[0]) and (p <= self.period_range[1])
 
 	def update_file(self):
-		if self.batch_offset >= len(self._TICS)-1:
+		if self.batch_offset >= self.nelements-1:
 			self.batch_offset = 0
 			self.ifile += 1
 			if (self.ifile >= self.ntfiles) or (self.tset == TSet.Validation):
@@ -390,12 +394,12 @@ class MITElementLoader(ElementLoader):
 		return len(self.elems)
 
 	def get_next_batch(self, update_file=True ) -> Optional[Dict[str,np.ndarray]]:
-		ielem, periods, sns, tics, ts, ys, slens, b0, nb  = 0, [], [], [], [], [], [], self.batch_offset, len(self._TICS)
+		ielem, periods, sns, tics, ts, ys, slens, b0  = 0, [], [], [], [], [], [], self.batch_offset
 		if update_file: self.update_file()
-		elif self.batch_offset >= len(self._TICS)-1:
+		elif self.batch_offset >= self.nelements-1:
 			self.batch_offset = 0
 			return None
-		for ielem in range( b0, nb ):
+		for ielem in range( b0, self.nelements ):
 			elem: RDict = self.get_raw_element(ielem)
 			if elem is not None:
 				ts.append(elem['t'])
@@ -415,8 +419,7 @@ class MITElementLoader(ElementLoader):
 
 	def preload_elems(self) -> Optional[Dict[str,np.ndarray]]:
 		self.elems = []
-		nb  = len(self._TICS)
-		for ielem in range( 0, nb ):
+		for ielem in range( 0, self.nelements ):
 			elem: Optional[RDict] = self.get_raw_element(ielem)
 			if elem is not None:
 				self.elems.append( elem )
