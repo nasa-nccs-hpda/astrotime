@@ -9,7 +9,7 @@ from astrotime.trainers.loss import ExpLoss, ExpU
 from astrotime.models.cnn.cnn_baseline import get_model_from_cfg
 from astrotime.config.context import astrotime_initialize
 version = "MIT_period"
-ckp_version = "synthetic_period"
+ckp_version = None # "synthetic_period"
 
 @hydra.main(version_base=None, config_path="../../config", config_name=version)
 def my_app(cfg: DictConfig) -> None:
