@@ -465,7 +465,7 @@ class EvaluatorPlot(SignalPlot):
 		self.name = name
 		self.evaluator: ModelEvaluator = evaluator
 		self.annotations: List[str] = tolower( kwargs.get('annotations',None) )
-		self.colors = [ 'red', 'blue', 'magenta', 'cyan', 'darkviolet', 'darkorange', 'saddlebrown', 'darkturquoise' ]
+		self.colors = [ 'red', 'blue', 'magenta', 'cyan', 'darkviolet', 'darkorange', 'saddlebrown', 'darkturquoise', 'green', 'brown', 'purple', 'yellow', 'brick', 'pink', 'grey', 'grey', 'grey', 'grey', 'grey', 'grey', 'grey', 'grey', 'grey', 'grey', 'grey', 'grey']
 		self.marker_colors = ['black', 'green']
 		self.ofac = kwargs.get('upsample_factor',1)
 		self.plots: List[Line2D] = []
@@ -486,7 +486,6 @@ class EvaluatorPlot(SignalPlot):
 	def tname(self):
 		return self.evaluator.tname
 
-	@exception_handled
 	def _setup(self):
 		tdata = self.evaluator.evaluate(self.element).squeeze()
 		target_freq = self.evaluator.target_frequency
@@ -498,7 +497,7 @@ class EvaluatorPlot(SignalPlot):
 		self.nlines = y.shape[0]
 		print( f"PLOT: x{x.shape} y{y.shape}")
 		for ip in range(self.nlines):
-			self.plots.append( self.ax.plot(x, y[ip], label=f"{self.tname}-{ip}", color=self.colors[ip], marker=".", linewidth=1, markersize=1, alpha=0.7/(ip+1))[0] )
+			self.plots.append( self.ax.plot(x, y[ip], label=f"{self.tname}-{ip}", color=self.colors[ip], marker=".", linewidth=1, markersize=1, alpha=4.0/(ip+4) )[0] )
 		self.ax.set_xlim( x.min(), x.max() )
 		self.ax.set_ylim( y.min(), y.max() )
 
