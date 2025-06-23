@@ -80,7 +80,7 @@ class IterativeTrainer(object):
         if version is not None:
             self.optimizer = self.get_optimizer()
             self._checkpoint_manager = CheckpointManager( version, self.model, self.optimizer, self.cfg )
-            self.train_state = self._checkpoint_manager.load_checkpoint( init_version=version, update_model=True )
+            self.train_state = self._checkpoint_manager.load_checkpoint( update_model=True )
             self.epoch0      = self.train_state.get('epoch', 0)
             self.start_batch = self.train_state.get('batch', 0)
             self.embedding.meanval = self.train_state.get('meanval')
