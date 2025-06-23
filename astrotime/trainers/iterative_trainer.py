@@ -76,6 +76,17 @@ class IterativeTrainer(object):
             self.start_epoch = int(self.epoch0)
             print(f"\n      Loading checkpoint from {self._checkpoint_manager.checkpoint_path()}: epoch={self.start_epoch}, batch={self.start_batch}\n")
 
+    def load_checkpoint( self, version: str ):
+        if version is not None:
+            self.optimizer = self.get_optimizer()
+            self._checkpoint_manager = CheckpointManager( version, self.model, self.optimizer, self.cfg )
+            self.train_state = self._checkpoint_manager.load_checkpoint( init_version=version, update_model=True )
+            self.epoch0      = self.train_state.get('epoch', 0)
+            self.start_batch = self.train_state.get('batch', 0)
+            self.embedding.meanval = self.train_state.get('meanval')
+            self.start_epoch = int(self.epoch0)
+            print(f"\n      Loading checkpoint from {self._checkpoint_manager.checkpoint_path()}: epoch={self.start_epoch}, batch={self.start_batch}\n")
+
     def conditionally_update_weights(self, loss: Tensor):
         if self.mode == TSet.Train:
             self.optimizer.zero_grad()
@@ -167,10 +178,8 @@ class IterativeTrainer(object):
                 epoch_losses = np.array(losses)
                 print(f" ------ Epoch Loss: mean={epoch_losses.mean():.3f}, median={np.median(epoch_losses):.3f}, range=({epoch_losses.min():.3f} -> {epoch_losses.max():.3f})")
 
-    def evaluate(self, version, with_checkpoint=True):
-        if with_checkpoint:
-            self.optimizer = self.get_optimizer()
-            self.initialize_checkpointing(version)
+    def evaluate(self, version):
+        self.load_checkpoint(version)
         with self.device:
             self.loader.init_epoch()
             losses, log_interval = [], 50
