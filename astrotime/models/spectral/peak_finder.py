@@ -30,7 +30,6 @@ class SpectralPeakSelector(Module):
         self.cfg: DictConfig = cfg
         self.log = logging.getLogger()
         self.fspace = fspace
-        self.reduce_type = kwargs.get('reduce_type',0)
         self.hsr: Tensor = None
 
     def toggle_peak_calculation(self):
@@ -41,8 +40,7 @@ class SpectralPeakSelector(Module):
             self.toggle_peak_calculation()
 
     def forward(self, hsmag: Tensor) -> Tensor:
-        if    self.reduce_type == 0: self.hsr = hsmag[:, 0, :].squeeze()
-        elif  self.reduce_type == 1: self.hsr = hsmag.mean(dim=1).squeeze()
+        self.hsr = hsmag[:, 0, :].squeeze()
         hspeak: Tensor = self.hsr.argmax(dim=-1).squeeze()
         result: Tensor = self.fspace[hspeak]
         self.log.info(f" SpectralPeakSelector.forward: result{shp(result)}, hspeak{shp(hspeak)}, hsr{shp(self.hsr)}, hsmag{shp(hsmag)}, fspace{shp(self.fspace)}")
