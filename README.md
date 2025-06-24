@@ -40,10 +40,12 @@ To compare the performance of these models on a (more) irregularly sampled datas
 ## Dataset Preparation
 
 * The project data directory on explore is: **/explore/nobackup/projects/ilab/data/astrotime**.
-* This project uses a baseline dataset of artificially generated sinusoids, downloadable from a [sharepoint folder](https://nasa-my.sharepoint.com/:f:/r/personal/bppowel1_ndc_nasa_gov/Documents/sinusoids?e=5%3af465681647e04bdca4ed910aec775237&sharingv2=true&fromShare=true&xsdata=MDV8MDJ8dGhvbWFzLm1heHdlbGxAbmFzYS5nb3Z8NTg3YmJmMjkyMjhlNDliNTQ4MTEwOGRkMWY5YTJjNzZ8NzAwNWQ0NTg0NWJlNDhhZTgxNDBkNDNkYTk2ZGQxN2J8MHwwfDYzODcwMTQ2OTIwMTE0MzU4NXxVbmtub3dufFRXRnBiR1pzYjNkOGV5SkZiWEIwZVUxaGNHa2lPblJ5ZFdVc0lsWWlPaUl3TGpBdU1EQXdNQ0lzSWxBaU9pSlhhVzR6TWlJc0lrRk9Jam9pVFdGcGJDSXNJbGRVSWpveWZRPT18MHx8fA%3d%3d&sdata=YXprclJBZFpZcmhRMlRoYUJQbWdDeEpjMldBSEh6MTlFNllsYkNDWDAvVT0%3d).
-* The raw dataset has been downloaded to explore at: **{datadir}/sinusoids/npz**.
-* The script **.workflow/npz2nc.py** has been used to convert the .npz files to netcdf format.
-* The netcdf files, which are used in this project's ML workflows, can be found at: **{datadir}/sinusoids/nc**.
+* This project uses a test and evaluation dataset of artificially generated light curves stored on adapt at **/explore/nobackup/people/bppowel1/timehascome/**.
+* The script **.workflow/util/npz2nc.py** has been used to convert the .npz files to netcdf format.
+* The netcdf files, which are used in this project's ML workflows, can be found at: **{data_dir}/cache/data/synthetic**.
+* The target dataset is a set of MIT light curves stored in their original form at: **/explore/nobackup/people/bppowel1/mit_lcs/**
+* The class astrotime.loaders.MIT.MITLoader contains methods for converting these files to netcdf format.
+* The MIT light curves in netCDF format are located at **{data_dir}/cache/data/MIT**
 
 ## Workflows
 This project provides three ML workflows:
