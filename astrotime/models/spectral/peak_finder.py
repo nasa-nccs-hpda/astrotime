@@ -23,7 +23,7 @@ def sH(h:float) -> str:
 
 class SpectralPeakSelector(Module):
 
-    def __init__(self, cfg: DictConfig, device: device, fspace: Tensor, **kwargs ) -> None:
+    def __init__(self, cfg: DictConfig, device: device, fspace: Tensor ) -> None:
         super().__init__()
         self.requires_grad_(False)
         self.device: device = device
@@ -32,12 +32,9 @@ class SpectralPeakSelector(Module):
         self.fspace = fspace
         self.hsr: Tensor = None
 
-    def toggle_peak_calculation(self):
-        self.reduce_type = self.reduce_type+1 % 2
-
     def process_key_event(self, key: str):
         if key == 'ctrl+t':
-            self.toggle_peak_calculation()
+            pass
 
     def forward(self, hsmag: Tensor) -> Tensor:
         self.hsr = hsmag[:, 0, :].squeeze()
