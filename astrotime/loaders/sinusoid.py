@@ -30,7 +30,6 @@ class SinusoidElementLoader(ElementLoader):
 		self.tset = tset
 		self.batch_size =self.cfg.batch_size
 		self.current_batch = None
-		self.elem_sort = None
 		self.file_sort = list(range(self.ntfiles)) if (tset == TSet.Train) else [self.ntfiles]
 		self.use_batches = kwargs.get('use_batches',True)
 		self._files = None
@@ -63,7 +62,6 @@ class SinusoidElementLoader(ElementLoader):
 
 	def get_raw_element(self, elem_index: int) -> Optional[RDict]:
 		try:
-			eidx = self.elem_sort[elem_index][0]
 			dsy: xa.DataArray = self.data[ f'y' ]
 			dst: xa.DataArray = self.data[ f'time' ]
 			print( f" get_raw_element: dsy{list(dsy.shape)} dst{list(dst.shape)}")
@@ -72,14 +70,6 @@ class SinusoidElementLoader(ElementLoader):
 		except KeyError as ex:
 			print(f"\n    Error getting elem-{elem_index} from dataset({self.dspath}): vars = {list(self.data.data_vars.keys())}\n")
 			raise ex
-
-	def get_sort_ordering(self):
-		sort_ordering = []
-		for ielem in range(self.file_size):
-			dsy: xa.DataArray = self.data[ f's{ielem}' ]
-			sort_ordering.append( (ielem,dsy.size) )
-		sort_ordering.sort(key=lambda x: x[1])
-		return sort_ordering
 
 	def get_batch_element(self, elem_index: int) -> Optional[RDict]:
 		try:
