@@ -109,11 +109,9 @@ class SinusoidElementLoader(ElementLoader):
 					t.append(elem['t'])
 					y.append(elem['y'])
 					p.append(elem['p'])
-					stype.append(elem['type'])
 			result['t'] = np.stack( t, axis=0 )
 			result['y'] = np.stack( y, axis=0 )
 			result['period'] = np.array(p)
-			result['stype'] = np.array(stype)
 			result['offset'] = batch_start
 			result['file'] = self.ifile
 			return result
