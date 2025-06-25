@@ -11,6 +11,9 @@ import logging, random, os
 def count_nnan( x: np.ndarray ) -> int:
 	return np.count_nonzero( ~np.isnan(x) )
 
+def count_nan( x: np.ndarray ) -> int:
+	return np.count_nonzero( ~np.isnan(x.flatten()) )
+
 def merge( arrays: List[np.ndarray], slen: int ) -> np.ndarray:
 	if len( arrays ) == 0: raise IndexError
 	return np.stack( [ array[:slen] for array in arrays ], axis=0 )
@@ -122,6 +125,7 @@ class SinusoidElementLoader(ElementLoader):
 			result['period'] = np.array(p)
 			result['offset'] = batch_start
 			result['file'] = self.ifile
+			print( f"get_batch({batch_index})-> y{result['y'].shape}: nnan={count_nan(result['y'])}")
 			return result
 		return None
 
