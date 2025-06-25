@@ -103,7 +103,7 @@ class SinusoidElementLoader(ElementLoader):
 		if self.data is not None:
 			batch_start = batch_index * self.batch_size
 			batch_end = min(batch_start + self.batch_size, self.file_size)
-			t,y,p,stype,result,tlen0,tlen1 = [],[],[],[],{},1000000,0
+			t,y,p,stype,result = [],[],[],[],{}
 			for ielem in range(batch_start, batch_end):
 				elem = self.get_raw_element(ielem)
 				if elem is not None:
@@ -111,10 +111,8 @@ class SinusoidElementLoader(ElementLoader):
 					y.append(elem['y'])
 					p.append(elem['p'])
 					stype.append(elem['type'])
-					if t[-1].size < tlen0: tlen0 = t[-1].size
-					if t[-1].size > tlen1: tlen1 = t[-1].size
-			result['t'] = merge(t,tlen0)
-			result['y'] = merge(y,tlen0)
+			result['t'] = np.stack( t, axis=0 )
+			result['y'] = np.stack( y, axis=0 )
 			result['period'] = np.array(p)
 			result['stype'] = np.array(stype)
 			result['offset'] = batch_start
