@@ -109,14 +109,14 @@ class SinusoidElementLoader(ElementLoader):
 		if self.data is not None:
 			batch_start = batch_index * self.batch_size
 			batch_end = min(batch_start + self.batch_size, self.file_size)
-			t,y,p,stype,result = [],[],[],[],{}
+			t,y,p,stype,result,slen = [],[],[],[],{}, 1e10
 			for ielem in range(batch_start, batch_end):
 				elem = self.get_raw_element(ielem)
 				if elem is not None:
 					t.append(elem['t'])
 					y.append(elem['y'])
 					p.append(elem['p'])
-			slen = count_nnan( y[-1] )
+					slen = min( count_nnan(elem['y']), slen )
 			result['t'] = merge( t, slen )
 			result['y'] = merge( y, slen )
 			result['period'] = np.array(p)
