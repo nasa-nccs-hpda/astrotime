@@ -8,8 +8,8 @@ from glob import glob
 from omegaconf import DictConfig, OmegaConf
 import logging, random, os
 
-def count_nan( x: np.ndarray ) -> int:
-	return np.count_nonzero( np.isnan(x) )
+def count_nnan( x: np.ndarray ) -> int:
+	return np.count_nonzero( ~np.isnan(x) )
 
 def merge( arrays: List[np.ndarray], slen: int ) -> np.ndarray:
 	if len( arrays ) == 0: raise IndexError
@@ -61,15 +61,18 @@ class SinusoidElementLoader(ElementLoader):
 		return self.file_size
 
 	def get_element(self, elem_index: int) -> Optional[RDict]:
-		return self.get_batch_element( elem_index ) if self.use_batches else self.get_raw_element( elem_index )
+		return self.get_batch_element( elem_index ) if self.use_batches else self.get_raw_element( elem_index, True )
 
-	def get_raw_element(self, elem_index: int) -> Optional[RDict]:
+	def get_raw_element(self, elem_index: int, mask_nan=False ) -> Optional[RDict]:
 		try:
 			y: np.ndarray = self.data[ 'y' ].values[elem_index]
 			t: np.ndarray = self.data[ 't' ].values[elem_index]
 			p = self.data['p'].values[elem_index]
-			print( f" * Elem-{elem_index}, y={y.shape}, t={t.shape}, p={p}, nnan={count_nan(y)} ")
-			return dict( t=t, y=y/y.mean(), p=p )
+			if mask_nan:
+				nan_mask = np.isnan(y)
+				y = y[~nan_mask]
+				t = t[~nan_mask]
+			return dict( t=t, y=y, p=p )
 		except KeyError as ex:
 			print(f"\n    Error getting elem-{elem_index} from dataset({self.dspath}): vars = {list(self.data.data_vars.keys())}\n")
 			raise ex
@@ -113,8 +116,9 @@ class SinusoidElementLoader(ElementLoader):
 					t.append(elem['t'])
 					y.append(elem['y'])
 					p.append(elem['p'])
-			result['t'] = np.stack( t, axis=0 )
-			result['y'] = np.stack( y, axis=0 )
+			slen = count_nnan( y[-1] )
+			result['t'] = merge( t, slen )
+			result['y'] = merge( y, slen )
 			result['period'] = np.array(p)
 			result['offset'] = batch_start
 			result['file'] = self.ifile
