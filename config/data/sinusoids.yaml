@@ -1,9 +1,14 @@
 source: sinusoid                                          # Dataset type
 dataset_root:  "${platform.project_root}/sinusoids/nc"    # Location of processed netcdf files
 dataset_files:  "padded_sinusoids_*.nc"                   # Glob pattern for file names
-file_size: 1000               # Number of sinusoids in a single nc file
-batch_size: 50                # Batch size for training
-validation_fraction: 0.1      # Fraction of training dataset that is used for validation
+cache_path:  "${platform.project_root}/cache/data/synthetic"
 dset_reduction: 1.0           # Fraction of the full dataset that is used for training/validation
-series_length: 1536           # Length of subset of input timeseries to process
+batch_size: 16
+nfreq_oct: 512                      # Number of frequency values (log2 spaced) in each octave
+base_freq:  0.025                     # Start frequency of base freq range
+noctaves: 9                         # Number of octaves in base freq range
+test_mode: default
+file_size: 1000
 nfiles: 1000
+refresh: false
+maxh: 16
