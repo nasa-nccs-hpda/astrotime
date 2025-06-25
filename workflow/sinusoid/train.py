@@ -16,6 +16,7 @@ def my_app(cfg: DictConfig) -> None:
 	device: torch.device = astrotime_initialize( cfg, version )
 	embedding_space_array, embedding_space_tensor = embedding_space(cfg.transform, device)
 	data_loader = SinusoidElementLoader(cfg.data, TSet.Train)
+	data_loader.init_epoch()
 
 	batch = data_loader.get_batch(0)
 	print( batch)
