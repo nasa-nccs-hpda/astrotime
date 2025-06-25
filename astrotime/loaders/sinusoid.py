@@ -124,7 +124,7 @@ class SinusoidElementLoader(ElementLoader):
 			result['period'] = np.array(p)
 			result['offset'] = batch_start
 			result['file'] = self.ifile
-			print(f"get_batch({batch_index})-> y{result['y'].shape}: nnan={count_nan(result['y'])}")
+			# print(f"get_batch({batch_index})-> y{result['y'].shape}: nnan={count_nan(result['y'])}")
 			return result
 		return None
 
