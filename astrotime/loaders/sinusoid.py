@@ -8,6 +8,9 @@ from glob import glob
 from omegaconf import DictConfig, OmegaConf
 import logging, random, os
 
+def count_nan( x: np.ndarray ) -> int:
+	return np.count_nonzero( np.isnan(x) )
+
 def merge( arrays: List[np.ndarray], slen: int ) -> np.ndarray:
 	if len( arrays ) == 0: raise IndexError
 	return np.stack( [ array[:slen] for array in arrays ], axis=0 )
@@ -64,9 +67,8 @@ class SinusoidElementLoader(ElementLoader):
 		try:
 			y: np.ndarray = self.data[ 'y' ].values[elem_index]
 			t: np.ndarray = self.data[ 't' ].values[elem_index]
-			nanmask = np.isnan(y)
-			t, y = t[~nanmask], y[~nanmask]
 			p = self.data['p'].values[elem_index]
+			print( f" * Elem-{elem_index}, y={y.shape}, t={t.shape}, p={p}, nnan={count_nan(y)} ")
 			return dict( t=t, y=y/y.mean(), p=p )
 		except KeyError as ex:
 			print(f"\n    Error getting elem-{elem_index} from dataset({self.dspath}): vars = {list(self.data.data_vars.keys())}\n")
