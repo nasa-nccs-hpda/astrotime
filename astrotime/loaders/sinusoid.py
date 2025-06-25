@@ -64,8 +64,9 @@ class SinusoidElementLoader(ElementLoader):
 	def get_raw_element(self, elem_index: int) -> Optional[RDict]:
 		try:
 			eidx = self.elem_sort[elem_index][0]
-			dsy: xa.DataArray = self.data[ f's{eidx}' ]
-			dst: xa.DataArray = self.data[ f't{eidx}' ]
+			dsy: xa.DataArray = self.data[ f'y' ]
+			dst: xa.DataArray = self.data[ f'time' ]
+			print( f" get_raw_element: dsy{list(dsy.shape)} dst{list(dst.shape)}")
 			y: np.ndarray = dsy.values
 			return dict(t=dst.values, y=y/y.mean(), p=dsy.attrs["period"], type=dsy.attrs["type"])
 		except KeyError as ex:
