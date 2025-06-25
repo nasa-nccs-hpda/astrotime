@@ -64,6 +64,8 @@ class SinusoidElementLoader(ElementLoader):
 		try:
 			y: np.ndarray = self.data[ 'y' ].values[elem_index]
 			t: np.ndarray = self.data[ 't' ].values[elem_index]
+			nanmask = np.isnan(y)
+			t, y = t[~nanmask], y[~nanmask]
 			p = self.data['p'].values[elem_index]
 			return dict( t=t, y=y/y.mean(), p=p )
 		except KeyError as ex:
