@@ -63,10 +63,9 @@ class SinusoidElementLoader(ElementLoader):
 	def get_raw_element(self, elem_index: int) -> Optional[RDict]:
 		try:
 			y: np.ndarray = self.data[ 'y' ].values[elem_index]
-			t: np.ndarray = self.data[ 'time' ].values[elem_index]
+			t: np.ndarray = self.data[ 't' ].values[elem_index]
 			p = self.data['p'].values[elem_index]
-			etype = self.data['t'].values[elem_index]
-			return dict( t=t, y=y/y.mean(), p=p, type=etype )
+			return dict( t=t, y=y/y.mean(), p=p )
 		except KeyError as ex:
 			print(f"\n    Error getting elem-{elem_index} from dataset({self.dspath}): vars = {list(self.data.data_vars.keys())}\n")
 			raise ex
