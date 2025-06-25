@@ -117,7 +117,6 @@ class SinusoidElementLoader(ElementLoader):
 			result['stype'] = np.array(stype)
 			result['offset'] = batch_start
 			result['file'] = self.ifile
-			print(f"get_batch(F{self.ifile}.B{batch_index}): y{result['y'].shape}, t{result['t'].shape}, pmax={result['period'].max():.3f}, trng0={result['t'][0][-1]-result['t'][0][0]:.3f}")
 			return result
 		return None
 
