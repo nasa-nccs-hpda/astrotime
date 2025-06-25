@@ -66,15 +66,14 @@ class SinusoidElementLoader(ElementLoader):
 	def get_element(self, elem_index: int) -> Optional[RDict]:
 		return self.get_batch_element( elem_index ) if self.use_batches else self.get_raw_element( elem_index, True )
 
-	def get_raw_element(self, elem_index: int, mask_nan=False ) -> Optional[RDict]:
+	def get_raw_element(self, elem_index: int ) -> Optional[RDict]:
 		try:
 			y: np.ndarray = self.data[ 'y' ].values[elem_index]
 			t: np.ndarray = self.data[ 't' ].values[elem_index]
 			p = self.data['p'].values[elem_index]
-			if mask_nan:
-				nan_mask = np.isnan(y)
-				y = y[~nan_mask]
-				t = t[~nan_mask]
+			nan_mask = np.isnan(y)
+			y = y[~nan_mask]
+			t = t[~nan_mask]
 			return dict( t=t, y=y, p=p )
 		except KeyError as ex:
 			print(f"\n    Error getting elem-{elem_index} from dataset({self.dspath}): vars = {list(self.data.data_vars.keys())}\n")
@@ -119,7 +118,7 @@ class SinusoidElementLoader(ElementLoader):
 					t.append(elem['t'])
 					y.append(elem['y'])
 					p.append(elem['p'])
-					slen = min( count_nnan(elem['y']), slen )
+					slen = min( elem['y'].size, slen )
 			result['t'] = merge( t, slen )
 			result['y'] = merge( y, slen )
 			result['period'] = np.array(p)
