@@ -131,7 +131,6 @@ class SinusoidElementLoader(ElementLoader):
 		if os.path.exists(self.dspath):
 			try:
 				self.data = xa.open_dataset( self.dspath, engine="netcdf4" )
-				self.elem_sort = self.get_sort_ordering()
 				self.log.info( f"Opened cache dataset from {self.dspath}, nvars = {len(self.data.data_vars)}")
 			except KeyError as ex:
 				print(f"Error reading file: {self.dspath}: {ex}")
