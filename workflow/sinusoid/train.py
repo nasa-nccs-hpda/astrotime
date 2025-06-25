@@ -17,17 +17,12 @@ def my_app(cfg: DictConfig) -> None:
 	device: torch.device = astrotime_initialize( cfg, version )
 	embedding_space_array, embedding_space_tensor = embedding_space(cfg.transform, device)
 	data_loader = SinusoidElementLoader(cfg.data, TSet.Train)
-	data_loader.init_epoch()
 
-	batch = data_loader.get_batch(0)
-	for k,v in batch.items():
-		print( f" * {k}{list(v.shape) if type(v) is np.ndarray else v}")
+	embedding = WaveletAnalysisLayer( 'analysis', cfg.transform, embedding_space_tensor, device )
+	model: nn.Module = get_model_from_cfg( cfg.model, device, embedding, ExpU(cfg.data) )
 
-	# embedding = WaveletAnalysisLayer( 'analysis', cfg.transform, embedding_space_tensor, device )
-	# model: nn.Module = get_model_from_cfg( cfg.model, device, embedding, ExpU(cfg.data) )
-	#
-	# trainer = IterativeTrainer( cfg.train, device, data_loader, model, embedding, ExpLoss(cfg.data) )
-	# trainer.compute(version)
+	trainer = IterativeTrainer( cfg.train, device, data_loader, model, embedding, ExpLoss(cfg.data) )
+	trainer.compute(version)
 
 if __name__ == "__main__":
 	my_app()
