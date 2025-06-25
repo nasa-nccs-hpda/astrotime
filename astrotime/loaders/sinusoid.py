@@ -74,7 +74,6 @@ class SinusoidElementLoader(ElementLoader):
 			nan_mask = np.isnan(y)
 			y = y[~nan_mask]
 			t = t[~nan_mask]
-			print(f"get_raw_element({elem_index})-> y{y.shape}: nnan={count_nan(y)}")
 			return dict( t=t, y=y, p=p )
 		except KeyError as ex:
 			print(f"\n    Error getting elem-{elem_index} from dataset({self.dspath}): vars = {list(self.data.data_vars.keys())}\n")
@@ -125,6 +124,7 @@ class SinusoidElementLoader(ElementLoader):
 			result['period'] = np.array(p)
 			result['offset'] = batch_start
 			result['file'] = self.ifile
+			print(f"get_batch({batch_index})-> y{result['y'].shape}: nnan={count_nan(result['y'])}")
 			return result
 		return None
 
