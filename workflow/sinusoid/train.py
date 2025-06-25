@@ -1,6 +1,7 @@
 import hydra, torch
 from omegaconf import DictConfig
 from torch import nn
+import numpy as np
 from astrotime.util.series import TSet
 from typing import List, Optional, Dict, Type, Union, Tuple
 from astrotime.loaders.sinusoid import SinusoidElementLoader
@@ -19,7 +20,8 @@ def my_app(cfg: DictConfig) -> None:
 	data_loader.init_epoch()
 
 	batch = data_loader.get_batch(0)
-	print( batch)
+	for k,v in batch.items():
+		print( f" * {k}{list(v.shape) if type(v) is np.ndarray else v}")
 
 	# embedding = WaveletAnalysisLayer( 'analysis', cfg.transform, embedding_space_tensor, device )
 	# model: nn.Module = get_model_from_cfg( cfg.model, device, embedding, ExpU(cfg.data) )
