@@ -13,7 +13,7 @@ def znorm(ydata: np.ndarray) -> np.ndarray:
 
 version = "MIT_period.octaves"
 overrides = []
-initialize(version_base=None, config_path="../config")
+initialize(version_base=None, config_path="../../../config")
 cfg = compose(config_name=version, overrides=overrides)
 cfg.platform.gpu = -1
 device: torch.device = astrotime_initialize(cfg, version)

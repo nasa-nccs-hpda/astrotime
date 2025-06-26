@@ -5,7 +5,7 @@ from hydra import initialize, compose
 
 version = "select_MIT_period"
 overrides = [ 'platform.gpu=-1', 'data.snr_min=0', 'data.snr_max=20' ]
-initialize(version_base=None, config_path="../config" )
+initialize(version_base=None, config_path="../../../config")
 cfg = compose( config_name=version, overrides=overrides )
 device: torch.device = astrotime_initialize(cfg,version+".plot")
 

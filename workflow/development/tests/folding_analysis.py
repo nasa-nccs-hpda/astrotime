@@ -10,7 +10,7 @@ from hydra import initialize, compose
 
 version = "MIT_period.octaves"
 overrides = []
-initialize(version_base=None, config_path="../config" )
+initialize(version_base=None, config_path="../../../config")
 cfg = compose( config_name=version, overrides=overrides )
 device: torch.device = astrotime_initialize(cfg,version)
 sector = cfg.data.sector_range[0]

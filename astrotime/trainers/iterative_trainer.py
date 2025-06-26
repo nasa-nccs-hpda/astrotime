@@ -108,7 +108,6 @@ class IterativeTrainer(object):
         with (self.device):
             Y: Tensor = torch.FloatTensor(y).to(self.device)
             X: Tensor = torch.FloatTensor(x).to(self.device)
-       #     Y = tnorm(Y, dim=1)
             return torch.stack((X,Y), dim=1)
 
     def get_next_batch(self) -> Optional[TRDict]:

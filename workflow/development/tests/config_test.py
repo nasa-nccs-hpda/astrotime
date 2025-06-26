@@ -2,7 +2,7 @@
 from omegaconf import DictConfig
 import hydra
 
-@hydra.main(version_base=None, config_path="../config", config_name="sinusoid_period")
+@hydra.main(version_base=None, config_path="../../../config", config_name="sinusoid_period")
 def my_app(cfg: DictConfig) -> None:
 	print( cfg )
 

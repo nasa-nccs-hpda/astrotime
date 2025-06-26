@@ -9,7 +9,7 @@ from astrotime.models.cnn.cnn_baseline import get_model_from_cfg
 from astrotime.config.context import astrotime_initialize
 version = "sinusoid_period.wpk"
 
-@hydra.main(version_base=None, config_path="../config", config_name=version)
+@hydra.main(version_base=None, config_path="../../../config", config_name=version)
 def my_app(cfg: DictConfig) -> None:
 	device: torch.device = astrotime_initialize( cfg, version )
 	encoder = ValueEncoder( cfg.transform, device )

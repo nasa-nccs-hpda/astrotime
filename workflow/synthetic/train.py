@@ -17,7 +17,6 @@ version = "synthetic_period"
 def my_app(cfg: DictConfig) -> None:
 	device: torch.device = astrotime_initialize( cfg, version )
 	embedding_space_array, embedding_space_tensor = embedding_space(cfg.transform, device)
-
 	data_loader = SyntheticElementLoader(cfg.data, TSet.Train)
 
 	embedding = WaveletAnalysisLayer( 'analysis', cfg.transform, embedding_space_tensor, device )

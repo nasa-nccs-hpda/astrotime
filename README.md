@@ -4,19 +4,22 @@
 
 ## Project Description
 
-This project contains the implementation of a set of time-aware neural network (TAN) and workflows for testing their performance on the task of predicting periods of the sinusoidal timeseries dataset (STD) provided by Brian Powell.   
-Its performance on this dataset (and a 50% reduced version) was compared with the performance of the baseline CNN network (BCN) provided by Brian Powell.
-The BCN operates directly on the timeseries values (without the time information).   The TAN utilizes the same network as the BCN but operates on a weighted projection of the timeseries onto a set of sinusoidal basis functions, which enfolds both value and time components.
-When tested on the unmodified STD, the BCN achieved a mean absolute error (MAE) of 0.03 and the TAN achieved a MAE of 0.01.   Because the STD is close to being regularly sampled, the BCN (which implicitly assumes regularly sampled data) performs reasonably well, and the addition of time information in the TAN yields a relatively small improvement.
-To compare the performance of these models on a (more) irregularly sampled dataset, we subsampled the STD by randomly removing 50% of the observations.   On the sparse STD the TAN again achieved a MAE of 0.02, but the BCN performance was greatly degraded, resulting in a MAE of 0.25.   These results verify that the TAN is effectively using the time information of the dataset, whereas the BCN is operating on the shape of the value curve assuming regularly sampled observations.
+This project contains the implementation of a time-aware neural network (TAN) and workflows for testing its performance on the task of predicting periods of the timeseries datasets provided by Brian Powell.  
+Three datasets have been provided by Brian Powell for test and evalutaion:
+  * Synthetic Sinusoids (SS):     A set of sinusoid timeseries with irregular time spacing. 
+  * Synthetic Light Curves (SLC): A set of artifically generated timeseries imitating realistic lightcurves. 
+  * MIT Lightcurves (MIT-LC):     A set of actual lightcurves provided by MIT.
 
 ### Spectral Projection
 
-* This project utilizes a spectral projection as the first stage of data processing.
-* The analysis coefficients represent the projection of a signal onto a set of basis functions, implemented as a weighted inner product between the signal and the basis functions (evaluated at the time points).
-* There is a good summary of the equations implemented in this project in the appendix of [Witt & Schumann (2005)](https://www.researchgate.net/publication/200033740_Holocene_climate_variability_on_millennial_scales_recorded_in_Greenland_ice_cores).    
-* The spectral projection generates three features by computing weighted scalar products (equation A3) between the signal values and the sinusoid basis functions described by equation A5.
-* Futher mathematical detail can be found in [Foster (1996)](https://articles.adsabs.harvard.edu/pdf/1996AJ....112.1709F).
+* This project utilizes a spectral projection as the first stage of data processing. The spectral coefficients represent the projection of a signal onto a set of basis functions, 
+  implemented as a weighted inner product between the signal and the basis functions (evaluated at the time points). There is a good summary of the equations implemented in this project 
+  in the appendix of [Witt & Schumann (2005)](https://www.researchgate.net/publication/200033740_Holocene_climate_variability_on_millennial_scales_recorded_in_Greenland_ice_cores). 
+  The spectral projection generates three features by computing weighted scalar products (equation A3) between the signal values and the sinusoid basis functions described by equation A5.  
+  The magnitude of the projection is defined by equation A10.  Futher mathematical detail can be found in [Foster (1996)](https://articles.adsabs.harvard.edu/pdf/1996AJ....112.1709F).
+* The frequency (f) space is scaled such that the density of f valuse is constant across octaves.  
+  The f values are given by f[j] = f0 * pow( 2, j/N ), with j ranging over [0,N*M], where N is the number of f values per octave, 
+  M is the number of ocatves in the f range, and f0 is the lowest f value in the f range. 
 
 ## Conda environment
 
@@ -32,14 +35,11 @@ To compare the performance of these models on a (more) irregularly sampled datas
     >   * pip install lightkurve --upgrade
 
 ## Dataset Preparation
+* This project utilizes three datasets (sinusoid, synthetic, and MIT) which are located in the **cfg.platform.project_root** directory. The project_root directory on explore is: **/explore/nobackup/projects/ilab/data/astrotime**.
+* The raw sinusoid data can be found on explore at <project_root>/sinusoids/npz.  The script **.workflow/util/npz2nc.py** has been used to convert the .npz files to netcdf files in the  <project_root>/sinusoids/nc directory.
+* The raw synthetic light curves are styored on explore at **/explore/nobackup/people/bppowel1/timehascome/**. The script **.workflow/util/npz2nc.py** has been used to convert the .npz files to netcdf files in the <project_root>/synthetic directory.
+* The MIT light curves are stored in their original form at: **/explore/nobackup/people/bppowel1/mit_lcs/**. Methods in the class **astrotime.loaders.MIT.MITLoader** have been used to convert the lc txt files to netcdf files in the <project_root>/MIT directory.
 
-* The project data directory on explore is: **/explore/nobackup/projects/ilab/data/astrotime**.
-* This project uses a test and evaluation dataset of artificially generated light curves stored on adapt at **/explore/nobackup/people/bppowel1/timehascome/**.
-* The script **.workflow/util/npz2nc.py** has been used to convert the .npz files to netcdf format.
-* The netcdf files, which are used in this project's ML workflows, can be found at: **{data_dir}/cache/data/synthetic**.
-* The target dataset is a set of MIT light curves stored in their original form at: **/explore/nobackup/people/bppowel1/mit_lcs/**
-* The class astrotime.loaders.MIT.MITLoader contains methods for converting these files to netcdf format.
-* The MIT light curves in netCDF format are located at **{data_dir}/cache/data/MIT**
 
 ## Workflows
 For each of the datasets (sinusoid, synthetic, and MIT), three ML workflows are provided:
@@ -96,6 +96,7 @@ Here is a partial list of configuration parameters with typical default values. 
        train.results_path: "${platform.project_root}/results"        # Checkpoint and log files are saved under this directory
        train.weight_decay: 0.0                                       # Weight decay parameter for optimizer
        train.mode:  train                                            # execution mode: 'train' or 'valid'
+
 
 ## Working from the container
 

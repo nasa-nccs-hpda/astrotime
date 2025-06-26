@@ -10,7 +10,7 @@ from astrotime.models.cnn.cnn_baseline import get_model_from_cfg
 from astrotime.config.context import astrotime_initialize
 version = "MIT_period.octaves.pcross"
 
-@hydra.main(version_base=None, config_path="../config", config_name=version)
+@hydra.main(version_base=None, config_path="../../../config", config_name=version)
 def my_app(cfg: DictConfig) -> None:
 	device: torch.device = astrotime_initialize( cfg, version )
 	freq_space = embedding_space(cfg.transform, device)[1]

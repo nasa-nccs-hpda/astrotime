@@ -21,7 +21,7 @@ def downsample( x: np.ndarray, y: np.ndarray, sparsity: float, dim:int=0 ) -> Tu
 
 version = "desktop_period.analysis"
 overrides = []
-initialize(version_base=None, config_path="../config")
+initialize(version_base=None, config_path="../../../config")
 cfg = compose(config_name=version, overrides=overrides)
 device: torch.device = astrotime_initialize(cfg, version)
 

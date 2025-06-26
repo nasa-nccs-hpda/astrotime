@@ -10,14 +10,18 @@ from hydra import initialize, compose
 
 version = "MIT_period.octaves"
 overrides = []
-initialize(version_base=None, config_path="../config" )
+initialize(version_base=None, config_path="../../../config")
 cfg = compose( config_name=version, overrides=overrides )
 device: torch.device = astrotime_initialize(cfg,version)
 sector = cfg.data.sector_range[0]
+test_mode = "synthetic"
+cfg.data['arange'] = (0.01,0.1)
+cfg.data['hrange'] = (0.1,0.5)
+cfg.data['noise'] = 0.1
 refresh = True
 
 data_loader = MITOctavesLoader( cfg.data )
-data_loader.initialize( TSet.Train, test_mode=False )
+data_loader.initialize( TSet.Train, test_mode=test_mode )
 plot_freq_space, embedding_space_tensor = embedding_space( cfg.transform, device )
 octave_analysis  = OctaveAnalysisLayer( cfg.transform, embedding_space_tensor, device )
 
