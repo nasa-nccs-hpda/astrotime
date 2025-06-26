@@ -4,22 +4,18 @@
 
 ## Project Description
 
-This project contains the implementation of a set of time-aware neural network (TAN) and workflows for testing their performance on the task of predicting periods of light curve datasets (LC) provided by Brian Powell, utilizing a CNN network (BCN) provided by Brian Powell.
+This project contains the implementation of a set of time-aware neural network (TAN) and workflows for testing their performance on the task of predicting periods of the sinusoidal timeseries dataset (STD) provided by Brian Powell.   
+Its performance on this dataset (and a 50% reduced version) was compared with the performance of the baseline CNN network (BCN) provided by Brian Powell.
 The BCN operates directly on the timeseries values (without the time information).   The TAN utilizes the same network as the BCN but operates on a weighted projection of the timeseries onto a set of sinusoidal basis functions, which enfolds both value and time components.
 When tested on the unmodified STD, the BCN achieved a mean absolute error (MAE) of 0.03 and the TAN achieved a MAE of 0.01.   Because the STD is close to being regularly sampled, the BCN (which implicitly assumes regularly sampled data) performs reasonably well, and the addition of time information in the TAN yields a relatively small improvement.
 To compare the performance of these models on a (more) irregularly sampled dataset, we subsampled the STD by randomly removing 50% of the observations.   On the sparse STD the TAN again achieved a MAE of 0.02, but the BCN performance was greatly degraded, resulting in a MAE of 0.25.   These results verify that the TAN is effectively using the time information of the dataset, whereas the BCN is operating on the shape of the value curve assuming regularly sampled observations.
 
 ### Spectral Projection
 
-* This project utilizes a spectral projection as the first stage of data processing.  
-* The analysis coefficients represent the projection of a signal onto a set of basis functions, implemented as a weighted inner product between the signal and the basis functions (evaluated at the time points).  
-
-### Model Equations
-
-* There is a good summary of the equations implemented in this project in the appendix of [Witt & Schumann (2005)](https://www.researchgate.net/publication/200033740_Holocene_climate_variability_on_millennial_scales_recorded_in_Greenland_ice_cores).   
-* The wavelet synthesis transform generates two features described by equations A10 and A11.  
-* The wavelet analysis transform generates three features by computing weighted scalar products (equation A3) between the signal values and the sinusoid basis functions described by equation A5. 
-* Equation A7 shows the relationship between the analysis and synthesis coefficients.
+* This project utilizes a spectral projection as the first stage of data processing.
+* The analysis coefficients represent the projection of a signal onto a set of basis functions, implemented as a weighted inner product between the signal and the basis functions (evaluated at the time points).
+* There is a good summary of the equations implemented in this project in the appendix of [Witt & Schumann (2005)](https://www.researchgate.net/publication/200033740_Holocene_climate_variability_on_millennial_scales_recorded_in_Greenland_ice_cores).    
+* The spectral projection generates three features by computing weighted scalar products (equation A3) between the signal values and the sinusoid basis functions described by equation A5.
 * Futher mathematical detail can be found in [Foster (1996)](https://articles.adsabs.harvard.edu/pdf/1996AJ....112.1709F).
 
 ## Conda environment
@@ -46,11 +42,11 @@ To compare the performance of these models on a (more) irregularly sampled datas
 * The MIT light curves in netCDF format are located at **{data_dir}/cache/data/MIT**
 
 ## Workflows
-For each of the datasets (MIT and synthetic), three ML workflows are provided:
+For each of the datasets (sinusoid, synthetic, and MIT), three ML workflows are provided:
 
-*   _train_ (**.workflow/train-baseline-cnn.py**):  This workflow runs the baseline CNN (developed by Brian Powell) which takes only timeseries value data as input.
-*   _eval_ (**.workflow/wavelet-synthesis-cnn.py**): This workflow runs the same baseline CNN operating on a weighted wavelet z-transform, which enfolds both the time and value data from the timeseries. 
-*   _peakfinder_ (**.workflow/wavelet-analysis-cnn.py**): This workflow runs the same baseline CNN operating a projection of the timeseries onto a set of sinusoid basis functions, which enfolds both the time and value data from the timeseries. 
+*   _train_ (**.workflow/train-baseline-cnn.py**):        Runs the TAN training workflow.
+*   _eval_ (**.workflow/wavelet-synthesis-cnn.py**):      Runs the TAN validation/test workflow.
+*   _peakfinder_ (**.workflow/wavelet-analysis-cnn.py**): Runs the peakfinder validation/test workflow.
 
 The *_small versions execute the workflows on a subset (1/10) of the full training dataset.
 The workflows save checkpoint files at the end of each epoch.  By default the model is initialized with any existing checkpoint file at the begining of script execution.  To

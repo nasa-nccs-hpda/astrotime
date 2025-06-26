@@ -23,7 +23,7 @@ class TrainingFilter(object):
 			return self.parms[key]
 		return super(TrainingFilter, self).__getattribute__(key)
 
-	def apply(self, x: Array, y: Array, axis: int) -> Tuple[Array,Array]:
+	def apply(self, x: Array, y: Array, dim: int) -> Tuple[Array,Array]:
 		raise NotImplemented(f"Abstract method 'apply' of base class {type(self).__name__} not implemented")
 
 class RandomDownsample(TrainingFilter):
@@ -48,6 +48,22 @@ class RandomDownsample(TrainingFilter):
 		if type(x) is Tensor: return self._t_downsample(x,y,dim)
 		else:                 return self._downsample(x,y,dim)
 
+class Norm(TrainingFilter):
+
+	def __init__(self, mparms: Dict[str, Any], **custom_parms):
+		super().__init__(mparms,**custom_parms)
+
+	@exception_handled
+	def apply(self, x: Array, y: Array, dim: int) -> Tuple[Array,Array]:
+		if type(x) is Tensor:
+			if   self.norm == "mean":  return x,  y/y.mean(dim=1,keepdim=True)
+			elif self.norm == "std":   return x,  (y-y.mean(dim=1,keepdim=True))/y.std(dim=1,keepdim=True)
+			elif self.norm == "max":   return x,  y/y.max(dim=1,keepdim=True)
+		else:
+			if   self.norm == "mean":  return x,  y/y.mean(axis=1,keepdims=True)
+			elif self.norm == "std":   return x,  (y-y.mean(axis=1,keepdims=True))/y.std(axis=1,keepdims=True)
+			elif self.norm == "max":   return x,  y/y.max(axis=1,keepdims=True)
+		raise Exception( f"Unsupported normalization type: {self.ntype}")
 
 # class GaussianNoise(TrainingFilter):
 #

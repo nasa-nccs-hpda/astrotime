@@ -2,6 +2,7 @@ from typing import List, Optional, Dict, Type, Tuple, Union
 from omegaconf import DictConfig
 from .checkpoints import CheckpointManager
 from astrotime.util.tensor_ops import check_nan
+from astrotime.trainers.filters import TrainingFilter
 from astrotime.loaders.base import Loader, RDict
 from astrotime.encoders.embedding import EmbeddingLayer
 import time, sys, torch, logging, numpy as np
@@ -25,7 +26,7 @@ def tnorm(x: Tensor, dim: int=0) -> Tensor:
 
 class IterativeTrainer(object):
 
-    def __init__(self, cfg: DictConfig, device: torch.device, loader: Loader, model: nn.Module, embedding: EmbeddingLayer, loss: nn.Module = nn.L1Loss() ):
+    def __init__(self, cfg: DictConfig, device: torch.device, loader: Loader, model: nn.Module, embedding: EmbeddingLayer, loss: nn.Module = nn.L1Loss(), transforms: List[TrainingFilter] = None ):
         self.device: torch.device = device
         self.loader: Loader = loader
         self.embedding = embedding
@@ -42,6 +43,7 @@ class IterativeTrainer(object):
         self.train_state = None
         self.global_time = None
         self.exec_stats = []
+        self._transforms: List[TrainingFilter] = transforms if transforms is not None else []
         if model is not None:
             for module in model.modules(): self.add_callbacks(module)
 
@@ -95,15 +97,18 @@ class IterativeTrainer(object):
 
     def encode_batch(self, batch: RDict) -> TRDict:
         self.log.debug( f"encode_batch: {list(batch.keys())}")
+        t,y = batch.pop('t'), batch.pop('y')
+        for t in self._transforms:
+            t,y = t.apply(t,y,dim=1)
         p: Tensor = torch.from_numpy(batch.pop('period')).to(self.device)
-        z: Tensor = self.to_tensor(batch.pop('t'), batch.pop('y'))
+        z: Tensor = self.to_tensor(t,y)
         return dict( z=z, target=1/p, **batch )
 
     def to_tensor(self, x: np.ndarray, y: np.ndarray) -> Tensor:
         with (self.device):
             Y: Tensor = torch.FloatTensor(y).to(self.device)
             X: Tensor = torch.FloatTensor(x).to(self.device)
-            Y = tnorm(Y, dim=1)
+       #     Y = tnorm(Y, dim=1)
             return torch.stack((X,Y), dim=1)
 
     def get_next_batch(self) -> Optional[TRDict]:

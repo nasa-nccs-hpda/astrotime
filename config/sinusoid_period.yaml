@@ -1,7 +1,7 @@
 defaults:
   - platform: "explore"
-  - train: "synthetic_cnn"
-  - transform: "synthetic"
+  - train: "sinusoid_cnn"
+  - transform: "sinusoid"
   - data: "sinusoids"
   - model: "wp_cnn"
   - _self_
