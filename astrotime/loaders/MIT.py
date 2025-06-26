@@ -369,7 +369,7 @@ class MITElementLoader(ElementLoader):
 			nanmask = np.isnan(dsy.values)
 			dst: xa.DataArray = self.data[TIC + ".time"]
 			y: np.ndarray = dsy.values[~nanmask]
-			train_data = dict( t=dst.values[~nanmask], y=y/y.mean(), period=period, sn=sn, sector=self.ifile, tic=TIC )
+			train_data = dict( t=dst.values[~nanmask], y=y, period=period, sn=sn, sector=self.ifile, tic=TIC )
 			return train_data
 		return None
 

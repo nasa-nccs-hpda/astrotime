@@ -47,7 +47,7 @@ class SyntheticElementLoader(ElementLoader):
 			dsy: xa.DataArray = self.data[ f's{eidx}' ]
 			dst: xa.DataArray = self.data[ f't{eidx}' ]
 			y: np.ndarray = dsy.values
-			return dict(t=dst.values, y=y/y.mean(), p=dsy.attrs["period"], type=dsy.attrs["type"])
+			return dict(t=dst.values, y=y, p=dsy.attrs["period"], type=dsy.attrs["type"])
 		except KeyError as ex:
 			print(f"\n    Error getting elem-{elem_index} from dataset({self.dspath}): vars = {list(self.data.data_vars.keys())}\n")
 			raise ex

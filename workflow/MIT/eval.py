@@ -3,6 +3,7 @@ from omegaconf import DictConfig
 from torch import nn
 from astrotime.util.series import TSet
 from astrotime.encoders.wavelet import WaveletAnalysisLayer, embedding_space
+from astrotime.trainers.filters import RandomDownsample, Norm
 from astrotime.trainers.iterative_trainer import IterativeTrainer
 from astrotime.trainers.loss import ExpLoss, ExpU
 from astrotime.models.cnn.cnn_baseline import get_model_from_cfg
@@ -21,7 +22,7 @@ def my_app(cfg: DictConfig) -> None:
 	embedding = WaveletAnalysisLayer( 'analysis', cfg.transform, embedding_space_tensor, device )
 	model: nn.Module = get_model_from_cfg( cfg.model, device, embedding, ExpU(cfg.data) )
 
-	trainer = IterativeTrainer( cfg.train, device, data_loader, model, embedding, ExpLoss(cfg.data) )
+	trainer = IterativeTrainer( cfg.train, device, data_loader, model, embedding, ExpLoss(cfg.data), [ Norm(cfg.transform) ] )
 
 	for cpversion in [None, "synthetic_period", version]:
 		print( f" ---- Evaluating model, saved weights version = {cpversion} ---- ")
