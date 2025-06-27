@@ -86,7 +86,7 @@ class SinusoidElementLoader(ElementLoader):
 				self.current_batch = self.get_batch(batch_idx)
 				self.batch_index = batch_idx
 			ib, b = elem_index % self.batch_size, self.current_batch
-			return dict(t=b['t'][ib], y=b['y'][ib], p=b['period'][ib], type=b['stype'][ib])
+			return dict(t=b['t'][ib], y=b['y'][ib], p=b['period'][ib])
 		except IndexError:
 			return None
 
