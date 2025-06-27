@@ -312,9 +312,9 @@ class MITElementLoader(ElementLoader):
 
 	@property
 	def cache_path(self) -> str:
-		os.makedirs(self.cfg.cache_path, exist_ok=True)
+		os.makedirs(self.cfg.dataset_root, exist_ok=True)
 		isector = self.cfg.sector_range[0] + self.file_sort[self.ifile]
-		return f"{self.cfg.cache_path}/sector-{isector}.nc"
+		return f"{self.cfg.dataset_root}/sector-{isector}.nc"
 
 	def _load_cache_dataset( self ):
 		dspath: str = self.cache_path
