@@ -19,7 +19,14 @@ Three datasets have been provided by Brian Powell for test and evalutaion:
   The magnitude of the projection is defined by equation A10.  Futher mathematical detail can be found in [Foster (1996)](https://articles.adsabs.harvard.edu/pdf/1996AJ....112.1709F).
 * The frequency (f) space is scaled such that the density of f valuse is constant across octaves.  
   The f values are given by f[j] = f0 * pow( 2, j/N ), with j ranging over [0,N*M], where N is the number of f values per octave, 
-  M is the number of ocatves in the f range, and f0 is the lowest f value in the f range. 
+  M is the number of octaves in the f range, and f0 is the lowest value in the f range. 
+
+### Learning Model
+* This project utilizes a convolutional neural network (CNN) with 24 layers.  For each of the datasets, the input to the network is the spectral projection of each light curve (LC) 
+   and the output is the frequency of a periodic component of the LC, trained using the target frequency provided in the dataset for each LC.  
+* The output layer of the network is dense, with an exponential activation function defined by the equation y = f0 * (pow(2, x) - 1), where f0 is the lowest value in the f range. 
+  In order to account for the very large dynamic range of the target frequency spectrum, a custom loss function is used, defined by the equation 
+  loss = abs( log2( (yn + f0) / (yt + f0) ) ), where yn is the network output and yt is the target frequency.
 
 ## Conda environment
 
@@ -27,7 +34,7 @@ Three datasets have been provided by Brian Powell for test and evalutaion:
 * If mamba is not available, install [miniforge](https://github.com/conda-forge/miniforge) (or load mamba module)
 * Execute the following to set up a conda environment for astrotime:
 
-### Torch Environment (Current)
+### Torch Environment:
 
     >   * mamba create -n astrotime.pt ninja python=3.10
     >   * mamba activate astrotime
@@ -37,7 +44,7 @@ Three datasets have been provided by Brian Powell for test and evalutaion:
 ## Dataset Preparation
 * This project utilizes three datasets (sinusoid, synthetic, and MIT) which are located in the **cfg.platform.project_root** directory. The project_root directory on explore is: **/explore/nobackup/projects/ilab/data/astrotime**.
 * The raw sinusoid data can be found on explore at <project_root>/sinusoids/npz.  The script **.workflow/util/npz2nc.py** has been used to convert the .npz files to netcdf files in the  <project_root>/sinusoids/nc directory.
-* The raw synthetic light curves are styored on explore at **/explore/nobackup/people/bppowel1/timehascome/**. The script **.workflow/util/npz2nc.py** has been used to convert the .npz files to netcdf files in the <project_root>/synthetic directory.
+* The raw synthetic light curves are stored on explore at **/explore/nobackup/people/bppowel1/timehascome/**. The script **.workflow/util/npz2nc.py** has been used to convert the .npz files to netcdf files in the <project_root>/synthetic directory.
 * The MIT light curves are stored in their original form at: **/explore/nobackup/people/bppowel1/mit_lcs/**. Methods in the class **astrotime.loaders.MIT.MITLoader** have been used to convert the lc txt files to netcdf files in the <project_root>/MIT directory.
 
 
@@ -48,7 +55,6 @@ For each of the datasets (sinusoid, synthetic, and MIT), three ML workflows are 
 *   _eval_ (**.workflow/wavelet-synthesis-cnn.py**):      Runs the TAN validation/test workflow.
 *   _peakfinder_ (**.workflow/wavelet-analysis-cnn.py**): Runs the peakfinder validation/test workflow.
 
-The *_small versions execute the workflows on a subset (1/10) of the full training dataset.
 The workflows save checkpoint files at the end of each epoch.  By default the model is initialized with any existing checkpoint file at the begining of script execution.  To
 execute the script with a new set of checkpoints (while keeping the old ones), create a new script with a different value of the *version* parameter 
 (and a new defaults hydra yaml file with the same name in the config dir).  
@@ -58,10 +64,10 @@ execute the script with a new set of checkpoints (while keeping the old ones), c
 The workflows are configured using [hydra](https://hydra.cc/docs/intro/).
 * All hydra yaml configuration files are found under **.config**.
 * The workflow configurations can be modified at runtime as [supported by hydra](https://hydra.cc/docs/tutorials/basic/your_first_app/simple_cli/).
-* For example, the following command runs the baseline workflow on gpu 3 with random initialization (i.e. ignoring & overwriting any existing checkpoints):
-    >   python workflow/train-baseline-cnn.py platform.gpu=3 train.refresh_state=True
+* For example, the following command runs the synthetic dataset training workflow on gpu 3 with random initialization (i.e. ignoring & overwriting any existing checkpoints):
+    >   python workflow/synthetic/train.py platform.gpu=3 train.refresh_state=True
 * To run validation (no training), execute:
-    >   python workflow/train-baseline-cnn.py train.mode=valid platform.gpu=0
+    >   python workflow/synthetic/train.py train.mode=valid platform.gpu=0
 
 ### Configuration Parameters
 
