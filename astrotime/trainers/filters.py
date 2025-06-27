@@ -56,13 +56,13 @@ class Norm(TrainingFilter):
 	@exception_handled
 	def apply(self, x: Array, y: Array, dim: int) -> Tuple[Array,Array]:
 		if type(x) is Tensor:
-			if   self.norm == "mean":  return x,  y/y.mean(dim=1,keepdim=True)
-			elif self.norm == "std":   return x,  (y-y.mean(dim=1,keepdim=True))/y.std(dim=1,keepdim=True)
-			elif self.norm == "max":   return x,  y/y.max(dim=1,keepdim=True)
+			if   self.norm == "mean":  return x,  y/y.mean(dim=dim,keepdim=True)
+			elif self.norm == "std":   return x,  (y-y.mean(dim=dim,keepdim=True))/y.std(dim=dim,keepdim=True)
+			elif self.norm == "max":   return x,  y/y.max(dim=dim,keepdim=True)
 		else:
-			if   self.norm == "mean":  return x,  y/y.mean(axis=1,keepdims=True)
-			elif self.norm == "std":   return x,  (y-y.mean(axis=1,keepdims=True))/y.std(axis=1,keepdims=True)
-			elif self.norm == "max":   return x,  y/y.max(axis=1,keepdims=True)
+			if   self.norm == "mean":  return x,  y/y.mean(axis=dim,keepdims=True)
+			elif self.norm == "std":   return x,  (y-y.mean(axis=dim,keepdims=True))/y.std(axis=dim,keepdims=True)
+			elif self.norm == "max":   return x,  y/y.max(axis=dim,keepdims=True)
 		raise Exception( f"Unsupported normalization type: {self.ntype}")
 
 # class GaussianNoise(TrainingFilter):
