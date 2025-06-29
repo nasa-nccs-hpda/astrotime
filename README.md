@@ -39,7 +39,7 @@ Three datasets have been provided by Brian Powell for test and evalutaion:
     >   * mamba create -n astrotime.pt ninja python=3.10
     >   * mamba activate astrotime
     >   * pip install torch jupyterlab==4.0.13 ipywidgets==7.8.4 cuda-python jupyterlab_widgets ipykernel==6.29 ipympl ipython==8.26 xarray netCDF4 pygam wotan astropy statsmodels transitleastsquares scikit-learn hydra-core rich 
-    >   * pip install lightkurve --upgrade
+    >   * pip install diffusers lightkurve --upgrade
 
 ## Dataset Preparation
 * This project utilizes three datasets (sinusoid, synthetic, and MIT) which are located in the **cfg.platform.project_root** directory. The project_root directory on explore is: **/explore/nobackup/projects/ilab/data/astrotime**.

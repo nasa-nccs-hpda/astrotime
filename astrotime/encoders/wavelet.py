@@ -98,19 +98,23 @@ class WaveletAnalysisLayer(EmbeddingLayer):
 		t0 = time.time()
 		self.init_log(f"WaveletAnalysisLayer shapes: ts{list(ts.shape)} ys{list(ys.shape)}")
 		slen: int = ys.shape[1]
-		tau = 0.5 * (ts[:, slen // 2] + ts[:, slen // 2 + 1])
-		tau: Tensor = tau[:, None, None]
 		omega = self._embedding_space * 2.0 * math.pi
 		omega_: Tensor = omega[None, :, None]  # broadcast-to(self.batch_size,self.nfreq,slen)
 		ts: Tensor = ts[:, None, :]  # broadcast-to(self.batch_size,self.nfreq,slen)
-		dt: Tensor = (ts - tau)
-		self.init_log(f" tau{list(tau.shape)} dt{list(dt.shape)}")
-		dz: Tensor = omega_ * dt
-		weights: Tensor = torch.exp(-self.C * dz ** 2) if (self.cfg.decay_factor > 0.0) else 1.0
-		sum_w: Tensor = torch.sum(weights, dim=-1) if (self.cfg.decay_factor > 0.0) else 1.0
 
-		def w_prod( x0: Tensor, x1: Tensor) -> Tensor:
-			return torch.sum(weights * x0 * x1, dim=-1) / sum_w
+		if self.C > 0.0:
+			tau = 0.5 * (ts[:, slen // 2] + ts[:, slen // 2 + 1])
+			tau: Tensor = tau[:, None, None]
+			dt: Tensor = (ts - tau)
+			dz: Tensor = omega_ * dt
+			weights: Tensor = torch.exp(-self.C * dz ** 2)
+			sum_w: Tensor = torch.sum(weights, dim=-1)
+			def w_prod(x0: Tensor, x1: Tensor) -> Tensor:
+				return torch.sum(weights * x0 * x1, dim=-1) / sum_w
+		else:
+			dz: Tensor = omega_ * ts
+			def w_prod(x0: Tensor, x1: Tensor) -> Tensor:
+				return torch.sum( x0 * x1, dim=-1)
 
 		pw1: Tensor = torch.sin(dz)
 		pw2: Tensor = torch.cos(dz)
