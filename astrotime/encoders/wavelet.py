@@ -3,7 +3,7 @@ import torch, math, copy
 from astropy.utils.masked.function_helpers import ones_like
 
 from astrotime.util.math import shp
-from typing import List, Tuple, Mapping
+from typing import List, Tuple, Mapping, Callable
 from omegaconf import DictConfig, OmegaConf
 from torch import Tensor, device, nn
 from .embedding import EmbeddingLayer
@@ -37,6 +37,14 @@ def embedding_space( cfg: DictConfig, device: device ) -> Tuple[np.ndarray,Tenso
 	tfspace = torch.FloatTensor( nfspace ).to(device)
 	return nfspace, tfspace
 
+def spectral_projection(x: Tensor, y: Tensor, prod: Callable) -> Tensor:
+	pw1: Tensor = torch.sin(x)
+	pw2: Tensor = torch.cos(x)
+	p1: Tensor = prod(y, pw1)
+	p2: Tensor = prod(y, pw2)
+	mag: Tensor =  torch.sqrt( p1**2 + p2**2 )
+	return mag
+
 def accum_folded_harmonics(cfg: DictConfig, smag: Tensor, dim: int) -> List[Tensor]:
 	xs, ns = copy.deepcopy(smag), torch.ones_like(smag)
 	for iH in range(2, cfg.maxh + 1):
@@ -56,8 +64,7 @@ def folded_harmonic_features(cfg: DictConfig, smag: Tensor, dim: int) -> List[Te
 	return features
 
 def fold_harmonics(cfg: DictConfig, smag: Tensor, dim: int) -> List[Tensor]:
-	if cfg.accumh:  return accum_folded_harmonics(   cfg, smag, dim )
-	else:           return folded_harmonic_features( cfg, smag, dim )
+	return folded_harmonic_features( cfg, smag, dim )
 
 class WaveletAnalysisLayer(EmbeddingLayer):
 
@@ -116,14 +123,15 @@ class WaveletAnalysisLayer(EmbeddingLayer):
 			def w_prod(x0: Tensor, x1: Tensor) -> Tensor:
 				return torch.sum( x0 * x1, dim=-1)
 
-		pw1: Tensor = torch.sin(dz)
-		pw2: Tensor = torch.cos(dz)
-		p1: Tensor = w_prod(ys, pw1)
-		p2: Tensor = w_prod(ys, pw2)
-		mag: Tensor =  torch.sqrt( p1**2 + p2**2 )
+		mag: Tensor =  spectral_projection( dz, ys, w_prod )
+
+		fs = self._embedding_space[:, :, None]
+		ps = 1.0/self._embedding_space[:, None, :]
+		dzs = fs * ps * 2.0 * math.pi
+		mag1: Tensor = spectral_projection(dzs, mag, w_prod)
 
 		features = fold_harmonics(self.cfg, mag, 1)
-		embedding: Tensor = torch.stack( features, dim=1)
+		embedding: Tensor = torch.stack( [mag1] + features, dim=1)
 		self.init_log(f" Completed embedding{list(embedding.shape)} in {elapsed(t0):.5f} sec: nfeatures={embedding.shape[1]}")
 		self.init_state = False
 		return embedding
@@ -134,7 +142,7 @@ class WaveletAnalysisLayer(EmbeddingLayer):
 
 	@property
 	def nfeatures(self):
-		return 2 if self.cfg.accumh else self.cfg.maxh
+		return self.cfg.maxh + 1
 
 	def magnitude(self, embedding: Tensor) -> np.ndarray:
 		self.init_log(f" -> Embedding magnitude{embedding.shape}")
