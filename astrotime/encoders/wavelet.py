@@ -126,15 +126,15 @@ class WaveletAnalysisLayer(EmbeddingLayer):
 
 		mag: Tensor =  spectral_projection( dz, ys, w_prod )
 
-		fs = self._embedding_space[None, :, None]
-		ps = 1.0/self._embedding_space[None, None, :]
-		dzs = fs * ps * 2.0 * math.pi
-		spmag = mag[:, None, :]
-
-		mag1: Tensor = spectral_projection(dzs, spmag, w_prod)
+		# fs = self._embedding_space[None, :, None]
+		# ps = 1.0/self._embedding_space[None, None, :]
+		# dzs = fs * ps * 2.0 * math.pi
+		# spmag = mag[:, None, :]
+		#
+		# mag1: Tensor = spectral_projection(dzs, spmag, w_prod)
 
 		features = fold_harmonics(self.cfg, mag, 1)
-		embedding: Tensor = torch.stack( [mag1] + features, dim=1)
+		embedding: Tensor = torch.stack( features, dim=1)
 		self.init_log(f" Completed embedding{list(embedding.shape)} in {elapsed(t0):.5f} sec: nfeatures={embedding.shape[1]}")
 		self.init_state = False
 		return embedding
@@ -145,7 +145,7 @@ class WaveletAnalysisLayer(EmbeddingLayer):
 
 	@property
 	def nfeatures(self):
-		return self.cfg.maxh + 1
+		return self.cfg.maxh
 
 	def magnitude(self, embedding: Tensor) -> np.ndarray:
 		self.init_log(f" -> Embedding magnitude{embedding.shape}")
