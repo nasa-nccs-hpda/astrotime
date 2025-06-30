@@ -125,9 +125,10 @@ class WaveletAnalysisLayer(EmbeddingLayer):
 
 		mag: Tensor =  spectral_projection( dz, ys, w_prod )
 
-		fs = self._embedding_space[:, :, None]
-		ps = 1.0/self._embedding_space[:, None, :]
+		fs = self._embedding_space[None, :, None]
+		ps = 1.0/self._embedding_space[None, None, :]
 		dzs = fs * ps * 2.0 * math.pi
+		print( f"dzs{list(dzs.shape)} mag{list(mag.shape)} fs{list(fs.shape)} ps{list(ps.shape)} embedding_space{list(self._embedding_space.shape)}")
 		mag1: Tensor = spectral_projection(dzs, mag, w_prod)
 
 		features = fold_harmonics(self.cfg, mag, 1)
