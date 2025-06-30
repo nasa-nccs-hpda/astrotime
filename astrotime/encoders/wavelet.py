@@ -38,10 +38,11 @@ def embedding_space( cfg: DictConfig, device: device ) -> Tuple[np.ndarray,Tenso
 	return nfspace, tfspace
 
 def spectral_projection(x: Tensor, y: Tensor, prod: Callable) -> Tensor:
+	yn: Tensor = stdnorm(y,-1)
 	pw1: Tensor = torch.sin(x)
 	pw2: Tensor = torch.cos(x)
-	p1: Tensor = prod(y, pw1)
-	p2: Tensor = prod(y, pw2)
+	p1: Tensor = prod(yn, pw1)
+	p2: Tensor = prod(yn, pw2)
 	mag: Tensor =  torch.sqrt( p1**2 + p2**2 )
 	return mag
 
