@@ -18,10 +18,10 @@ class EmbeddingLayer(Transform):
 	def init_log(self, msg: str):
 		if self.init_state: self.log.info(msg)
 
-	def forward(self, input: torch.Tensor ) -> torch.Tensor:
+	def forward(self, batch: torch.Tensor ) -> torch.Tensor:
 		self.log.debug(f"WaveletEmbeddingLayer shapes:")
-		xs: torch.Tensor = input[:, 0, :]
-		ys: torch.Tensor = input[:, 1:, :]
+		xs: torch.Tensor = batch[:, 0, :]
+		ys: torch.Tensor = batch[:, 1:, :]
 		self._result: torch.Tensor = self.embed(xs,ys)
 		self.init_state = False
 		return self._result
