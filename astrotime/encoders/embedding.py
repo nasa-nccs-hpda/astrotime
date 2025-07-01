@@ -13,7 +13,6 @@ class EmbeddingLayer(Transform):
 		self._embedding_space: Tensor = embedding_space.to(self.device)
 		self.init_state: bool = True
 		self._result: torch.Tensor = None
-		self.meanval = None
 
 	def init_log(self, msg: str):
 		if self.init_state: self.log.info(msg)

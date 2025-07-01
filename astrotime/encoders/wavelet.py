@@ -20,7 +20,7 @@ def pnorm1( x: Tensor ) -> Tensor:
 	x = torch.where( x < 0.0, torch.zeros_like(x), x )
 	return x / torch.sum( x, dim=-1, keepdim=True )
 
-def tnorm(x: Tensor, dim: int=0) -> Tensor:
+def tnorm(x: Tensor, dim: int=-1) -> Tensor:
 	m: Tensor = x.mean( dim=dim, keepdim=True)
 	s: Tensor = torch.std( x, dim=dim, keepdim=True)
 	return (x - m) / s
@@ -39,13 +39,13 @@ def embedding_space( cfg: DictConfig, device: device ) -> Tuple[np.ndarray,Tenso
 	return nfspace, tfspace
 
 def spectral_projection(x: Tensor, y: Tensor, prod: Callable) -> Tensor:
-	yn: Tensor = tnorm(y,-1)
+	yn: Tensor = tnorm(y)
 	pw1: Tensor = torch.sin(x)
 	pw2: Tensor = torch.cos(x)
 	p1: Tensor = prod(yn, pw1)
 	p2: Tensor = prod(yn, pw2)
 	mag: Tensor =  torch.sqrt( p1**2 + p2**2 )
-	return mag
+	return tnorm(mag)
 
 def accum_folded_harmonics(cfg: DictConfig, smag: Tensor, dim: int) -> List[Tensor]:
 	xs, ns = copy.deepcopy(smag), torch.ones_like(smag)
@@ -99,9 +99,7 @@ class WaveletAnalysisLayer(EmbeddingLayer):
 			nsubbatches = math.ceil(ys.shape[0]/self.subbatch_size)
 			subbatches = [ self.embed_subbatch( *self.sbatch(ts,ys,i), **kwargs ) for i in range(nsubbatches) ]
 			result = torch.concat( subbatches, dim=0 )
-		if self.meanval is None:
-			self.meanval = torch.mean(result)
-		return result/self.meanval
+		return result
 
 	def embed_subbatch(self, ts: torch.Tensor, ys: torch.Tensor, **kwargs ) -> Tensor:
 		t0 = time.time()
