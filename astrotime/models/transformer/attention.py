@@ -37,6 +37,8 @@ class MultiHeadAttention(nn.Module):
         self.log.debug(f" ----> s0: embedding{shp(embedding)}")
 
         result = self.packed_proj(embedding)
+        check_nan(f"packed_proj", result)
+
         query, key, value = torch.chunk(result, 3, dim=-1)
 
         self.log.debug(f" ----> s1: query{shp(query)} key{shp(key)} value{shp(value)}")
