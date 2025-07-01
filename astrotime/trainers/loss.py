@@ -1,6 +1,7 @@
 from torch import nn
 import torch, math, numpy as np
 from typing import List, Tuple, Mapping
+from astrotime.util.tensor_ops import check_nan
 from omegaconf import DictConfig
 
 class HLoss(nn.Module):
@@ -17,7 +18,9 @@ class ExpU(nn.Module):
 		self.f0: float = cfg.base_freq
 
 	def forward(self, x: torch.Tensor) -> torch.Tensor:
+		check_nan('ExpU-input', x)
 		result = self.f0 * (torch.pow(2, x) - 1)
+		check_nan('ExpU-result', result)
 		return result
 
 class ExpLoss(nn.Module):
