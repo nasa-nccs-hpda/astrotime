@@ -35,7 +35,7 @@ class IterativeTrainer(object):
 		self.embedding = SpectralProjection('spectral_projection', cfg.transform, self.embedding_space_tensor, device )
 		self.cfg: DictConfig = cfg.train
 		self.transformer: nn.Module = MultiHeadAttention( cfg.model, device )
-		self.model: nn.Sequential = nn.Sequential( self.embedding, self.transformer, ExpU(cfg.data) ).to(device)
+		self.model: nn.Sequential = nn.Sequential( self.transformer, ExpU(cfg.data) ).to(device)
 		self.optimizer: optim.Optimizer = None
 		self.log = logging.getLogger()
 		self.loss: nn.Module = ExpLoss(cfg.data)
@@ -150,7 +150,8 @@ class IterativeTrainer(object):
 						if batch['z'].shape[0] > 0:
 							# check_nan('batch', batch['z'])
 							self.global_time = time.time()
-							result: Tensor = self.model(  batch['z'] )
+							spectra: Tensor = self.embedding( batch['z'] )
+							result: Tensor = self.model( spectra, spectra, spectra )
 							# check_nan('model', batch['z'])
 							if result.squeeze().ndim > 0:
 								self.log.debug(f"result{list(result.shape)} range: [{result.min().cpu().item()} -> {result.max().cpu().item()}]")
