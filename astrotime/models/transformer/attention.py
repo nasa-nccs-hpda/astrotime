@@ -1,4 +1,4 @@
-import torch
+import torch, logging
 import torch.nn as nn
 from astrotime.util.math import shp
 import torch.nn.functional as F
@@ -6,13 +6,11 @@ from omegaconf import DictConfig, OmegaConf
 from torch import Tensor, device
 
 class MultiHeadAttention(nn.Module):
-    """
-    Computes multi-head attention. Supports nested or padded tensors.
-    """
 
     def __init__( self, cfg: DictConfig, device: device, embedding_size: int ):
         factory_kwargs = {"device": device, "dtype": None}
         super().__init__()
+        self.log = logging.getLogger()
         self.cfg = cfg
         self.nheads: int = cfg.nheads
         self.dropout: float = cfg.dropout
