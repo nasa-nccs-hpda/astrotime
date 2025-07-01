@@ -16,11 +16,10 @@ class MultiHeadAttention(nn.Module):
         self.cfg = cfg
         self.nheads: int = cfg.nheads
         self.dropout: float = cfg.dropout
-        self._qkv_same_embed_dim: bool = cfg.E_q == cfg.E_k and cfg.E_q == cfg.E_v
-
-        self.packed_proj = nn.Linear( embedding_size, cfg.E_hidden * 3, bias=cfg.bias, **factory_kwargs )
-        self.out_proj: nn.Module = nn.Linear(cfg.E_hidden, cfg.E_out, bias=cfg.bias, **factory_kwargs)
         self.E_head: int = cfg.E_head
+        E_total = self.nheads * self.E_head
+        self.packed_proj = nn.Linear( embedding_size, E_total * 3, bias=cfg.bias, **factory_kwargs )
+        self.out_proj: nn.Module = nn.Linear(E_total, cfg.E_out, bias=cfg.bias, **factory_kwargs)
         self.bias: bool = cfg.bias
 
     def forward( self, embedding: Tensor ) -> Tensor:
