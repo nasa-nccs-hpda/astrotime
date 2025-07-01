@@ -33,7 +33,7 @@ class IterativeTrainer(object):
 		self.embedding_space_array, self.embedding_space_tensor = embedding_space(cfg.transform, device)
 		self.loader: Loader = loader
 		self.embedding = SpectralProjection('spectral_projection', cfg.transform, self.embedding_space_tensor, device )
-		self.cfg: DictConfig = cfg
+		self.cfg: DictConfig = cfg.train
 		self.transformer: nn.Module = MultiHeadAttention( cfg.model, device )
 		self.model: nn.Sequential = nn.Sequential( self.embedding, self.transformer, ExpU(cfg.data) ).to(device)
 		self.optimizer: optim.Optimizer = None
