@@ -11,7 +11,7 @@ from astrotime.config.context import astrotime_initialize
 from astrotime.loaders.MIT import MITElementLoader
 version = "MIT_period"
 
-@hydra.main(version_base=None, config_path="../../config", config_name=version)
+@hydra.main(version_base=None, config_path="../../../config", config_name=version)
 def my_app(cfg: DictConfig) -> None:
 	device: torch.device = astrotime_initialize( cfg, version+".eval" )
 	cfg.data['snr_min'] = 80.0

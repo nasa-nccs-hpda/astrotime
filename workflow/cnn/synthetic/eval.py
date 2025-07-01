@@ -13,7 +13,7 @@ from astrotime.loaders.synthetic import SyntheticElementLoader
 
 version = "synthetic_period"
 
-@hydra.main(version_base=None, config_path="../../config", config_name=version)
+@hydra.main(version_base=None, config_path="../../../config", config_name=version)
 def my_app(cfg: DictConfig) -> None:
 	device: torch.device = astrotime_initialize( cfg, version+".eval" )
 	embedding_space_array, embedding_space_tensor = embedding_space(cfg.transform, device)

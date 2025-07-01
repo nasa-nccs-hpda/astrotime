@@ -12,7 +12,7 @@ from astrotime.config.context import astrotime_initialize
 from astrotime.loaders.sinusoid import SinusoidElementLoader
 version = "sinusoid_period"
 
-@hydra.main(version_base=None, config_path="../../config", config_name=version)
+@hydra.main(version_base=None, config_path="../../../config", config_name=version)
 def my_app(cfg: DictConfig) -> None:
 	device: torch.device = astrotime_initialize( cfg, version+".eval" )
 	transforms = [RandomDownsample(cfg.transform), Norm(cfg.transform)]

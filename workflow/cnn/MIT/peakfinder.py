@@ -12,7 +12,7 @@ from astrotime.models.cnn.cnn_baseline import get_spectral_peak_selector_from_cf
 from astrotime.config.context import astrotime_initialize
 version = "MIT_period"
 
-@hydra.main(version_base=None, config_path="../../config", config_name=version)
+@hydra.main(version_base=None, config_path="../../../config", config_name=version)
 def my_app(cfg: DictConfig) -> None:
 	device: torch.device = astrotime_initialize( cfg, version )
 	cfg.data['snr_min'] = 80.0

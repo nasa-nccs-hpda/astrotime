@@ -33,7 +33,6 @@ class SpectralProjection(EmbeddingLayer):
 
 	def __init__(self, name: str,  cfg, embedding_space: Tensor, device: device):
 		EmbeddingLayer.__init__(self, name, cfg, embedding_space, device)
-		self.C: float = cfg.decay_factor / (8 * math.pi ** 2)
 		self.init_log(f"WaveletAnalysisLayer: nfreq={self.nfreq} ")
 		self.subbatch_size: int = cfg.get('subbatch_size',-1)
 		self.noctaves: int = self.cfg.noctaves

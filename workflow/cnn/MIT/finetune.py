@@ -12,7 +12,7 @@ from astrotime.config.context import astrotime_initialize
 version = "MIT_period"
 ckp_version = None # "synthetic_period"
 
-@hydra.main(version_base=None, config_path="../../config", config_name=version)
+@hydra.main(version_base=None, config_path="../../../config", config_name=version)
 def my_app(cfg: DictConfig) -> None:
 	device: torch.device = astrotime_initialize( cfg, version )
 	cfg.data['snr_min'] = 80.0
