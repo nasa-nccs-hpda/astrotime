@@ -37,6 +37,7 @@ class IterativeTrainer(object):
 		self.cfg: DictConfig = cfg.train
 		self.transformer: nn.Module = MultiHeadAttention( cfg.model, device, self.embedding.nf ).to(device)
 		self.scale =  ExpU(cfg.data).to(device)
+		self.model = nn.Sequential( self.embedding, self.transformer, self.scale )
 		self.optimizer: optim.Optimizer = None
 		self.log = logging.getLogger()
 		self.loss: nn.Module = ExpLoss(cfg.data)
@@ -131,8 +132,7 @@ class IterativeTrainer(object):
 			self.set_train_status()
 			self.loader.init_epoch()
 			batch: Optional[TRDict] = self.get_next_batch()
-			spectra: Tensor = self.embedding(batch['z'])
-			result: Tensor = self.scale( self.transformer(spectra, spectra, spectra) )
+			result: Tensor = self.model(batch['z'])
 			print( f" ** (batch{list(batch['z'].shape)}, target{list(batch['target'].shape)}) ->  result{list(result.shape)}")
 
 	def compute(self,version,ckp_version=None):
@@ -153,8 +153,7 @@ class IterativeTrainer(object):
 						if batch['z'].shape[0] > 0:
 							# check_nan('batch', batch['z'])
 							self.global_time = time.time()
-							spectra: Tensor = self.embedding( batch['z'] )
-							result: Tensor = self.scale( self.transformer( spectra, spectra, spectra ) )
+							result: Tensor = self.model(batch['z'])
 							# check_nan('model', result )
 							if result.squeeze().ndim > 0:
 								self.log.debug(f"result{list(result.shape)} range: [{result.min().cpu().item()} -> {result.max().cpu().item()}]")
@@ -182,8 +181,7 @@ class IterativeTrainer(object):
 					batch = self.get_next_batch()
 					if batch['z'].shape[0] > 0:
 						self.global_time = time.time()
-						spectra: Tensor = self.embedding(batch['z'])
-						result: Tensor = self.scale(self.transformer(spectra, spectra, spectra))
+						result: Tensor = self.model(batch['z'])
 						if result.squeeze().ndim > 0:
 							loss: Tensor = self.loss(result.squeeze(), batch['target'].squeeze())
 							losses.append(loss.cpu().item())
