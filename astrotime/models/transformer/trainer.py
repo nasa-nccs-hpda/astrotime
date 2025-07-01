@@ -30,14 +30,13 @@ def tnorm(x: Tensor, dim: int=0) -> Tensor:
 class IterativeTrainer(object):
 
 	def __init__(self, cfg: DictConfig, device: torch.device, loader: Loader ):
+		self.cfg: DictConfig = cfg.train
 		self.device: torch.device = device
 		self.embedding_space_array, self.embedding_space_tensor = embedding_space(cfg.transform, device)
 		self.loader: Loader = loader
 		self.embedding = SpectralProjection('spectral_projection', cfg.transform, self.embedding_space_tensor, device )
-		self.cfg: DictConfig = cfg.train
 		self.transformer: nn.Module = MultiHeadAttention( cfg.model, device, self.embedding.nf ).to(device)
-		self.scale =  ExpU(cfg.data).to(device)
-		self.model = nn.Sequential( self.embedding, self.transformer, self.scale )
+		self.model = nn.Sequential( self.embedding, self.transformer, ExpU(cfg.data).to(device) )
 		self.optimizer: optim.Optimizer = None
 		self.log = logging.getLogger()
 		self.loss: nn.Module = ExpLoss(cfg.data)
