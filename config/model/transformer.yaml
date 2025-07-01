@@ -1,8 +1,5 @@
 nheads: 32                # (int): Number of heads
 dropout: 0.0              # (float): Dropout probability
 bias: True                # (bool): Whether to add bias to input projection.
-E_q: 1024                 # (int): Size of embedding dim for query
-E_k: 1024                 # (int): Size of embedding dim for key
-E_v: 1024                 # (int): Size of embedding dim for value
-E_hidden: 1024            # (int): Total embedding dim of combined heads post input projection. Each head has dim E_hidden // nheads
+E_head: 32             # (int): Head dim
 E_out: 1               # (int): Size of layer output
