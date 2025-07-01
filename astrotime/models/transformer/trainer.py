@@ -49,12 +49,12 @@ class IterativeTrainer(object):
 		self.exec_stats = []
 
 	def get_optimizer(self) -> optim.Optimizer:
-		if   self.cfg.optim == "rms":  return optim.RMSprop( self.model.parameters(), lr=self.cfg.lr )
-		elif self.cfg.optim == "adam": return optim.Adam(    self.model.parameters(), lr=self.cfg.lr, weight_decay=self.cfg.weight_decay )
+		if   self.cfg.optim == "rms":  return optim.RMSprop( self.transformer.parameters(), lr=self.cfg.lr )
+		elif self.cfg.optim == "adam": return optim.Adam(    self.transformer.parameters(), lr=self.cfg.lr, weight_decay=self.cfg.weight_decay )
 		else: raise RuntimeError( f"Unknown optimizer: {self.cfg.optim}")
 
 	def initialize_checkpointing( self, version: str, init_version:Optional[str]=None ):
-		self._checkpoint_manager = CheckpointManager( version, self.model, self.optimizer, self.cfg )
+		self._checkpoint_manager = CheckpointManager( version, self.transformer, self.optimizer, self.cfg )
 		if self.cfg.refresh_state:
 			self._checkpoint_manager.clear_checkpoints()
 			print("\n *** No checkpoint loaded: training from scratch *** \n")
@@ -69,7 +69,7 @@ class IterativeTrainer(object):
 	def load_checkpoint( self, version: str ):
 		if version is not None:
 			self.optimizer = self.get_optimizer()
-			self._checkpoint_manager = CheckpointManager( version, self.model, self.optimizer, self.cfg )
+			self._checkpoint_manager = CheckpointManager( version, self.transformer, self.optimizer, self.cfg )
 			self.train_state = self._checkpoint_manager.load_checkpoint( update_model=True )
 			self.epoch0      = self.train_state.get('epoch', 0)
 			self.start_batch = self.train_state.get('batch', 0)
@@ -118,7 +118,7 @@ class IterativeTrainer(object):
 	def set_train_status(self):
 		self.loader.initialize(self.mode)
 		if self.mode == TSet.Train:
-			self.model.train(True)
+			self.transformer.train(True)
 
 	@property
 	def training(self) -> bool:
@@ -130,7 +130,8 @@ class IterativeTrainer(object):
 			self.set_train_status()
 			self.loader.init_epoch()
 			batch: Optional[TRDict] = self.get_next_batch()
-			result: Tensor = self.model( batch['z'] )
+			spectra: Tensor = self.embedding(batch['z'])
+			result: Tensor = self.scale( self.transformer(spectra, spectra, spectra) )
 			print( f" ** (batch{list(batch['z'].shape)}, target{list(batch['target'].shape)}) ->  result{list(result.shape)}")
 
 	def compute(self,version,ckp_version=None):
@@ -179,7 +180,8 @@ class IterativeTrainer(object):
 					batch = self.get_next_batch()
 					if batch['z'].shape[0] > 0:
 						self.global_time = time.time()
-						result: Tensor = self.model(batch['z'])
+						spectra: Tensor = self.embedding(batch['z'])
+						result: Tensor = self.scale(self.transformer(spectra, spectra, spectra))
 						if result.squeeze().ndim > 0:
 							loss: Tensor = self.loss(result.squeeze(), batch['target'].squeeze())
 							losses.append(loss.cpu().item())
