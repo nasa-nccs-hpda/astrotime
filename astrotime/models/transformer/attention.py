@@ -35,10 +35,10 @@ class MultiHeadAttention(nn.Module):
         # Step 1. Apply input projection
 
 
-        check_nan(f"packed_proj.input", embedding)
-        print( f" ----> embedding{shp(embedding)}" )
+    #    check_nan(f"packed_proj.input", embedding)
+     #   print( f" ----> embedding{shp(embedding)}" )
         result = self.packed_proj(embedding)
-        check_nan(f"packed_proj.result", result)
+    #    check_nan(f"packed_proj.result", result)
 
         query, key, value = torch.chunk(result, 3, dim=-1)
 
@@ -52,9 +52,9 @@ class MultiHeadAttention(nn.Module):
         # (N, L_s, E_hidden) -> (N, L_s, nheads, E_head) -> (N, nheads, L_s, E_head)
         value: Tensor = value.unflatten(-1, [self.nheads, self.E_head]).transpose(1, 2)
 
-        check_nan( f"s2.query", query )
-        check_nan( f"s2.key", key )
-        check_nan( f"s2.value", value)
+     #   check_nan( f"s2.query", query )
+    #    check_nan( f"s2.key", key )
+    #    check_nan( f"s2.value", value)
 
         self.log.debug(f" ----> s2: query{shp(query)} key{shp(key)} value{shp(value)}")
 
@@ -62,7 +62,7 @@ class MultiHeadAttention(nn.Module):
         # (N, nheads, L_t, E_head)
         attn_output = F.scaled_dot_product_attention( query, key, value, dropout_p=self.dropout )
 
-        check_nan( f"attn_output", attn_output)
+    #    check_nan( f"attn_output", attn_output)
 
         # (N, nheads, L_t, E_head) -> (N, L_t, nheads, E_head) -> (N, L_t, E_hidden)
         attn_output = attn_output.transpose(1, 2).flatten(-2)

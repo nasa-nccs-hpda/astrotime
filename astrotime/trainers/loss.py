@@ -1,6 +1,7 @@
 from torch import nn
 import torch, math, numpy as np
 from typing import List, Tuple, Mapping
+from astrotime.util.math import tmean, tstd, tmag, npnorm, shp
 from astrotime.util.tensor_ops import check_nan
 from omegaconf import DictConfig
 
@@ -29,6 +30,7 @@ class ExpLoss(nn.Module):
 		self.f0: float = cfg.base_freq
 
 	def forward(self, product: torch.Tensor, target: torch.Tensor) -> torch.Tensor:
+		print(f"ExpLoss.forward: product{shp(product)} ({product.min().item():.3f} -> {product.max().item():.3f}), target{shp(target)} ({target.min().item():.3f} -> {target.max().item():.3f})")
 		result = torch.abs(torch.log2((product + self.f0) / (target + self.f0))).mean()
 		return result
 
