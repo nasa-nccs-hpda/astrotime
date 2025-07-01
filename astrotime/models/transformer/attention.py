@@ -34,10 +34,11 @@ class MultiHeadAttention(nn.Module):
         """
         # Step 1. Apply input projection
 
-        self.log.debug(f" ----> s0: embedding{shp(embedding)}")
 
+        check_nan(f"packed_proj.input", embedding)
+        print( f" ----> embedding{shp(embedding)}" )
         result = self.packed_proj(embedding)
-        check_nan(f"packed_proj", result)
+        check_nan(f"packed_proj.result", result)
 
         query, key, value = torch.chunk(result, 3, dim=-1)
 
