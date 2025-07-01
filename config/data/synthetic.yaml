@@ -10,5 +10,6 @@ file_size: 1000
 nfiles: 1000
 refresh: false
 maxh: 8
+xscale: 1.0
 
 
