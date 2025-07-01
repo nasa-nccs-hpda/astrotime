@@ -152,7 +152,7 @@ class IterativeTrainer(object):
 							self.global_time = time.time()
 							spectra: Tensor = self.embedding( batch['z'] )
 							result: Tensor = self.model( spectra, spectra, spectra )
-							# check_nan('model', batch['z'])
+							# check_nan('model', result )
 							if result.squeeze().ndim > 0:
 								self.log.debug(f"result{list(result.shape)} range: [{result.min().cpu().item()} -> {result.max().cpu().item()}]")
 								loss: Tensor =  self.loss( result.squeeze(), batch['target'].squeeze() )
