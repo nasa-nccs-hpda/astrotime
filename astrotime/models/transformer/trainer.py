@@ -149,7 +149,7 @@ class IterativeTrainer(object):
 					for ibatch in range(0,sys.maxsize):
 						t0 = time.time()
 						batch = self.get_next_batch()
-						print(f"E-{epoch} B-{ibatch}: batch{shp(batch['z'])} target{shp(batch['target'])}")
+						self.log.debug(f"E-{epoch} B-{ibatch}: batch{shp(batch['z'])} target{shp(batch['target'])}")
 						if batch['z'].shape[0] > 0:
 							# check_nan('batch', batch['z'])
 							self.global_time = time.time()

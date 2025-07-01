@@ -35,12 +35,12 @@ class MultiHeadAttention(nn.Module):
         """
         # Step 1. Apply input projection
 
-        print(f" ----> s0: embedding{shp(embedding)}")
+        self.log.debug(f" ----> s0: embedding{shp(embedding)}")
 
         result = self.packed_proj(embedding)
         query, key, value = torch.chunk(result, 3, dim=-1)
 
-        print(f" ----> s1: query{shp(query)} key{shp(key)} value{shp(value)}")
+        self.log.debug(f" ----> s1: query{shp(query)} key{shp(key)} value{shp(value)}")
         # Step 2. Split heads and prepare for SDPA
         # reshape query, key, value to separate by head
         # (N, L_t, E_hidden) -> (N, L_t, nheads, E_head) -> (N, nheads, L_t, E_head)
@@ -50,7 +50,7 @@ class MultiHeadAttention(nn.Module):
         # (N, L_s, E_hidden) -> (N, L_s, nheads, E_head) -> (N, nheads, L_s, E_head)
         value: Tensor = value.unflatten(-1, [self.nheads, self.E_head]).transpose(1, 2)
 
-        print(f" ----> s2: query{shp(query)} key{shp(key)} value{shp(value)}")
+        self.log.debug(f" ----> s2: query{shp(query)} key{shp(key)} value{shp(value)}")
 
         # Step 3. Run SDPA
         # (N, nheads, L_t, E_head)
@@ -58,12 +58,12 @@ class MultiHeadAttention(nn.Module):
         # (N, nheads, L_t, E_head) -> (N, L_t, nheads, E_head) -> (N, L_t, E_hidden)
         attn_output = attn_output.transpose(1, 2).flatten(-2)
 
-        print(f" ----> s1: attn_output{shp(attn_output)}")
+        self.log.debug(f" ----> s1: attn_output{shp(attn_output)}")
 
         # Step 4. Apply output projection
         # (N, L_t, E_hidden) -> (N, L_t, E_out)
         attn_output = self.out_proj(attn_output)
 
-        print(f" ----> s2: attn_output{shp(attn_output)}")
+        self.log.debug(f" ----> s2: attn_output{shp(attn_output)}")
 
         return attn_output
