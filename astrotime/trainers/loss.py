@@ -14,10 +14,10 @@ class HLoss(nn.Module):
 
 class ExpU(nn.Module):
 
-	def __init__(self, cfg: DictConfig) -> None:
+	def __init__(self, cfg: DictConfig, xscale: float = 1.0) -> None:
 		super().__init__()
 		self.f0: float = cfg.base_freq
-		self.xscale= cfg.xscale
+		self.xscale= xscale
 
 	def forward(self, x: torch.Tensor) -> torch.Tensor:
 		xs = x*self.xscale

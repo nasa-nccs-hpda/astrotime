@@ -36,7 +36,7 @@ class IterativeTrainer(object):
 		self.loader: Loader = loader
 		self.embedding = SpectralProjection('spectral_projection', cfg.transform, self.embedding_space_tensor, device )
 		self.transformer: nn.Module = MultiHeadAttention( cfg.model, device, self.embedding.nf ).to(device)
-		self.model = nn.Sequential( self.embedding, self.transformer, ExpU(cfg.data).to(device) )
+		self.model = nn.Sequential( self.embedding, self.transformer, ExpU(cfg.data,0.01).to(device) )
 		self.optimizer: optim.Optimizer = None
 		self.log = logging.getLogger()
 		self.loss: nn.Module = ExpLoss(cfg.data)
