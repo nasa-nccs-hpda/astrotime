@@ -10,7 +10,7 @@ from astrotime.util.math import l2space
 from astrotime.util.logging import elapsed
 from astrotime.util.tensor_ops import check_nan
 
-def tnorm(x: Tensor, dim: int=0) -> Tensor:
+def tnorm(x: Tensor, dim: int=-1) -> Tensor:
 	m: Tensor = x.mean( dim=dim, keepdim=True)
 	s: Tensor = torch.std( x, dim=dim, keepdim=True)
 	return (x - m) / s
@@ -21,13 +21,13 @@ def embedding_space( cfg: DictConfig, device: device ) -> Tuple[np.ndarray,Tenso
 	return nfspace, tfspace
 
 def spectral_projection(x: Tensor, y: Tensor, prod: Callable) -> Tensor:
-	yn: Tensor = tnorm(y,-1)
+	yn: Tensor = tnorm(y)
 	pw1: Tensor = torch.sin(x)
 	pw2: Tensor = torch.cos(x)
 	p1: Tensor = prod(yn, pw1)
 	p2: Tensor = prod(yn, pw2)
 	mag: Tensor =  torch.sqrt( p1**2 + p2**2 )
-	return mag
+	return tnorm(mag)
 
 class SpectralProjection(EmbeddingLayer):
 
