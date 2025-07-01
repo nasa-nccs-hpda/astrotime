@@ -19,9 +19,8 @@ class ExpU(nn.Module):
 		self.f0: float = cfg.base_freq
 
 	def forward(self, x: torch.Tensor) -> torch.Tensor:
-		check_nan('ExpU-input', x)
 		result = self.f0 * (torch.pow(2, x) - 1)
-		check_nan('ExpU-result', result)
+		print(f"ExpU(f0={self.f0:.3f}): x{shp(x)} ({x.min().item():.3f} -> {x.max().item():.3f}), result{shp(result)} ({result.min().item():.3f} -> {result.max().item():.3f})")
 		return result
 
 class ExpLoss(nn.Module):
@@ -30,7 +29,7 @@ class ExpLoss(nn.Module):
 		self.f0: float = cfg.base_freq
 
 	def forward(self, product: torch.Tensor, target: torch.Tensor) -> torch.Tensor:
-		print(f"ExpLoss.forward(f0={self.f0:.3f}): product{shp(product)} ({product.min().item():.3f} -> {product.max().item():.3f}), target{shp(target)} ({target.min().item():.3f} -> {target.max().item():.3f})")
+		print(f"ExpLoss(f0={self.f0:.3f}): product{shp(product)} ({product.min().item():.3f} -> {product.max().item():.3f}), target{shp(target)} ({target.min().item():.3f} -> {target.max().item():.3f})")
 		result = torch.abs(torch.log2((product + self.f0) / (target + self.f0))).mean()
 		return result
 
