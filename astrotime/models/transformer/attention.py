@@ -1,5 +1,6 @@
 import torch
 import torch.nn as nn
+from astrotime.util.math import shp
 import torch.nn.functional as F
 from omegaconf import DictConfig, OmegaConf
 from torch import Tensor, device
@@ -71,6 +72,7 @@ class MultiHeadAttention(nn.Module):
             key = self.k_proj(key)
             value = self.v_proj(value)
 
+        print(f" ----> s1: query{shp(query)} key{shp(key)} value{shp(value)}")
         # Step 2. Split heads and prepare for SDPA
         # reshape query, key, value to separate by head
         # (N, L_t, E_hidden) -> (N, L_t, nheads, E_head) -> (N, nheads, L_t, E_head)
@@ -80,14 +82,20 @@ class MultiHeadAttention(nn.Module):
         # (N, L_s, E_hidden) -> (N, L_s, nheads, E_head) -> (N, nheads, L_s, E_head)
         value: Tensor = value.unflatten(-1, [self.nheads, self.E_head]).transpose(1, 2)
 
+        print(f" ----> s2: query{shp(query)} key{shp(key)} value{shp(value)}")
+
         # Step 3. Run SDPA
         # (N, nheads, L_t, E_head)
         attn_output = F.scaled_dot_product_attention( query, key, value, dropout_p=self.dropout )
         # (N, nheads, L_t, E_head) -> (N, L_t, nheads, E_head) -> (N, L_t, E_hidden)
         attn_output = attn_output.transpose(1, 2).flatten(-2)
 
+        print(f" ----> s1: attn_output{shp(attn_output)}")
+
         # Step 4. Apply output projection
         # (N, L_t, E_hidden) -> (N, L_t, E_out)
         attn_output = self.out_proj(attn_output)
+
+        print(f" ----> s2: attn_output{shp(attn_output)}")
 
         return attn_output

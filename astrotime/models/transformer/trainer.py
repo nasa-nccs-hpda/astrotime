@@ -2,6 +2,7 @@ from typing import List, Optional, Dict, Type, Tuple, Union
 from omegaconf import DictConfig
 from astrotime.trainers.checkpoints import CheckpointManager
 from astrotime.util.tensor_ops import check_nan
+from astrotime.util.math import shp
 from astrotime.encoders.wavelet import embedding_space
 from astrotime.trainers.loss import ExpLoss, ExpU
 from astrotime.loaders.base import Loader, RDict
@@ -148,11 +149,14 @@ class IterativeTrainer(object):
 					for ibatch in range(0,sys.maxsize):
 						t0 = time.time()
 						batch = self.get_next_batch()
+						print(f"E-{epoch} B-{ibatch}: batch{shp(batch['z'])} target{shp(batch['target'])}")
 						if batch['z'].shape[0] > 0:
 							# check_nan('batch', batch['z'])
 							self.global_time = time.time()
 							spectra: Tensor = self.embedding( batch['z'] )
+							print(f" ----> spectra{shp(spectra)}")
 							result: Tensor = self.scale( self.transformer( spectra, spectra, spectra ) )
+							print(f" ----> result{shp(result)}")
 							# check_nan('model', result )
 							if result.squeeze().ndim > 0:
 								self.log.debug(f"result{list(result.shape)} range: [{result.min().cpu().item()} -> {result.max().cpu().item()}]")
