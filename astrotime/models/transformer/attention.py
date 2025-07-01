@@ -1,116 +1,93 @@
 import torch
 import torch.nn as nn
-from omegaconf import DictConfig
 import torch.nn.functional as F
-from typing import Any, Dict, List, Optional, Tuple
+from omegaconf import DictConfig, OmegaConf
+from torch import Tensor, device
 
-class RelationAwareAttentionHead(nn.Module):
+class MultiHeadAttention(nn.Module):
     """
-    Relation-aware attention head implementation.
-
-    Args:
-        k_bias_matrix (torch.Tensor): Matrix for relative position attention in query-key interaction.
-        v_bias_matrix (torch.Tensor): Matrix for relative position attention in query-value interaction.
-
-    Attributes:
-        query_weights (nn.Linear): Linear layer for query projection.
-        key_weights (nn.Linear): Linear layer for key projection.
-        value_weights (nn.Linear): Linear layer for value projection.
+    Computes multi-head attention. Supports nested or padded tensors.
     """
 
-    def __init__(self, k_bias_matrix, v_bias_matrix, cfg: DictConfig ):
+    def __init__( self, cfg: DictConfig, device: device ):
+        factory_kwargs = {"device": device, "dtype": None}
         super().__init__()
-        self.head_dim = cfg.head_dim
-        self.query_weights: nn.Linear  = nn.Linear(cfg.hidden_size, cfg.head_dim)
-        self.key_weights:   nn.Linear  = nn.Linear(cfg.hidden_size, cfg.head_dim)
-        self.value_weights: nn.Linear  = nn.Linear(cfg.hidden_size, cfg.head_dim)
-        self.k_bias_matrix = k_bias_matrix
-        self.v_bias_matrix = v_bias_matrix
+        self.cfg = cfg
+        self.nheads: int = cfg.nheads
+        self.dropout: float = cfg.dropout
+        self._qkv_same_embed_dim: bool = cfg.E_q == cfg.E_k and cfg.E_q == cfg.E_v
 
-    def forward(self, query: torch.Tensor, key: torch.Tensor, value: torch.Tensor, mask: torch.Tensor = None) -> torch.Tensor:
+        if self._qkv_same_embed_dim:
+            self.packed_proj = nn.Linear(cfg.E_q, cfg.E_hidden * 3, bias=cfg.bias, **factory_kwargs)
+        else:
+            self.q_proj: nn.Module = nn.Linear(cfg.E_q, cfg.E_hidden, bias=cfg.bias, **factory_kwargs)
+            self.k_proj: nn.Module = nn.Linear(cfg.E_k, cfg.E_hidden, bias=cfg.bias, **factory_kwargs)
+            self.v_proj: nn.Module = nn.Linear(cfg.E_v, cfg.E_hidden, bias=cfg.bias, **factory_kwargs)
+        self.out_proj: nn.Module = nn.Linear(cfg.E_hidden, cfg.E_out, bias=cfg.bias, **factory_kwargs)
+
+        assert cfg.E_hidden % cfg.nheads == 0, "Embedding dim is not divisible by nheads"
+        self.E_head: int = cfg.E_hidden // cfg.nheads
+        self.bias: bool = cfg.bias
+
+    def forward( self, query: Tensor, key: Tensor, value: Tensor ) -> Tensor:
         """
-        Applies attention mechanism to the input query, key, and value tensors.
+        Forward pass; runs the following process:
+            1. Apply input projection
+            2. Split heads and prepare for SDPA
+            3. Run SDPA
+            4. Apply output projection
 
         Args:
-            query (torch.Tensor): Query tensor.
-            key (torch.Tensor): Key tensor.
-            value (torch.Tensor): Value tensor.
-            mask (torch.Tensor): Optional mask tensor.
+            query (Tensor): query of shape (``N``, ``L_q``, ``E_qk``)
+            key (Tensor): key of shape (``N``, ``L_kv``, ``E_qk``)
+            value (Tensor): value of shape (``N``, ``L_kv``, ``E_v``)
 
         Returns:
-            torch.Tensor: Updated value embeddings after applying attention mechanism.
+            attn_output (Tensor): output of shape (N, L_t, E_out)
         """
-        query: torch.Tensor = self.query_weights(query) # (b_s, n_t, head_dim)
-        key: torch.Tensor = self.key_weights(key) # (b_s, n_t, head_dim)
-        value: torch.Tensor = self.value_weights(value) # (b_s, n_t, head_dim)
+        # Step 1. Apply input projection
+        if self._qkv_same_embed_dim:
+            if query is key and key is value:
+                result = self.packed_proj(query)
+                query, key, value = torch.chunk(result, 3, dim=-1)
+            else:
+                q_weight, k_weight, v_weight = torch.chunk(
+                    self.packed_proj.weight, 3, dim=0
+                )
+                if self.bias:
+                    q_bias, k_bias, v_bias = torch.chunk(
+                        self.packed_proj.bias, 3, dim=0
+                    )
+                else:
+                    q_bias, k_bias, v_bias = None, None, None
+                query, key, value = (
+                    F.linear(query, q_weight, q_bias),
+                    F.linear(key, k_weight, k_bias),
+                    F.linear(value, v_weight, v_bias),
+                )
 
-        # Self-Attention scores
-        attn_1: torch.Tensor = torch.matmul(query, key.transpose(1, 2)) # Q*K^T:(b_s, n_t, n_t)
+        else:
+            query = self.q_proj(query)
+            key = self.k_proj(key)
+            value = self.v_proj(value)
 
-        # Relative Position Attention scores
-        attn_2: torch.Tensor = torch.matmul(query.permute(1, 0, 2), self.k_bias_matrix.transpose(1, 2)).transpose(0, 1) # Q*K_shifting^T:(b_s, n_t, n_t)
+        # Step 2. Split heads and prepare for SDPA
+        # reshape query, key, value to separate by head
+        # (N, L_t, E_hidden) -> (N, L_t, nheads, E_head) -> (N, nheads, L_t, E_head)
+        query: Tensor = query.unflatten(-1, [self.nheads, self.E_head]).transpose(1, 2)
+        # (N, L_s, E_hidden) -> (N, L_s, nheads, E_head) -> (N, nheads, L_s, E_head)
+        key: Tensor = key.unflatten(-1, [self.nheads, self.E_head]).transpose(1, 2)
+        # (N, L_s, E_hidden) -> (N, L_s, nheads, E_head) -> (N, nheads, L_s, E_head)
+        value: Tensor = value.unflatten(-1, [self.nheads, self.E_head]).transpose(1, 2)
 
-        # Relation-aware Self-Attention scores
-        att_scores: torch.Tensor = (attn_1 + attn_2)/self.head_dim ** 0.5
+        # Step 3. Run SDPA
+        # (N, nheads, L_t, E_head)
+        attn_output = F.scaled_dot_product_attention( query, key, value, dropout_p=self.dropout )
+        # (N, nheads, L_t, E_head) -> (N, L_t, nheads, E_head) -> (N, L_t, E_hidden)
+        attn_output = attn_output.transpose(1, 2).flatten(-2)
 
-        if mask is not None:
-            mask = mask.to(torch.int)
-            att_scores: torch.Tensor = att_scores.masked_fill(mask.unsqueeze(1) == 0, -1e9)
+        # Step 4. Apply output projection
+        # (N, L_t, E_hidden) -> (N, L_t, E_out)
+        attn_output = self.out_proj(attn_output)
 
-        att_weights: torch.Tensor = F.softmax(att_scores, dim=-1)
-
-        # Weighted sum of values
-        values_1: torch.Tensor = torch.matmul(att_weights, value) # (b_s, n_t, head_dim)
-
-        # Relative Position Representation for values
-        values_2: torch.Tensor = torch.matmul(att_weights.permute(1, 0, 2), self.v_bias_matrix).transpose(0, 1) # (b_s, n_t, head_dim)
-
-        # Relation-aware values
-        n_value  = values_1 + values_2
-        return n_value
-
-#
-# class RelationAwareMultiHeadAttention(nn.Module):
-#     """
-#     Attributes:
-#         hidden_size (int): Hidden size for the model (embedding dimension).
-#         num_heads (int): Number of attention heads.
-#         head_dim (int): Dimensionality of each attention head.
-#         relative_position_k (RelativePosition): Instance of RelativePosition for query-key relative positions.
-#         relative_position_v (RelativePosition): Instance of RelativePosition for query-value relative positions.
-#         k_bias_matrix (torch.Tensor): Matrix for relative position attention in query-key interaction.
-#         v_bias_matrix (torch.Tensor): Matrix for relative position attention in query-value interaction.
-#         attention_heads (nn.ModuleList): List of RelationAwareAttentionHead layers.
-#         fc (nn.Linear): Fully connected layer for final projection.
-#     """
-#
-#     def __init__(self, time_embeddings: Dict[str,nn.Module], cfg: DictConfig ):
-#         super().__init__()
-#         self.hidden_size: int = cfg.hidden_size
-#         self.num_heads: int = cfg.num_heads
-#         self.head_dim: int = cfg.hidden_size // cfg.num_heads
-#         self.relative_position_k: torch.Tensor = RelativePosition(self.head_dim, cfg.k)
-#         self.relative_position_v: torch.Tensor = RelativePosition(self.head_dim, cfg.k)
-#         self.k_bias_matrix: torch.Tensor = self.relative_position_k(cfg.seq_len, cfg.seq_len)
-#         self.v_bias_matrix: torch.Tensor = self.relative_position_v(cfg.seq_len, cfg.seq_len)
-#         self.attention_heads: nn.ModuleList = nn.ModuleList([RelationAwareAttentionHead(self.hidden_size, self.head_dim,
-#                                                                            self.k_bias_matrix, self.v_bias_matrix) for _ in range(self.num_heads)])
-#         self.fc: nn.Linear = nn.Linear(cfg.hidden_size, cfg.hidden_size)
-#
-#     def forward(self, query: torch.Tensor, key: torch.Tensor, value: torch.Tensor, mask: torch.Tensor = None) -> torch.Tensor:
-#         """
-#         Applies multi-head attention mechanism to the input query, key, and value tensors.
-#
-#         Args:
-#             query (torch.Tensor): Query tensor.
-#             key (torch.Tensor): Key tensor.
-#             value (torch.Tensor): Value tensor.
-#             mask (torch.Tensor): Optional mask tensor.
-#
-#         Returns:
-#             torch.Tensor: Updated hidden state after applying multi-head attention mechanism.
-#         """
-#         attention_outputs: List[torch.Tensor] = [attention_head(query, key, value, mask=mask) for attention_head in self.attention_heads]
-#         hidden_state: torch.Tensor = torch.cat(attention_outputs, dim=-1)
-#         hidden_state: torch.Tensor = self.fc(hidden_state)
-#         return hidden_state
+        return attn_output
