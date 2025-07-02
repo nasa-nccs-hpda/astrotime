@@ -14,15 +14,15 @@ class HLoss(nn.Module):
 
 class ExpU(nn.Module):
 
-	def __init__(self, cfg: DictConfig, xscale: float = 1.0) -> None:
+	def __init__(self, cfg: DictConfig ) -> None:
 		super().__init__()
 		self.f0: float = cfg.base_freq
-		self.xscale= xscale
+		self.f1 = self.f0 * torch.pow(2, cfg.noctaves+1)
+		self.relu = nn.ReLU()
 
 	def forward(self, x: torch.Tensor) -> torch.Tensor:
-		xs = x*self.xscale
+		xs = x - self.relu( x-self.f1 )
 		result = self.f0 * (torch.pow(2, xs) - 1)
-		# print(f"ExpU(f0={self.f0:.3f},xs={self.xscale:.5f}): x{shp(x)} ({x.min().item():.3f} -> {x.max().item():.3f}), result{shp(result)} ({result.min().item():.3f} -> {result.max().item():.3f})")
 		return result
 
 class ExpLoss(nn.Module):

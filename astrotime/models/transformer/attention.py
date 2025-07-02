@@ -20,7 +20,7 @@ class MultiHeadAttention(nn.Module):
         self.packed_proj = nn.Linear( input_size, E_total * 3, bias=cfg.bias, **factory_kwargs )
         self.out_proj: nn.Module = nn.Linear(E_total, output_size, bias=cfg.bias, **factory_kwargs)
         self.bias: bool = cfg.bias
-        print(f" MultiHeadAttention ----> input_size={input_size} output_size={output_size} nheads={self.nheads} E_head={self.E_head} proj_size={E_total} packed_proj_size={E_total*3} ")
+        self.log.info(f" MultiHeadAttention ----> input_size={input_size} output_size={output_size} nheads={self.nheads} E_head={self.E_head} proj_size={E_total} packed_proj_size={E_total*3} ")
 
     def forward( self, embedding: Tensor ) -> Tensor:
         """
@@ -43,7 +43,7 @@ class MultiHeadAttention(nn.Module):
 
         query, key, value = torch.chunk(result, 3, dim=-1)
 
-        print(f" ----> (N, L_t, E_hidden): query{shp(query)} key{shp(key)} value{shp(value)}")
+        self.log.debug(f" ----> (N, L_t, E_hidden): query{shp(query)} key{shp(key)} value{shp(value)}")
         # Step 2. Split heads and prepare for SDPA
         # reshape query, key, value to separate by head
         # (N, L_t, E_hidden) -> (N, L_t, nheads, E_head) -> (N, nheads, L_t, E_head)
@@ -57,7 +57,7 @@ class MultiHeadAttention(nn.Module):
     #    check_nan( f"s2.key", key )
     #    check_nan( f"s2.value", value)
 
-        print(f" ---->  (N, L_s, E_hidden) -> (N, L_s, nheads, E_head) -> (N, nheads, L_s, E_head): query{shp(query)} key{shp(key)} value{shp(value)}")
+        self.log.debug(f" ---->  (N, L_s, E_hidden) -> (N, L_s, nheads, E_head) -> (N, nheads, L_s, E_head): query{shp(query)} key{shp(key)} value{shp(value)}")
 
         # Step 3. Run SDPA
         # (N, nheads, L_t, E_head)
@@ -68,12 +68,12 @@ class MultiHeadAttention(nn.Module):
         # (N, nheads, L_t, E_head) -> (N, L_t, nheads, E_head) -> (N, L_t, E_hidden)
         attn_output = attn_output.transpose(1, 2).flatten(-2)
 
-        print(f" ----> (N, nheads, L_t, E_head) -> (N, L_t, nheads, E_head) -> (N, L_t, E_hidden): attn_output{shp(attn_output)}")
+        self.log.debug(f" ----> (N, nheads, L_t, E_head) -> (N, L_t, nheads, E_head) -> (N, L_t, E_hidden): attn_output{shp(attn_output)}")
 
         # Step 4. Apply output projection
         # (N, L_t, E_hidden) -> (N, L_t, E_out)
         attn_output = self.out_proj(attn_output)
 
-        print(f" ----> (N, L_t, E_hidden) -> (N, L_t, E_out): attn_output{shp(attn_output)}")
+        self.log.debug(f" ----> (N, L_t, E_hidden) -> (N, L_t, E_out): attn_output{shp(attn_output)}")
 
         return attn_output
