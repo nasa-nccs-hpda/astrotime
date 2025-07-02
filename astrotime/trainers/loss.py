@@ -17,7 +17,7 @@ class ExpU(nn.Module):
 	def __init__(self, cfg: DictConfig ) -> None:
 		super().__init__()
 		self.f0: float = cfg.base_freq
-		self.f1 = self.f0 * torch.pow(2, cfg.noctaves+1)
+		self.f1 = self.f0 * math.pow(2, cfg.noctaves+1 )
 		self.relu = nn.ReLU()
 
 	def forward(self, x: torch.Tensor) -> torch.Tensor:
