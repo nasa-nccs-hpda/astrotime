@@ -37,6 +37,7 @@ class SpectralProjection(EmbeddingLayer):
 		self.subbatch_size: int = cfg.get('subbatch_size',-1)
 		self.noctaves: int = self.cfg.noctaves
 		self.nfreq_oct: int = self.cfg.nfreq_oct
+		self.fold_octaves = self.cfg.fold_octaves
 
 	@property
 	def xdata(self) -> Tensor:
@@ -72,7 +73,7 @@ class SpectralProjection(EmbeddingLayer):
 			return torch.sum( x0 * x1, dim=-1)
 
 		mag: Tensor =  spectral_projection( dz, ys, w_prod )
-		embedding: Tensor = torch.unsqueeze(mag, 1)
+		embedding: Tensor = mag.reshape( [mag.shape[0], self.noctaves, self.nfreq_oct] ) if self.fold_octaves else torch.unsqueeze(mag, 1)
 		self.init_log(f" Completed embedding{list(embedding.shape)} in {elapsed(t0):.5f} sec: nfeatures={embedding.shape[1]}")
 		self.init_state = False
 		return embedding
