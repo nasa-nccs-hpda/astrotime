@@ -168,13 +168,11 @@ class IterativeTrainer(object):
                                 self.log.debug(f"result{list(result.shape)} range: [{result.min().cpu().item()} -> {result.max().cpu().item()}]")
                                 loss: Tensor =  self.loss( result.squeeze(), batch['target'].squeeze() )
                                 self.conditionally_update_weights(loss)
-                                lval = loss.cpu().item()
-                                losses.append(lval)
-                                print(f"E-{epoch} B-{ibatch} loss={lval:.3f}, max result = {result.max().cpu().item():.3f}", flush=True)
+                                losses.append(loss.cpu().item())
                                 if ibatch % log_interval == 0:
                                     aloss = np.array(losses[-log_interval:])
                                     print(f"E-{epoch} B-{ibatch} loss={aloss.mean():.3f}, range=({aloss.min():.3f} -> {aloss.max():.3f}), dt/batch={elapsed(t0):.5f} sec")
-                                    self._checkpoint_manager.save_checkpoint( epoch, ibatch )
+                                    self._checkpoint_manager.save_checkpoint(epoch, ibatch)
 
                 except StopIteration:
                     print( f"Completed epoch {epoch} in {elapsed(te)/60:.5f} min, mean-loss= {np.array(losses).mean():.3f}")
