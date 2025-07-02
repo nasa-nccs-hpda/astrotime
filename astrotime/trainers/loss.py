@@ -22,6 +22,7 @@ class ExpU(nn.Module):
 
 	def forward(self, x: torch.Tensor) -> torch.Tensor:
 		xs = x - self.relu( x-self.f1 )
+		print(f"ExpU: xm={x.max().item():.3f} xsm={xs.max().item():.3f}")
 		result = self.f0 * (torch.pow(2, xs) - 1)
 		return result
 
