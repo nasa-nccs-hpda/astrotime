@@ -17,11 +17,11 @@ class ExpU(nn.Module):
 	def __init__(self, cfg: DictConfig ) -> None:
 		super().__init__()
 		self.f0: float = cfg.base_freq
-		self.f1 = self.f0 * math.pow(2, cfg.noctaves+1 )
+		self.xmax = cfg.noctaves+1
 		self.relu = nn.ReLU()
 
 	def forward(self, x: torch.Tensor) -> torch.Tensor:
-		xr = self.relu( x-self.f1 )
+		xr = self.relu( x-self.xmax )
 		xs = x - xr
 		result = self.f0 * (torch.pow(2, xs) - 1)
 		print(f"ExpU(f0={self.f0:.3f},f1={self.f1:.3f}): xm={x.max().item():.3f} xrm={xr.max().item():.3f} xsm={xs.max().item():.3f} rm={result.max().item():.3f}",flush=True)
