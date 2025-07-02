@@ -24,7 +24,7 @@ class ExpU(nn.Module):
 		xr = self.relu( x-self.xmax )
 		xs = x - xr
 		result = self.f0 * (torch.pow(2, xs) - 1)
-		print(f"ExpU(f0={self.f0:.3f},f1={self.f1:.3f}): xm={x.max().item():.3f} xrm={xr.max().item():.3f} xsm={xs.max().item():.3f} rm={result.max().item():.3f}",flush=True)
+		print(f"ExpU(xmax={self.xmax:.3f}): xm={x.max().item():.3f} xrm={xr.max().item():.3f} xsm={xs.max().item():.3f} rm={result.max().item():.3f}",flush=True)
 		return result
 
 class ExpLoss(nn.Module):
