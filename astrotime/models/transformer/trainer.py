@@ -35,8 +35,7 @@ class IterativeTrainer(object):
 		self.embedding_space_array, self.embedding_space_tensor = embedding_space(cfg.transform, device)
 		self.loader: Loader = loader
 		self.embedding = SpectralProjection('spectral_projection', cfg.transform, self.embedding_space_tensor, device )
-		self.transformer: nn.Module = MultiHeadAttention( cfg.model, device, self.embedding.nf ).to(device)
-		self.model = nn.Sequential( self.embedding, self.transformer, ExpU(cfg.data,0.01).to(device) )
+		self.model: nn.Module = self.get_model()
 		self.optimizer: optim.Optimizer = None
 		self.log = logging.getLogger()
 		self.loss: nn.Module = ExpLoss(cfg.data)
@@ -49,13 +48,22 @@ class IterativeTrainer(object):
 		self.global_time = None
 		self.exec_stats = []
 
+	def get_model(self) -> nn.Module:
+		modules: List[nn.Module] = [ self.embedding ]
+		for iL in range(1,self.cfg.model.nlayers+1 ):
+			input_size = self.embedding.nf if (iL == 1) else self.cfg.model.E_internal
+			output_size = 1 if (iL == self.cfg.model.nlayers) else self.cfg.model.E_internal
+			modules.append( MultiHeadAttention( self.cfg.model, self.device, input_size, output_size) )
+		modules.append( ExpU(self.cfg.data, 0.01).to(self.device) )
+		return nn.Sequential(*modules)
+
 	def get_optimizer(self) -> optim.Optimizer:
-		if   self.cfg.optim == "rms":  return optim.RMSprop( self.transformer.parameters(), lr=self.cfg.lr )
-		elif self.cfg.optim == "adam": return optim.Adam(    self.transformer.parameters(), lr=self.cfg.lr, weight_decay=self.cfg.weight_decay )
+		if   self.cfg.optim == "rms":  return optim.RMSprop( self.model.parameters(), lr=self.cfg.lr )
+		elif self.cfg.optim == "adam": return optim.Adam(    self.model.parameters(), lr=self.cfg.lr, weight_decay=self.cfg.weight_decay )
 		else: raise RuntimeError( f"Unknown optimizer: {self.cfg.optim}")
 
 	def initialize_checkpointing( self, version: str, init_version:Optional[str]=None ):
-		self._checkpoint_manager = CheckpointManager( version, self.transformer, self.optimizer, self.cfg )
+		self._checkpoint_manager = CheckpointManager( version, self.model, self.optimizer, self.cfg )
 		if self.cfg.refresh_state:
 			self._checkpoint_manager.clear_checkpoints()
 			print("\n *** No checkpoint loaded: training from scratch *** \n")
@@ -69,7 +77,7 @@ class IterativeTrainer(object):
 	def load_checkpoint( self, version: str ):
 		if version is not None:
 			self.optimizer = self.get_optimizer()
-			self._checkpoint_manager = CheckpointManager( version, self.transformer, self.optimizer, self.cfg )
+			self._checkpoint_manager = CheckpointManager( version, self.model, self.optimizer, self.cfg )
 			self.train_state = self._checkpoint_manager.load_checkpoint( update_model=True )
 			self.epoch0      = self.train_state.get('epoch', 0)
 			self.start_batch = self.train_state.get('batch', 0)
@@ -117,7 +125,7 @@ class IterativeTrainer(object):
 	def set_train_status(self):
 		self.loader.initialize(self.mode)
 		if self.mode == TSet.Train:
-			self.transformer.train(True)
+			self.model.train(True)
 
 	@property
 	def training(self) -> bool:
