@@ -20,6 +20,7 @@ class MultiHeadAttention(nn.Module):
         self.packed_proj = nn.Linear( input_size, E_total * 3, bias=cfg.bias, **factory_kwargs )
         self.out_proj: nn.Module = nn.Linear(E_total, output_size, bias=cfg.bias, **factory_kwargs)
         self.bias: bool = cfg.bias
+        print(f" MultiHeadAttention ----> input_size={input_size} output_size={output_size} nheads={self.nheads} E_head={self.E_head} proj_size={E_total} packed_proj_size={E_total*3} ")
 
     def forward( self, embedding: Tensor ) -> Tensor:
         """
