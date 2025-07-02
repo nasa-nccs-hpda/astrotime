@@ -63,7 +63,6 @@ class IterativeTrainer(object):
 			self.train_state = self._checkpoint_manager.load_checkpoint( init_version=init_version, update_model=True )
 			self.epoch0      = self.train_state.get('epoch', 0)
 			self.start_batch = self.train_state.get('batch', 0)
-			self.embedding.meanval = self.train_state.get('meanval')
 			self.start_epoch = int(self.epoch0)
 			print(f"\n      Loading checkpoint from {self._checkpoint_manager.checkpoint_path()}: epoch={self.start_epoch}, batch={self.start_batch}\n")
 
@@ -74,7 +73,6 @@ class IterativeTrainer(object):
 			self.train_state = self._checkpoint_manager.load_checkpoint( update_model=True )
 			self.epoch0      = self.train_state.get('epoch', 0)
 			self.start_batch = self.train_state.get('batch', 0)
-			self.embedding.meanval = self.train_state.get('meanval')
 			self.start_epoch = int(self.epoch0)
 			print(f"\n      Loading checkpoint from {self._checkpoint_manager.checkpoint_path()}: epoch={self.start_epoch}, batch={self.start_batch}\n")
 
@@ -160,7 +158,7 @@ class IterativeTrainer(object):
 								if ibatch % log_interval == 0:
 									aloss = np.array(losses[-log_interval:])
 									print(f"E-{epoch} B-{ibatch} loss={aloss.mean():.3f}, range=({aloss.min():.3f} -> {aloss.max():.3f}), dt/batch={elapsed(t0):.5f} sec")
-									self._checkpoint_manager.save_checkpoint(epoch, ibatch, meanval=self.embedding.meanval)
+									self._checkpoint_manager.save_checkpoint( epoch, ibatch )
 
 				except StopIteration:
 					print( f"Completed epoch {epoch} in {elapsed(te)/60:.5f} min, mean-loss= {np.array(losses).mean():.3f}")
