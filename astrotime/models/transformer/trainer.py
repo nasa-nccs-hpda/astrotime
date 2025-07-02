@@ -35,7 +35,7 @@ class IterativeTrainer(object):
 		self.embedding_space_array, self.embedding_space_tensor = embedding_space(cfg.transform, device)
 		self.loader: Loader = loader
 		self.embedding = SpectralProjection('spectral_projection', cfg.transform, self.embedding_space_tensor, device )
-		self.model: nn.Module = self.get_model()
+		self.model: nn.Module = self.get_model(cfg.model, ExpU(cfg.data, 0.01) )
 		self.optimizer: optim.Optimizer = None
 		self.log = logging.getLogger()
 		self.loss: nn.Module = ExpLoss(cfg.data)
@@ -48,13 +48,13 @@ class IterativeTrainer(object):
 		self.global_time = None
 		self.exec_stats = []
 
-	def get_model(self) -> nn.Module:
+	def get_model(self, cfg: DictConfig, activation: nn.Module ) -> nn.Module:
 		modules: List[nn.Module] = [ self.embedding ]
-		for iL in range(1,self.cfg.model.nlayers+1 ):
-			input_size = self.embedding.nf if (iL == 1) else self.cfg.model.E_internal
-			output_size = 1 if (iL == self.cfg.model.nlayers) else self.cfg.model.E_internal
-			modules.append( MultiHeadAttention( self.cfg.model, self.device, input_size, output_size) )
-		modules.append( ExpU(self.cfg.data, 0.01).to(self.device) )
+		for iL in range(1, cfg.nlayers+1):
+			input_size = self.embedding.nf if (iL == 1) else cfg.E_internal
+			output_size = 1 if (iL == cfg.nlayers) else cfg.E_internal
+			modules.append( MultiHeadAttention( cfg, self.device, input_size, output_size) )
+		modules.append( activation.to(self.device) )
 		return nn.Sequential(*modules)
 
 	def get_optimizer(self) -> optim.Optimizer:
