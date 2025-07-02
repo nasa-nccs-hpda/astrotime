@@ -33,8 +33,11 @@ class ExpLoss(nn.Module):
 		self.f0: float = cfg.base_freq
 
 	def forward(self, product: torch.Tensor, target: torch.Tensor) -> torch.Tensor:
-		# print(f"ExpLoss(f0={self.f0:.3f}): product{shp(product)} ({product.min().item():.3f} -> {product.max().item():.3f}), target{shp(target)} ({target.min().item():.3f} -> {target.max().item():.3f})")
-		result = torch.abs(torch.log2((product + self.f0) / (target + self.f0))).mean()
+		pf: torch.Tensor = (product + self.f0)
+		tf: torch.Tensor = (target  + self.f0)
+		ptr: torch.Tensor = torch.log2(pf/tf)
+		print(f"ExpLoss(f0={self.f0:.3f}): pf{shp(pf)} ({pf.min().item():.3f} -> {pf.max().item():.3f}), tf{shp(tf)} ({tf.min().item():.3f} -> {tf.max().item():.3f}), ptr{shp(ptr)} ({ptr.min().item():.3f} -> {ptr.max().item():.3f})")
+		result = torch.abs( ptr ).mean()
 		return result
 
 class ElemExpLoss(nn.Module):
