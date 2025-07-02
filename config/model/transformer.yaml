@@ -1,5 +1,5 @@
 nheads: 16                # (int): Number of heads
 dropout: 0.0              # (float): Dropout probability
 bias: True                # (bool): Whether to add bias to input projection.
-E_head: 1024             # (int): Head dim
+E_head: 2048             # (int): Head dim
 E_out: 1               # (int): Size of layer output
