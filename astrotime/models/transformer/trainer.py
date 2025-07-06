@@ -38,7 +38,7 @@ class IterativeTrainer(object):
 		self.model: nn.Module = self.get_model(cfg.model )
 		self.optimizer: optim.Optimizer = None
 		self.log = logging.getLogger()
-		self.loss: nn.Module = nn.L1Loss()
+		self.loss: nn.Module = self.get_loss(cfg.model)
 		self._checkpoint_manager: CheckpointManager = None
 		self.start_batch: int = 0
 		self.start_epoch: int = 0
@@ -48,11 +48,19 @@ class IterativeTrainer(object):
 		self.global_time = None
 		self.exec_stats = []
 
+	def get_loss(self, cfg: DictConfig) -> nn.Module:
+		if   cfg.model_type == "regression": return nn.L1Loss()
+		elif cfg.model_type == "classification": return nn.CrossEntropyLoss()
+		else: raise RuntimeError( f"Unknown model type: {cfg.model_type}")
+
 	def get_model(self, cfg: DictConfig, activation: nn.Module = None ) -> nn.Module:
 		modules: List[nn.Module] = [ self.embedding ]
+		if   cfg.model_type == "regression": result_dim = 1
+		elif cfg.model_type == "classification": result_dim = self.cfg.data.noctaves
+		else: raise RuntimeError( f"Unknown model type: {cfg.model_type}")
 		for iL in range(1, cfg.nlayers+1):
 			input_size = self.embedding.nfreq_oct if (iL == 1) else cfg.E_internal
-			output_size = 1 if (iL == cfg.nlayers) else cfg.E_internal
+			output_size = result_dim if (iL == cfg.nlayers) else cfg.E_internal
 			modules.append( MultiHeadAttention( cfg, self.device, input_size, output_size) )
 		if activation is not None:
 			modules.append( activation.to(self.device) )
@@ -96,7 +104,14 @@ class IterativeTrainer(object):
 		t,y = batch.pop('t'), batch.pop('y')
 		p: Tensor = torch.from_numpy(batch.pop('period')).to(self.device)
 		z: Tensor = self.to_tensor(t,y)
-		return dict( z=z, target=1/p, **batch )
+		return dict( z=z, target=self.get_target(1/p), **batch )
+
+	def get_target(self, f: Tensor ) -> Tensor:
+		if self.cfg.model_type == "regression":
+			return f
+		elif self.cfg.model_type == "classification":
+			return torch.argmax(f, dim=1)
+		else: raise RuntimeError( f"Unknown model type: {self.cfg.model_type}")
 
 	def to_tensor(self, x: np.ndarray, y: np.ndarray) -> Tensor:
 		with (self.device):
