@@ -189,13 +189,13 @@ class IterativeTrainer(object):
 							result: Tensor = self.model(batch['z']).squeeze()
 							if result.squeeze().ndim > 0:
 								rrange = [ result.min().cpu().item(), result.max().cpu().item() ]
-								print( f"Loss: batch{list(batch['z'].shape)} result{list(result.shape)} target{list(batch['target'].shape)}")
+								# print( f"Loss: batch{list(batch['z'].shape)} result{list(result.shape)} target{list(batch['target'].shape)}")
 								self.log.debug(f"result{list(result.shape)} range: [{rrange[0]:.3f} -> {rrange[1]:.3f}]")
 								loss: Tensor =  self.loss( result, batch['target'] )
 								self.conditionally_update_weights(loss)
 								lval = loss.cpu().item()
 								losses.append(lval)
-								print(f"E-{epoch} B-{ibatch} loss={lval:.3f}, range: [{rrange[0]:.6f} -> {rrange[1]:.3f}]", flush=True)
+								# print(f"E-{epoch} B-{ibatch} loss={lval:.3f}, range: [{rrange[0]:.6f} -> {rrange[1]:.3f}]", flush=True)
 								if ibatch % log_interval == 0:
 									aloss = np.array(losses[-log_interval:])
 									print(f"E-{epoch} B-{ibatch} loss={aloss.mean():.3f}, range=({aloss.min():.3f} -> {aloss.max():.3f}), dt/batch={elapsed(t0):.5f} sec")
