@@ -59,7 +59,7 @@ class IterativeTrainer(object):
 	def get_model(self, activation: nn.Module = None ) -> nn.Module:
 		modules: List[nn.Module] = [ self.embedding ]
 		if   self.mtype.startswith("regression"): result_dim = 1
-		elif self.mtype.startswith("classification"): result_dim = self.cfg.data.noctaves
+		elif self.mtype.startswith("classification"): result_dim = self.noctaves
 		else: raise RuntimeError( f"Unknown model type: {self.mtype}" )
 		for iL in range(1, self.cfg.nlayers+1):
 			input_size = self.embedding.nfreq_oct if (iL == 1) else self.cfg.E_internal
