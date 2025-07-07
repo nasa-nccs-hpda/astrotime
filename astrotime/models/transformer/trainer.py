@@ -32,14 +32,16 @@ class IterativeTrainer(object):
 	def __init__(self, cfg: DictConfig, device: torch.device, loader: Loader ):
 		self.cfg: DictConfig = cfg.train
 		self.device: torch.device = device
+		self.mtype: str = cfg.model.task
+		self.noctaves = cfg.data.noctaves
+		self.f0 = cfg.data.base_freq
 		self.embedding_space_array, self.embedding_space_tensor = embedding_space(cfg.transform, device)
 		self.loader: Loader = loader
 		self.embedding = SpectralProjection('spectral_projection', cfg.transform, self.embedding_space_tensor, device )
-		self.model: nn.Module = self.get_model(cfg.model )
+		self.model: nn.Module = self.get_model()
 		self.optimizer: optim.Optimizer = None
 		self.log = logging.getLogger()
-		self.loss: nn.Module = self.get_loss(cfg.model)
-		self.f0 = cfg.data.base_freq
+		self.loss: nn.Module = self.get_loss()
 		self._checkpoint_manager: CheckpointManager = None
 		self.start_batch: int = 0
 		self.start_epoch: int = 0
@@ -49,20 +51,20 @@ class IterativeTrainer(object):
 		self.global_time = None
 		self.exec_stats = []
 
-	def get_loss(self, cfg: DictConfig) -> nn.Module:
-		if   cfg.model_type == "regression": return nn.L1Loss()
-		elif cfg.model_type == "classification": return nn.CrossEntropyLoss()
-		else: raise RuntimeError( f"Unknown model type: {cfg.model_type}")
+	def get_loss(self) -> nn.Module:
+		if   self.mtype.startswith("regression"): return nn.L1Loss()
+		elif self.mtype.startswith("classification"): return nn.CrossEntropyLoss()
+		else: raise RuntimeError( f"Unknown model type: {self.mtype}")
 
-	def get_model(self, cfg: DictConfig, activation: nn.Module = None ) -> nn.Module:
+	def get_model(self, activation: nn.Module = None ) -> nn.Module:
 		modules: List[nn.Module] = [ self.embedding ]
-		if   cfg.model_type == "regression": result_dim = 1
-		elif cfg.model_type == "classification": result_dim = self.cfg.data.noctaves
-		else: raise RuntimeError( f"Unknown model type: {cfg.model_type}")
-		for iL in range(1, cfg.nlayers+1):
-			input_size = self.embedding.nfreq_oct if (iL == 1) else cfg.E_internal
-			output_size = result_dim if (iL == cfg.nlayers) else cfg.E_internal
-			modules.append( MultiHeadAttention( cfg, self.device, input_size, output_size) )
+		if   self.mtype.startswith("regression"): result_dim = 1
+		elif self.mtype.startswith("classification"): result_dim = self.cfg.data.noctaves
+		else: raise RuntimeError( f"Unknown model type: {self.mtype}" )
+		for iL in range(1, self.cfg.nlayers+1):
+			input_size = self.embedding.nfreq_oct if (iL == 1) else self.cfg.E_internal
+			output_size = result_dim if (iL == self.cfg.nlayers) else self.cfg.E_internal
+			modules.append( MultiHeadAttention( self.cfg, self.device, input_size, output_size) )
 		if activation is not None:
 			modules.append( activation.to(self.device) )
 		return nn.Sequential(*modules)
@@ -111,10 +113,15 @@ class IterativeTrainer(object):
 		octave = torch.floor( torch.log2(f/self.f0) )
 		return octave
 
+	def fold_by_octave(self, f: Tensor ) -> Tensor:
+		octave = torch.floor(torch.log2(f / self.f0))
+		octave_base_freq = self.f0 * torch.pow( 2, octave )
+		return  f/octave_base_freq
+
 	def get_target(self, f: Tensor ) -> Tensor:
-		if self.cfg.model_type == "regression":
-			return f
-		elif self.cfg.model_type == "classification":
+		if self.mtype.startswith("regression"):
+			return self.fold_by_octave(f) if self.mtype.endswith("octave") else f
+		elif self.mtype.startswith("classification"):
 			return self.get_octave(f)
 		else: raise RuntimeError( f"Unknown model type: {self.cfg.model_type}")
 
