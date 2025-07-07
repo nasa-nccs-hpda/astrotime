@@ -111,7 +111,7 @@ class IterativeTrainer(object):
 		return dict( z=z, target=self.get_target(1/p), **batch )
 
 	def get_octave(self, f: Tensor ) -> Tensor:
-		octave = torch.floor( torch.log2(f/self.f0) )
+		octave = torch.floor( torch.log2(f/self.f0) ).to( torch.long )
 		return octave
 
 	def fold_by_octave(self, f: Tensor ) -> Tensor:
