@@ -43,7 +43,7 @@ class MultiHeadAttention(nn.Module):
 
         query, key, value = torch.chunk(result, 3, dim=-1)
 
-        print(f" ----> (N, L_t, E_hidden): query{shp(query)} key{shp(key)} value{shp(value)}") # self.log.debug
+        print(f" embedding{shp(embedding)} ----> (N, L_t, E_hidden): query{shp(query)} key{shp(key)} value{shp(value)}") # self.log.debug
         # Step 2. Split heads and prepare for SDPA
         # reshape query, key, value to separate by head
         # (N, L_t, E_hidden) -> (N, L_t, nheads, E_head) -> (N, nheads, L_t, E_head)
