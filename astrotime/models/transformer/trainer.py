@@ -38,7 +38,7 @@ class IterativeTrainer(object):
 		self.embedding_space_array, self.embedding_space_tensor = embedding_space(cfg.transform, device)
 		self.loader: Loader = loader
 		self.embedding = SpectralProjection('spectral_projection', cfg.transform, self.embedding_space_tensor, device )
-		self.model: nn.Module = self.get_model()
+		self.model: nn.Module = self.get_model(cfg.model)
 		self.optimizer: optim.Optimizer = None
 		self.log = logging.getLogger()
 		self.loss: nn.Module = self.get_loss()
@@ -56,15 +56,15 @@ class IterativeTrainer(object):
 		elif self.mtype.startswith("classification"): return nn.CrossEntropyLoss()
 		else: raise RuntimeError( f"Unknown model type: {self.mtype}")
 
-	def get_model(self, activation: nn.Module = None ) -> nn.Module:
+	def get_model(self, cfg: DictConfig, activation: nn.Module = None ) -> nn.Module:
 		modules: List[nn.Module] = [ self.embedding ]
 		if   self.mtype.startswith("regression"): result_dim = 1
 		elif self.mtype.startswith("classification"): result_dim = self.noctaves
 		else: raise RuntimeError( f"Unknown model type: {self.mtype}" )
-		for iL in range(1, self.cfg.nlayers+1):
-			input_size = self.embedding.nfreq_oct if (iL == 1) else self.cfg.E_internal
-			output_size = result_dim if (iL == self.cfg.nlayers) else self.cfg.E_internal
-			modules.append( MultiHeadAttention( self.cfg, self.device, input_size, output_size) )
+		for iL in range(1, cfg.nlayers+1):
+			input_size = self.embedding.nfreq_oct if (iL == 1) else cfg.E_internal
+			output_size = result_dim if (iL == cfg.nlayers) else cfg.E_internal
+			modules.append( MultiHeadAttention( cfg, self.device, input_size, output_size) )
 		if activation is not None:
 			modules.append( activation.to(self.device) )
 		return nn.Sequential(*modules)
