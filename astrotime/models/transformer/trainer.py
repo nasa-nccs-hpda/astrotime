@@ -186,7 +186,7 @@ class IterativeTrainer(object):
 						self.log.debug(f"E-{epoch} B-{ibatch}: batch{shp(batch['z'])} target{shp(batch['target'])}")
 						if batch['z'].shape[0] > 0:
 							self.global_time = time.time()
-							result: Tensor = self.model(batch['z'])
+							result: Tensor = self.model(batch['z']).squeeze()
 							if result.squeeze().ndim > 0:
 								rrange = [ result.min().cpu().item(), result.max().cpu().item() ]
 								print( f"Loss: batch{list(batch['z'].shape)} result{list(result.shape)} target{list(batch['target'].shape)}")
