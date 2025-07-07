@@ -188,6 +188,7 @@ class IterativeTrainer(object):
 							result: Tensor = self.model(batch['z'])
 							if result.squeeze().ndim > 0:
 								rrange = [ result.min().cpu().item(), result.max().cpu().item() ]
+								print( f"Loss: result{list(result.shape)} target{list(batch['target'].shape)}")
 								self.log.debug(f"result{list(result.shape)} range: [{rrange[0]:.3f} -> {rrange[1]:.3f}]")
 								loss: Tensor =  self.loss( result, batch['target'] )
 								self.conditionally_update_weights(loss)
