@@ -39,6 +39,7 @@ class IterativeTrainer(object):
 		self.optimizer: optim.Optimizer = None
 		self.log = logging.getLogger()
 		self.loss: nn.Module = self.get_loss(cfg.model)
+		self.f0 = cfg.data.base_freq
 		self._checkpoint_manager: CheckpointManager = None
 		self.start_batch: int = 0
 		self.start_epoch: int = 0
@@ -106,11 +107,15 @@ class IterativeTrainer(object):
 		z: Tensor = self.to_tensor(t,y)
 		return dict( z=z, target=self.get_target(1/p), **batch )
 
+	def get_octave(self, f: Tensor ) -> Tensor:
+		octave = torch.floor( torch.log2(f/self.f0) )
+		return octave
+
 	def get_target(self, f: Tensor ) -> Tensor:
 		if self.cfg.model_type == "regression":
 			return f
 		elif self.cfg.model_type == "classification":
-			return torch.argmax(f, dim=1)
+			return self.get_octave(f)
 		else: raise RuntimeError( f"Unknown model type: {self.cfg.model_type}")
 
 	def to_tensor(self, x: np.ndarray, y: np.ndarray) -> Tensor:
@@ -177,7 +182,7 @@ class IterativeTrainer(object):
 							if result.squeeze().ndim > 0:
 								rrange = [ result.min().cpu().item(), result.max().cpu().item() ]
 								self.log.debug(f"result{list(result.shape)} range: [{rrange[0]:.3f} -> {rrange[1]:.3f}]")
-								loss: Tensor =  self.loss( result.squeeze(), batch['target'].squeeze() )
+								loss: Tensor =  self.loss( result, batch['target'] )
 								self.conditionally_update_weights(loss)
 								lval = loss.cpu().item()
 								losses.append(lval)
