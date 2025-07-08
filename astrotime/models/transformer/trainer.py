@@ -173,7 +173,6 @@ class IterativeTrainer(object):
 	def compute(self,version,ckp_version=None):
 		print(f"SignalTrainer[{self.mode}]: , {self.nepochs} epochs, device={self.device}")
 		self.optimizer = self.get_optimizer()
-		verbose = kwargs.get('verbose',False)
 		self.initialize_checkpointing(version,ckp_version)
 		with self.device:
 			for epoch in range(*self.epoch_range):
@@ -185,18 +184,18 @@ class IterativeTrainer(object):
 					for ibatch in range(0,sys.maxsize):
 						t0 = time.time()
 						batch = self.get_next_batch()
-						if verbose: print(f"E-{epoch} B-{ibatch}: batch{shp(batch['z'])} target{shp(batch['target'])}")
+						if self.verbose: print(f"E-{epoch} B-{ibatch}: batch{shp(batch['z'])} target{shp(batch['target'])}")
 						if batch['z'].shape[0] > 0:
 							self.global_time = time.time()
-							result: Tensor = self.model.forward(batch['z']).squeeze()
+							result: Tensor = self.model(batch['z']).squeeze()
 							if result.squeeze().ndim > 0:
 								rrange = [ result.min().cpu().item(), result.max().cpu().item() ]
-								if verbose: print( f"Loss: batch{list(batch['z'].shape)} result{list(result.shape)} target{list(batch['target'].shape)} result-range: [{rrange[0]:.3f} -> {rrange[1]:.3f}]")
+								if self.verbose: print( f"Loss: batch{list(batch['z'].shape)} result{list(result.shape)} target{list(batch['target'].shape)} result-range: [{rrange[0]:.3f} -> {rrange[1]:.3f}]")
 								loss: Tensor =  self.loss( result, batch['target'] )
 								self.conditionally_update_weights(loss)
 								lval = loss.cpu().item()
 								losses.append(lval)
-								if verbose: print(f"E-{epoch} B-{ibatch} loss={lval:.3f}, range: [{rrange[0]:.6f} -> {rrange[1]:.3f}]", flush=True)
+								if self.verbose: print(f"E-{epoch} B-{ibatch} loss={lval:.3f}, range: [{rrange[0]:.6f} -> {rrange[1]:.3f}]", flush=True)
 								if ibatch % log_interval == 0:
 									aloss = np.array(losses[-log_interval:])
 									print(f"E-{epoch} B-{ibatch} loss={aloss.mean():.3f}, range=({aloss.min():.3f} -> {aloss.max():.3f}), dt/batch={elapsed(t0):.5f} sec")
