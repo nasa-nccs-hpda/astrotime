@@ -1,3 +1,4 @@
+mtype: "transformer"
 task:           "classification"
 nheads: 32                # (int): Number of heads
 dropout: 0.0              # (float): Dropout probability

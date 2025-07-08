@@ -3,6 +3,7 @@ from omegaconf import DictConfig
 from astrotime.trainers.checkpoints import CheckpointManager
 from astrotime.util.tensor_ops import check_nan
 from astrotime.util.math import shp
+from astrotime.models.cnn.cnn_baseline import get_model_from_cfg
 from astrotime.encoders.wavelet import embedding_space
 from astrotime.trainers.loss import ExpLoss, ExpU
 from astrotime.loaders.base import Loader, RDict
@@ -58,19 +59,22 @@ class IterativeTrainer(object):
 		else: raise RuntimeError( f"Unknown model type: {self.mtype}")
 
 	def get_model(self, cfg: DictConfig, **kwargs ) -> nn.Module:
-		modules: List[nn.Module] = [ self.embedding ]
-		activation: Optional[nn.Module] = kwargs.get('activation', None)
-		# if   self.mtype.startswith("regression"): result_dim = 1
-		# elif self.mtype.startswith("classification"): result_dim = self.noctaves
-		# else: raise RuntimeError( f"Unknown model type: {self.mtype}" )
-		result_dim = 1
-		for iL in range(1, cfg.nlayers+1):
-			input_size = self.embedding.output_series_length if (iL == 1) else cfg.E_internal
-			output_size = result_dim if (iL == cfg.nlayers) else cfg.E_internal
-			modules.append( MultiHeadAttention( cfg, self.device, input_size, output_size, **kwargs) )
-		if activation is not None:
-			modules.append( activation.to(self.device) )
-		return nn.Sequential(*modules)
+		if cfg.model.mtype=="cnn":
+			return get_model_from_cfg(cfg.model, self.device, self.embedding, ExpU(cfg.data))
+		else:
+			modules: List[nn.Module] = [ self.embedding ]
+			activation: Optional[nn.Module] = kwargs.get('activation', None)
+			# if   self.mtype.startswith("regression"): result_dim = 1
+			# elif self.mtype.startswith("classification"): result_dim = self.noctaves
+			# else: raise RuntimeError( f"Unknown model type: {self.mtype}" )
+			result_dim = 1
+			for iL in range(1, cfg.nlayers+1):
+				input_size = self.embedding.output_series_length if (iL == 1) else cfg.E_internal
+				output_size = result_dim if (iL == cfg.nlayers) else cfg.E_internal
+				modules.append( MultiHeadAttention( cfg, self.device, input_size, output_size, **kwargs) )
+			if activation is not None:
+				modules.append( activation.to(self.device) )
+			return nn.Sequential(*modules)
 
 	def get_optimizer(self) -> optim.Optimizer:
 		lr = self.cfg.lr
@@ -101,7 +105,7 @@ class IterativeTrainer(object):
 
 	def conditionally_update_weights(self, loss: Tensor):
 		if self.mode == TSet.Train:
-			print( f"  ---> Update weights({self.cfg.optim }:lr={self.cfg.lr:.4f}): loss = {loss.cpu().item():.3f} ")
+			# print( f"  ---> Update weights({self.cfg.optim }:lr={self.cfg.lr:.4f}): loss = {loss.cpu().item():.3f} ")
 			self.optimizer.zero_grad()
 			loss.backward()
 			self.optimizer.step()
@@ -229,7 +233,7 @@ class IterativeTrainer(object):
 				loss: Tensor =  self.loss( result, target )
 				self.conditionally_update_weights(loss)
 				if self.verbose: check_nan('loss', loss)
-				print(f"I-{iteration}  result{list(result.shape)}: result-range: [{rrange[0]:.3f} -> {rrange[1]:.3f}], target-range: [{trange[0]:.3f} -> {trange[1]:.3f}]", flush=True)
+				print(f"I-{iteration}  result{list(result.shape)}: loss = {loss.cpu().item():.3f}, result-range: [{rrange[0]:.3f} -> {rrange[1]:.3f}], target-range: [{trange[0]:.3f} -> {trange[1]:.3f}]", flush=True)
 
 
 	def evaluate(self, version: str = None):
