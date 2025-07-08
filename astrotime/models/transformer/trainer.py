@@ -40,7 +40,7 @@ class IterativeTrainer(object):
 		self.loader: Loader = loader
 		self.embedding = SpectralProjection('spectral_projection', cfg.transform, self.embedding_space_tensor, device )
 		self.model: nn.Module = self.get_model(cfg.model, **kwargs)
-		self.optimizer: optim.Optimizer = None
+		self.optimizer: optim.Optimizer =  self.get_optimizer()
 		self.log = logging.getLogger()
 		self.loss: nn.Module = kwargs.get( 'loss', self.get_loss() )
 		self._checkpoint_manager: CheckpointManager = None
@@ -57,9 +57,9 @@ class IterativeTrainer(object):
 		elif self.mtype.startswith("classification"): return nn.CrossEntropyLoss()
 		else: raise RuntimeError( f"Unknown model type: {self.mtype}")
 
-	def get_model(self, cfg: DictConfig, activation: nn.Module = None, **kwargs ) -> nn.Module:
+	def get_model(self, cfg: DictConfig, **kwargs ) -> nn.Module:
 		modules: List[nn.Module] = [ self.embedding ]
-		scale: Optional[nn.Module] = kwargs.get('scale',None)
+		activation: Optional[nn.Module] = kwargs.get('activation', None)
 		# if   self.mtype.startswith("regression"): result_dim = 1
 		# elif self.mtype.startswith("classification"): result_dim = self.noctaves
 		# else: raise RuntimeError( f"Unknown model type: {self.mtype}" )
@@ -70,7 +70,6 @@ class IterativeTrainer(object):
 			modules.append( MultiHeadAttention( cfg, self.device, input_size, output_size, **kwargs) )
 		if activation is not None:
 			modules.append( activation.to(self.device) )
-		if scale is not None: modules.append(scale)
 		return nn.Sequential(*modules)
 
 	def get_optimizer(self) -> optim.Optimizer:
@@ -92,7 +91,6 @@ class IterativeTrainer(object):
 
 	def load_checkpoint( self, version: str ):
 		if version is not None:
-			self.optimizer = self.get_optimizer()
 			self._checkpoint_manager = CheckpointManager( version, self.model, self.optimizer, self.cfg )
 			self.train_state = self._checkpoint_manager.load_checkpoint( update_model=True )
 			self.epoch0      = self.train_state.get('epoch', 0)
@@ -174,7 +172,6 @@ class IterativeTrainer(object):
 
 	def compute(self,version,ckp_version=None):
 		print(f"SignalTrainer[{self.mode}]: , {self.nepochs} epochs, device={self.device}")
-		self.optimizer = self.get_optimizer()
 		self.initialize_checkpointing(version,ckp_version)
 		with self.device:
 			for epoch in range(*self.epoch_range):
@@ -215,7 +212,6 @@ class IterativeTrainer(object):
 
 	def test_learning(self,version,ckp_version=None):
 		print(f"SignalTrainer[{self.mode}]: , {self.nepochs} epochs, device={self.device}")
-		self.optimizer = self.get_optimizer()
 		self.initialize_checkpointing(version,ckp_version)
 		with self.device:
 			self.set_train_status()

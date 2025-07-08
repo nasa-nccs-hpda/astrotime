@@ -14,7 +14,7 @@ def my_app(cfg: DictConfig) -> None:
 	device: torch.device = astrotime_initialize( cfg, version )
 
 	data_loader = SyntheticElementLoader(cfg.data, TSet.Train)
-	trainer = IterativeTrainer( cfg, device, data_loader, scale=ExpU(cfg.data), loss=ExpLoss(cfg.data), verbose=False )
+	trainer = IterativeTrainer( cfg, device, data_loader, activation=ExpU(cfg.data), loss=ExpLoss(cfg.data), verbose=False )
 	trainer.test_learning(version)
 #	trainer.compute(version)
 
