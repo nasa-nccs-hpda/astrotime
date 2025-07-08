@@ -62,6 +62,8 @@ class IterativeTrainer(object):
 		activation: Optional[nn.Module] = kwargs.get('activation', None)
 		if cfg.mtype=="cnn":
 			return get_model_from_cfg( cfg, self.device, self.embedding, activation )
+		elif cfg.mtype == "transformer":
+			return nn.Transformer()
 		else:
 			model: nn.Sequential = nn.Sequential( self.embedding )
 			# if   self.mtype.startswith("regression"): result_dim = 1
@@ -217,7 +219,7 @@ class IterativeTrainer(object):
 				print(f" ------ Epoch Loss: mean={epoch_losses.mean():.3f}, median={np.median(epoch_losses):.3f}, range=({epoch_losses.min():.3f} -> {epoch_losses.max():.3f})")
 
 	def test_learning(self,version,ckp_version=None):
-		print(f"SignalTrainer[{self.mode}]: , {self.nepochs} epochs, device={self.device}")
+		print(f"test_learning: mtype={self.mtype}")
 		self.initialize_checkpointing(version,ckp_version)
 		with self.device:
 			self.set_train_status()
@@ -226,7 +228,7 @@ class IterativeTrainer(object):
 			target: Tensor = batch['target']
 			bdata: Tensor = batch['z']
 			trange = [target.min().cpu().item(), target.max().cpu().item()]
-			for iteration in range(1000):
+			for iteration in range(50):
 				result: Tensor = self.model(bdata).squeeze()
 				rrange = [result.min().cpu().item(), result.max().cpu().item()]
 				if self.verbose: check_nan('result',result)
