@@ -10,4 +10,5 @@ kernel_size: 3                                  # Kernel size for every CNN laye
 cnn_expansion_factor: 4                         # Increase in the number of channels from one CNN layer to the next
 base_freq:  ${data.base_freq}                   # Start frequency of base octave
 feature: 1
+fold_octaves: False
 
