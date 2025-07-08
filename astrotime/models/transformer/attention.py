@@ -36,14 +36,10 @@ class MultiHeadAttention(nn.Module):
         """
         # Step 1. Apply input projection
 
-
-    #    check_nan(f"packed_proj.input", embedding)
-     #   print( f" ----> embedding{shp(embedding)}" )
-
-
+        if self.verbose: check_nan(f"packed_proj.input", embedding)
         result = self.packed_proj(embedding)
-    #    check_nan(f"packed_proj.result", result)
 
+        if self.verbose: check_nan(f"packed_proj.result", result)
         query, key, value = torch.chunk(result, 3, dim=-1)
 
         if self.verbose: print(f" embedding{shp(embedding)} ----> (N, L_t, E_hidden): query{shp(query)} key{shp(key)} value{shp(value)}") #
@@ -56,17 +52,17 @@ class MultiHeadAttention(nn.Module):
         # (N, L_s, E_hidden) -> (N, L_s, nheads, E_head) -> (N, nheads, L_s, E_head)
         value: Tensor = value.unflatten(-1, [self.nheads, self.E_head]).transpose(1, 2)
 
-     #   check_nan( f"s2.query", query )
-    #    check_nan( f"s2.key", key )
-    #    check_nan( f"s2.value", value)
-
-        if self.verbose: print(f" ---->  (N, L_s, E_hidden) -> (N, L_s, nheads, E_head) -> (N, nheads, L_s, E_head): query{shp(query)} key{shp(key)} value{shp(value)}")
+        if self.verbose:
+            check_nan( f"s2.query", query )
+            check_nan( f"s2.key", key )
+            check_nan( f"s2.value", value)
+            print(f" ---->  (N, L_s, E_hidden) -> (N, L_s, nheads, E_head) -> (N, nheads, L_s, E_head): query{shp(query)} key{shp(key)} value{shp(value)}")
 
         # Step 3. Run SDPA
         # (N, nheads, L_t, E_head)
         attn_output = F.scaled_dot_product_attention( query, key, value, dropout_p=self.dropout )
 
-    #    check_nan( f"attn_output", attn_output)
+        if self.verbose: check_nan( f"attn_output", attn_output)
 
         # (N, nheads, L_t, E_head) -> (N, L_t, nheads, E_head) -> (N, L_t, E_hidden)
         attn_output = attn_output.transpose(1, 2).flatten(-2)
@@ -77,6 +73,6 @@ class MultiHeadAttention(nn.Module):
         # (N, L_t, E_hidden) -> (N, L_t, E_out)
         attn_output = self.out_proj(attn_output)
 
-        if self.verbose: print(f" ----> (N, L_t, E_hidden) -> (N, L_t, E_out): attn_output{shp(attn_output)}")
+        if self.verbose:  print(f" ----> (N, L_t, E_hidden) -> (N, L_t, E_out): attn_output{shp(attn_output)}")
 
         return attn_output
