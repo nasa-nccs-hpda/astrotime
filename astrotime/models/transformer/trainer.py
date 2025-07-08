@@ -60,7 +60,7 @@ class IterativeTrainer(object):
 
 	def get_model(self, cfg: DictConfig, **kwargs ) -> nn.Module:
 		if cfg.mtype=="cnn":
-			return get_model_from_cfg(cfg.model, self.device, self.embedding, ExpU(cfg.data))
+			return get_model_from_cfg( cfg, self.device, self.embedding, ExpU(cfg.data) )
 		else:
 			modules: List[nn.Module] = [ self.embedding ]
 			activation: Optional[nn.Module] = kwargs.get('activation', None)
