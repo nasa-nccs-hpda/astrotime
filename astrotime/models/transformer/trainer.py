@@ -198,7 +198,7 @@ class IterativeTrainer(object):
 								lval = loss.cpu().item()
 								losses.append(lval)
 								if self.verbose:
-									check_nan('loss', lval)
+									check_nan('loss', loss)
 									print(f"E-{epoch} B-{ibatch} loss={lval:.3f}, range: [{rrange[0]:.6f} -> {rrange[1]:.3f}]", flush=True)
 								if ibatch % log_interval == 0:
 									aloss = np.array(losses[-log_interval:])
