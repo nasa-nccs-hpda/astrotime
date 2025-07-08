@@ -59,11 +59,11 @@ class IterativeTrainer(object):
 		else: raise RuntimeError( f"Unknown model type: {self.mtype}")
 
 	def get_model(self, cfg: DictConfig, **kwargs ) -> nn.Module:
+		activation: Optional[nn.Module] = kwargs.get('activation', None)
 		if cfg.mtype=="cnn":
-			return get_model_from_cfg( cfg, self.device, self.embedding, ExpU(cfg.data) )
+			return get_model_from_cfg( cfg, self.device, self.embedding, activation )
 		else:
 			modules: List[nn.Module] = [ self.embedding ]
-			activation: Optional[nn.Module] = kwargs.get('activation', None)
 			# if   self.mtype.startswith("regression"): result_dim = 1
 			# elif self.mtype.startswith("classification"): result_dim = self.noctaves
 			# else: raise RuntimeError( f"Unknown model type: {self.mtype}" )
