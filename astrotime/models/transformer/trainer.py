@@ -42,7 +42,7 @@ class IterativeTrainer(object):
 		self.model: nn.Module = self.get_model(cfg.model, **kwargs)
 		self.optimizer: optim.Optimizer = None
 		self.log = logging.getLogger()
-		self.loss: nn.Module = self.get_loss()
+		self.loss: nn.Module = kwargs.get( 'loss', self.get_loss() )
 		self._checkpoint_manager: CheckpointManager = None
 		self.start_batch: int = 0
 		self.start_epoch: int = 0
@@ -59,6 +59,7 @@ class IterativeTrainer(object):
 
 	def get_model(self, cfg: DictConfig, activation: nn.Module = None, **kwargs ) -> nn.Module:
 		modules: List[nn.Module] = [ self.embedding ]
+		scale: Optional[nn.Module] = kwargs.get('scale',None)
 		# if   self.mtype.startswith("regression"): result_dim = 1
 		# elif self.mtype.startswith("classification"): result_dim = self.noctaves
 		# else: raise RuntimeError( f"Unknown model type: {self.mtype}" )
@@ -69,6 +70,7 @@ class IterativeTrainer(object):
 			modules.append( MultiHeadAttention( cfg, self.device, input_size, output_size, **kwargs) )
 		if activation is not None:
 			modules.append( activation.to(self.device) )
+		if scale is not None: modules.append(scale)
 		return nn.Sequential(*modules)
 
 	def get_optimizer(self) -> optim.Optimizer:

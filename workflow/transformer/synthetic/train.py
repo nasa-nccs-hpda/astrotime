@@ -3,6 +3,7 @@ from omegaconf import DictConfig
 from torch import nn
 from astrotime.util.series import TSet
 from typing import List, Optional, Dict, Type, Union, Tuple
+from astrotime.trainers.loss import ExpLoss, ExpU
 from astrotime.models.transformer.trainer import IterativeTrainer
 from astrotime.config.context import astrotime_initialize
 from astrotime.loaders.synthetic import SyntheticElementLoader
@@ -13,7 +14,7 @@ def my_app(cfg: DictConfig) -> None:
 	device: torch.device = astrotime_initialize( cfg, version )
 
 	data_loader = SyntheticElementLoader(cfg.data, TSet.Train)
-	trainer = IterativeTrainer( cfg, device, data_loader, verbose=False )
+	trainer = IterativeTrainer( cfg, device, data_loader, scale=ExpU(cfg.data), loss=ExpLoss(cfg.data), verbose=False )
 	trainer.compute(version)
 
 if __name__ == "__main__":
