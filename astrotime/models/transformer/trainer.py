@@ -213,6 +213,27 @@ class IterativeTrainer(object):
 				epoch_losses = np.array(losses)
 				print(f" ------ Epoch Loss: mean={epoch_losses.mean():.3f}, median={np.median(epoch_losses):.3f}, range=({epoch_losses.min():.3f} -> {epoch_losses.max():.3f})")
 
+	def test_learning(self,version,ckp_version=None):
+		print(f"SignalTrainer[{self.mode}]: , {self.nepochs} epochs, device={self.device}")
+		self.optimizer = self.get_optimizer()
+		self.initialize_checkpointing(version,ckp_version)
+		with self.device:
+			self.set_train_status()
+			self.loader.init_epoch()
+			batch = self.get_next_batch()
+			target: Tensor = batch['target']
+			bdata: Tensor = batch['z']
+			trange = [target.min().cpu().item(), target.max().cpu().item()]
+			for iteration in range(1000):
+				result: Tensor = self.model(bdata).squeeze()
+				rrange = [result.min().cpu().item(), result.max().cpu().item()]
+				if self.verbose: check_nan('result',result)
+				loss: Tensor =  self.loss( result, target )
+				self.conditionally_update_weights(loss)
+				if self.verbose: check_nan('loss', loss)
+				print(f"I-{iteration}  result{list(result.shape)}: loss={loss.cpu().item():.3f},  result-range: [{rrange[0]:.3f} -> {rrange[1]:.3f}], target-range: [{trange[0]:.3f} -> {trange[1]:.3f}]", flush=True)
+
+
 	def evaluate(self, version: str = None):
 		self.load_checkpoint(version)
 		with self.device:
