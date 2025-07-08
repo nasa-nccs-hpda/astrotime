@@ -229,7 +229,7 @@ class IterativeTrainer(object):
 			bdata: Tensor = batch['z']
 			trange = [target.min().cpu().item(), target.max().cpu().item()]
 			for iteration in range(50):
-				result: Tensor = self.model(bdata).squeeze()
+				result: Tensor = self.model(bdata,target).squeeze()
 				rrange = [result.min().cpu().item(), result.max().cpu().item()]
 				if self.verbose: check_nan('result',result)
 				loss: Tensor =  self.loss( result, target )
