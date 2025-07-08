@@ -73,7 +73,7 @@ class IterativeTrainer(object):
 		return nn.Sequential(*modules)
 
 	def get_optimizer(self) -> optim.Optimizer:
-		lr = 10 # self.cfg.lr
+		lr = self.cfg.lr
 		if   self.cfg.optim == "rms":  return optim.RMSprop( self.model.parameters(), lr=lr )
 		elif self.cfg.optim == "adam": return optim.Adam(    self.model.parameters(), lr=lr, weight_decay=self.cfg.weight_decay )
 		else: raise RuntimeError( f"Unknown optimizer: {self.cfg.optim}")
@@ -101,7 +101,7 @@ class IterativeTrainer(object):
 
 	def conditionally_update_weights(self, loss: Tensor):
 		if self.mode == TSet.Train:
-			print( f"  ---> Update weights(lr={self.cfg.lr:.4f}): loss = {loss.cpu().item():.3f} ")
+			print( f"  ---> Update weights({self.cfg.optim }:lr={self.cfg.lr:.4f}): loss = {loss.cpu().item():.3f} ")
 			self.optimizer.zero_grad()
 			loss.backward()
 			self.optimizer.step()
