@@ -13,7 +13,7 @@ def my_app(cfg: DictConfig) -> None:
 	device: torch.device = astrotime_initialize( cfg, version )
 
 	data_loader = SyntheticElementLoader(cfg.data, TSet.Train)
-	trainer = IterativeTrainer( cfg, device, data_loader )
+	trainer = IterativeTrainer( cfg, device, data_loader, verbose=True )
 	trainer.compute(version)
 
 if __name__ == "__main__":

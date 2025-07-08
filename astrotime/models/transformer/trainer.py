@@ -29,16 +29,17 @@ def tnorm(x: Tensor, dim: int=0) -> Tensor:
 
 class IterativeTrainer(object):
 
-	def __init__(self, cfg: DictConfig, device: torch.device, loader: Loader ):
+	def __init__(self, cfg: DictConfig, device: torch.device, loader: Loader, **kwargs ):
 		self.cfg: DictConfig = cfg.train
 		self.device: torch.device = device
+		self.verbose = kwargs.get('verbose',False)
 		self.mtype: str = cfg.model.task
 		self.noctaves = cfg.data.noctaves
 		self.f0 = cfg.data.base_freq
 		self.embedding_space_array, self.embedding_space_tensor = embedding_space(cfg.transform, device)
 		self.loader: Loader = loader
 		self.embedding = SpectralProjection('spectral_projection', cfg.transform, self.embedding_space_tensor, device )
-		self.model: nn.Module = self.get_model(cfg.model)
+		self.model: nn.Module = self.get_model(cfg.model, **kwargs)
 		self.optimizer: optim.Optimizer = None
 		self.log = logging.getLogger()
 		self.loss: nn.Module = self.get_loss()
@@ -56,7 +57,7 @@ class IterativeTrainer(object):
 		elif self.mtype.startswith("classification"): return nn.CrossEntropyLoss()
 		else: raise RuntimeError( f"Unknown model type: {self.mtype}")
 
-	def get_model(self, cfg: DictConfig, activation: nn.Module = None ) -> nn.Module:
+	def get_model(self, cfg: DictConfig, activation: nn.Module = None, **kwargs ) -> nn.Module:
 		modules: List[nn.Module] = [ self.embedding ]
 		# if   self.mtype.startswith("regression"): result_dim = 1
 		# elif self.mtype.startswith("classification"): result_dim = self.noctaves
@@ -65,7 +66,7 @@ class IterativeTrainer(object):
 		for iL in range(1, cfg.nlayers+1):
 			input_size = self.embedding.nfreq_oct if (iL == 1) else cfg.E_internal
 			output_size = result_dim if (iL == cfg.nlayers) else cfg.E_internal
-			modules.append( MultiHeadAttention( cfg, self.device, input_size, output_size) )
+			modules.append( MultiHeadAttention( cfg, self.device, input_size, output_size, **kwargs) )
 		if activation is not None:
 			modules.append( activation.to(self.device) )
 		return nn.Sequential(*modules)
@@ -172,6 +173,7 @@ class IterativeTrainer(object):
 	def compute(self,version,ckp_version=None):
 		print(f"SignalTrainer[{self.mode}]: , {self.nepochs} epochs, device={self.device}")
 		self.optimizer = self.get_optimizer()
+		verbose = kwargs.get('verbose',False)
 		self.initialize_checkpointing(version,ckp_version)
 		with self.device:
 			for epoch in range(*self.epoch_range):
@@ -183,19 +185,18 @@ class IterativeTrainer(object):
 					for ibatch in range(0,sys.maxsize):
 						t0 = time.time()
 						batch = self.get_next_batch()
-						self.log.debug(f"E-{epoch} B-{ibatch}: batch{shp(batch['z'])} target{shp(batch['target'])}")
+						if verbose: print(f"E-{epoch} B-{ibatch}: batch{shp(batch['z'])} target{shp(batch['target'])}")
 						if batch['z'].shape[0] > 0:
 							self.global_time = time.time()
-							result: Tensor = self.model(batch['z']).squeeze()
+							result: Tensor = self.model.forward(batch['z']).squeeze()
 							if result.squeeze().ndim > 0:
 								rrange = [ result.min().cpu().item(), result.max().cpu().item() ]
-								print( f"Loss: batch{list(batch['z'].shape)} result{list(result.shape)} target{list(batch['target'].shape)}")
-								self.log.debug(f"result{list(result.shape)} range: [{rrange[0]:.3f} -> {rrange[1]:.3f}]")
+								if verbose: print( f"Loss: batch{list(batch['z'].shape)} result{list(result.shape)} target{list(batch['target'].shape)} result-range: [{rrange[0]:.3f} -> {rrange[1]:.3f}]")
 								loss: Tensor =  self.loss( result, batch['target'] )
 								self.conditionally_update_weights(loss)
 								lval = loss.cpu().item()
 								losses.append(lval)
-								print(f"E-{epoch} B-{ibatch} loss={lval:.3f}, range: [{rrange[0]:.6f} -> {rrange[1]:.3f}]", flush=True)
+								if verbose: print(f"E-{epoch} B-{ibatch} loss={lval:.3f}, range: [{rrange[0]:.6f} -> {rrange[1]:.3f}]", flush=True)
 								if ibatch % log_interval == 0:
 									aloss = np.array(losses[-log_interval:])
 									print(f"E-{epoch} B-{ibatch} loss={aloss.mean():.3f}, range=({aloss.min():.3f} -> {aloss.max():.3f}), dt/batch={elapsed(t0):.5f} sec")
