@@ -188,12 +188,14 @@ class IterativeTrainer(object):
 						if batch['z'].shape[0] > 0:
 							self.global_time = time.time()
 							result: Tensor = self.model(batch['z']).squeeze()
+							target: Tensor =  batch['target']
 							if result.squeeze().ndim > 0:
-								rrange = [ result.min().cpu().item(), result.max().cpu().item() ]
+								rrange = [result.min().cpu().item(), result.max().cpu().item()]
+								trange = [target.min().cpu().item(), target.max().cpu().item()]
 								if self.verbose:
 									check_nan('result',result)
-									print( f"Loss: batch{list(batch['z'].shape)} result{list(result.shape)} target{list(batch['target'].shape)} result-range: [{rrange[0]:.3f} -> {rrange[1]:.3f}]")
-								loss: Tensor =  self.loss( result, batch['target'] )
+									print( f"Loss: batch{list(batch['z'].shape)}, result{list(result.shape)}, target{list(batch['target'].shape)}, result-range: [{rrange[0]:.3f} -> {rrange[1]:.3f}], target-range: [{trange[0]:.3f} -> {trange[1]:.3f}]")
+								loss: Tensor =  self.loss( result, target )
 								self.conditionally_update_weights(loss)
 								lval = loss.cpu().item()
 								losses.append(lval)
