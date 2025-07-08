@@ -1,8 +1,8 @@
-task:           "regression"
+task:           "classification"
 nheads: 32                # (int): Number of heads
 dropout: 0.0              # (float): Dropout probability
 bias: True                # (bool): Whether to add bias to input projection.
 E_head: 512             # (int): Head dim
 E_internal: 512
 nlayers: 4
-fold_octaves: False
+fold_octaves: True

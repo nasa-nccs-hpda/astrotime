@@ -6,7 +6,7 @@ from typing import List, Optional, Dict, Type, Union, Tuple
 from astrotime.models.transformer.trainer import IterativeTrainer
 from astrotime.config.context import astrotime_initialize
 from astrotime.loaders.synthetic import SyntheticElementLoader
-version = "synthetic_period_transformer"
+version = "synthetic_period_transformer.classification"
 
 @hydra.main(version_base=None, config_path="../../../config", config_name=version)
 def my_app(cfg: DictConfig) -> None:
