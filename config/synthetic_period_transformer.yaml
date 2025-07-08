@@ -3,8 +3,7 @@ defaults:
   - train: "synthetic_transformer"
   - transform: "transformer"
   - data: "synthetic"
- # - model: "transformer"
-  - model: "wp_cnn"
+  - model: "transformer"
   - _self_
   - override hydra/hydra_logging: disabled
   - override hydra/job_logging: disabled

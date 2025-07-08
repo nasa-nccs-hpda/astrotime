@@ -63,7 +63,7 @@ class IterativeTrainer(object):
 		if cfg.mtype=="cnn":
 			return get_model_from_cfg( cfg, self.device, self.embedding, activation )
 		else:
-			modules: List[nn.Module] = [ self.embedding ]
+			model: nn.Sequential = nn.Sequential( self.embedding )
 			# if   self.mtype.startswith("regression"): result_dim = 1
 			# elif self.mtype.startswith("classification"): result_dim = self.noctaves
 			# else: raise RuntimeError( f"Unknown model type: {self.mtype}" )
@@ -71,10 +71,10 @@ class IterativeTrainer(object):
 			for iL in range(1, cfg.nlayers+1):
 				input_size = self.embedding.output_series_length if (iL == 1) else cfg.E_internal
 				output_size = result_dim if (iL == cfg.nlayers) else cfg.E_internal
-				modules.append( MultiHeadAttention( cfg, self.device, input_size, output_size, **kwargs) )
+				model.append( MultiHeadAttention( cfg, self.device, input_size, output_size, **kwargs) )
 			if activation is not None:
-				modules.append( activation.to(self.device) )
-			return nn.Sequential(*modules)
+				model.append( activation.to(self.device) )
+			return model
 
 	def get_optimizer(self) -> optim.Optimizer:
 		lr = self.cfg.lr
