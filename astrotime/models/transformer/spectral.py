@@ -45,7 +45,7 @@ class SpectralProjection(EmbeddingLayer):
 
 	@property
 	def output_series_length(self) -> int:
-		return self.nf
+		return self.nfreq_oct if self.fold_octaves else self.nf
 
 	def sbatch(self, ts: torch.Tensor, ys: torch.Tensor, subbatch: int) -> tuple[Tensor,Tensor]:
 		sbr = [ subbatch*self.subbatch_size, (subbatch+1)*self.subbatch_size ]

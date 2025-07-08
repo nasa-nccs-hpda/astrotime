@@ -64,7 +64,7 @@ class IterativeTrainer(object):
 		# else: raise RuntimeError( f"Unknown model type: {self.mtype}" )
 		result_dim = 1
 		for iL in range(1, cfg.nlayers+1):
-			input_size = self.embedding.nfreq_oct if (iL == 1) else cfg.E_internal
+			input_size = self.embedding.output_series_length if (iL == 1) else cfg.E_internal
 			output_size = result_dim if (iL == cfg.nlayers) else cfg.E_internal
 			modules.append( MultiHeadAttention( cfg, self.device, input_size, output_size, **kwargs) )
 		if activation is not None:
