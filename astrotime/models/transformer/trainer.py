@@ -73,8 +73,9 @@ class IterativeTrainer(object):
 		return nn.Sequential(*modules)
 
 	def get_optimizer(self) -> optim.Optimizer:
-		if   self.cfg.optim == "rms":  return optim.RMSprop( self.model.parameters(), lr=self.cfg.lr )
-		elif self.cfg.optim == "adam": return optim.Adam(    self.model.parameters(), lr=self.cfg.lr, weight_decay=self.cfg.weight_decay )
+		lr = 10 # self.cfg.lr
+		if   self.cfg.optim == "rms":  return optim.RMSprop( self.model.parameters(), lr=lr )
+		elif self.cfg.optim == "adam": return optim.Adam(    self.model.parameters(), lr=lr, weight_decay=self.cfg.weight_decay )
 		else: raise RuntimeError( f"Unknown optimizer: {self.cfg.optim}")
 
 	def initialize_checkpointing( self, version: str, init_version:Optional[str]=None ):
