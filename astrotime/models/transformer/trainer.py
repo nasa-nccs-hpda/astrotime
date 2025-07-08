@@ -59,7 +59,7 @@ class IterativeTrainer(object):
 		else: raise RuntimeError( f"Unknown model type: {self.mtype}")
 
 	def get_model(self, cfg: DictConfig, **kwargs ) -> nn.Module:
-		if cfg.model.mtype=="cnn":
+		if cfg.mtype=="cnn":
 			return get_model_from_cfg(cfg.model, self.device, self.embedding, ExpU(cfg.data))
 		else:
 			modules: List[nn.Module] = [ self.embedding ]
