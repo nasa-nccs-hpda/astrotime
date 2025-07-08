@@ -184,24 +184,22 @@ class IterativeTrainer(object):
 					for ibatch in range(0,sys.maxsize):
 						t0 = time.time()
 						batch = self.get_next_batch()
-						if self.verbose: print(f"E-{epoch} B-{ibatch}: batch{shp(batch['z'])} target{shp(batch['target'])}")
+						target: Tensor = batch['target']
+						if self.verbose: print(f"E-{epoch} B-{ibatch}: batch{shp(batch['z'])} target{shp(target)}")
 						if batch['z'].shape[0] > 0:
 							self.global_time = time.time()
 							result: Tensor = self.model(batch['z']).squeeze()
-							target: Tensor =  batch['target']
 							if result.squeeze().ndim > 0:
 								rrange = [result.min().cpu().item(), result.max().cpu().item()]
 								trange = [target.min().cpu().item(), target.max().cpu().item()]
-								if self.verbose:
-									check_nan('result',result)
-									print( f"Loss: batch{list(batch['z'].shape)}, result{list(result.shape)}, target{list(batch['target'].shape)}, result-range: [{rrange[0]:.3f} -> {rrange[1]:.3f}], target-range: [{trange[0]:.3f} -> {trange[1]:.3f}]")
+								if self.verbose: check_nan('result',result)
 								loss: Tensor =  self.loss( result, target )
 								self.conditionally_update_weights(loss)
 								lval = loss.cpu().item()
 								losses.append(lval)
 								if self.verbose:
 									check_nan('loss', loss)
-									print(f"E-{epoch} B-{ibatch} loss={lval:.3f}, range: [{rrange[0]:.6f} -> {rrange[1]:.3f}]", flush=True)
+								print(f"E-{epoch} B-{ibatch} result{list(result.shape)}: loss={lval:.3f},  result-range: [{rrange[0]:.3f} -> {rrange[1]:.3f}], target-range: [{trange[0]:.3f} -> {trange[1]:.3f}]", flush=True)
 								if ibatch % log_interval == 0:
 									aloss = np.array(losses[-log_interval:])
 									print(f"E-{epoch} B-{ibatch} loss={aloss.mean():.3f}, range=({aloss.min():.3f} -> {aloss.max():.3f}), dt/batch={elapsed(t0):.5f} sec")
