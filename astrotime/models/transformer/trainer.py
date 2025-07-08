@@ -100,6 +100,7 @@ class IterativeTrainer(object):
 
 	def conditionally_update_weights(self, loss: Tensor):
 		if self.mode == TSet.Train:
+			print( f"  ---> Update weights(lr={self.cfg.lr:.4f}): loss = {loss.cpu().item():.3f} ")
 			self.optimizer.zero_grad()
 			loss.backward()
 			self.optimizer.step()
@@ -227,7 +228,7 @@ class IterativeTrainer(object):
 				loss: Tensor =  self.loss( result, target )
 				self.conditionally_update_weights(loss)
 				if self.verbose: check_nan('loss', loss)
-				print(f"I-{iteration}  result{list(result.shape)}: loss={loss.cpu().item():.3f},  result-range: [{rrange[0]:.3f} -> {rrange[1]:.3f}], target-range: [{trange[0]:.3f} -> {trange[1]:.3f}]", flush=True)
+				print(f"I-{iteration}  result{list(result.shape)}: result-range: [{rrange[0]:.3f} -> {rrange[1]:.3f}], target-range: [{trange[0]:.3f} -> {trange[1]:.3f}]", flush=True)
 
 
 	def evaluate(self, version: str = None):
