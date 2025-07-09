@@ -18,6 +18,18 @@ class ExpU(nn.Module):
 	def __init__(self, cfg: DictConfig ) -> None:
 		super().__init__()
 		self.f0: float = cfg.base_freq
+
+	def forward(self, x: torch.Tensor) -> torch.Tensor:
+		result = self.f0 * (torch.pow(2, x) - 1)
+		# print(f"ExpU(xmax={self.xmax:.3f}): xm={x.max().item():.3f} xrm={xr.max().item():.3f} xsm={xs.max().item():.3f} rm={result.max().item():.3f}",flush=True)
+		# print(f"ExpU: x{shp(x)} result{shp(result)}")
+		return result
+
+class BExpU(nn.Module):
+
+	def __init__(self, cfg: DictConfig ) -> None:
+		super().__init__()
+		self.f0: float = cfg.base_freq
 		self.xmax = cfg.noctaves+1
 		self.relu = nn.ReLU()
 
@@ -35,9 +47,8 @@ class ExpLoss(nn.Module):
 		self.f0: float = cfg.base_freq
 
 	def forward(self, product: torch.Tensor, target: torch.Tensor) -> torch.Tensor:
-		zf = self.f0 * 1.01
-		pf: torch.Tensor = (product + zf)
-		tf: torch.Tensor = (target  + zf)
+		pf: torch.Tensor = (product + self.f0)
+		tf: torch.Tensor = (target  + self.f0)
 		ptr: torch.Tensor = torch.log2(pf/tf)
 		# print(f"ExpLoss(zf={zf:.6f}): y{shp(product)}({product.min().item():.6f} -> {product.max().item():.3f}), pf{shp(pf)}({pf.min().item():.6f} -> {pf.max().item():.3f}), tf{shp(tf)}({tf.min().item():.3f} -> {tf.max().item():.3f}), ptr{shp(ptr)}({ptr.min().item():.3f} -> {ptr.max().item():.3f})")
 		result = torch.abs( ptr ).mean()
