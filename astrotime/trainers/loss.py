@@ -1,5 +1,6 @@
 from torch import nn
 import torch, math, numpy as np
+from astrotime.util.math import shp
 from typing import List, Tuple, Mapping
 from astrotime.util.math import tmean, tstd, tmag, npnorm, shp
 from astrotime.util.tensor_ops import check_nan
@@ -25,6 +26,7 @@ class ExpU(nn.Module):
 		xs = x - xr
 		result = self.f0 * (torch.pow(2, xs) - 1)
 		# print(f"ExpU(xmax={self.xmax:.3f}): xm={x.max().item():.3f} xrm={xr.max().item():.3f} xsm={xs.max().item():.3f} rm={result.max().item():.3f}",flush=True)
+		print(f"ExpU: x{shp(x)} result{shp(result)}")
 		return result
 
 class ExpLoss(nn.Module):
