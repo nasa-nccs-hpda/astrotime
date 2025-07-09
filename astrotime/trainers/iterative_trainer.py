@@ -145,6 +145,9 @@ class IterativeTrainer(object):
             result: Tensor = self.model( batch['z'] )
             print( f" ** (batch{list(batch['z'].shape)}, target{list(batch['target'].shape)}) ->  result{list(result.shape)}")
 
+    def get_target(self, batch: TRDict) -> Tensor:
+        return batch['target'].squeeze()
+
     def compute(self,version,ckp_version=None):
         print(f"SignalTrainer[{self.mode}]: , {self.nepochs} epochs, device={self.device}")
         self.optimizer = self.get_optimizer()
@@ -166,8 +169,9 @@ class IterativeTrainer(object):
                             check_nan('model', batch['z'])
                             if result.squeeze().ndim > 0:
                                 self.log.debug(f"result{list(result.shape)} range: [{result.min().cpu().item()} -> {result.max().cpu().item()}]")
+                                target = self.get_target(batch)
                                 # print(f"batch{list(batch['z'].shape)} result{list(result.squeeze().shape)} target{list(batch['target'].squeeze().shape)}")
-                                loss: Tensor =  self.loss( result.squeeze(), batch['target'].squeeze() )
+                                loss: Tensor =  self.loss( result.squeeze(), target )
                                 check_nan('loss', loss )
                                 self.conditionally_update_weights(loss)
                                 losses.append(loss.cpu().item())
