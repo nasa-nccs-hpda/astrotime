@@ -47,8 +47,9 @@ class ExpLoss(nn.Module):
 		self.f0: float = cfg.base_freq
 
 	def forward(self, product: torch.Tensor, target: torch.Tensor) -> torch.Tensor:
-		pf: torch.Tensor = (product + self.f0)
-		tf: torch.Tensor = (target  + self.f0)
+		zf = self.f0 * 1.01
+		pf: torch.Tensor = (product + zf)
+		tf: torch.Tensor = (target  + zf)
 		ptr: torch.Tensor = torch.log2(pf/tf)
 		# print(f"ExpLoss(zf={zf:.6f}): y{shp(product)}({product.min().item():.6f} -> {product.max().item():.3f}), pf{shp(pf)}({pf.min().item():.6f} -> {pf.max().item():.3f}), tf{shp(tf)}({tf.min().item():.3f} -> {tf.max().item():.3f}), ptr{shp(ptr)}({ptr.min().item():.3f} -> {ptr.max().item():.3f})")
 		result = torch.abs( ptr ).mean()
