@@ -140,6 +140,25 @@ class IterativeTrainer(object):
 			result: Tensor = self.model(batch['z'])
 			print( f" ** (batch{list(batch['z'].shape)}, target{list(batch['target'].shape)}) ->  result{list(result.shape)}")
 
+	def test_learning(self,version,ckp_version=None):
+		self.initialize_checkpointing(version,ckp_version)
+		with self.device:
+			self.set_train_status()
+			self.loader.init_epoch()
+			batch = self.get_next_batch()
+			target: Tensor = batch['target']
+			bdata: Tensor = batch['z']
+			trange = [target.min().cpu().item(), target.max().cpu().item()]
+			for iteration in range(50):
+				result: Tensor = self.model(bdata,target).squeeze()
+				rrange = [result.min().cpu().item(), result.max().cpu().item()]
+				check_nan('result',result)
+				loss: Tensor =  self.loss( result, target )
+				self.conditionally_update_weights(loss)
+				check_nan('loss', loss)
+				print(f"I-{iteration}  result{list(result.shape)}: loss = {loss.cpu().item():.3f}, result-range: [{rrange[0]:.3f} -> {rrange[1]:.3f}], target-range: [{trange[0]:.3f} -> {trange[1]:.3f}]", flush=True)
+
+
 	def compute(self,version,ckp_version=None):
 		print(f"SignalTrainer[{self.mode}]: , {self.nepochs} epochs, device={self.device}")
 		self.optimizer = self.get_optimizer()
