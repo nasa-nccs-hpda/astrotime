@@ -166,6 +166,7 @@ class IterativeTrainer(object):
                             # check_nan('model', batch['z'])
                             if result.squeeze().ndim > 0:
                                 self.log.debug(f"result{list(result.shape)} range: [{result.min().cpu().item()} -> {result.max().cpu().item()}]")
+                                print(f"result{list(result.squeeze().shape)} target{list(batch['target'].squeeze().shape)}")
                                 loss: Tensor =  self.loss( result.squeeze(), batch['target'].squeeze() )
                                 self.conditionally_update_weights(loss)
                                 losses.append(loss.cpu().item())
