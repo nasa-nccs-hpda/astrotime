@@ -132,8 +132,11 @@ class WaveletAnalysisLayer(EmbeddingLayer):
 		#
 		# mag1: Tensor = spectral_projection(dzs, spmag, w_prod)
 
-		features = fold_harmonics(self.cfg, mag, 1)
-		embedding: Tensor = torch.stack( features, dim=1)
+		if self.cfg.fold_harmonics:
+			features = fold_harmonics(self.cfg, mag, 1)
+			embedding: Tensor = torch.stack( features, dim=1)
+		else:
+			embedding: Tensor = mag
 		self.init_log(f" Completed embedding{list(embedding.shape)} in {elapsed(t0):.5f} sec: nfeatures={embedding.shape[1]}")
 		self.init_state = False
 		return embedding
