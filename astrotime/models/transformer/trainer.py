@@ -8,7 +8,8 @@ from astrotime.encoders.wavelet import embedding_space
 from astrotime.trainers.loss import ExpLoss, ExpU
 from astrotime.loaders.base import Loader, RDict
 from .spectral import SpectralProjection
-from .attention import MultiHeadAttention
+# from .attention import MultiHeadAttention
+from torch.nn import MultiheadAttention
 import time, sys, torch, logging, numpy as np
 from torch import nn, optim, Tensor
 from astrotime.util.series import TSet
@@ -73,7 +74,7 @@ class IterativeTrainer(object):
 			for iL in range(1, cfg.nlayers+1):
 				input_size = self.embedding.output_series_length if (iL == 1) else cfg.E_internal
 				output_size = result_dim if (iL == cfg.nlayers) else cfg.E_internal
-				model.append( MultiHeadAttention( cfg, self.device, input_size, output_size, **kwargs) )
+				model.append( MultiheadAttention().to(self.device) )
 			if activation is not None:
 				model.append( activation.to(self.device) )
 			return model
