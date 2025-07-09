@@ -30,8 +30,11 @@ class IterativeTrainer(object):
         self.device: torch.device = device
         self.loader: Loader = loader
         self.embedding = embedding
-        self.cfg: DictConfig = cfg
+        self.cfg: DictConfig = cfg.train
         self.model: nn.Module = model
+        self.mtype: str = cfg.model.task
+        self.noctaves = cfg.data.noctaves
+        self.f0 = cfg.data.base_freq
         self.optimizer: optim.Optimizer = None
         self.log = logging.getLogger()
         self.loss: nn.Module = loss
@@ -47,6 +50,11 @@ class IterativeTrainer(object):
         if model is not None:
             for module in model.modules(): self.add_callbacks(module)
 
+    def get_loss(self) -> nn.Module:
+        if   "regression"     in self.mtype: return nn.L1Loss()
+        elif "classification" in self.mtype: return nn.CrossEntropyLoss()
+        else: raise RuntimeError(f"Unknown model type: {self.mtype}")
+
     def add_callbacks(self, module):
         pass
         #module.register_forward_hook(self.store_time)
@@ -59,6 +67,22 @@ class IterativeTrainer(object):
         self.log.info( f" Model layer stats:")
         for stats in  self.exec_stats:
             self.log.info(f"{stats[0]}: dt={stats[1]}s")
+
+    def get_octave(self, f: Tensor) -> Tensor:
+        octave = torch.floor(torch.log2(f / self.f0)).to(torch.long)
+        return octave
+
+    def fold_by_octave(self, f: Tensor) -> Tensor:
+        octave = torch.floor(torch.log2(f / self.f0))
+        octave_base_freq = self.f0 * torch.pow(2, octave)
+        return f / octave_base_freq
+
+    def get_target(self, f: Tensor) -> Tensor:
+        if "regression" in self.mtype:
+            return self.fold_by_octave(f) if self.mtype.endswith("octave") else f
+        elif "classification" in self.mtype:
+            return self.get_octave(f)
+        else: raise RuntimeError(f"Unknown model type: {self.cfg.model_type}")
 
     def get_optimizer(self) -> optim.Optimizer:
         if   self.cfg.optim == "rms":  return optim.RMSprop( self.model.parameters(), lr=self.cfg.lr )

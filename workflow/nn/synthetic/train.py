@@ -21,7 +21,7 @@ def my_app(cfg: DictConfig) -> None:
 	model: nn.Module = get_model_from_cfg( cfg.model, device, embedding, ExpU(cfg.data) )
 
 	data_loader = SyntheticElementLoader(cfg.data, TSet.Train)
-	trainer = IterativeTrainer( cfg.train, device, data_loader, model, embedding, ExpLoss(cfg.data) )
+	trainer = IterativeTrainer( cfg, device, data_loader, model, embedding, ExpLoss(cfg.data) )
 	trainer.compute(version)
 
 if __name__ == "__main__":
