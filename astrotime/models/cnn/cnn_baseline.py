@@ -33,7 +33,7 @@ def add_dense_block( model: nn.Sequential, in_channels:int, hidden_channels:int,
 def get_model_from_cfg( cfg: DictConfig, device: torch.device, embedding_layer: EmbeddingLayer, scale: nn.Module = None  ) -> nn.Module:
 	log = logging.getLogger()
 	model: nn.Sequential = nn.Sequential( embedding_layer )
-	num_input_features = embedding_layer.nfeatures
+	num_input_features = embedding_layer.output_series_length
 	if cfg.mtype=="cnn":
 		cnn_channels = cfg.cnn_channels
 		for iblock in range(cfg.num_blocks):
