@@ -36,7 +36,7 @@ class IterativeTrainer(object):
 		self.loader: Loader = loader
 		self.embedding = SpectralProjection('spectral_projection', cfg.transform, self.embedding_space_tensor, device )
 		self.model: nn.Module = self.get_model(cfg.model, ExpU(cfg.data) )
-		self.optimizer: optim.Optimizer = None
+		self.optimizer: optim.Optimizer = self.get_optimizer()
 		self.log = logging.getLogger()
 		self.loss: nn.Module = ExpLoss(cfg.data)
 		self._checkpoint_manager: CheckpointManager = None
