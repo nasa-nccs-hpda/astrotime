@@ -22,13 +22,13 @@ def add_cnn_block( cfg: DictConfig, model: nn.Sequential, nchannels: int, num_in
 	log.info(f"CNN: add_cnn_block: in_channels={block_input_channels}, out_channels={out_channels}")
 	return out_channels
 
-def add_dense_block( cfg: DictConfig, model: nn.Sequential, in_channels:int ):
+def add_dense_block( model: nn.Sequential, in_channels:int, hidden_channels:int, out_channels:int  ):
 	log = logging.getLogger()
-	log.info(f"CNN: add_dense_block: in_channels={in_channels}, hidden_channels={cfg.dense_channels}, out_channels={cfg.out_channels}")
+	log.info(f"CNN: add_dense_block: in_channels={in_channels}, hidden_channels={hidden_channels}, out_channels={out_channels}")
 	model.append( nn.Flatten() )
-	model.append( nn.Linear( in_channels, cfg.dense_channels ) )  # 64
+	model.append( nn.Linear( in_channels, hidden_channels ) )  # 64
 	model.append( nn.ELU() )
-	model.append( nn.Linear( cfg.dense_channels, cfg.out_channels ) )
+	model.append( nn.Linear( hidden_channels, out_channels  ) )
 
 def get_model_from_cfg( cfg: DictConfig, device: torch.device, embedding_layer: EmbeddingLayer, scale: nn.Module = None  ) -> nn.Module:
 	log = logging.getLogger()
@@ -52,8 +52,8 @@ def get_model_from_cfg( cfg: DictConfig, device: torch.device, embedding_layer: 
 	if scale is not None: model.append(scale)
 	return model.to(device)
 
-def get_spectral_peak_selector_from_cfg( cfg: DictConfig, device: torch.device, embedding_layer: EmbeddingLayer, **kwargs ) -> nn.Module:
+def get_spectral_peak_selector_from_cfg( cfg: DictConfig, device: torch.device, embedding_layer: EmbeddingLayer ) -> nn.Module:
 	from astrotime.models.spectral.peak_finder import SpectralPeakSelector
 	model: nn.Sequential = nn.Sequential( embedding_layer )
-	model.append( SpectralPeakSelector( cfg, device, embedding_layer.xdata, **kwargs ) )
+	model.append( SpectralPeakSelector( cfg, device, embedding_layer.xdata ) )
 	return model.to(device)
