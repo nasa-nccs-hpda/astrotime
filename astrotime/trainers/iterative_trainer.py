@@ -160,14 +160,15 @@ class IterativeTrainer(object):
                         t0 = time.time()
                         batch = self.get_next_batch()
                         if batch['z'].shape[0] > 0:
-                            # check_nan('batch', batch['z'])
+                            check_nan('batch', batch['z'])
                             self.global_time = time.time()
                             result: Tensor = self.model(  batch['z'] )
-                            # check_nan('model', batch['z'])
+                            check_nan('model', batch['z'])
                             if result.squeeze().ndim > 0:
                                 self.log.debug(f"result{list(result.shape)} range: [{result.min().cpu().item()} -> {result.max().cpu().item()}]")
                                 # print(f"batch{list(batch['z'].shape)} result{list(result.squeeze().shape)} target{list(batch['target'].squeeze().shape)}")
                                 loss: Tensor =  self.loss( result.squeeze(), batch['target'].squeeze() )
+                                check_nan('loss', loss )
                                 self.conditionally_update_weights(loss)
                                 losses.append(loss.cpu().item())
                                 if ibatch % log_interval == 0:
