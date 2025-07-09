@@ -1,9 +1,9 @@
 defaults:
   - platform: "explore"
-  - train: "MIT_cnn"
-  - transform: "MIT"
-  - data: "MIT"
-  - model: "cnn"
+  - train: "synthetic_cnn"
+  - transform: "synthetic"
+  - data: "synthetic"
+  - model: "dense"
   - _self_
   - override hydra/hydra_logging: disabled
   - override hydra/job_logging: disabled
