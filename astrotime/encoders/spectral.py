@@ -74,6 +74,7 @@ class SpectralProjection(EmbeddingLayer):
 		# embedding: Tensor = mag.reshape( [mag.shape[0], self.noctaves, self.nfreq_oct] ) if self.fold_octaves else torch.unsqueeze(mag, 1)
 		self.init_log(f" Completed embedding{list(embedding.shape)} in {elapsed(t0):.5f} sec: nfeatures={embedding.shape[1]}")
 		self.init_state = False
+		print( f" embedding{list(embedding.shape)}: ({embedding.min():.3f} -> {embedding.max():.3f})")
 		return embedding
 
 	@property
