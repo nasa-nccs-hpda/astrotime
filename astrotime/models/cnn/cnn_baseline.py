@@ -35,7 +35,7 @@ def get_model_from_cfg( cfg: DictConfig, embedding_layer: EmbeddingLayer, **kwar
 	scale: Optional[nn.Module] = kwargs.get("activation", None)
 	model: nn.Sequential = nn.Sequential( embedding_layer )
 	num_input_features = embedding_layer.output_series_length
-	if cfg.mtype=="cnn":
+	if cfg.mtype.startswith("cnn"):
 		cnn_channels = cfg.cnn_channels
 		for iblock in range(cfg.num_blocks):
 			cnn_channels = add_cnn_block( cfg, model, cnn_channels, num_input_features )
@@ -43,7 +43,7 @@ def get_model_from_cfg( cfg: DictConfig, embedding_layer: EmbeddingLayer, **kwar
 		reduced_series_len = embedding_layer.output_series_length // int( math.pow(cfg.pool_size, cfg.num_blocks) )
 		log.info(f"CNN: reduced_series_len={reduced_series_len}, cnn_channels={cnn_channels}, output_series_length={embedding_layer.output_series_length}")
 		add_dense_block( model, cnn_channels*reduced_series_len, cfg.dense_channels, cfg.out_channels  )
-	elif cfg.mtype == "dense":
+	elif cfg.mtype.startswith("dense"):
 		in_channels = num_input_features
 		for iL, lsize in enumerate( cfg.layer_sizes):
 			model.append( nn.Linear(in_channels, lsize))
