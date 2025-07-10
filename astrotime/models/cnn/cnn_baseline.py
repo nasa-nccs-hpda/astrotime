@@ -19,7 +19,7 @@ def add_cnn_block( cfg: DictConfig, model: nn.Sequential, nchannels: int, num_in
 	model.append(nn.ELU())
 	model.append( nn.BatchNorm1d(out_channels) )
 	model.append( nn.MaxPool1d(cfg.pool_size) )
-	log.info(f"CNN: add_cnn_block: in_channels={block_input_channels}, out_channels={out_channels}")
+	print(f"CNN: add_cnn_block: in_channels={block_input_channels}, out_channels={out_channels}")
 	return out_channels
 
 def add_dense_block( model: nn.Sequential, in_channels:int, hidden_channels:int, out_channels:int  ):
