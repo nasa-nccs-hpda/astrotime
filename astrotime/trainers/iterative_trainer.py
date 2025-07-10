@@ -71,6 +71,9 @@ class IterativeTrainer(object):
         octave_base_freq = self.f0 * torch.pow(2, octave)
         return f / octave_base_freq
 
+    def get_input(self, batch: TRDict) -> Tensor:
+        return batch['z'].squeeze()
+
     def get_target(self, batch: TRDict ) -> Tensor:
         f: Tensor = batch['target']
         if "regression" in self.mtype:
@@ -176,15 +179,16 @@ class IterativeTrainer(object):
                     for ibatch in range(0,sys.maxsize):
                         t0 = time.time()
                         batch = self.get_next_batch()
-                        if batch['z'].shape[0] > 0:
-                            check_nan('batch', batch['z'])
+                        binput: Tensor = self.get_input(batch)
+                        if binput.shape[0] > 0:
+                            check_nan('batch', binput)
                             self.global_time = time.time()
-                            result: Tensor = self.model(  batch['z'] )
-                            check_nan('model', batch['z'])
+                            result: Tensor = self.model(  binput )
+                            check_nan('model', result )
                             if result.squeeze().ndim > 0:
                                 self.log.debug(f"result{list(result.shape)} range: [{result.min().cpu().item()} -> {result.max().cpu().item()}]")
-                                target = self.get_target( batch )
-                                # print(f"batch{list(batch['z'].shape)} result{list(result.squeeze().shape)} target{list(batch['target'].squeeze().shape)}")
+                                target: Tensor = self.get_target( batch )
+                                # print(f"batch{list(binput.shape)} result{list(result.squeeze().shape)} target{list(batch['target'].squeeze().shape)}")
                                 loss: Tensor =  self.loss( result.squeeze(), target )
                                 check_nan('loss', loss )
                                 self.conditionally_update_weights(loss)
