@@ -30,8 +30,9 @@ def add_dense_block( model: nn.Sequential, in_channels:int, hidden_channels:int,
 	model.append( nn.ELU() )
 	model.append( nn.Linear( hidden_channels, out_channels  ) )
 
-def get_model_from_cfg( cfg: DictConfig, device: torch.device, embedding_layer: EmbeddingLayer, scale: nn.Module = None  ) -> nn.Module:
+def get_model_from_cfg( cfg: DictConfig, embedding_layer: EmbeddingLayer, **kwargs  ) -> nn.Module:
 	log = logging.getLogger()
+	scale: Optional[nn.Module] = kwargs.get("activation", None)
 	model: nn.Sequential = nn.Sequential( embedding_layer )
 	num_input_features = embedding_layer.output_series_length
 	if cfg.mtype=="cnn":
@@ -50,7 +51,7 @@ def get_model_from_cfg( cfg: DictConfig, device: torch.device, embedding_layer: 
 			in_channels = lsize
 		model.append( nn.Linear(in_channels, 1) )
 	if scale is not None: model.append(scale)
-	return model.to(device)
+	return model
 
 def get_spectral_peak_selector_from_cfg( cfg: DictConfig, device: torch.device, embedding_layer: EmbeddingLayer ) -> nn.Module:
 	from astrotime.models.spectral.peak_finder import SpectralPeakSelector

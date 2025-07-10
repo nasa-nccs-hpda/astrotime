@@ -4,11 +4,8 @@ from astrotime.trainers.checkpoints import CheckpointManager
 from astrotime.util.tensor_ops import check_nan
 from astrotime.util.math import shp
 from astrotime.models.cnn.cnn_baseline import get_model_from_cfg
-from astrotime.encoders.wavelet import embedding_space
 from astrotime.loaders.base import Loader, RDict
-from models.spectral.spectral import SpectralProjection
-# from .attention import MultiHeadAttention
-from torch.nn import MultiheadAttention
+from astrotime.encoders.spectral import SpectralProjection, embedding_space
 import time, sys, torch, logging, numpy as np
 from torch import nn, optim, Tensor
 from astrotime.util.series import TSet
@@ -34,13 +31,13 @@ class IterativeTrainer(object):
 		self.cfg: DictConfig = cfg.train
 		self.device: torch.device = device
 		self.verbose = kwargs.get('verbose',False)
-		self.mtype: str = cfg.model.task
+		self.mtype: str = cfg.model.mtype
 		self.noctaves = cfg.data.noctaves
 		self.f0 = cfg.data.base_freq
 		self.embedding_space_array, self.embedding_space_tensor = embedding_space(cfg.transform, device)
 		self.loader: Loader = loader
 		self.embedding = SpectralProjection(cfg.transform, self.embedding_space_tensor, device )
-		self.model: nn.Module = self.get_model(cfg.model, **kwargs)
+		self.model: nn.Module = get_model_from_cfg( cfg.model, self.embedding, **kwargs ).to(device)
 		self.optimizer: optim.Optimizer =  self.get_optimizer()
 		self.log = logging.getLogger()
 		self.loss: nn.Module = kwargs.get( 'loss', self.get_loss() )
@@ -54,29 +51,9 @@ class IterativeTrainer(object):
 		self.exec_stats = []
 
 	def get_loss(self) -> nn.Module:
-		if   self.mtype.startswith("regression"): return nn.L1Loss()
-		elif self.mtype.startswith("classification"): return nn.CrossEntropyLoss()
+		if   "regression" in self.mtype:     return nn.L1Loss()
+		elif "classification" in self.mtype: return nn.CrossEntropyLoss()
 		else: raise RuntimeError( f"Unknown model type: {self.mtype}")
-
-	def get_model(self, cfg: DictConfig, **kwargs ) -> nn.Module:
-		activation: Optional[nn.Module] = kwargs.get('activation', None)
-		if cfg.mtype=="cnn":
-			return get_model_from_cfg( cfg, self.device, self.embedding, activation )
-		elif cfg.mtype == "transformer":
-			return nn.Transformer()
-		else:
-			model: nn.Sequential = nn.Sequential( self.embedding )
-			# if   self.mtype.startswith("regression"): result_dim = 1
-			# elif self.mtype.startswith("classification"): result_dim = self.noctaves
-			# else: raise RuntimeError( f"Unknown model type: {self.mtype}" )
-			result_dim = 1
-			for iL in range(1, cfg.nlayers+1):
-				input_size = self.embedding.output_series_length if (iL == 1) else cfg.E_internal
-				output_size = result_dim if (iL == cfg.nlayers) else cfg.E_internal
-				model.append( MultiheadAttention().to(self.device) )
-			if activation is not None:
-				model.append( activation.to(self.device) )
-			return model
 
 	def get_optimizer(self) -> optim.Optimizer:
 		lr = self.cfg.lr
@@ -129,9 +106,9 @@ class IterativeTrainer(object):
 		return  f/octave_base_freq
 
 	def get_target(self, f: Tensor ) -> Tensor:
-		if self.mtype.startswith("regression"):
+		if "regression" in self.mtype:
 			return self.fold_by_octave(f) if self.mtype.endswith("octave") else f
-		elif self.mtype.startswith("classification"):
+		elif "classification" in self.mtype:     
 			return self.get_octave(f)
 		else: raise RuntimeError( f"Unknown model type: {self.cfg.model_type}")
 

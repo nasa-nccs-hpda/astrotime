@@ -1,4 +1,4 @@
-mtype: "dense"
+mtype: "dense.regression"
 base_freq:  ${data.base_freq}                   # Start frequency of base octave
 layer_sizes: [512, 128, 64, 32, 32, 32]
 

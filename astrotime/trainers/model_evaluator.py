@@ -1,6 +1,6 @@
 from typing import List, Optional, Dict, Any, Tuple, Union
 from omegaconf import DictConfig
-from astrotime.encoders.wavelet import WaveletAnalysisLayer, embedding_space
+from astrotime.encoders.spectral import SpectralProjection, embedding_space
 from astrotime.encoders.embedding import EmbeddingLayer
 from astrotime.loaders.base import RDict, ElementLoader
 import time, sys, torch, logging, numpy as np
@@ -30,20 +30,20 @@ class ModelEvaluator(object):
         self.log = logging.getLogger()
         self.mtype = kwargs.get( 'mtype', "cnn" )
         self.peak_selector: SpectralPeakSelector = None
-        if self.mtype == "peakfinder":
-            self.embedding: EmbeddingLayer = WaveletAnalysisLayer('analysis', cfg.transform, espace[1], device)
+        if self.mtype.startswith("peakfinder"):
+            self.embedding: EmbeddingLayer = SpectralProjection( cfg.transform, espace[1], device)
             self.peak_selector = SpectralPeakSelector( cfg.transform, device, self.embedding.xdata )
             self.model: nn.Module =nn.Sequential( self.embedding, self.peak_selector ).to(device)
-        elif self.mtype == "cnn":
-            self.embedding: EmbeddingLayer = WaveletAnalysisLayer('analysis', cfg.transform, espace[1], device)
-            self.model: nn.Module = get_model_from_cfg( cfg.model, device, self.embedding, ExpU(cfg.data) )
-        elif self.mtype == "autocor":
+        elif self.mtype.startswith("cnn"):
+            self.embedding: EmbeddingLayer = SpectralProjection( cfg.transform, espace[1], device)
+            self.model: nn.Module = get_model_from_cfg( cfg.model, self.embedding, activation=ExpU(cfg.data) ).to(device)
+        elif self.mtype.startswith("autocor"):
             self.embedding: EmbeddingLayer = AutoCorrelationLayer('autocor', cfg.transform, espace[1], device)
-            self.model: nn.Module = get_model_from_cfg( cfg.model, device, self.embedding, ExpU(cfg.data) )
+            self.model: nn.Module = get_model_from_cfg( cfg.model, self.embedding, activation=ExpU(cfg.data) ).to(device)
         self.device = device
         self._target_freq = None
         self._model_freq = None
-        if self.mtype == "cnn":
+        if self.mtype.startswith("cnn"):
             self.optimizer = self.get_optimizer()
             self._checkpoint_manager = CheckpointManager( version, self.model, self.optimizer, self.cfg.train )
             self.train_state = self._checkpoint_manager.load_checkpoint( update_model=True )

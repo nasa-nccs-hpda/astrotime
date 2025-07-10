@@ -31,7 +31,7 @@ class IterativeTrainer(object):
         self.embedding = embedding
         self.cfg: DictConfig = cfg.train
         self.model: nn.Module = model
-        self.mtype: str = cfg.model.task
+        self.mtype: str = cfg.model.mtype
         self.noctaves = cfg.data.noctaves
         self.f0 = cfg.data.base_freq
         self.optimizer: optim.Optimizer = None
