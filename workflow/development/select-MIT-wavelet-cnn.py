@@ -16,7 +16,7 @@ def my_app(cfg: DictConfig) -> None:
 
 	data_loader = MITElementLoader(cfg.data)
 	embedding = WaveletAnalysisLayer( 'analysis', cfg.transform, espace, device )
-	model: nn.Module = get_model_from_cfg( cfg.model, device, embedding, ExpU(cfg.data) )
+	model: nn.Module = get_model_from_cfg( cfg.model,  embedding, activation=ExpU(cfg.data) ).to(device)
 
 	trainer = IterativeTrainer( cfg.train, device, data_loader, model, ExpHLoss(cfg.data) )
 	trainer.compute(version)
