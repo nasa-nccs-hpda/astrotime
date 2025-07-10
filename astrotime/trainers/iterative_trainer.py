@@ -72,7 +72,7 @@ class IterativeTrainer(object):
         return f / octave_base_freq
 
     def get_input(self, batch: TRDict) -> Tensor:
-        return batch['z'].squeeze()
+        return batch['z']
 
     def get_target(self, batch: TRDict ) -> Tensor:
         f: Tensor = batch['target']

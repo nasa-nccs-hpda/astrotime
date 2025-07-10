@@ -60,7 +60,7 @@ class SpectralProjection(EmbeddingLayer):
 			nsubbatches = math.ceil(ys.shape[0]/self.subbatch_size)
 			subbatches = [ self.embed_subbatch( *self.sbatch(ts,ys,i), **kwargs ) for i in range(nsubbatches) ]
 			result = torch.concat( subbatches, dim=0 )
-		return result
+		return result.squeeze()
 
 	def embed_subbatch(self, ts: torch.Tensor, ys: torch.Tensor, **kwargs ) -> Tensor:
 		t0 = time.time()
