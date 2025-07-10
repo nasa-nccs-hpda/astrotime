@@ -18,7 +18,7 @@ def tocpu( c, idx=0 ):
     else:
         return c
 
-def norm(x: np.ndarray, dim: int=-1) -> Tensor:
+def norm(x: np.ndarray, dim: int=-1) -> np.ndarray:
     m: Tensor = x.mean( axis=dim, keepdims=True)
     s: Tensor = x.std( axis=dim, keepdims=True)
     return (x - m) / s
@@ -75,7 +75,8 @@ class IterativeTrainer(object):
         octave_base_freq = self.f0 * torch.pow(2, octave)
         return f / octave_base_freq
 
-    def get_target(self, f: Tensor) -> Tensor:
+    def get_target(self, batch: TRDict ) -> Tensor:
+        f: Tensor = batch['target']
         if "regression" in self.mtype:
             return self.fold_by_octave(f) if self.mtype.endswith("octave") else f
         elif "classification" in self.mtype:
@@ -165,9 +166,6 @@ class IterativeTrainer(object):
             result: Tensor = self.model( batch['z'] )
             print( f" ** (batch{list(batch['z'].shape)}, target{list(batch['target'].shape)}) ->  result{list(result.shape)}")
 
-    def get_target(self, batch: TRDict) -> Tensor:
-        return batch['target'].squeeze()
-
     def compute(self,version,ckp_version=None):
         print(f"SignalTrainer[{self.mode}]: , {self.nepochs} epochs, device={self.device}")
         self.optimizer = self.get_optimizer()
@@ -189,7 +187,7 @@ class IterativeTrainer(object):
                             check_nan('model', batch['z'])
                             if result.squeeze().ndim > 0:
                                 self.log.debug(f"result{list(result.shape)} range: [{result.min().cpu().item()} -> {result.max().cpu().item()}]")
-                                target = self.get_target(batch)
+                                target = self.get_target( batch )
                                 # print(f"batch{list(batch['z'].shape)} result{list(result.squeeze().shape)} target{list(batch['target'].squeeze().shape)}")
                                 loss: Tensor =  self.loss( result.squeeze(), target )
                                 check_nan('loss', loss )

@@ -16,10 +16,10 @@ def my_app(cfg: DictConfig) -> None:
 	device: torch.device = astrotime_initialize( cfg, version )
 
 	embedding_space_array, embedding_space_tensor = embedding_space(cfg.transform, device)
-	embedding = SpectralProjection(cfg.transform, embedding_space_tensor, device )
-	model: nn.Module = get_model_from_cfg( cfg.model,  embedding, activation=ExpU(cfg.data) ).to(device)
+	embedding = SpectralProjection( cfg.transform, embedding_space_tensor, device )
+	model: nn.Module = get_model_from_cfg( cfg.model, embedding, activation=ExpU(cfg.data) ).to(device)
 
-	data_loader = SyntheticElementLoader(cfg.data, TSet.Train)
+	data_loader = SyntheticElementLoader( cfg.data, TSet.Train )
 	trainer = IterativeTrainer( cfg, device, data_loader, model, embedding, ExpLoss(cfg.data) )
 	trainer.compute(version)
 
