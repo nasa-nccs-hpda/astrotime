@@ -60,17 +60,18 @@ class SpectralProjection(EmbeddingLayer):
 			nsubbatches = math.ceil(ys.shape[0]/self.subbatch_size)
 			subbatches = [ self.embed_subbatch( *self.sbatch(ts,ys,i), **kwargs ) for i in range(nsubbatches) ]
 			result = torch.concat( subbatches, dim=0 )
-		return result.squeeze()
+		return result
 
 	def embed_subbatch(self, ts: torch.Tensor, ys: torch.Tensor, **kwargs ) -> Tensor:
 		t0 = time.time()
-		self.init_log(f"WaveletAnalysisLayer shapes: ts{list(ts.shape)} ys{list(ys.shape)}")
+		self.init_log(f"SpectralProjection shapes: ts{list(ts.shape)} ys{list(ys.shape)}")
 		omega = self._embedding_space * 2.0 * math.pi
 		omega_: Tensor = omega[None, :, None]  # broadcast-to(self.batch_size,self.nfreq,slen)
 		ts: Tensor = ts[:, None, :]  # broadcast-to(self.batch_size,self.nfreq,slen)
 		dz: Tensor = omega_ * ts
 		mag: Tensor =  spectral_projection( dz, ys )
-		embedding: Tensor = mag.reshape( [mag.shape[0], self.noctaves, self.nfreq_oct] ) if self.fold_octaves else torch.unsqueeze(mag, 1)
+		embedding = mag
+		# embedding: Tensor = mag.reshape( [mag.shape[0], self.noctaves, self.nfreq_oct] ) if self.fold_octaves else torch.unsqueeze(mag, 1)
 		self.init_log(f" Completed embedding{list(embedding.shape)} in {elapsed(t0):.5f} sec: nfeatures={embedding.shape[1]}")
 		self.init_state = False
 		return embedding
