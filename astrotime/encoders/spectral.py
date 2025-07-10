@@ -20,20 +20,20 @@ def embedding_space( cfg: DictConfig, device: device ) -> Tuple[np.ndarray,Tenso
 	tfspace = torch.FloatTensor( nfspace ).to(device)
 	return nfspace, tfspace
 
-def spectral_projection(x: Tensor, y: Tensor, prod: Callable) -> Tensor:
+def spectral_projection( x: Tensor, y: Tensor ) -> Tensor:
 	yn: Tensor = tnorm(y)
 	pw1: Tensor = torch.sin(x)
 	pw2: Tensor = torch.cos(x)
-	p1: Tensor = prod(yn, pw1)
-	p2: Tensor = prod(yn, pw2)
+	p1: Tensor = torch.sum( yn * pw1, dim=-1)
+	p2: Tensor = torch.sum( yn * pw2, dim=-1)
 	mag: Tensor =  torch.sqrt( p1**2 + p2**2 )
 	return tnorm(mag)
 
 class SpectralProjection(EmbeddingLayer):
 
-	def __init__(self, name: str,  cfg, embedding_space: Tensor, device: device):
-		EmbeddingLayer.__init__(self, name, cfg, embedding_space, device)
-		self.init_log(f"WaveletAnalysisLayer: nfreq={self.nfreq} ")
+	def __init__(self, cfg, embedding_space: Tensor, device: device):
+		EmbeddingLayer.__init__(self, cfg, embedding_space, device)
+		self.init_log(f"SpectralProjection: nfreq={self.nfreq} ")
 		self.subbatch_size: int = cfg.get('subbatch_size',-1)
 		self.noctaves: int = self.cfg.noctaves
 		self.nfreq_oct: int = self.cfg.nfreq_oct
@@ -69,10 +69,7 @@ class SpectralProjection(EmbeddingLayer):
 		omega_: Tensor = omega[None, :, None]  # broadcast-to(self.batch_size,self.nfreq,slen)
 		ts: Tensor = ts[:, None, :]  # broadcast-to(self.batch_size,self.nfreq,slen)
 		dz: Tensor = omega_ * ts
-		def w_prod(x0: Tensor, x1: Tensor) -> Tensor:
-			return torch.sum( x0 * x1, dim=-1)
-
-		mag: Tensor =  spectral_projection( dz, ys, w_prod )
+		mag: Tensor =  spectral_projection( dz, ys )
 		embedding: Tensor = mag.reshape( [mag.shape[0], self.noctaves, self.nfreq_oct] ) if self.fold_octaves else torch.unsqueeze(mag, 1)
 		self.init_log(f" Completed embedding{list(embedding.shape)} in {elapsed(t0):.5f} sec: nfeatures={embedding.shape[1]}")
 		self.init_state = False

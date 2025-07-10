@@ -9,7 +9,7 @@ accumh:     false
 decay_factor: 0.0                   # Time envelope decay factor
 subbatch_size: 4                     # If>0: Split batches into (serially computed) subbatches in order to fit into gpu memory
 norm:        std
-fold_harmonics: false
+fold_octaves: false
 
 
 

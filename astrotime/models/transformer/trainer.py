@@ -1,13 +1,12 @@
-from typing import List, Optional, Dict, Type, Tuple, Union
+from typing import List, Optional, Dict, Tuple, Union
 from omegaconf import DictConfig
 from astrotime.trainers.checkpoints import CheckpointManager
 from astrotime.util.tensor_ops import check_nan
 from astrotime.util.math import shp
 from astrotime.models.cnn.cnn_baseline import get_model_from_cfg
 from astrotime.encoders.wavelet import embedding_space
-from astrotime.trainers.loss import ExpLoss, ExpU
 from astrotime.loaders.base import Loader, RDict
-from .spectral import SpectralProjection
+from models.spectral.spectral import SpectralProjection
 # from .attention import MultiHeadAttention
 from torch.nn import MultiheadAttention
 import time, sys, torch, logging, numpy as np
@@ -40,7 +39,7 @@ class IterativeTrainer(object):
 		self.f0 = cfg.data.base_freq
 		self.embedding_space_array, self.embedding_space_tensor = embedding_space(cfg.transform, device)
 		self.loader: Loader = loader
-		self.embedding = SpectralProjection('spectral_projection', cfg.transform, self.embedding_space_tensor, device )
+		self.embedding = SpectralProjection(cfg.transform, self.embedding_space_tensor, device )
 		self.model: nn.Module = self.get_model(cfg.model, **kwargs)
 		self.optimizer: optim.Optimizer =  self.get_optimizer()
 		self.log = logging.getLogger()
