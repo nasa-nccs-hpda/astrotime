@@ -18,10 +18,6 @@ def tocpu( c, idx=0 ):
     else:
         return c
 
-def norm(x: np.ndarray, dim: int=-1) -> np.ndarray:
-    m: Tensor = x.mean( axis=dim, keepdims=True)
-    s: Tensor = x.std( axis=dim, keepdims=True)
-    return (x - m) / s
 
 class IterativeTrainer(object):
 
@@ -120,7 +116,7 @@ class IterativeTrainer(object):
         self.log.debug( f"encode_batch: {list(batch.keys())}")
         t,y = batch.pop('t'), batch.pop('y')
         p: Tensor = torch.from_numpy(batch.pop('period')).to(self.device)
-        z: Tensor = self.to_tensor( t, norm(y) )
+        z: Tensor = self.to_tensor( t, y )
         return dict( z=z, target=1/p, **batch )
 
     def to_tensor(self, x: np.ndarray, y: np.ndarray) -> Tensor:
