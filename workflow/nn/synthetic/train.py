@@ -10,7 +10,7 @@ from astrotime.models.cnn.cnn_baseline import get_model_from_cfg
 from astrotime.config.context import astrotime_initialize
 from astrotime.loaders.synthetic import SyntheticElementLoader
 
-version = "synthetic_period_dense"
+version = "synthetic_period_cnn"
 @hydra.main(version_base=None, config_path="../../../config", config_name=version)
 def my_app(cfg: DictConfig) -> None:
 	device: torch.device = astrotime_initialize( cfg, version )
