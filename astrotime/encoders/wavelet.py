@@ -38,12 +38,12 @@ def embedding_space( cfg: DictConfig, device: device ) -> Tuple[np.ndarray,Tenso
 	tfspace = torch.FloatTensor( nfspace ).to(device)
 	return nfspace, tfspace
 
-def spectral_projection(x: Tensor, y: Tensor, prod: Callable) -> Tensor:
+def spectral_projection(x: Tensor, y: Tensor) -> Tensor:
 	yn: Tensor = tnorm(y)
 	pw1: Tensor = torch.sin(x)
 	pw2: Tensor = torch.cos(x)
-	p1: Tensor = prod(yn, pw1)
-	p2: Tensor = prod(yn, pw2)
+	p1: Tensor = torch.sum( yn * pw1, dim=-1)
+	p2: Tensor = torch.sum( yn * pw2, dim=-1)
 	mag: Tensor =  torch.sqrt( p1**2 + p2**2 )
 	return tnorm(mag)
 
@@ -105,39 +105,12 @@ class WaveletAnalysisLayer(EmbeddingLayer):
 	def embed_subbatch(self, ts: torch.Tensor, ys: torch.Tensor, **kwargs ) -> Tensor:
 		t0 = time.time()
 		self.init_log(f"WaveletAnalysisLayer shapes: ts{list(ts.shape)} ys{list(ys.shape)}")
-		slen: int = ys.shape[1]
 		omega = self._embedding_space * 2.0 * math.pi
 		omega_: Tensor = omega[None, :, None]  # broadcast-to(self.batch_size,self.nfreq,slen)
 		ts: Tensor = ts[:, None, :]  # broadcast-to(self.batch_size,self.nfreq,slen)
-
-		if self.C > 0.0:
-			tau = 0.5 * (ts[:, slen // 2] + ts[:, slen // 2 + 1])
-			tau: Tensor = tau[:, None, None]
-			dt: Tensor = (ts - tau)
-			dz: Tensor = omega_ * dt
-			weights: Tensor = torch.exp(-self.C * dz ** 2)
-			sum_w: Tensor = torch.sum(weights, dim=-1)
-			def w_prod(x0: Tensor, x1: Tensor) -> Tensor:
-				return torch.sum(weights * x0 * x1, dim=-1) / sum_w
-		else:
-			dz: Tensor = omega_ * ts
-			def w_prod(x0: Tensor, x1: Tensor) -> Tensor:
-				return torch.sum( x0 * x1, dim=-1)
-
-		mag: Tensor =  spectral_projection( dz, ys, w_prod )
-
-		# fs = self._embedding_space[None, :, None]
-		# ps = 1.0/self._embedding_space[None, None, :]
-		# dzs = fs * ps * 2.0 * math.pi
-		# spmag = mag[:, None, :]
-		#
-		# mag1: Tensor = spectral_projection(dzs, spmag, w_prod)
-
-		if self.cfg.fold_harmonics:
-			features = fold_harmonics(self.cfg, mag, 1)
-			embedding: Tensor = torch.stack( features, dim=1)
-		else:
-			embedding: Tensor = mag
+		dz: Tensor = omega_ * ts
+		mag: Tensor =  spectral_projection( dz, ys )
+		embedding: Tensor = mag
 		self.init_log(f" Completed embedding{list(embedding.shape)} in {elapsed(t0):.5f} sec: nfeatures={embedding.shape[1]}")
 		self.init_state = False
 		return embedding
