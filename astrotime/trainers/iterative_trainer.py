@@ -184,11 +184,11 @@ class IterativeTrainer(object):
                         if binput.shape[0] > 0:
                             check_nan('batch', binput)
                             self.global_time = time.time()
-                            print(f"batch{list(binput.shape)} target{list(batch['target'].squeeze().shape)}")
+                            #print(f"batch{list(binput.shape)} target{list(batch['target'].squeeze().shape)}")
                             result: Tensor = self.model(  binput )
                             check_nan('model', result )
                             if result.squeeze().ndim > 0:
-                                print(f"result{list(result.shape)} range: [{result.min().cpu().item()} -> {result.max().cpu().item()}]")
+                                # print(f"result{list(result.shape)} range: [{result.min().cpu().item()} -> {result.max().cpu().item()}]")
                                 loss: Tensor =  self.loss( result.squeeze(), target )
                                 check_nan('loss', loss )
                                 self.conditionally_update_weights(loss)
