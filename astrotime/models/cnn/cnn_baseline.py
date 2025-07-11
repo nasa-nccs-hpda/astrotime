@@ -24,7 +24,7 @@ def add_cnn_block( cfg: DictConfig, model: nn.Sequential, nchannels: int, num_in
 
 def add_dense_block( model: nn.Sequential, in_channels:int, hidden_channels:int, out_channels:int  ):
 	log = logging.getLogger()
-	log.info(f"CNN: add_dense_block: in_channels={in_channels}, hidden_channels={hidden_channels}, out_channels={out_channels}")
+	print(f"CNN: add_dense_block: in_channels={in_channels}, hidden_channels={hidden_channels}, out_channels={out_channels}")
 	model.append( nn.Flatten() )
 	model.append( nn.Linear( in_channels, hidden_channels ) )  # 64
 	model.append( nn.ELU() )
