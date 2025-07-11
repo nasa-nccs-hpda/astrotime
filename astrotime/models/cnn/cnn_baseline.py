@@ -34,17 +34,17 @@ def get_model_from_cfg( cfg: DictConfig, embedding_layer: EmbeddingLayer, **kwar
 	log = logging.getLogger()
 	scale: Optional[nn.Module] = kwargs.get("activation", None)
 	model: nn.Sequential = nn.Sequential( embedding_layer )
-	num_input_features = embedding_layer.output_series_length
+	num_input_channels = 1 # embedding_layer.output_series_length
 	if cfg.mtype.startswith("cnn"):
-		cnn_channels = 1
+		cnn_channels = cfg.cnn_channels
 		for iblock in range(cfg.num_blocks):
-			cnn_channels = add_cnn_block( cfg, model, cnn_channels, num_input_features )
-			num_input_features = -1
+			cnn_channels = add_cnn_block( cfg, model, cnn_channels, num_input_channels )
+			num_input_channels = -1
 		reduced_series_len = embedding_layer.output_series_length // int( math.pow(cfg.pool_size, cfg.num_blocks) )
 		log.info(f"CNN: reduced_series_len={reduced_series_len}, cnn_channels={cnn_channels}, output_series_length={embedding_layer.output_series_length}")
 		add_dense_block( model, cnn_channels*reduced_series_len, cfg.dense_channels, cfg.out_channels  )
 	elif cfg.mtype.startswith("dense"):
-		in_channels = num_input_features
+		in_channels = embedding_layer.output_series_length
 		for iL, lsize in enumerate( cfg.layer_sizes):
 			model.append( nn.Linear(in_channels, lsize))
 			model.append(nn.ELU())
