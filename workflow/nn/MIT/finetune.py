@@ -9,7 +9,7 @@ from astrotime.trainers.loss import ExpLoss, ExpU
 from astrotime.models.cnn.cnn_baseline import get_model_from_cfg
 from astrotime.config.context import astrotime_initialize
 version = "MIT_period"
-ckp_version = None # "synthetic_period"
+ckp_version = "synthetic_period_cnn"
 
 @hydra.main(version_base=None, config_path="../../../config", config_name=version)
 def my_app(cfg: DictConfig) -> None:
@@ -20,9 +20,9 @@ def my_app(cfg: DictConfig) -> None:
 	data_loader = MITElementLoader(cfg.data, TSet.Train)
 
 	embedding = SpectralProjection( cfg.transform, embedding_space_tensor, device )
-	model: nn.Module = get_model_from_cfg( cfg.model,  embedding, activation=ExpU(cfg.data) ).to(device)
+	model: nn.Module = get_model_from_cfg( cfg.model,  embedding, ExpU(cfg.data) ).to(device)
 
-	trainer = IterativeTrainer( cfg.train, device, data_loader, model, embedding, ExpLoss(cfg.data) )
+	trainer = IterativeTrainer( cfg.train, device, data_loader, model, embedding )
 	trainer.compute(version,ckp_version)
 
 if __name__ == "__main__":
