@@ -36,7 +36,7 @@ def get_model_from_cfg( cfg: DictConfig, embedding_layer: EmbeddingLayer, **kwar
 	model: nn.Sequential = nn.Sequential( embedding_layer )
 	num_input_features = embedding_layer.output_series_length
 	if cfg.mtype.startswith("cnn"):
-		cnn_channels = cfg.cnn_channels
+		cnn_channels = 1
 		for iblock in range(cfg.num_blocks):
 			cnn_channels = add_cnn_block( cfg, model, cnn_channels, num_input_features )
 			num_input_features = -1
