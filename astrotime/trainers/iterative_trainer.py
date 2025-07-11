@@ -21,7 +21,7 @@ def tocpu( c, idx=0 ):
 
 class IterativeTrainer(object):
 
-    def __init__(self, cfg: DictConfig, device: torch.device, loader: Loader, model: nn.Module, embedding: EmbeddingLayer, loss: nn.Module = nn.L1Loss() ):
+    def __init__(self, cfg: DictConfig, device: torch.device, loader: Loader, model: nn.Module, embedding: EmbeddingLayer ):
         self.device: torch.device = device
         self.loader: Loader = loader
         self.embedding = embedding
@@ -32,7 +32,7 @@ class IterativeTrainer(object):
         self.f0 = cfg.data.base_freq
         self.optimizer: optim.Optimizer = None
         self.log = logging.getLogger()
-        self.loss: nn.Module = loss
+        self.loss: nn.Module = self.get_loss()
         self._checkpoint_manager: CheckpointManager = None
         self.start_batch: int = 0
         self.start_epoch: int = 0
@@ -63,7 +63,7 @@ class IterativeTrainer(object):
             self.log.info(f"{stats[0]}: dt={stats[1]}s")
 
     def get_octave(self, f: Tensor) -> Tensor:
-        octave = torch.floor(torch.log2(f / self.f0)).to(torch.long)
+        octave = torch.floor(torch.log2(f/self.f0)).to(torch.long)
         return octave
 
     def fold_by_octave(self, f: Tensor) -> Tensor:
