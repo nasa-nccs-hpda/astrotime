@@ -3,6 +3,7 @@ from omegaconf import DictConfig
 from .checkpoints import CheckpointManager
 from astrotime.util.tensor_ops import check_nan
 from astrotime.loaders.base import Loader, RDict
+from astrotime.trainers.loss import ExpLoss, ExpU
 from astrotime.encoders.embedding import EmbeddingLayer
 import time, sys, torch, logging, numpy as np
 from torch import nn, optim, Tensor
@@ -32,7 +33,7 @@ class IterativeTrainer(object):
         self.f0 = cfg.data.base_freq
         self.optimizer: optim.Optimizer = None
         self.log = logging.getLogger()
-        self.loss: nn.Module = self.get_loss()
+        self.loss: nn.Module = self.get_loss(cfg.data)
         self._checkpoint_manager: CheckpointManager = None
         self.start_batch: int = 0
         self.start_epoch: int = 0
@@ -44,8 +45,8 @@ class IterativeTrainer(object):
         if model is not None:
             for module in model.modules(): self.add_callbacks(module)
 
-    def get_loss(self) -> nn.Module:
-        if   "regression"     in self.mtype: return nn.L1Loss()
+    def get_loss(self, cfg: DictConfig) -> nn.Module:
+        if   "regression"     in self.mtype: return ExpLoss(cfg)
         elif "classification" in self.mtype: return nn.CrossEntropyLoss()
         else: raise RuntimeError(f"Unknown model type: {self.mtype}")
 

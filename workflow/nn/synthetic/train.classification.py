@@ -17,10 +17,10 @@ def my_app(cfg: DictConfig) -> None:
 
 	embedding_space_array, embedding_space_tensor = embedding_space(cfg.transform, device)
 	embedding = SpectralProjection( cfg.transform, embedding_space_tensor, device )
-	model: nn.Module = get_model_from_cfg( cfg.model, embedding, activation=ExpU(cfg.data) ).to(device)
+	model: nn.Module = get_model_from_cfg( cfg.model, embedding ).to(device)
 
 	data_loader = SyntheticElementLoader( cfg.data, TSet.Train )
-	trainer = IterativeTrainer( cfg, device, data_loader, model, embedding, ExpLoss(cfg.data) )
+	trainer = IterativeTrainer( cfg, device, data_loader, model, embedding )
 	trainer.compute(version)
 
 if __name__ == "__main__":
