@@ -216,7 +216,9 @@ class IterativeTrainer(object):
                     binput: Tensor = self.get_input(batch)
                     target: Tensor = self.get_target(batch)
                     result: Tensor = self.model(binput)
-                    print( f"  result{list(result.shape)} [{result.min().cpu().item():.3f} -> {result.max().cpu().item():.3f}]  <->  target{list(target.shape)} [{target.min().cpu().item():.3f} -> {target.max().cpu().item():.3f}]")
+                #    print( f"  result{list(result.shape)} [{result.min().cpu().item():.3f} -> {result.max().cpu().item():.3f}]  <->  target{list(target.shape)} [{target.min().cpu().item():.3f} -> {target.max().cpu().item():.3f}]")
+                    for idx in range(result.shape[0]):
+                        print( f"  result[{idx}]: {torch.argmax(result[idx]):.1f} <-> {target[idx].cpu().item():.1f}" )
                     loss: Tensor =  self.loss( result.squeeze(), target )
                     losses.append(loss.cpu().item())
             except StopIteration:
