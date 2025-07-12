@@ -216,15 +216,23 @@ class IterativeTrainer(object):
                     binput: Tensor = self.get_input(batch)
                     target: Tensor = self.get_target(batch)
                     result: Tensor = self.model(binput)
-                #    print( f"  result{list(result.shape)} [{result.min().cpu().item():.3f} -> {result.max().cpu().item():.3f}]  <->  target{list(target.shape)} [{target.min().cpu().item():.3f} -> {target.max().cpu().item():.3f}]")
-                    for idx in range(result.shape[0]):
-                        max_idx = int(torch.argmax(result[idx]))
-                        print( f"  result[{max_idx}]: {result[idx][max_idx]:.4f} <-> {int(target[idx].cpu().item())}" )
-                    loss: Tensor =  self.loss( result.squeeze(), target )
-                    losses.append(loss.cpu().item())
+                    if 'classification' in self.mtype:
+                        max_idx: Tensor = torch.argmax(result)
+                        ncorrect = torch.eq(max_idx,target).sum()
+                        losses.append( (ncorrect,result.shape[0]) )
+                    else:
+                        loss: Tensor =  self.loss( result.squeeze(), target )
+                        losses.append(loss.cpu().item())
             except StopIteration:
-                val_losses = np.array(losses)
-                print(f"       *** Validation Loss ({val_losses.size} batches): mean={val_losses.mean():.4f}, median={np.median(val_losses):.4f}, range=({val_losses.min():.4f} -> {val_losses.max():.4f})")
+                if 'classification' in self.mtype:
+                    ncorrect, ntotal = 0, 0
+                    for (nc,nt) in losses:
+                        ncorrect += nc
+                        ntotal += nt
+                    print(f"       *** Classification: {ncorrect*100.0/ntotal:.2f}% correct with {ntotal} elements.")
+                else:
+                    val_losses = np.array(losses)
+                    print(f"       *** Validation Loss ({val_losses.size} batches): mean={val_losses.mean():.4f}, median={np.median(val_losses):.4f}, range=({val_losses.min():.4f} -> {val_losses.max():.4f})")
 
     def preprocess(self):
         with self.device:
