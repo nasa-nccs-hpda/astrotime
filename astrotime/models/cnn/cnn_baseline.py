@@ -51,8 +51,8 @@ def get_model_from_cfg( gcfg: DictConfig, embedding_layer: EmbeddingLayer  ) -> 
 			model.append(nn.ELU())
 			in_channels = lsize
 		model.append( nn.Linear(in_channels, 1) )
-	scale = None if 'classification' in mtype else ExpU(dcfg)
-	model.append(scale)
+	if 'regression' in mtype:
+		model.append(ExpU(dcfg))
 	return model
 
 def get_spectral_peak_selector_from_cfg( cfg: DictConfig, device: torch.device, embedding_layer: EmbeddingLayer ) -> nn.Module:
