@@ -18,7 +18,7 @@ def my_app(cfg: DictConfig) -> None:
 	data_loader = SyntheticElementLoader(cfg.data, TSet.Validation)
 
 	embedding = SpectralProjection( cfg.transform, embedding_space_tensor, device )
-	model: nn.Module = get_model_from_cfg( cfg.model, embedding, ExpU(cfg.data) ).to(device)
+	model: nn.Module = get_model_from_cfg( cfg, embedding ).to(device)      # , ExpU(cfg.data)
 
 	trainer = IterativeTrainer( cfg, device, data_loader, model, embedding )
 	trainer.evaluate(version)
