@@ -213,13 +213,12 @@ class IterativeTrainer(object):
             try:
                 for ibatch in range(0, sys.maxsize):
                     batch = self.get_next_batch()
-                    if batch['z'].shape[0] > 0:
-                        self.global_time = time.time()
-                        result: Tensor = self.model(batch['z'])
-                        if result.squeeze().ndim > 0:
-                            loss: Tensor = self.loss(result.squeeze(), batch['target'].squeeze())
-                            losses.append(loss.cpu().item())
-
+                    binput: Tensor = self.get_input(batch)
+                    target: Tensor = self.get_target(batch)
+                    result: Tensor = self.model(binput)
+                    print( f"  result{list(result.shape)} [{result.min().cpu().item():.3f} -> {result.max().cpu().item():.3f}]  <->  target{list(target.shape)} [{target.min().cpu().item():.3f} -> {target.max().cpu().item():.3f}]")
+                    loss: Tensor =  self.loss( result.squeeze(), target )
+                    losses.append(loss.cpu().item())
             except StopIteration:
                 val_losses = np.array(losses)
                 print(f"       *** Validation Loss ({val_losses.size} batches): mean={val_losses.mean():.4f}, median={np.median(val_losses):.4f}, range=({val_losses.min():.4f} -> {val_losses.max():.4f})")
