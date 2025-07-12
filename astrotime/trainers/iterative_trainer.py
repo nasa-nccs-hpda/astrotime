@@ -219,7 +219,7 @@ class IterativeTrainer(object):
                 #    print( f"  result{list(result.shape)} [{result.min().cpu().item():.3f} -> {result.max().cpu().item():.3f}]  <->  target{list(target.shape)} [{target.min().cpu().item():.3f} -> {target.max().cpu().item():.3f}]")
                     for idx in range(result.shape[0]):
                         max_idx = int(torch.argmax(result[idx]))
-                        print( f"  result[{max_idx}]: {torch.argmax(result[idx][max_idx]):.3f} <-> {int(target[idx].cpu().item())}" )
+                        print( f"  result[{max_idx}]: {torch.argmax(result[idx][max_idx])} <-> {int(target[idx].cpu().item())}" )
                     loss: Tensor =  self.loss( result.squeeze(), target )
                     losses.append(loss.cpu().item())
             except StopIteration:
