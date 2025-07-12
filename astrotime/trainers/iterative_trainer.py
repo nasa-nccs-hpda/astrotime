@@ -217,8 +217,8 @@ class IterativeTrainer(object):
                     target: Tensor = self.get_target(batch)
                     result: Tensor = self.model(binput)
                     if 'classification' in self.mtype:
-                        max_idx: Tensor = torch.argmax(result)
-                        ncorrect = torch.eq(max_idx,target).sum()
+                        max_idx: Tensor = torch.argmax(result,dim=1)
+                        ncorrect = torch.eq(max_idx.squeeze(),target.squeeze()).sum()
                         losses.append( (ncorrect,result.shape[0]) )
                     else:
                         loss: Tensor =  self.loss( result.squeeze(), target )
