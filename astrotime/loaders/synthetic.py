@@ -1,7 +1,7 @@
 import time, os, math, numpy as np, xarray as xa, random
 from astrotime.loaders.base import IterativeDataLoader, RDict, ElementLoader
 from typing import List, Optional, Dict, Type, Union, Tuple, Any
-import torch
+import torch, shutil
 from glob import glob
 from omegaconf import DictConfig, OmegaConf
 from astrotime.util.series import TSet
@@ -9,6 +9,7 @@ from astrotime.util.series import TSet
 def merge( arrays: List[np.ndarray], slen: int ) -> np.ndarray:
 	if len( arrays ) == 0: raise IndexError
 	return np.stack( [ array[:slen] for array in arrays ], axis=0 )
+
 
 class SyntheticElementLoader(ElementLoader):
 
@@ -22,6 +23,14 @@ class SyntheticElementLoader(ElementLoader):
 		self.file_sort = self.get_file_sort(tset)
 		self.use_batches = kwargs.get('use_batches',True)
 		self._load_cache_dataset()
+
+	def move_and_open( self, current_file ):
+		dspath0 = f"{self.rootdir}/nc/{self.dset}-{current_file}.nc"
+		dspath1 = f"{self.rootdir}/nc/{self.dset}-0-{current_file}.nc"
+		try: shutil.move( dspath0, dspath1 )
+		except FileNotFoundError: pass
+		dataset = xa.open_dataset(dspath1, engine="netcdf4")
+		return dataset, dspath0
 
 	def get_file_sort(self, tset: TSet):
 		if   tset == TSet.Train:      return  list(range(self.ntfiles))
@@ -66,8 +75,7 @@ class SyntheticElementLoader(ElementLoader):
 					dataset.to_netcdf(dspath)
 					nupdates = 0
 				current_file = file_index
-				dspath  = f"{self.rootdir}/nc/{self.dset}-{current_file}.nc"
-				dataset = xa.open_dataset(dspath, engine="netcdf4")
+				dataset, dspath = self.move_and_open( current_file )
 			dsy: xa.DataArray = dataset[f's{elem_index}']
 			dsy.attrs["octave"] = octave
 			nupdates += 1
