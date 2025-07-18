@@ -63,7 +63,7 @@ class SyntheticElementLoader(ElementLoader):
 			if current_file != file_index:
 				if dataset is not None:
 					print(f" * Writing {nupdates} octaves to file {current_file}: {dspath}")
-					dataset.to_netcdf(dspath, mode="a")
+					dataset.to_netcdf(dspath)
 					nupdates = 0
 				current_file = file_index
 				dspath  = f"{self.rootdir}/nc/{self.dset}-{current_file}.nc"
@@ -72,7 +72,7 @@ class SyntheticElementLoader(ElementLoader):
 			dsy.attrs["octave"] = octave
 			nupdates += 1
 		print(f" *** Writing {nupdates} octaves to file {current_file}: {dspath}")
-		dataset.to_netcdf(dspath, mode="a")
+		dataset.to_netcdf(dspath)
 
 	def get_sort_ordering(self):
 		sort_ordering = []
