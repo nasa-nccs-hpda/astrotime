@@ -79,6 +79,7 @@ RUN pip --no-cache-dir install \
     git+https://github.com/nasa-nccs-hpda/astrotime.git@${ASTROTIME_TAG}
 
 # Clone astrotime for access to scripts
+RUN pip install "numpy<2"
 RUN git clone --branch ${ASTROTIME_TAG} https://github.com/nasa-nccs-hpda/astrotime.git /usr/local/ilab/astrotime
 
 # Entrypoint
