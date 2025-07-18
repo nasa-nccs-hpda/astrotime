@@ -101,17 +101,13 @@ class SyntheticElementLoader(ElementLoader):
 		except IndexError:
 			return None
 
-	def check_epoch_end(self):
-		end_index = self.ntfiles if (self.tset == TSet.Train) else 1
-		if self.ifile >= end_index:
-			raise StopIteration
-
 	def get_next_batch( self ) -> Optional[Dict[str,Any]]:
 		batch_start = self.batch_index*self.batch_size
 		if batch_start >= self.file_size:
 			self.ifile += 1
 			self.batch_index = 0
-			self.check_epoch_end()
+			if self.ifile >= len(self.file_sort):
+				raise StopIteration
 			self._load_cache_dataset()
 		batch: Optional[Dict[str,Any]] = self.get_batch(self.batch_index)
 		if batch is not None:
