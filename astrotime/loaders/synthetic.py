@@ -15,10 +15,10 @@ class SyntheticElementLoader(ElementLoader):
 	def __init__(self, cfg: DictConfig, tset: TSet, **kwargs):
 		super().__init__(cfg, **kwargs)
 		self.batch_index = 0
+		self.file_index = -1
 		self.tset = tset
 		self.batch_size =self.cfg.batch_size
 		self.current_batch = None
-		self.elem_sort = None
 		self.file_sort = list(range(self.ntfiles)) if (tset == TSet.Train) else [self.ntfiles]
 		self.use_batches = kwargs.get('use_batches',True)
 		self._load_cache_dataset()
@@ -43,14 +43,26 @@ class SyntheticElementLoader(ElementLoader):
 
 	def get_raw_element(self, elem_index: int) -> Optional[RDict]:
 		try:
-			eidx = self.elem_sort[elem_index][0]
-			dsy: xa.DataArray = self.data[ f's{eidx}' ]
-			dst: xa.DataArray = self.data[ f't{eidx}' ]
+			dsy: xa.DataArray = self.data[ f's{elem_index}' ]
+			dst: xa.DataArray = self.data[ f't{elem_index}' ]
 			y: np.ndarray = dsy.values
 			return dict(t=dst.values, y=y, p=dsy.attrs["period"], type=dsy.attrs["type"])
 		except KeyError as ex:
 			print(f"\n    Error getting elem-{elem_index} from dataset({self.dspath}): vars = {list(self.data.data_vars.keys())}\n")
 			raise ex
+
+	def add_octave_data(self, octave_data: Dict[Tuple[int,int],float]):
+		dataset, dspath, current_file = None, None, -1
+		for odata_elem in octave_data.items():
+			(file_index, elem_index), octave =  odata_elem
+			if current_file != file_index:
+				if dataset is not None: dataset.to_netcdf(dspath, mode="a")
+				current_file = file_index
+				dspath  = f"{self.rootdir}/nc/{self.dset}-{current_file}.nc"
+				dataset = xa.open_dataset(dspath, engine="netcdf4")
+			dsy: xa.DataArray = dataset[f's{elem_index}']
+			dsy.attrs["octave"] = octave
+		dataset.to_netcdf(dspath, mode="a")
 
 	def get_sort_ordering(self):
 		sort_ordering = []
@@ -107,20 +119,20 @@ class SyntheticElementLoader(ElementLoader):
 			result['period'] = np.array(p)
 			result['stype'] = np.array(stype)
 			result['offset'] = batch_start
-			result['file'] = self.ifile
-			self.log.debug(f"get_batch(F{self.ifile}.B{batch_index}): y{result['y'].shape}, t{result['t'].shape}, len-diff={tlen1-tlen0}, pmax={result['period'].max():.3f}, trng0={result['t'][0][-1]-result['t'][0][0]:.3f}")
+			result['file'] = self.file_index
+			self.log.debug(f"get_batch(F{self.file_index}.B{batch_index}): y{result['y'].shape}, t{result['t'].shape}, len-diff={tlen1-tlen0}, pmax={result['period'].max():.3f}, trng0={result['t'][0][-1]-result['t'][0][0]:.3f}")
 			return result
 		return None
 
 	@property
 	def dspath(self) -> str:
-		return f"{self.rootdir}/nc/{self.dset}-{self.file_sort[self.ifile]}.nc"
+		self.file_index = self.file_sort[self.ifile]
+		return f"{self.rootdir}/nc/{self.dset}-{self.file_index}.nc"
 
 	def _load_cache_dataset( self ):
 		if os.path.exists(self.dspath):
 			try:
 				self.data = xa.open_dataset( self.dspath, engine="netcdf4" )
-				self.elem_sort = self.get_sort_ordering()
 				self.log.info( f"Opened cache dataset from {self.dspath}, nvars = {len(self.data.data_vars)}")
 			except KeyError as ex:
 				print(f"Error reading file: {self.dspath}: {ex}")

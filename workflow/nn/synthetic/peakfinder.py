@@ -5,7 +5,6 @@ from astrotime.util.series import TSet
 from typing import List, Optional, Dict, Type, Union, Tuple
 from astrotime.encoders.spectral import SpectralProjection, embedding_space
 from astrotime.trainers.iterative_trainer import IterativeTrainer
-from astrotime.trainers.loss import ExpLoss, ExpHLoss, ExpU
 from astrotime.models.cnn.cnn_baseline import get_spectral_peak_selector_from_cfg
 from astrotime.config.context import astrotime_initialize
 from astrotime.loaders.synthetic import SyntheticElementLoader

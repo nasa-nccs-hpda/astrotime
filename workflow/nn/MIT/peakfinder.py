@@ -3,7 +3,6 @@ from omegaconf import DictConfig
 from torch import nn
 from astrotime.util.series import TSet
 from typing import List, Optional, Dict, Type, Union, Tuple
-from astrotime.trainers.loss import ExpLoss, ExpHLoss, ExpU
 from astrotime.loaders.MIT import MITElementLoader
 from astrotime.encoders.spectral import SpectralProjection, embedding_space
 from astrotime.trainers.iterative_trainer import IterativeTrainer
