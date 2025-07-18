@@ -53,6 +53,9 @@ class Loader:
 	def get_next_batch( self ) -> Optional[RDict]:
 		raise NotImplementedError(f"The class '{self.__class__.__name__}' does not implement the 'get_next_batch' method")
 
+	def add_octave_data(self, octave_data: Dict[Tuple[int, int], int]):
+		pass
+
 class ElementLoader(Loader):
 
 	def __init__(self, cfg: DictConfig,  **kwargs ):

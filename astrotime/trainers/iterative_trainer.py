@@ -237,6 +237,34 @@ class IterativeTrainer(object):
                     print(f"       *** Validation Loss ({val_losses.size} batches): mean={val_losses.mean():.4f}, median={np.median(val_losses):.4f}, range=({val_losses.min():.4f} -> {val_losses.max():.4f})")
             return torch.concatenate(results)
 
+    def update(self, version: str = None):
+        self.load_checkpoint(version)
+        with self.device:
+            self.loader.init_epoch()
+            losses, octave_data = [], {}
+            try:
+                for ibatch in range(0, sys.maxsize):
+                    batch = self.get_next_batch()
+                    binput: Tensor = self.get_input(batch)
+                    target: Tensor = self.get_target(batch)
+                    result: Tensor = self.model(binput)
+                    max_idx: Tensor = torch.argmax(result,dim=1,keepdim=False)
+                    ncorrect = torch.eq(max_idx, target).sum()
+                    losses.append((ncorrect, result.shape[0]))
+                    batch_start = batch['offset']
+                    file_index = batch['file']
+                    octaves = max_idx.cpu().tolist()
+                    for ib in range(len(octaves) ):
+                        octave_data[ (file_index,batch_start+ib) ] = octaves[ib]
+            except StopIteration:
+                self.loader.add_octave_data(octave_data)
+                ncorrect, ntotal = 0, 0
+                for (nc, nt) in losses:
+                    ncorrect += nc
+                    ntotal += nt
+                print(f" Updated dataset files with octave data ( {ncorrect * 100.0 / ntotal:.1f}% correct with {ntotal} elements )")
+
+
     def preprocess(self):
         with self.device:
             te = time.time()

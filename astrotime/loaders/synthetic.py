@@ -19,9 +19,15 @@ class SyntheticElementLoader(ElementLoader):
 		self.tset = tset
 		self.batch_size =self.cfg.batch_size
 		self.current_batch = None
-		self.file_sort = list(range(self.ntfiles)) if (tset == TSet.Train) else [self.ntfiles]
+		self.file_sort = self.get_file_sort(tset)
 		self.use_batches = kwargs.get('use_batches',True)
 		self._load_cache_dataset()
+
+	def get_file_sort(self, tset: TSet):
+		if   tset == TSet.Train:      return  list(range(self.ntfiles))
+		elif tset == TSet.Validation: return  [self.ntfiles]
+		elif tset == TSet.Update:     return  list(range(self.ntfiles+1))
+		else: raise ValueError(f"Unknown tset: {tset}")
 
 	def set_file(self, file_idx: int):
 		if (file_idx != self.ifile) or (self.data is None):
@@ -51,7 +57,7 @@ class SyntheticElementLoader(ElementLoader):
 			print(f"\n    Error getting elem-{elem_index} from dataset({self.dspath}): vars = {list(self.data.data_vars.keys())}\n")
 			raise ex
 
-	def add_octave_data(self, octave_data: Dict[Tuple[int,int],float]):
+	def add_octave_data(self, octave_data: Dict[Tuple[int,int],int]):
 		dataset, dspath, current_file = None, None, -1
 		for odata_elem in octave_data.items():
 			(file_index, elem_index), octave =  odata_elem

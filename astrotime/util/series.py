@@ -8,6 +8,7 @@ log = logging.getLogger()
 class TSet(Enum):
 	Train = 'train'
 	Validation = 'valid'
+	Update = "update"
 
 def series_interpolation(x: np.ndarray, y: np.ndarray, num_points: int, **kwargs ) -> Tuple[np.ndarray, np.ndarray]:
 	"""
