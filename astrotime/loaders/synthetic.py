@@ -148,6 +148,8 @@ class SyntheticElementLoader(ElementLoader):
 			try:
 				self.data = xa.open_dataset( self.dspath, engine="netcdf4" )
 				self.log.info( f"Opened cache dataset from {self.dspath}, nvars = {len(self.data.data_vars)}")
+				if self.tset == TSet.Update:
+					print(f"Computing octaves from dataset-{self.ifile}: {self.dspath} with {len(self.data.data_vars)} vars")
 			except KeyError as ex:
 				print(f"Error reading file: {self.dspath}: {ex}")
 		else:
