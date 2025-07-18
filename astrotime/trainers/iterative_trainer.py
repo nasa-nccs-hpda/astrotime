@@ -166,7 +166,7 @@ class IterativeTrainer(object):
             result: Tensor = self.model( batch['z'] )
             print( f" ** (batch{list(batch['z'].shape)}, target{list(batch['target'].shape)}) ->  result{list(result.shape)}")
 
-    def compute(self,version,ckp_version=None):
+    def train(self,version,ckp_version=None):
         print(f"SignalTrainer[{self.mode}]: , {self.nepochs} epochs, device={self.device}")
         self.optimizer = self.get_optimizer()
         self.initialize_checkpointing(version,ckp_version)
@@ -205,11 +205,11 @@ class IterativeTrainer(object):
                 epoch_losses = np.array(losses)
                 print(f" ------ Epoch Loss: mean={epoch_losses.mean():.3f}, median={np.median(epoch_losses):.3f}, range=({epoch_losses.min():.3f} -> {epoch_losses.max():.3f})")
 
-    def evaluate(self, version: str = None):
+    def evaluate(self, version: str = None) -> Tensor:
         self.load_checkpoint(version)
         with self.device:
             self.loader.init_epoch()
-            losses, log_interval = [], 50
+            losses, log_interval, results = [], 50, []
             try:
                 for ibatch in range(0, sys.maxsize):
                     batch = self.get_next_batch()
@@ -217,11 +217,13 @@ class IterativeTrainer(object):
                     target: Tensor = self.get_target(batch)
                     result: Tensor = self.model(binput)
                     if 'classification' in self.mtype:
-                        max_idx: Tensor = torch.argmax(result,dim=1)
-                        ncorrect = torch.eq(max_idx.squeeze(),target.squeeze()).sum()
+                        max_idx: Tensor = torch.argmax(result,dim=1,keepdim=False)
+                        results.append( max_idx )
+                        ncorrect = torch.eq(max_idx,target).sum()
                         losses.append( (ncorrect,result.shape[0]) )
                     else:
                         loss: Tensor =  self.loss( result.squeeze(), target )
+                        results.append(result)
                         losses.append(loss.cpu().item())
             except StopIteration:
                 if 'classification' in self.mtype:
@@ -229,10 +231,11 @@ class IterativeTrainer(object):
                     for (nc,nt) in losses:
                         ncorrect += nc
                         ntotal += nt
-                    print(f"       *** Classification: {ncorrect*100.0/ntotal:.2f}% correct with {ntotal} elements.")
+                    print(f"       *** Classification: {ncorrect*100.0/ntotal:.1f}% correct with {ntotal} elements.")
                 else:
                     val_losses = np.array(losses)
                     print(f"       *** Validation Loss ({val_losses.size} batches): mean={val_losses.mean():.4f}, median={np.median(val_losses):.4f}, range=({val_losses.min():.4f} -> {val_losses.max():.4f})")
+            return torch.concatenate(results)
 
     def preprocess(self):
         with self.device:

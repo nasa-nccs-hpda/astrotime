@@ -26,7 +26,7 @@ def my_app(cfg: DictConfig) -> None:
 
 	trainer = IterativeTrainer( cfg.train, data_loader, encoder, model )
 	trainer.initialize_checkpointing(version)
-	trainer.compute()
+	trainer.train()
 
 if __name__ == "__main__":
 	my_app()

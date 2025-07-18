@@ -21,7 +21,7 @@ def my_app(cfg: DictConfig) -> None:
 
 	data_loader = SyntheticElementLoader( cfg.data, TSet.Train )
 	trainer = IterativeTrainer( cfg, device, data_loader, model, embedding )
-	trainer.compute(version)
+	trainer.train(version)
 
 if __name__ == "__main__":
 	my_app()

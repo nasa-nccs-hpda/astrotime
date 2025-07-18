@@ -20,10 +20,10 @@ def my_app(cfg: DictConfig) -> None:
 	data_loader = MITElementLoader(cfg.data, TSet.Train)
 
 	embedding = SpectralProjection( cfg.transform, embedding_space_tensor, device )
-	model: nn.Module = get_model_from_cfg( cfg.model,  embedding, ExpU(cfg.data) ).to(device)
+	model: nn.Module = get_model_from_cfg( cfg.model,  embedding ).to(device)
 
 	trainer = IterativeTrainer( cfg.train, device, data_loader, model, embedding )
-	trainer.compute(version,ckp_version)
+	trainer.train(version,ckp_version)
 
 if __name__ == "__main__":
 	my_app()

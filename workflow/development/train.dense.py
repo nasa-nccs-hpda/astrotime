@@ -11,7 +11,7 @@ from astrotime.config.context import astrotime_initialize
 from astrotime.loaders.synthetic import SyntheticElementLoader
 
 version = "synthetic_period_dense"
-@hydra.main(version_base=None, config_path="../../../config", config_name=version)
+@hydra.main(version_base=None, config_path="../../config", config_name=version)
 def my_app(cfg: DictConfig) -> None:
 	device: torch.device = astrotime_initialize( cfg, version )
 
@@ -21,7 +21,7 @@ def my_app(cfg: DictConfig) -> None:
 
 	data_loader = SyntheticElementLoader( cfg.data, TSet.Train )
 	trainer = IterativeTrainer( cfg, device, data_loader, model, embedding )
-	trainer.compute(version)
+	trainer.train(version)
 
 if __name__ == "__main__":
 	my_app()

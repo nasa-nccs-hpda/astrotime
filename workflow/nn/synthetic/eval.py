@@ -10,7 +10,7 @@ from astrotime.models.cnn.cnn_baseline import get_model_from_cfg
 from astrotime.config.context import astrotime_initialize
 from astrotime.loaders.synthetic import SyntheticElementLoader
 
-version = "synthetic_period_cnn.classification"
+version = "synthetic_period_cnn.regression"
 @hydra.main(version_base=None, config_path="../../../config", config_name=version)
 def my_app(cfg: DictConfig) -> None:
 	device: torch.device = astrotime_initialize( cfg, version+".eval" )
@@ -18,7 +18,7 @@ def my_app(cfg: DictConfig) -> None:
 	data_loader = SyntheticElementLoader(cfg.data, TSet.Validation)
 
 	embedding = SpectralProjection( cfg.transform, embedding_space_tensor, device )
-	model: nn.Module = get_model_from_cfg( cfg, embedding ).to(device)      # , ExpU(cfg.data)
+	model: nn.Module = get_model_from_cfg( cfg, embedding ).to(device)
 
 	trainer = IterativeTrainer( cfg, device, data_loader, model, embedding )
 	trainer.evaluate(version)
