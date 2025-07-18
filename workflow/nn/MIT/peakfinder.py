@@ -22,7 +22,7 @@ def my_app(cfg: DictConfig) -> None:
 	embedding = SpectralProjection( cfg.transform, embedding_space_tensor, device )
 	model: nn.Module = get_spectral_peak_selector_from_cfg( cfg.model, device, embedding )
 
-	trainer = IterativeTrainer(cfg.train, device, data_loader, model, embedding,  ExpLoss(cfg.data) )
+	trainer = IterativeTrainer(cfg.train, device, data_loader, model, embedding )
 	trainer.evaluate(None)
 
 if __name__ == "__main__":

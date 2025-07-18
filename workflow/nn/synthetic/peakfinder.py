@@ -21,7 +21,7 @@ def my_app(cfg: DictConfig) -> None:
 
 	print( f"PeakFinder Validation({version}):")
 	model: nn.Module = get_spectral_peak_selector_from_cfg( cfg.model, device, embedding )
-	trainer = IterativeTrainer( cfg.train, device, data_loader, model, embedding, ExpLoss(cfg.data) )
+	trainer = IterativeTrainer( cfg.train, device, data_loader, model, embedding )
 	trainer.evaluate()
 
 if __name__ == "__main__":
