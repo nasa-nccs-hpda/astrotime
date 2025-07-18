@@ -58,16 +58,20 @@ class SyntheticElementLoader(ElementLoader):
 			raise ex
 
 	def add_octave_data(self, octave_data: List[Tuple[int,int,int]]):
-		dataset, dspath, current_file = None, None, -1
+		dataset, dspath, current_file, nupdates = None, None, -1, 0
 		for (file_index, elem_index, octave) in octave_data:
 			if current_file != file_index:
-				if dataset is not None: dataset.to_netcdf(dspath, mode="a")
+				if dataset is not None:
+					print(f" * Writing {nupdates} octaves to file {current_file}: {dspath}")
+					dataset.to_netcdf(dspath, mode="a")
+					nupdates = 0
 				current_file = file_index
 				dspath  = f"{self.rootdir}/nc/{self.dset}-{current_file}.nc"
-				print(f"Writing octave data to file {file_index}: {dspath}")
 				dataset = xa.open_dataset(dspath, engine="netcdf4")
 			dsy: xa.DataArray = dataset[f's{elem_index}']
 			dsy.attrs["octave"] = octave
+			nupdates += 1
+		print(f" *** Writing {nupdates} octaves to file {current_file}: {dspath}")
 		dataset.to_netcdf(dspath, mode="a")
 
 	def get_sort_ordering(self):
