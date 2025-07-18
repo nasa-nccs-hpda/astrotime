@@ -1,12 +1,16 @@
 # Arguments to pass to the image
 ARG VERSION_DATE=24.09
 ARG FROM_IMAGE=nvcr.io/nvidia/pytorch
+ARG ASTROTIME_TAG=0.1.0  # <-- Add this to pin the repo version
 
 # Import RAPIDS container as the BASE Image (cuda base image)
 FROM ${FROM_IMAGE}:${VERSION_DATE}-py3
 
+# Pass ARGs again after FROM (Docker limitation)
+ARG ASTROTIME_TAG
+
 # Ubuntu needs noninteractive to be forced
-ENV DEBIAN_FRONTEND noninteractive
+ENV DEBIAN_FRONTEND=noninteractive
 
 # System dependencies
 RUN apt-get update && \
@@ -20,7 +24,6 @@ RUN apt-get update && \
         bzip2 \
         diffutils \
         file \
-        build-essential \
         make \
         swig \
         libsqlite3-dev \
@@ -35,17 +38,16 @@ RUN apt-get update && \
         procps \
         gcc \
         g++ \
-        bzip2 \
         libbz2-dev \
         libssl-dev \
         libzmq3-dev \
         libpng-dev \
-        libfreetype6-dev \ 
+        libfreetype6-dev \
         locales && \
     apt-get -y autoremove && \
     rm -rf /var/cache/apt /var/lib/apt/lists/*
 
-# Pip
+# Python dependencies
 RUN pip --no-cache-dir install \
     transformers \
     datasets \
@@ -74,10 +76,12 @@ RUN pip --no-cache-dir install \
     rich \
     timm \
     supervision \
-    pytest \
-    coveralls \
-    git+https://github.com/nasa-nccs-hpda/astrotime.git@main
+    git+https://github.com/nasa-nccs-hpda/astrotime.git@${ASTROTIME_TAG}
 
+# Clone astrotime for access to scripts
+RUN git clone --branch ${ASTROTIME_TAG} https://github.com/nasa-nccs-hpda/astrotime.git /usr/local/ilab/astrotime
+
+# Entrypoint
 HEALTHCHECK NONE
 ENTRYPOINT []
 CMD ["/bin/bash"]
