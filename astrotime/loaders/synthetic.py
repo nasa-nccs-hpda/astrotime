@@ -106,7 +106,7 @@ class SyntheticElementLoader(ElementLoader):
 		if batch_start >= self.file_size:
 			self.ifile += 1
 			self.batch_index = 0
-			if self.ifile  >=  len(self.file_sort):
+			if self.ifile  >=  10 # len(self.file_sort):    TODO: fix this
 				raise StopIteration
 			self._load_cache_dataset()
 		batch: Optional[Dict[str,Any]] = self.get_batch(self.batch_index)
