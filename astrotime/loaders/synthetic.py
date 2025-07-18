@@ -57,14 +57,14 @@ class SyntheticElementLoader(ElementLoader):
 			print(f"\n    Error getting elem-{elem_index} from dataset({self.dspath}): vars = {list(self.data.data_vars.keys())}\n")
 			raise ex
 
-	def add_octave_data(self, octave_data: Dict[Tuple[int,int],int]):
+	def add_octave_data(self, octave_data: List[Tuple[int,int,int]]):
 		dataset, dspath, current_file = None, None, -1
-		for odata_elem in octave_data.items():
-			(file_index, elem_index), octave =  odata_elem
+		for (file_index, elem_index, octave) in octave_data:
 			if current_file != file_index:
 				if dataset is not None: dataset.to_netcdf(dspath, mode="a")
 				current_file = file_index
 				dspath  = f"{self.rootdir}/nc/{self.dset}-{current_file}.nc"
+				print(f"Writing octave data to file {file_index}: {dspath}")
 				dataset = xa.open_dataset(dspath, engine="netcdf4")
 			dsy: xa.DataArray = dataset[f's{elem_index}']
 			dsy.attrs["octave"] = octave

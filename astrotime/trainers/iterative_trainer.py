@@ -241,7 +241,7 @@ class IterativeTrainer(object):
         self.load_checkpoint(version)
         with self.device:
             self.loader.init_epoch()
-            losses, octave_data = [], {}
+            losses, octave_data = [], []
             try:
                 for ibatch in range(0, sys.maxsize):
                     batch = self.get_next_batch()
@@ -255,7 +255,7 @@ class IterativeTrainer(object):
                     file_index = batch['file']
                     octaves = max_idx.cpu().tolist()
                     for ib in range(len(octaves) ):
-                        octave_data[ (file_index,batch_start+ib) ] = octaves[ib]
+                        octave_data.append( (file_index, batch_start+ib, octaves[ib]) )
             except StopIteration:
                 self.loader.add_octave_data(octave_data)
                 ncorrect, ntotal = 0, 0
