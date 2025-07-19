@@ -35,7 +35,7 @@ class SyntheticElementLoader(ElementLoader):
 	def get_file_sort(self, tset: TSet):
 		if   tset == TSet.Train:      return  list(range(self.ntfiles))
 		elif tset == TSet.Validation: return  [self.ntfiles]
-		elif tset == TSet.Update:     return  [743,744,745] # list(range(self.ntfiles+1))
+		elif tset == TSet.Update:     return  list(range(self.ntfiles+1))
 		else: raise ValueError(f"Unknown tset: {tset}")
 
 	def set_file(self, file_idx: int):
