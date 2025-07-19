@@ -63,8 +63,8 @@ class SyntheticElementLoader(ElementLoader):
 			y: np.ndarray = dsy.values
 			return dict(t=dst.values, y=y, p=dsy.attrs["period"], type=dsy.attrs["type"])
 		except KeyError as ex:
-			print(f"\n    Error getting elem-{elem_index} from dataset({self.dspath}): vars = {list(self.data.data_vars.keys())}\n")
-			raise ex
+			self.log.info(f"   Error getting elem-{elem_index} from dataset({self.dspath}): vars = {list(self.data.data_vars.keys())}")
+			return None
 
 	def add_octave_data(self, octave_data: List[Tuple[int,int,int]]):
 		dataset, dspath, current_file, nupdates = None, None, -1, 0
@@ -110,8 +110,7 @@ class SyntheticElementLoader(ElementLoader):
 				raise StopIteration
 			self._load_cache_dataset()
 		batch: Optional[Dict[str,Any]] = self.get_batch(self.batch_index)
-		if batch is not None:
-			self.batch_index += 1
+		self.batch_index += 1
 		return batch
 
 	def get_batch( self, batch_index: int ) -> Optional[Dict[str,Any]]:
@@ -128,14 +127,15 @@ class SyntheticElementLoader(ElementLoader):
 					stype.append(elem['type'])
 					if t[-1].size < tlen0: tlen0 = t[-1].size
 					if t[-1].size > tlen1: tlen1 = t[-1].size
-			result['t'] = merge(t,tlen0)
-			result['y'] = merge(y,tlen0)
-			result['period'] = np.array(p)
-			result['stype'] = np.array(stype)
-			result['offset'] = batch_start
-			result['file'] = self.file_index
-			self.log.debug(f"get_batch(F{self.file_index}.B{batch_index}): y{result['y'].shape}, t{result['t'].shape}, len-diff={tlen1-tlen0}, pmax={result['period'].max():.3f}, trng0={result['t'][0][-1]-result['t'][0][0]:.3f}")
-			return result
+			if tlen1 > 0:
+				result['t'] = merge(t,tlen0)
+				result['y'] = merge(y,tlen0)
+				result['period'] = np.array(p)
+				result['stype'] = np.array(stype)
+				result['offset'] = batch_start
+				result['file'] = self.file_index
+				self.log.debug(f"get_batch(F{self.file_index}.B{batch_index}): y{result['y'].shape}, t{result['t'].shape}, len-diff={tlen1-tlen0}, pmax={result['period'].max():.3f}, trng0={result['t'][0][-1]-result['t'][0][0]:.3f}")
+				return result
 		return None
 
 	@property

@@ -245,17 +245,18 @@ class IterativeTrainer(object):
             try:
                 for ibatch in range(0, sys.maxsize):
                     batch = self.get_next_batch()
-                    binput: Tensor = self.get_input(batch)
-                    target: Tensor = self.get_target(batch)
-                    result: Tensor = self.model(binput)
-                    max_idx: Tensor = torch.argmax(result,dim=1,keepdim=False)
-                    ncorrect = torch.eq(max_idx, target).sum()
-                    losses.append((ncorrect, result.shape[0]))
-                    batch_start = batch['offset']
-                    file_index = batch['file']
-                    octaves = max_idx.cpu().tolist()
-                    for ib in range(len(octaves) ):
-                        octave_data.append( (file_index, batch_start+ib, octaves[ib]) )
+                    if batch is not None:
+                        binput: Tensor = self.get_input(batch)
+                        target: Tensor = self.get_target(batch)
+                        result: Tensor = self.model(binput)
+                        max_idx: Tensor = torch.argmax(result,dim=1,keepdim=False)
+                        ncorrect = torch.eq(max_idx, target).sum()
+                        losses.append((ncorrect, result.shape[0]))
+                        batch_start = batch['offset']
+                        file_index = batch['file']
+                        octaves = max_idx.cpu().tolist()
+                        for ib in range(len(octaves) ):
+                            octave_data.append( (file_index, batch_start+ib, octaves[ib]) )
             except StopIteration:
                 self.loader.add_octave_data(octave_data)
                 ncorrect, ntotal = 0, 0
