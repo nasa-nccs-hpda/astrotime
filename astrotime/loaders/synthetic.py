@@ -59,9 +59,9 @@ class SyntheticElementLoader(ElementLoader):
 	def get_raw_element(self, elem_index: int) -> Optional[RDict]:
 		try:
 			dsy: xa.DataArray = self.data[ f's{elem_index}' ]
-			dst: xa.DataArray = self.data[ f't{elem_index}' ]
+			t: np.ndarray     = self.data[ f't{elem_index}' ].values
 			y: np.ndarray = dsy.values
-			return dict(t=dst.values, y=y, p=dsy.attrs["period"], type=dsy.attrs["type"])
+			return dict(t=t, y=y, p=dsy.attrs["period"], type=dsy.attrs["type"], o=dsy.attrs.get("octave"))
 		except KeyError as ex:
 			self.log.info(f"   Error getting elem-{elem_index} from dataset({self.dspath}): vars = {list(self.data.data_vars.keys())}")
 			return None
@@ -117,13 +117,14 @@ class SyntheticElementLoader(ElementLoader):
 		if self.data is not None:
 			batch_start = batch_index * self.batch_size
 			batch_end = min(batch_start + self.batch_size, self.file_size)
-			t,y,p,stype,result,tlen0,tlen1 = [],[],[],[],{},1000000,0
+			t,y,p,o,stype,result,tlen0,tlen1 = [],[],[],[],[],{},1000000,0
 			for ielem in range(batch_start, batch_end):
 				elem = self.get_raw_element(ielem)
 				if elem is not None:
 					t.append(elem['t'])
 					y.append(elem['y'])
 					p.append(elem['p'])
+					o.append(elem['o'])
 					stype.append(elem['type'])
 					if t[-1].size < tlen0: tlen0 = t[-1].size
 					if t[-1].size > tlen1: tlen1 = t[-1].size
@@ -131,6 +132,7 @@ class SyntheticElementLoader(ElementLoader):
 				result['t'] = merge(t,tlen0)
 				result['y'] = merge(y,tlen0)
 				result['period'] = np.array(p)
+				result['octave'] = np.array(o)
 				result['stype'] = np.array(stype)
 				result['offset'] = batch_start
 				result['file'] = self.file_index

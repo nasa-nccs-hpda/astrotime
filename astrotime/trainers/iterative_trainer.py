@@ -75,6 +75,9 @@ class IterativeTrainer(object):
     def get_input(self, batch: TRDict) -> Tensor:
         return batch['z']
 
+    def get_input_octave(self, batch: TRDict) -> Optional[Tensor]:
+        return batch.get('octave')
+
     def get_target(self, batch: TRDict ) -> Tensor:
         f: Tensor = batch['target']
         if "regression" in self.mtype:
@@ -120,8 +123,9 @@ class IterativeTrainer(object):
         self.log.debug( f"encode_batch: {list(batch.keys())}")
         t,y = batch.pop('t'), batch.pop('y')
         p: Tensor = torch.from_numpy(batch.pop('period')).to(self.device)
+        o: Tensor = torch.from_numpy(batch.pop('octave')).to(self.device)
         z: Tensor = self.to_tensor( t, y )
-        return dict( z=z, target=1/p, **batch )
+        return dict( z=z, target=1/p, octave=o, **batch )
 
     def to_tensor(self, x: np.ndarray, y: np.ndarray) -> Tensor:
         with (self.device):
@@ -182,9 +186,11 @@ class IterativeTrainer(object):
                         batch = self.get_next_batch()
                         binput: Tensor = self.get_input(batch)
                         target: Tensor = self.get_target(batch)
+                        octave: Tensor = self.get_input_octave(batch)
                         if binput.shape[0] > 0:
                             check_nan('batch', binput)
                             self.global_time = time.time()
+                            self.embedding.set_octave_data(octave)
                             #print(f"batch{list(binput.shape)} target{list(batch['target'].squeeze().shape)}")
                             result: Tensor = self.model(  binput )
                             check_nan('model', result )

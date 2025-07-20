@@ -13,6 +13,10 @@ class EmbeddingLayer(Transform):
 		self._embedding_space: Tensor = embedding_space.to(self.device)
 		self.init_state: bool = True
 		self._result: torch.Tensor = None
+		self._octaves: torch.Tensor = None
+
+	def set_octave_data(self, octaves: torch.Tensor):
+		self._octaves = octaves
 
 	def init_log(self, msg: str):
 		if self.init_state: self.log.info(msg)
