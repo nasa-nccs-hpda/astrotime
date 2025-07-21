@@ -1,7 +1,7 @@
 defaults:
   - platform: "explore"
   - train: "synthetic_cnn"
-  - transform: "synthetic"
+  - transform: "synthetic.octave"
   - data: "synthetic.octave"
   - model: "cnn.octave_regression"
   - _self_
