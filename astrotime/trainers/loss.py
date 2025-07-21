@@ -65,6 +65,7 @@ class OctaveRegressionLoss(nn.Module):
 	def forward(self, product: torch.Tensor, target: torch.Tensor) -> torch.Tensor:
 		octaves: torch.Tensor = self.embedding.get_octave_data()
 		base_f = self.f0 * torch.pow(2, octaves)
+		print( f"OctaveRegressionLoss: octaves{shp(octaves)}, product{shp(product)}, target{shp(target)}")
 		p, t = product/base_f, target/base_f
 		result = torch.abs( p-t ).mean()
 		return result
