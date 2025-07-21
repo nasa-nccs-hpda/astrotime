@@ -3,7 +3,7 @@ defaults:
   - train: "synthetic_cnn"
   - transform: "synthetic"
   - data: "synthetic.octave"
-  - model: "cnn.regression"
+  - model: "cnn.octave_regression"
   - _self_
   - override hydra/hydra_logging: disabled
   - override hydra/job_logging: disabled

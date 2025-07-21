@@ -55,9 +55,9 @@ class SpectralProjection(EmbeddingLayer):
 
 	def embed(self, ts: torch.Tensor, ys: torch.Tensor, **kwargs) -> Tensor:
 		if ys.ndim == 1:
-			result = self.embed_subbatch( ts[None,:], ys[None,:] )
+			result = self.embed_subbatch( ts[None,:], ys[None,:], self._octaves )
 		elif self.subbatch_size <= 0:
-			result = self.embed_subbatch( ts, ys )
+			result = self.embed_subbatch( ts, ys, self._octaves  )
 		else:
 			nsubbatches = math.ceil(ys.shape[0]/self.subbatch_size)
 			subbatches = [ self.embed_subbatch( *self.sbatch(ts,ys,i), **kwargs ) for i in range(nsubbatches) ]
@@ -81,7 +81,7 @@ class SpectralProjection(EmbeddingLayer):
 		t0 = time.time()
 		self.init_log(f"SpectralProjection shapes: ts{list(ts.shape)} ys{list(ys.shape)}")
 		ts: Tensor = ts[:, None, :]  # broadcast-to(self.batch_size,self.nfreq,slen)
-		dz: Tensor =  ts * self.get_omega()
+		dz: Tensor =  ts * self.get_omega(octaves)
 		mag: Tensor =  spectral_projection( dz, ys )
 		embedding: Tensor = mag.reshape( [mag.shape[0], self.noctaves, self.nfreq_oct] ) if self.fold_octaves else torch.unsqueeze(mag, 1)
 		self.init_log(f" Completed embedding{list(embedding.shape)} in {elapsed(t0):.5f} sec: nfeatures={embedding.shape[1]}")

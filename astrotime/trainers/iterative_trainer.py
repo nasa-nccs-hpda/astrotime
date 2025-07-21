@@ -3,7 +3,7 @@ from omegaconf import DictConfig
 from .checkpoints import CheckpointManager
 from astrotime.util.tensor_ops import check_nan
 from astrotime.loaders.base import Loader, RDict
-from astrotime.trainers.loss import ExpLoss, ExpU
+from astrotime.trainers.loss import ExpLoss, OctaveRegressionLoss
 from astrotime.encoders.embedding import EmbeddingLayer
 import time, sys, torch, logging, numpy as np
 from torch import nn, optim, Tensor
@@ -48,6 +48,7 @@ class IterativeTrainer(object):
     def get_loss(self, cfg: DictConfig) -> nn.Module:
         if   "regression"     in self.mtype: return ExpLoss(cfg)
         elif "classification" in self.mtype: return nn.CrossEntropyLoss()
+        elif "octave_regression" in self.mtype: return OctaveRegressionLoss(cfg,self.embedding)
         else: raise RuntimeError(f"Unknown model type: {self.mtype}")
 
     def add_callbacks(self, module):
@@ -186,7 +187,7 @@ class IterativeTrainer(object):
                         batch = self.get_next_batch()
                         binput: Tensor = self.get_input(batch)
                         target: Tensor = self.get_target(batch)
-                        octave: Tensor = self.get_input_octave(batch)
+                        octave: Tensor = self.get_octave(target)
                         if binput.shape[0] > 0:
                             check_nan('batch', binput)
                             self.global_time = time.time()
@@ -196,7 +197,7 @@ class IterativeTrainer(object):
                             check_nan('model', result )
                             if result.squeeze().ndim > 0:
                                 # print(f"result{list(result.shape)} range: [{result.min().cpu().item()} -> {result.max().cpu().item()}]")
-                                loss: Tensor =  self.loss( result.squeeze(), target )
+                                loss: Tensor =  self.loss( result.squeeze(), target, octave )
                                 check_nan('loss', loss )
                                 self.conditionally_update_weights(loss)
                                 losses.append(loss.cpu().item())

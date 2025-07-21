@@ -18,6 +18,9 @@ class EmbeddingLayer(Transform):
 	def set_octave_data(self, octaves: torch.Tensor):
 		self._octaves = octaves
 
+	def get_octave_data(self) -> torch.Tensor:
+		return self._octaves
+
 	def init_log(self, msg: str):
 		if self.init_state: self.log.info(msg)
 

@@ -4,6 +4,7 @@ from astrotime.util.math import shp
 from typing import List, Tuple, Mapping
 from astrotime.util.math import tmean, tstd, tmag, npnorm, shp
 from astrotime.util.tensor_ops import check_nan
+from astrotime.encoders.embedding import EmbeddingLayer
 from omegaconf import DictConfig
 
 class HLoss(nn.Module):
@@ -53,6 +54,19 @@ class ExpLoss(nn.Module):
 		ptr: torch.Tensor = torch.log2(pf/tf)
 		# print(f"ExpLoss(zf={zf:.6f}): y{shp(product)}({product.min().item():.6f} -> {product.max().item():.3f}), pf{shp(pf)}({pf.min().item():.6f} -> {pf.max().item():.3f}), tf{shp(tf)}({tf.min().item():.3f} -> {tf.max().item():.3f}), ptr{shp(ptr)}({ptr.min().item():.3f} -> {ptr.max().item():.3f})")
 		result = torch.abs( ptr ).mean()
+		return result
+
+class OctaveRegressionLoss(nn.Module):
+	def __init__(self, cfg: DictConfig, embedding: EmbeddingLayer):
+		super().__init__()
+		self.f0: float = cfg.base_freq
+		self.embedding: EmbeddingLayer = embedding
+
+	def forward(self, product: torch.Tensor, target: torch.Tensor) -> torch.Tensor:
+		octaves: torch.Tensor = self.embedding.get_octave_data()
+		base_f = self.f0 * torch.pow(2, octaves)
+		p, t = product/base_f, target/base_f
+		result = torch.abs( p-t ).mean()
 		return result
 
 class ElemExpLoss(nn.Module):
