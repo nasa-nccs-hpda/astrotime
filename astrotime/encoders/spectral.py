@@ -76,7 +76,7 @@ class SpectralProjection(EmbeddingLayer):
 			omega = self._embedding_space * 2.0 * math.pi
 			return omega[None, :, None] # broadcast-to(self.batch_size,self.nfreq,slen)
 		else:
-			base_f = self.f0 * torch.pow(2, octaves)
+			base_f = self.f0 * np.power(2, octaves)
 			omg = base_f[:,None,None] * self.expspace[None,:,None]
 			return torch.from_numpy( omg ).to(self.device)
 
