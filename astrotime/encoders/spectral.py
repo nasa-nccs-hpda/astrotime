@@ -79,7 +79,8 @@ class SpectralProjection(EmbeddingLayer):
 				i0 = self.cfg.nfreq_oct * octaves[idx]
 				i1 = i0 + self.cfg.nfreq_oct * self.focused_octaves
 				omegas.append( self._embedding_space[i0:i1] * 2.0 * math.pi )
-			return torch.from_numpy(np.array(omegas)).to(self.device)
+			omg = np.stack(omegas)
+			return torch.from_numpy( omg[:,:,None] ).to(self.device)
 
 	def embed_subbatch(self, ts: torch.Tensor, ys: torch.Tensor,  octaves:torch.Tensor=None, **kwargs ) -> Tensor:
 		t0 = time.time()
