@@ -38,7 +38,7 @@ class SpectralProjection(EmbeddingLayer):
 		self.noctaves: int = self.cfg.noctaves
 		self.nfreq_oct: int = self.cfg.nfreq_oct
 		self.fold_octaves = self.cfg.fold_octaves
-		self.focused_octaves = self.cfg.focused_octaves
+		self.focused_octaves = self.cfg.get('focused_octaves',self.noctaves)
 
 	@property
 	def output_channels(self):
@@ -88,7 +88,7 @@ class SpectralProjection(EmbeddingLayer):
 		ts: Tensor = ts[:, None, :]  # broadcast-to(self.batch_size,self.nfreq,slen)
 		dz: Tensor =  ts * self.get_omega(octaves)
 		mag: Tensor =  spectral_projection( dz, ys )
-		embedding: Tensor = mag.reshape( [mag.shape[0], self.noctaves, self.nfreq_oct] ) if self.fold_octaves else torch.unsqueeze(mag, 1)
+		embedding: Tensor = mag.reshape( [mag.shape[0], self.focused_octaves, self.nfreq_oct] ) if self.fold_octaves else torch.unsqueeze(mag, 1)
 		self.init_log(f" Completed embedding{list(embedding.shape)} in {elapsed(t0):.5f} sec: nfeatures={embedding.shape[1]}")
 		self.init_state = False
 		return embedding
