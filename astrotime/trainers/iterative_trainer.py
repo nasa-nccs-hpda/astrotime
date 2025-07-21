@@ -46,9 +46,9 @@ class IterativeTrainer(object):
             for module in model.modules(): self.add_callbacks(module)
 
     def get_loss(self, cfg: DictConfig) -> nn.Module:
-        if   "regression"     in self.mtype: return ExpLoss(cfg)
-        elif "classification" in self.mtype: return nn.CrossEntropyLoss()
-        elif "octave_regression" in self.mtype: return OctaveRegressionLoss(cfg,self.embedding)
+        if   "octave_regression" in self.mtype: return OctaveRegressionLoss(cfg, self.embedding)
+        elif "regression"        in self.mtype: return ExpLoss(cfg)
+        elif "classification"    in self.mtype: return nn.CrossEntropyLoss()
         else: raise RuntimeError(f"Unknown model type: {self.mtype}")
 
     def add_callbacks(self, module):
