@@ -15,6 +15,7 @@ class EmbeddingLayer(Transform):
 		self._result: torch.Tensor = None
 		self._octaves: torch.Tensor = None
 
+	@property
 	def output_channels(self):
 		return 1
 
