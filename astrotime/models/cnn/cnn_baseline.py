@@ -35,7 +35,7 @@ def get_model_from_cfg( gcfg: DictConfig, embedding_layer: EmbeddingLayer  ) -> 
 	log = logging.getLogger()
 	mtype, cfg, dcfg = gcfg.model.mtype, gcfg.model, gcfg.data
 	model: nn.Sequential = nn.Sequential( embedding_layer )
-	num_input_channels = 1 # embedding_layer.output_series_length
+	num_input_channels = embedding_layer.output_channels
 	if mtype.startswith("cnn"):
 		cnn_channels = cfg.cnn_channels
 		for iblock in range(cfg.num_blocks):

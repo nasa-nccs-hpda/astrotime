@@ -40,6 +40,9 @@ class SpectralProjection(EmbeddingLayer):
 		self.fold_octaves = self.cfg.fold_octaves
 		self.focused_octaves = self.cfg.focused_octaves
 
+	def output_channels(self):
+		return self.focused_octaves if self.fold_octaves else 1
+
 	@property
 	def xdata(self) -> Tensor:
 		return self._embedding_space

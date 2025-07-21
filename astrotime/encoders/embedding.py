@@ -15,6 +15,9 @@ class EmbeddingLayer(Transform):
 		self._result: torch.Tensor = None
 		self._octaves: torch.Tensor = None
 
+	def output_channels(self):
+		return 1
+
 	def set_octave_data(self, octaves: torch.Tensor):
 		self._octaves = octaves
 
