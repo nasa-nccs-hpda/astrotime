@@ -65,7 +65,7 @@ class IterativeTrainer(object):
             self.log.info(f"{stats[0]}: dt={stats[1]}s")
 
     def get_octave(self, f: Tensor) -> Tensor:
-        octave = torch.floor(torch.log2(f/self.f0)).to(torch.long)
+        octave = torch.floor( torch.log2(f/self.f0) ).to(torch.long)
         return octave
 
     def fold_by_octave(self, f: Tensor) -> Tensor:
