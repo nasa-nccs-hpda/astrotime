@@ -21,7 +21,9 @@ def embedding_space( cfg: DictConfig, device: device ) -> Tuple[np.ndarray,Tenso
 	return nfspace, tfspace
 
 def spectral_projection( x: Tensor, y: Tensor ) -> Tensor:
-	check_constant(f'y', y.squeeze() )
+	print(f"spectral_projection {list(y.shape)}:")
+	for i in range(y.shape[0]):
+		print(f"  *** y[{i}]: {y[i].mean()} {y[i].std()} ")
 	yn: Tensor = tnorm(y)
 	check_constant(f'yn', yn.squeeze())
 	pw1: Tensor = torch.sin(x)
@@ -87,17 +89,13 @@ class SpectralProjection(EmbeddingLayer):
 
 	def embed_subbatch(self, ibatch: int, ts: torch.Tensor, ys: torch.Tensor,  octaves:torch.Tensor=None, **kwargs ) -> Tensor:
 		t0 = time.time()
-		check_nan(f'ts-sb{ibatch}', ts)
-		check_constant(f'ys-sb{ibatch}', ys)
 		self.init_log(f"SpectralProjection shapes: ts{list(ts.shape)} ys{list(ys.shape)}")
 		ts: Tensor = ts[:, None, :]  # broadcast-to(self.batch_size,self.nfreq,slen)
 		dz: Tensor =  ts * self.get_omega(octaves)
-		check_nan(f'dz-sb{ibatch}', dz)
 		mag: Tensor =  spectral_projection( dz, ys )
 		embedding: Tensor = mag.reshape( [mag.shape[0], self.focused_octaves, self.nfreq_oct] ) if self.fold_octaves else torch.unsqueeze(mag, 1)
 		self.init_log(f" Completed embedding{list(embedding.shape)} in {elapsed(t0):.5f} sec: nfeatures={embedding.shape[1]}")
 		self.init_state = False
-		check_nan(f'embed_subbatch-{ibatch}', embedding)
 		return embedding
 
 	@property
