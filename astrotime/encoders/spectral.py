@@ -13,7 +13,7 @@ from astrotime.util.tensor_ops import check_nan, check_constant
 def tnorm(x: Tensor, dim: int=-1) -> Tensor:
 	m: Tensor = x.mean( dim=dim, keepdim=True)
 	s: Tensor = torch.std( x, dim=dim, keepdim=True)
-	return (x - m) / s
+	return (x - m) / (s + 0.0001)
 
 def embedding_space( cfg: DictConfig, device: device ) -> Tuple[np.ndarray,Tensor]:
 	nfspace = l2space( cfg.base_freq, cfg.noctaves, cfg.nfreq_oct )
@@ -23,6 +23,7 @@ def embedding_space( cfg: DictConfig, device: device ) -> Tuple[np.ndarray,Tenso
 def spectral_projection( x: Tensor, y: Tensor ) -> Tensor:
 	check_constant(f'y', y.squeeze() )
 	yn: Tensor = tnorm(y)
+	check_constant(f'yn', yn.squeeze())
 	pw1: Tensor = torch.sin(x)
 	pw2: Tensor = torch.cos(x)
 	p1: Tensor = torch.sum( yn * pw1, dim=-1)
