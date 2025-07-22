@@ -17,6 +17,8 @@ def check_constant(label: str, x: torch.Tensor):
     s: torch.Tensor = torch.std(x, dim=-1, keepdim=True)
     if s.min() == 0:
         print(f"\n        Error({label}): Constant elements in tensor of size {list(x.shape)}\n")
+        for i in range(x.shape[0]):
+                print(f"  *** x{i}: {x[i].mean()} {x[i].std()} ")
         raise RuntimeError("Constant elements in tensor")
 
 
