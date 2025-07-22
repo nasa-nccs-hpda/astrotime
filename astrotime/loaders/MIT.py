@@ -369,7 +369,8 @@ class MITElementLoader(ElementLoader):
 			nanmask = np.isnan(dsy.values)
 			dst: xa.DataArray = self.data[TIC + ".time"]
 			y: np.ndarray = dsy.values[~nanmask]
-			if y.std() > 0.0:
+			ss = y.std()
+			if (ss > 0.0) and (ss < 1e10):
 				train_data = dict( t=dst.values[~nanmask], y=y, period=period, sn=sn, sector=self.ifile, tic=TIC )
 				return train_data
 		return None

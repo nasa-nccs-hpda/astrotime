@@ -21,9 +21,6 @@ def embedding_space( cfg: DictConfig, device: device ) -> Tuple[np.ndarray,Tenso
 	return nfspace, tfspace
 
 def spectral_projection( x: Tensor, y: Tensor ) -> Tensor:
-	print(f"spectral_projection {list(y.shape)}:")
-	for i in range(y.shape[0]):
-		print(f"  *** y[{i}]: {y[i].mean()} {y[i].std()} ")
 	yn: Tensor = tnorm(y)
 	check_constant(f'yn', yn.squeeze())
 	pw1: Tensor = torch.sin(x)
