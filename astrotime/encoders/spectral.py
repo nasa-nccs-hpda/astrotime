@@ -8,7 +8,7 @@ from torch import Tensor, device, nn
 from astrotime.encoders.embedding import EmbeddingLayer
 from astrotime.util.math import l2space
 from astrotime.util.logging import elapsed
-from astrotime.util.tensor_ops import check_nan
+from astrotime.util.tensor_ops import check_nan, check_constant
 
 def tnorm(x: Tensor, dim: int=-1) -> Tensor:
 	m: Tensor = x.mean( dim=dim, keepdim=True)
@@ -22,16 +22,13 @@ def embedding_space( cfg: DictConfig, device: device ) -> Tuple[np.ndarray,Tenso
 
 def spectral_projection( x: Tensor, y: Tensor ) -> Tensor:
 	yn: Tensor = tnorm(y)
-	check_nan(f'yn', yn)
+	check_constant(f'yn', yn)
 	pw1: Tensor = torch.sin(x)
 	pw2: Tensor = torch.cos(x)
 	p1: Tensor = torch.sum( yn * pw1, dim=-1)
 	p2: Tensor = torch.sum( yn * pw2, dim=-1)
 	mag: Tensor =  torch.sqrt( p1**2 + p2**2 )
-	check_nan(f'mag', mag)
 	rv = tnorm(mag)
-	for i in range(mag.shape[0]):
-		print( f" mag-{i}[{mag.shape[1]}] std={torch.std( mag[i] )}" )
 	check_nan(f'rv', rv)
 	return rv
 

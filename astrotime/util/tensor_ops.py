@@ -13,6 +13,13 @@ def check_nan(label: str, x: torch.Tensor):
         raise RuntimeError("NaN detected in tensor")
     return x
 
+def check_constant(label: str, x: torch.Tensor):
+    s: torch.Tensor = torch.std(x, dim=-1, keepdim=True)
+    if s.min() == 0:
+        print(f"\n        Error({label}): Constant elements in tensor of size {list(x.shape)}\n")
+        raise RuntimeError("Constant elements in tensor")
+
+
 def as_complex(x):
     """
     Similar to :func:`torch.view_as_complex` but copies data in case strides
