@@ -122,7 +122,8 @@ class IterativeTrainer(object):
         self.log.debug( f"encode_batch: {list(batch.keys())}")
         t,y = batch.pop('t'), batch.pop('y')
         p: Tensor = torch.from_numpy(batch.pop('period')).to(self.device)
-        o: Tensor = torch.from_numpy(batch.pop('octave')).to(self.device)
+        o = batch.pop('octave', None)
+        if o is not None: o = torch.from_numpy(o).to(self.device)
         z: Tensor = self.to_tensor( t, y )
         return dict( z=z, target=1/p, octave=o, **batch )
 
