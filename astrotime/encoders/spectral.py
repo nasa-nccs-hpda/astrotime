@@ -28,6 +28,7 @@ def spectral_projection( x: Tensor, y: Tensor ) -> Tensor:
 	p1: Tensor = torch.sum( yn * pw1, dim=-1)
 	p2: Tensor = torch.sum( yn * pw2, dim=-1)
 	mag: Tensor =  torch.sqrt( p1**2 + p2**2 )
+	check_nan(f'mag', mag)
 	rv = tnorm(mag)
 	check_nan(f'rv', rv)
 	return rv
