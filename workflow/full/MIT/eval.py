@@ -17,9 +17,9 @@ def my_app(cfg: DictConfig) -> None:
 	embedding_space_array, embedding_space_tensor = embedding_space(cfg.transform, device)
 	data_loader = MITElementLoader(cfg.data, TSet.Validation)
 	embedding = SpectralProjection( cfg.transform, embedding_space_tensor, device )
-	model: nn.Module = get_model_from_cfg( cfg,  embedding ).to(device)
+	model: nn.Module = get_model_from_cfg( cfg, embedding ).to(device)
 
-	trainer = IterativeTrainer( cfg.train, device, data_loader, model, embedding )
+	trainer = IterativeTrainer( cfg, device, data_loader, model, embedding )
 
 	for cpversion in [None, "synthetic_period", version]:
 		print( f" ---- Evaluating model, saved weights version = {cpversion} ---- ")

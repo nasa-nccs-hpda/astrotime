@@ -21,7 +21,7 @@ def my_app(cfg: DictConfig) -> None:
 	embedding = SpectralProjection( cfg.transform, embedding_space_tensor, device )
 	model: nn.Module = get_model_from_cfg( cfg,  embedding ).to(device)
 
-	trainer = IterativeTrainer( cfg.train, device, data_loader, model, embedding )
+	trainer = IterativeTrainer( cfg, device, data_loader, model, embedding )
 	trainer.train(version,ckp_version)
 
 if __name__ == "__main__":
