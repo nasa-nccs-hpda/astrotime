@@ -22,6 +22,7 @@ def embedding_space( cfg: DictConfig, device: device ) -> Tuple[np.ndarray,Tenso
 
 def spectral_projection( x: Tensor, y: Tensor ) -> Tensor:
 	yn: Tensor = tnorm(y)
+	check_nan(f'yn', yn)
 	pw1: Tensor = torch.sin(x)
 	pw2: Tensor = torch.cos(x)
 	p1: Tensor = torch.sum( yn * pw1, dim=-1)
@@ -88,6 +89,7 @@ class SpectralProjection(EmbeddingLayer):
 		self.init_log(f"SpectralProjection shapes: ts{list(ts.shape)} ys{list(ys.shape)}")
 		ts: Tensor = ts[:, None, :]  # broadcast-to(self.batch_size,self.nfreq,slen)
 		dz: Tensor =  ts * self.get_omega(octaves)
+		check_nan(f'dz-sb{ibatch}', dz)
 		mag: Tensor =  spectral_projection( dz, ys )
 		embedding: Tensor = mag.reshape( [mag.shape[0], self.focused_octaves, self.nfreq_oct] ) if self.fold_octaves else torch.unsqueeze(mag, 1)
 		self.init_log(f" Completed embedding{list(embedding.shape)} in {elapsed(t0):.5f} sec: nfeatures={embedding.shape[1]}")
