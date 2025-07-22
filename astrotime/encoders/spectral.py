@@ -30,6 +30,8 @@ def spectral_projection( x: Tensor, y: Tensor ) -> Tensor:
 	mag: Tensor =  torch.sqrt( p1**2 + p2**2 )
 	check_nan(f'mag', mag)
 	rv = tnorm(mag)
+	for i in range(mag.shape[1]):
+		print( f" mag[{i}] std={torch.std( mag[:,i] )}" )
 	check_nan(f'rv', rv)
 	return rv
 
