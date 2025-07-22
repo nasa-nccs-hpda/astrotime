@@ -192,7 +192,7 @@ class IterativeTrainer(object):
                             self.global_time = time.time()
                             self.embedding.set_octave_data(octave)
                             #print(f"batch{list(binput.shape)} target{list(batch['target'].squeeze().shape)}")
-                            result: Tensor = self.model(  binput )
+                            result: Tensor = self.model( binput )
                             check_nan('model', result )
                             if result.squeeze().ndim > 0:
                                 # print(f"result{list(result.shape)} range: [{result.min().cpu().item()} -> {result.max().cpu().item()}]")

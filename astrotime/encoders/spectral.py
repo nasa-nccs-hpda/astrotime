@@ -60,6 +60,7 @@ class SpectralProjection(EmbeddingLayer):
 		return ts[sbr[0]:sbr[1]], ys[sbr[0]:sbr[1]], octaves
 
 	def embed(self, ts: torch.Tensor, ys: torch.Tensor, **kwargs) -> Tensor:
+		check_nan('ts', ts); check_nan('ys', ys)
 		if ys.ndim == 1:
 			result = self.embed_subbatch( ts[None,:], ys[None,:], self._octaves )
 		elif self.subbatch_size <= 0:
@@ -69,7 +70,9 @@ class SpectralProjection(EmbeddingLayer):
 			subbatches = [ self.embed_subbatch( *self.sbatch(ts,ys,i), **kwargs ) for i in range(nsubbatches) ]
 			result = torch.concat( subbatches, dim=0 )
 			# print(f" embedding{list(result.shape)}: ({result.min():.3f} -> {result.max():.3f})")
-		return torch.unsqueeze(result, 1) if result.ndim == 2 else result
+		embedding =  torch.unsqueeze(result, 1) if result.ndim == 2 else result
+		check_nan('embedding', embedding)
+		return embedding
 
 	def get_omega(self, octaves:torch.Tensor=None ):
 		if octaves is None:
