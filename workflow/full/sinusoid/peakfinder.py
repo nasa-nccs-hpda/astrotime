@@ -14,12 +14,12 @@ version = "sinusoid_period"
 def my_app(cfg: DictConfig) -> None:
 	device: torch.device = astrotime_initialize( cfg, version+".eval" )
 	embedding_space_array, embedding_space_tensor = embedding_space(cfg.transform, device)
-
 	data_loader = SinusoidElementLoader(cfg.data, TSet.Validation)
+
 	embedding = SpectralProjection( cfg.transform, embedding_space_tensor, device )
 	model: nn.Module = get_spectral_peak_selector_from_cfg( cfg.model, device, embedding )
 
-	trainer = IterativeTrainer( cfg.train, device, data_loader, model, embedding )
+	trainer = IterativeTrainer( cfg, device, data_loader, model, embedding )
 	trainer.evaluate()
 
 if __name__ == "__main__":
