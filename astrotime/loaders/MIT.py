@@ -365,12 +365,13 @@ class MITElementLoader(ElementLoader):
 		dsy: xa.DataArray = self.data[TIC+".y"]
 		period = dsy.attrs["period"]
 		sn = dsy.attrs["sn"]
-		if not self.filters or (self.in_range(period) and (sn>self.snr_min) and (sn<self.snr_max)):
+		if self.in_range(period) and (sn>self.snr_min) and (sn<self.snr_max):
 			nanmask = np.isnan(dsy.values)
 			dst: xa.DataArray = self.data[TIC + ".time"]
 			y: np.ndarray = dsy.values[~nanmask]
-			train_data = dict( t=dst.values[~nanmask], y=y, period=period, sn=sn, sector=self.ifile, tic=TIC )
-			return train_data
+			if y.std() > 0.0:
+				train_data = dict( t=dst.values[~nanmask], y=y, period=period, sn=sn, sector=self.ifile, tic=TIC )
+				return train_data
 		return None
 
 	def in_range(self, p: float) -> bool:

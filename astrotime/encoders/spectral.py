@@ -22,7 +22,7 @@ def embedding_space( cfg: DictConfig, device: device ) -> Tuple[np.ndarray,Tenso
 
 def spectral_projection( x: Tensor, y: Tensor ) -> Tensor:
 	yn: Tensor = tnorm(y)
-	check_constant(f'yn', yn)
+	check_constant(f'yn', yn.squeeze() )
 	pw1: Tensor = torch.sin(x)
 	pw2: Tensor = torch.cos(x)
 	p1: Tensor = torch.sum( yn * pw1, dim=-1)
