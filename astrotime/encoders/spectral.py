@@ -60,18 +60,16 @@ class SpectralProjection(EmbeddingLayer):
 		return ts[sbr[0]:sbr[1]], ys[sbr[0]:sbr[1]], octaves
 
 	def embed(self, ts: torch.Tensor, ys: torch.Tensor, **kwargs) -> Tensor:
-		check_nan('ts', ts); check_nan('ys', ys)
 		if ys.ndim == 1:
-			result = self.embed_subbatch( ts[None,:], ys[None,:], self._octaves )
+			result = self.embed_subbatch( 0, ts[None,:], ys[None,:], self._octaves )
 		elif self.subbatch_size <= 0:
-			result = self.embed_subbatch( ts, ys, self._octaves  )
+			result = self.embed_subbatch( 0, ts, ys, self._octaves  )
 		else:
 			nsubbatches = math.ceil(ys.shape[0]/self.subbatch_size)
-			subbatches = [ self.embed_subbatch( *self.sbatch(ts,ys,i), **kwargs ) for i in range(nsubbatches) ]
+			subbatches = [ self.embed_subbatch(i, *self.sbatch(ts,ys,i), **kwargs ) for i in range(nsubbatches) ]
 			result = torch.concat( subbatches, dim=0 )
 			# print(f" embedding{list(result.shape)}: ({result.min():.3f} -> {result.max():.3f})")
 		embedding =  torch.unsqueeze(result, 1) if result.ndim == 2 else result
-		check_nan('embedding', embedding)
 		return embedding
 
 	def get_omega(self, octaves:torch.Tensor=None ):
@@ -83,8 +81,10 @@ class SpectralProjection(EmbeddingLayer):
 			omg = base_f[:,None,None] * self.expspace[None,:,None]
 			return omg
 
-	def embed_subbatch(self, ts: torch.Tensor, ys: torch.Tensor,  octaves:torch.Tensor=None, **kwargs ) -> Tensor:
+	def embed_subbatch(self, ibatch: int, ts: torch.Tensor, ys: torch.Tensor,  octaves:torch.Tensor=None, **kwargs ) -> Tensor:
 		t0 = time.time()
+		check_nan(f'ts-sb{ibatch}', ts)
+		check_nan(f'ys-sb{ibatch}', ys)
 		self.init_log(f"SpectralProjection shapes: ts{list(ts.shape)} ys{list(ys.shape)}")
 		ts: Tensor = ts[:, None, :]  # broadcast-to(self.batch_size,self.nfreq,slen)
 		dz: Tensor =  ts * self.get_omega(octaves)
@@ -92,6 +92,7 @@ class SpectralProjection(EmbeddingLayer):
 		embedding: Tensor = mag.reshape( [mag.shape[0], self.focused_octaves, self.nfreq_oct] ) if self.fold_octaves else torch.unsqueeze(mag, 1)
 		self.init_log(f" Completed embedding{list(embedding.shape)} in {elapsed(t0):.5f} sec: nfeatures={embedding.shape[1]}")
 		self.init_state = False
+		check_nan(f'embed_subbatch-{ibatch}', embedding)
 		return embedding
 
 	@property
