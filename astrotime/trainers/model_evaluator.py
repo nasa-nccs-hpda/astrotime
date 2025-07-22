@@ -7,9 +7,8 @@ import time, sys, torch, logging, numpy as np
 from torch import nn, optim, Tensor
 from astrotime.models.spectral.peak_finder import SpectralPeakSelector
 from astrotime.trainers.checkpoints import CheckpointManager
-from astrotime.trainers.loss import ExpHLoss, ExpU
+from astrotime.trainers.loss import ExpLoss, OctaveRegressionLoss
 from astrotime.models.cnn.cnn_baseline import get_model_from_cfg
-from astrotime.encoders.correlation import AutoCorrelationLayer
 
 TRDict = Dict[str,Union[List[str],int,torch.Tensor]]
 
@@ -22,13 +21,13 @@ class ModelEvaluator(object):
 
     def __init__(self, cfg: DictConfig, version: str, loader: ElementLoader, device, **kwargs ):
         espace = embedding_space(cfg.transform, device)
+        self.mtype = cfg.model.mtype
         self.freqspace: np.ndarray = espace[0]
         self.loader: ElementLoader = loader
-        self._loss = ExpHLoss(cfg.data)
+        self._loss = self.get_loss(cfg.data)
         self.lossdata = {}
         self.cfg: DictConfig = cfg
         self.log = logging.getLogger()
-        self.mtype = kwargs.get( 'mtype', "cnn" )
         self.peak_selector: SpectralPeakSelector = None
         if self.mtype.startswith("peakfinder"):
             self.embedding: EmbeddingLayer = SpectralProjection( cfg.transform, espace[1], device)
@@ -36,10 +35,7 @@ class ModelEvaluator(object):
             self.model: nn.Module =nn.Sequential( self.embedding, self.peak_selector ).to(device)
         elif self.mtype.startswith("cnn"):
             self.embedding: EmbeddingLayer = SpectralProjection( cfg.transform, espace[1], device)
-            self.model: nn.Module = get_model_from_cfg( cfg.model, self.embedding, activation=ExpU(cfg.data) ).to(device)
-        elif self.mtype.startswith("autocor"):
-            self.embedding: EmbeddingLayer = AutoCorrelationLayer('autocor', cfg.transform, espace[1], device)
-            self.model: nn.Module = get_model_from_cfg( cfg.model, self.embedding, activation=ExpU(cfg.data) ).to(device)
+            self.model: nn.Module = get_model_from_cfg( cfg, self.embedding ).to(device)
         self.device = device
         self._target_freq = None
         self._model_freq = None
@@ -47,6 +43,12 @@ class ModelEvaluator(object):
             self.optimizer = self.get_optimizer()
             self._checkpoint_manager = CheckpointManager( version, self.model, self.optimizer, self.cfg.train )
             self.train_state = self._checkpoint_manager.load_checkpoint( update_model=True )
+
+    def get_loss(self, cfg: DictConfig) -> nn.Module:
+        if   "octave_regression" in self.mtype: return OctaveRegressionLoss(cfg, self.embedding)
+        elif "regression"        in self.mtype: return ExpLoss(cfg)
+        elif "classification"    in self.mtype: return nn.CrossEntropyLoss()
+        else: raise RuntimeError(f"Unknown model type: {self.mtype}")
 
     def get_optimizer(self) -> optim.Optimizer:
         cfg = self.cfg.train
@@ -93,7 +95,7 @@ class ModelEvaluator(object):
         result: Tensor = self.model( element['z'] )
         self._target_freq = element['target']
         self._model_freq  = result.cpu().item()
-        loss = self._loss.forward(result, element['target'])
+        loss = self._loss(result, element['target'])
         self.lossdata = dict( loss=loss.detach().cpu().numpy(), h=self._loss.h.detach().cpu().numpy() )
         self.log.info( f"Model loss: {self.lossdata['loss']}, h={self.lossdata['h']}")
         return self.embedding.get_result()

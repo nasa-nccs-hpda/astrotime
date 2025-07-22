@@ -81,10 +81,8 @@ class IterativeTrainer(object):
 
     def get_target(self, batch: TRDict ) -> Tensor:
         f: Tensor = batch['target']
-        if "regression" in self.mtype:
-            return self.fold_by_octave(f) if self.mtype.endswith("octave") else f
-        elif "classification" in self.mtype:
-            return self.get_octave(f)
+        if "regression" in self.mtype:       return f
+        elif "classification" in self.mtype: return self.get_octave(f)
         else: raise RuntimeError(f"Unknown model type: {self.cfg.model_type}")
 
     def get_optimizer(self) -> optim.Optimizer:
