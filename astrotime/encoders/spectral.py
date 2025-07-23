@@ -76,11 +76,13 @@ class SpectralProjection(EmbeddingLayer):
 	def get_omega(self, octaves:torch.Tensor=None ):
 		if octaves is None:
 			omega = self._embedding_space * 2.0 * math.pi
-			return omega[None, :, None] # broadcast-to(self.batch_size,self.nfreq,slen)
+			omg = omega[None, :, None] # broadcast-to(self.batch_size,self.nfreq,slen)
+			print( f"get_omega: omega{list(omg.shape)} embedding_space{list(self._embedding_space.shape)}")
 		else:
 			base_f: torch.Tensor = self.f0 * torch.pow(2, octaves)
 			omg = base_f[:,None,None] * self.expspace[None,:,None]
-			return omg
+			print(f"get_omega(o): omg{list(omg.shape)} expspace{list(self.expspace.shape)}")
+		return omg
 
 	def embed_subbatch(self, ibatch: int, ts: torch.Tensor, ys: torch.Tensor,  octaves:torch.Tensor=None, **kwargs ) -> Tensor:
 		t0 = time.time()
