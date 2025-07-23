@@ -21,7 +21,6 @@ class SyntheticElementLoader(ElementLoader):
 		self.file_sort = None
 		self.current_batch = None
 		self.use_batches = kwargs.get('use_batches',True)
-		self._load_cache_dataset()
 
 	def set_tset(self, tset: TSet):
 		self.tset = tset
@@ -46,10 +45,11 @@ class SyntheticElementLoader(ElementLoader):
 			self.ifile = file_idx
 			self._load_cache_dataset()
 
-	def init_epoch(self):
+	def init_epoch(self, tset: TSet = TSet.Train):
 		random.shuffle(self.file_sort)
 		self.ifile = 0
 		self.batch_index = 0
+		self.set_tset(tset)
 		self._load_cache_dataset()
 
 	@property
