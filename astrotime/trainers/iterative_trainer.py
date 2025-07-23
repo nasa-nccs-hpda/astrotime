@@ -188,16 +188,12 @@ class IterativeTrainer(object):
                         target: Tensor = self.get_target(batch)
                         octave: Tensor = self.get_octave(target)
                         if binput.shape[0] > 0:
-                            #check_nan('batch', binput)
                             self.global_time = time.time()
                             self.embedding.set_octave_data(octave)
-                            #print(f"batch{list(binput.shape)} target{list(batch['target'].squeeze().shape)}")
                             result: Tensor = self.model( binput )
-                           # check_nan('model', result )
                             if result.squeeze().ndim > 0:
                                 # print(f"result{list(result.shape)} range: [{result.min().cpu().item()} -> {result.max().cpu().item()}]")
                                 loss: Tensor =  self.loss( result.squeeze(), target )
-                                #check_nan('loss', loss )
                                 self.conditionally_update_weights(loss)
                                 losses.append(loss.cpu().item())
                                 if ibatch % log_interval == 0:
@@ -206,7 +202,9 @@ class IterativeTrainer(object):
                                     self._checkpoint_manager.save_checkpoint(epoch, ibatch)
 
                 except StopIteration:
-                    print( f"Completed epoch {epoch} in {elapsed(te)/60:.5f} min, mean-loss= {np.array(losses).mean():.3f}")
+                    loss_data = np.array(losses)
+                    print( f"Completed epoch {epoch} in {elapsed(te)/60:.5f} min, mean-loss= {loss_data.mean():.3f}, median= {np.median(loss_data):.3f}")
+                    self.evaluate(version)
 
                 epoch_losses = np.array(losses)
                 print(f" ------ Epoch Loss: mean={epoch_losses.mean():.3f}, median={np.median(epoch_losses):.3f}, range=({epoch_losses.min():.3f} -> {epoch_losses.max():.3f})")
