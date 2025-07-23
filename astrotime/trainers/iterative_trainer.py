@@ -79,7 +79,7 @@ class IterativeTrainer(object):
     def get_input_octave(self, batch: TRDict) -> Optional[Tensor]:
         return batch.get('octave')
 
-    def evaluate1get_target(self, batch: TRDict ) -> Tensor:
+    def get_target(self, batch: TRDict ) -> Tensor:
         f: Tensor = batch['target']
         if "regression" in self.mtype:       return f
         elif "classification" in self.mtype: return self.get_octave(f)
