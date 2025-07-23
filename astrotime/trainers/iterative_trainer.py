@@ -218,7 +218,7 @@ class IterativeTrainer(object):
         with self.device:
             print( f" ---- Running Validation cycles ---- ")
             self.loader.init_epoch()
-            losses, t0 = [], time.time()
+            losses, log_interval= [], 50
             try:
                 for ibatch in range(0,sys.maxsize):
                     batch = self.get_next_batch()
@@ -229,6 +229,10 @@ class IterativeTrainer(object):
                         if result.squeeze().ndim > 0:
                             loss: Tensor =  self.loss( result.squeeze(), target )
                             losses.append(loss.cpu().item())
+                        if ibatch % log_interval == 0:
+                            aloss = np.array(losses[-log_interval:])
+                            print(f"B-{ibatch} loss={aloss.mean():.3f}, range=({aloss.min():.3f} -> {aloss.max():.3f})")
+
 
             except StopIteration:
                 epoch_losses = np.array(losses)
