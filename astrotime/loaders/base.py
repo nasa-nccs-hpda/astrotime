@@ -40,9 +40,10 @@ RDict = Dict[str,Union[List[str],int,np.ndarray]]
 
 class Loader:
 
-	def __init__(self, cfg: DictConfig,  **kwargs ):
+	def __init__(self, cfg: DictConfig, tset: TSet, **kwargs ):
 		self.log = logging.getLogger()
 		self.cfg = cfg
+		self.tset: TSet = tset
 
 	def init_epoch(self):
 		pass
@@ -58,8 +59,8 @@ class Loader:
 
 class ElementLoader(Loader):
 
-	def __init__(self, cfg: DictConfig,  **kwargs ):
-		super().__init__(cfg,**kwargs)
+	def __init__(self, cfg: DictConfig, tset: TSet, **kwargs ):
+		super().__init__(cfg, tset, **kwargs)
 		self.rootdir = cfg.dataset_root
 		self.dset = cfg.source
 		self.ifile: int = kwargs.get('file',0)

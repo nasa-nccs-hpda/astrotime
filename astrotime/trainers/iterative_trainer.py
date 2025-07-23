@@ -141,7 +141,7 @@ class IterativeTrainer(object):
 
     @property
     def mode(self) -> TSet:
-        return TSet.Validation if self.cfg.mode.startswith("val") else TSet.Train
+        return self.loader.tset
 
     @property
     def nepochs(self) -> int:
@@ -153,7 +153,7 @@ class IterativeTrainer(object):
         return e0, e0+self.nepochs
 
     def set_train_status(self):
-        self.loader.initialize(self.mode)
+        self.loader.initialize()
         if self.mode == TSet.Train:
             self.model.train(True)
 
@@ -214,7 +214,7 @@ class IterativeTrainer(object):
     def evaluate(self,version):
         self.load_checkpoint(version)
         with self.device:
-            self.loader.initialize(self.mode)
+            self.loader.initialize()
             self.loader.init_epoch()
             losses, t0 = [], time.time()
             try:

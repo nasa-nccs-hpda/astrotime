@@ -138,7 +138,7 @@ class IterativeTrainer(object):
 		return e0, e0+self.nepochs
 
 	def set_train_status(self):
-		self.loader.initialize(self.mode)
+		self.loader.initialize()
 		if self.mode == TSet.Train:
 			self.model.train(True)
 

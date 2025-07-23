@@ -14,10 +14,9 @@ def merge( arrays: List[np.ndarray], slen: int ) -> np.ndarray:
 class SyntheticElementLoader(ElementLoader):
 
 	def __init__(self, cfg: DictConfig, tset: TSet, **kwargs):
-		super().__init__(cfg, **kwargs)
+		super().__init__(cfg, tset, **kwargs)
 		self.batch_index = 0
 		self.file_index = -1
-		self.tset = tset
 		self.batch_size =self.cfg.batch_size
 		self.current_batch = None
 		self.file_sort = self.get_file_sort(tset)
