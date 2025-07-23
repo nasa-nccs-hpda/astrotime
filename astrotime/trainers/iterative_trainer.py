@@ -179,6 +179,7 @@ class IterativeTrainer(object):
                 te = time.time()
                 self.set_train_status()
                 self.evaluate()
+                print(f" ---- Running Training cycles ---- ")
                 self.loader.init_epoch()
                 losses, log_interval, t0 = [], 50, time.time()
                 try:
@@ -215,6 +216,7 @@ class IterativeTrainer(object):
             self.load_checkpoint(version)
             self.loader.initialize()
         with self.device:
+            print( f" ---- Running Validation cycles ---- ")
             self.loader.init_epoch()
             losses, t0 = [], time.time()
             try:
