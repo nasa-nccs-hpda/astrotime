@@ -82,7 +82,7 @@ class ElementLoader(Loader):
 
 	@property
 	def ntfiles(self):
-		return self.cfg.nfiles-2    #TODO: FIX THIS HACK!
+		return self.cfg.nfiles-1
 
 	def init_epoch(self, tset: TSet = TSet.Train):
 		self.ifile = 0
