@@ -55,6 +55,7 @@ def get_model_from_cfg( gcfg: DictConfig, embedding_layer: EmbeddingLayer  ) -> 
 	if 'regression' in mtype:
 		if 'octave' in mtype: model.append( nn.Sigmoid() )
 		else:                 model.append( ExpU(dcfg) )
+		print( f"CNN: mtype: {mtype}, act: {type(model[-1])}" )
 	return model
 
 def get_spectral_peak_selector_from_cfg( cfg: DictConfig, device: torch.device, embedding_layer: EmbeddingLayer ) -> nn.Module:
