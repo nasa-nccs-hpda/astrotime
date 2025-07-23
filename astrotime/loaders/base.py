@@ -47,7 +47,7 @@ class Loader:
 	def init_epoch(self):
 		pass
 
-	def initialize(self, tset: TSet) -> xa.Dataset:
+	def initialize(self):
 		pass
 
 	def get_next_batch( self ) -> Optional[RDict]:

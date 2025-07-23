@@ -159,9 +159,10 @@ class SyntheticElementLoader(ElementLoader):
 
 class SyntheticLoader:
 
-	def __init__(self, cfg: DictConfig, **kwargs ):
+	def __init__(self, cfg: DictConfig, tset: TSet, **kwargs ):
 		super().__init__()
 		self.cfg = cfg
+		self.tset = tset
 		self.files = None
 		self.nfiles = None
 		self.sector_index = 0
@@ -189,8 +190,7 @@ class SyntheticLoader:
 	def current_sector(self):
 		return self.sector_shuffle[self.sector_index]
 
-	def initialize(self, tset: TSet, **kwargs ):
-		self.tset = tset
+	def initialize(self):
 		self.files = glob(f"{self.cfg.source}_*.nc", root_dir=self.cfg.dataset_root)
 		self.nfiles = len(self.files)
 		self.sector_shuffle = list(range(self.nfiles))

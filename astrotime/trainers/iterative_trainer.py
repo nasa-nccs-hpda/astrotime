@@ -79,7 +79,7 @@ class IterativeTrainer(object):
     def get_input_octave(self, batch: TRDict) -> Optional[Tensor]:
         return batch.get('octave')
 
-    def get_target(self, batch: TRDict ) -> Tensor:
+    def evaluate1get_target(self, batch: TRDict ) -> Tensor:
         f: Tensor = batch['target']
         if "regression" in self.mtype:       return f
         elif "classification" in self.mtype: return self.get_octave(f)
@@ -211,7 +211,29 @@ class IterativeTrainer(object):
                 epoch_losses = np.array(losses)
                 print(f" ------ Epoch Loss: mean={epoch_losses.mean():.3f}, median={np.median(epoch_losses):.3f}, range=({epoch_losses.min():.3f} -> {epoch_losses.max():.3f})")
 
-    def evaluate(self, version: str = None) -> Tensor:
+    def evaluate(self,version):
+        self.load_checkpoint(version)
+        with self.device:
+            self.loader.initialize(self.mode)
+            self.loader.init_epoch()
+            losses, t0 = [], time.time()
+            try:
+                for ibatch in range(0,sys.maxsize):
+                    batch = self.get_next_batch()
+                    binput: Tensor = batch['z']
+                    target: Tensor = batch['target']
+                    if binput.shape[0] > 0:
+                        result: Tensor = self.model( binput )
+                        if result.squeeze().ndim > 0:
+                            loss: Tensor =  self.loss( result.squeeze(), target )
+                            losses.append(loss.cpu().item())
+
+            except StopIteration:
+                epoch_losses = np.array(losses)
+                print(f" ------ Epoch Loss: mean={epoch_losses.mean():.3f}, median={np.median(epoch_losses):.3f}, range=({epoch_losses.min():.3f} -> {epoch_losses.max():.3f})")
+
+
+    def evaluate_classification(self, version: str = None) -> Tensor:
         self.load_checkpoint(version)
         with self.device:
             self.loader.init_epoch()
@@ -222,25 +244,16 @@ class IterativeTrainer(object):
                     binput: Tensor = self.get_input(batch)
                     target: Tensor = self.get_target(batch)
                     result: Tensor = self.model(binput)
-                    if 'classification' in self.mtype:
-                        max_idx: Tensor = torch.argmax(result,dim=1,keepdim=False)
-                        results.append( max_idx )
-                        ncorrect = torch.eq(max_idx,target).sum()
-                        losses.append( (ncorrect,result.shape[0]) )
-                    else:
-                        loss: Tensor =  self.loss( result.squeeze(), target )
-                        results.append(result)
-                        losses.append(loss.cpu().item())
+                    max_idx: Tensor = torch.argmax(result,dim=1,keepdim=False)
+                    results.append( max_idx )
+                    ncorrect = torch.eq(max_idx,target).sum()
+                    losses.append( (ncorrect,result.shape[0]) )
             except StopIteration:
-                if 'classification' in self.mtype:
                     ncorrect, ntotal = 0, 0
                     for (nc,nt) in losses:
                         ncorrect += nc
                         ntotal += nt
                     print(f"       *** Classification: {ncorrect*100.0/ntotal:.1f}% correct with {ntotal} elements.")
-                else:
-                    val_losses = np.array(losses)
-                    print(f"       *** Validation Loss ({val_losses.size} batches): mean={val_losses.mean():.4f}, median={np.median(val_losses):.4f}, range=({val_losses.min():.4f} -> {val_losses.max():.4f})")
             return torch.concatenate(results)
 
     def update(self, version: str = None):

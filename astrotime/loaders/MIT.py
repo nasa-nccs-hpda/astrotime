@@ -12,10 +12,11 @@ class MITLoader(IterativeDataLoader):
 
 	TestModes: List = [ "default", 'sinusoid', 'planet_crossing' ]
 
-	def __init__(self, cfg: DictConfig, **kwargs ):
+	def __init__(self, cfg: DictConfig, tset: TSet, **kwargs ):
 		super().__init__(cfg)
 		self.sector_range = cfg.sector_range
 		self.sector_index: int = -1
+		self.tset = tset
 		self.sector_batch_offset: int = None
 		self.sector_shuffle: List[int] = list( range(self.sector_range[0],self.sector_range[1]) )
 		self.snr_min: float = cfg.get('snr_min',0.0)
@@ -39,8 +40,7 @@ class MITLoader(IterativeDataLoader):
 			self.load_sector(isector)
 		print(f"\n --- Done --- \n")
 
-	def initialize(self, tset: TSet, **kwargs ):
-		self.tset = tset
+	def initialize(self,  **kwargs ):
 		self.period_range = self.get_period_range()
 		self._read_TICS(self.current_sector)
 		self.init_epoch()
