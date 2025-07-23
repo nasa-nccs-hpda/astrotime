@@ -180,7 +180,7 @@ class IterativeTrainer(object):
                 self.set_train_status()
                 self.evaluate()
                 print(f" ---- Running Training cycles ---- ")
-                self.loader.init_epoch()
+                self.loader.init_epoch(TSet.Train)
                 losses, log_interval, t0 = [], 50, time.time()
                 try:
                     for ibatch in range(0,sys.maxsize):
@@ -217,7 +217,7 @@ class IterativeTrainer(object):
             self.loader.initialize()
         with self.device:
             print( f" ---- Running Validation cycles ---- ")
-            self.loader.init_epoch()
+            self.loader.init_epoch(TSet.Validation)
             losses, log_interval= [], 50
             try:
                 for ibatch in range(0,sys.maxsize):

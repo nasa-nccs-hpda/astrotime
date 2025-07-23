@@ -40,12 +40,12 @@ RDict = Dict[str,Union[List[str],int,np.ndarray]]
 
 class Loader:
 
-	def __init__(self, cfg: DictConfig, tset: TSet, **kwargs ):
+	def __init__(self, cfg: DictConfig, **kwargs ):
 		self.log = logging.getLogger()
 		self.cfg = cfg
-		self.tset: TSet = tset
 
-	def init_epoch(self):
+
+	def init_epoch(self, tset: TSet = TSet.Train ):
 		pass
 
 	def initialize(self):
@@ -59,12 +59,13 @@ class Loader:
 
 class ElementLoader(Loader):
 
-	def __init__(self, cfg: DictConfig, tset: TSet, **kwargs ):
-		super().__init__(cfg, tset, **kwargs)
+	def __init__(self, cfg: DictConfig, **kwargs ):
+		super().__init__(cfg, **kwargs)
 		self.rootdir = cfg.dataset_root
 		self.dset = cfg.source
 		self.ifile: int = kwargs.get('file',0)
 		self.data = None
+		self.tset: TSet = None
 		self.batch_offset = 0
 		self.params: Dict[str, float] = {}
 
@@ -83,11 +84,15 @@ class ElementLoader(Loader):
 	def ntfiles(self):
 		return self.cfg.nfiles-1
 
-	def init_epoch(self):
+	def init_epoch(self, tset: TSet = TSet.Train):
 		self.ifile = 0
 		self.data = None
 		self.batch_offset = 0
+		self.set_tset(tset)
 		self.load_data()
+
+	def set_tset(self, tset: TSet):
+		self.tset = tset
 
 	def set_file(self, file_idx: int):
 		if file_idx != self.ifile:

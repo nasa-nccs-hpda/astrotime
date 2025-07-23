@@ -13,15 +13,19 @@ def merge( arrays: List[np.ndarray], slen: int ) -> np.ndarray:
 
 class SyntheticElementLoader(ElementLoader):
 
-	def __init__(self, cfg: DictConfig, tset: TSet, **kwargs):
-		super().__init__(cfg, tset, **kwargs)
+	def __init__(self, cfg: DictConfig, **kwargs):
+		super().__init__(cfg, **kwargs)
 		self.batch_index = 0
 		self.file_index = -1
 		self.batch_size =self.cfg.batch_size
+		self.file_sort = None
 		self.current_batch = None
-		self.file_sort = self.get_file_sort(tset)
 		self.use_batches = kwargs.get('use_batches',True)
 		self._load_cache_dataset()
+
+	def set_tset(self, tset: TSet):
+		self.tset = tset
+		self.file_sort = self.get_file_sort(tset)
 
 	def move_and_open( self, current_file ):
 		dspath0 = f"{self.rootdir}/nc/{self.dset}-{current_file}.nc"
