@@ -204,15 +204,16 @@ class IterativeTrainer(object):
                 except StopIteration:
                     loss_data = np.array(losses)
                     print( f"Completed epoch {epoch} in {elapsed(te)/60:.5f} min, mean-loss= {loss_data.mean():.3f}, median= {np.median(loss_data):.3f}")
-                    self.evaluate(version)
+                    self.evaluate()
 
                 epoch_losses = np.array(losses)
                 print(f" ------ Epoch Loss: mean={epoch_losses.mean():.3f}, median={np.median(epoch_losses):.3f}, range=({epoch_losses.min():.3f} -> {epoch_losses.max():.3f})")
 
-    def evaluate(self,version):
-        self.load_checkpoint(version)
-        with self.device:
+    def evaluate(self,version=None):
+        if version is not None:
+            self.load_checkpoint(version)
             self.loader.initialize()
+        with self.device:
             self.loader.init_epoch()
             losses, t0 = [], time.time()
             try:
