@@ -53,10 +53,11 @@ class SinusoidElementLoader(ElementLoader):
 			self.ifile = file_idx
 			self._load_cache_dataset()
 
-	def init_epoch(self):
-		random.shuffle(self.file_sort)
+	def init_epoch(self, tset: TSet = TSet.Train):
 		self.ifile = 0
 		self.batch_index = 0
+		self.set_tset(tset)
+		random.shuffle(self.file_sort)
 		self._load_cache_dataset()
 
 	@property
