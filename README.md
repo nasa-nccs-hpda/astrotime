@@ -55,9 +55,12 @@ For each of the datasets (sinusoid, synthetic, and MIT), three ML workflows are 
 *   _eval_ (**.workflow/wavelet-synthesis-cnn.py**):      Runs the TAN validation/test workflow.
 *   _peakfinder_ (**.workflow/wavelet-analysis-cnn.py**): Runs the peakfinder validation/test workflow.
 
-The workflows save checkpoint files at the end of each epoch.  By default the model is initialized with any existing checkpoint file at the begining of script execution.  To
-execute the script with a new set of checkpoints (while keeping the old ones), create a new script with a different value of the *version* parameter 
-(and a new defaults hydra yaml file with the same name in the config dir).  
+The workflows save checkpoint files at the end of each epoch.  By default the model is initialized with any existing checkpoint file at the begining of script execution. 
+A workflow's checkpoints are named after it's *version* parameter.
+To execute the script with a new set of checkpoints (while keeping the old ones), create a new script with a different value of the *version* parameter 
+(and a new defaults hydra yaml file with the same name in the config dir).   The second (ckp_version) argument to the _train_ method of the Trainer class is used for fine
+tuning.  If this argument is specified, then the training workflow will be initialized with the checkpoint from that version, and all new checkpoint saves will be
+to the primary version of the workflow.
 
 ## Configuration
 
