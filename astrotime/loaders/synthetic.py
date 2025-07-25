@@ -16,7 +16,6 @@ class SyntheticElementLoader(ElementLoader):
 	def __init__(self, cfg: DictConfig, **kwargs):
 		super().__init__(cfg, **kwargs)
 		self.batch_index = 0
-		self.file_index = -1
 		self.batch_size =self.cfg.batch_size
 		self.file_sort = None
 		self.current_batch = None

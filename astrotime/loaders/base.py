@@ -64,6 +64,7 @@ class ElementLoader(Loader):
 		self.rootdir = cfg.dataset_root
 		self.dset = cfg.source
 		self.ifile: int = kwargs.get('file',0)
+		self.file_index = -1
 		self.data = None
 		self.tset: TSet = None
 		self.batch_offset = 0

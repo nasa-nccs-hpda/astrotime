@@ -2,7 +2,7 @@ from typing import List, Optional, Dict, Type, Tuple, Union
 from omegaconf import DictConfig
 from .checkpoints import CheckpointManager
 from astrotime.util.tensor_ops import check_nan
-from astrotime.loaders.base import Loader, RDict
+from astrotime.loaders.base import RDict, ElementLoader
 from astrotime.trainers.loss import ExpLoss, OctaveRegressionLoss
 from astrotime.encoders.embedding import EmbeddingLayer
 import time, sys, torch, logging, numpy as np
@@ -22,9 +22,9 @@ def tocpu( c, idx=0 ):
 
 class IterativeTrainer(object):
 
-    def __init__(self, cfg: DictConfig, device: torch.device, loader: Loader, model: nn.Module, embedding: EmbeddingLayer ):
+    def __init__(self, cfg: DictConfig, device: torch.device, loader: ElementLoader, model: nn.Module, embedding: EmbeddingLayer ):
         self.device: torch.device = device
-        self.loader: Loader = loader
+        self.loader: ElementLoader = loader
         self.embedding = embedding
         self.cfg: DictConfig = cfg.train
         self.model: nn.Module = model
@@ -236,7 +236,7 @@ class IterativeTrainer(object):
                             losses.append(loss.cpu().item())
                             if ibatch % log_interval == 0:
                                 aloss = np.array(losses[-log_interval:])
-                                print(f"B-{ibatch} loss={aloss.mean():.3f}, range=({aloss.min():.3f} -> {aloss.max():.3f}), dt/batch={elapsed(t0):.5f} sec")
+                                print(f"F-{self.loader.ifile}:{self.loader.file_index} B-{ibatch} loss={aloss.mean():.3f}, range=({aloss.min():.3f} -> {aloss.max():.3f}), dt/batch={elapsed(t0):.5f} sec")
 
             except StopIteration:
                 epoch_losses = np.array(losses)
