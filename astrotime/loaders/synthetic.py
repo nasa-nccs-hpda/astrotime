@@ -23,7 +23,7 @@ class SyntheticElementLoader(ElementLoader):
 		self.use_batches = kwargs.get('use_batches',True)
 
 	def set_tset(self, tset: TSet):
-		self.tset = tset
+		ElementLoader.set_tset(self, tset)
 		self.file_sort = self.get_file_sort(tset)
 
 	def move_and_open( self, current_file ):

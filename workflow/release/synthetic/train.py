@@ -1,7 +1,6 @@
 import hydra, torch
 from omegaconf import DictConfig
 from torch import nn
-from astrotime.util.series import TSet
 from typing import List, Optional, Dict, Type, Union, Tuple
 from astrotime.encoders.spectral import SpectralProjection, embedding_space
 from astrotime.trainers.iterative_trainer import IterativeTrainer
