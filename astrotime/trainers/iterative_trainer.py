@@ -199,7 +199,7 @@ class IterativeTrainer(object):
                                 losses.append(loss.cpu().item())
                                 if ibatch % log_interval == 0:
                                     aloss = np.array(losses[-log_interval:])
-                                    print(f"E-{epoch} B-{ibatch} loss={aloss.mean():.3f}, range=({aloss.min():.3f} -> {aloss.max():.3f}), dt/batch={elapsed(t0):.5f} sec")
+                                    print(f"E-{epoch} F-{self.loader.ifile}:{self.loader.file_index} B-{ibatch} loss={aloss.mean():.3f}, range=({aloss.min():.3f} -> {aloss.max():.3f}), dt/batch={elapsed(t0):.5f} sec")
                                     self._checkpoint_manager.save_checkpoint(epoch, ibatch)
 
                 except StopIteration:
@@ -241,34 +241,6 @@ class IterativeTrainer(object):
             except StopIteration:
                 epoch_losses = np.array(losses)
                 print(f" ------ EVAL Loss: mean={epoch_losses.mean():.3f}, median={np.median(epoch_losses):.3f}, range=({epoch_losses.min():.3f} -> {epoch_losses.max():.3f})")
-
-    def evaluate1(self,version=None):
-        if version is not None:
-            self.load_checkpoint(version)
-            self.loader.initialize()
-        with self.device:
-            print( f" ---- Running Validation cycles ---- ")
-            self.loader.init_epoch(TSet.Validation)
-            losses, log_interval= [], 50
-            try:
-                for ibatch in range(0,sys.maxsize):
-                    batch = self.get_next_batch()
-                    binput: Tensor = batch['z']
-                    target: Tensor = batch['target']
-                    if binput.shape[0] > 0:
-                        result: Tensor = self.model( binput )
-                        if result.squeeze().ndim > 0:
-                            loss: Tensor =  self.loss( result.squeeze(), target )
-                            losses.append(loss.cpu().item())
-                        if ibatch % log_interval == 0:
-                            aloss = np.array(losses[-log_interval:])
-                            print(f"B-{ibatch} loss={aloss.mean():.3f}, range=({aloss.min():.3f} -> {aloss.max():.3f})")
-
-
-            except StopIteration:
-                epoch_losses = np.array(losses)
-                print(f" ------ Epoch Loss: mean={epoch_losses.mean():.3f}, median={np.median(epoch_losses):.3f}, range=({epoch_losses.min():.3f} -> {epoch_losses.max():.3f})")
-
 
     def evaluate_classification(self, version: str = None) -> Tensor:
         self.load_checkpoint(version)
