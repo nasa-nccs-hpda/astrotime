@@ -274,11 +274,10 @@ class MITOctavesLoader(MITLoader):
 
 class MITElementLoader(ElementLoader):
 
-	def __init__(self, cfg: DictConfig, tset: TSet, **kwargs ):
+	def __init__(self, cfg: DictConfig, **kwargs ):
 		super().__init__(cfg)
 		self.sector_range = cfg.sector_range
 		self.loaded_file = -1
-		self.tset = tset
 		self.filters = kwargs.get('filters',True)
 		self.snr_min: float = cfg.get('snr_min',0.0 )
 		self.snr_max: float = cfg.get('snr_max', 1.0e9 )
@@ -288,7 +287,17 @@ class MITElementLoader(ElementLoader):
 		self._TICS: List[str]  = None
 		self.preload = kwargs.get('preload',False)
 		self.elems = []
-		self.file_sort = list(range(self.ntfiles)) if (tset == TSet.Train) else [self.ntfiles]
+		self.file_sort = None
+
+	def set_tset(self, tset: TSet):
+		ElementLoader.set_tset(self, tset)
+		self.file_sort = self.get_file_sort(tset)
+
+	def get_file_sort(self, tset: TSet):
+		if   tset == TSet.Train:      return  list(range(self.ntfiles))
+		elif tset == TSet.Validation: return  [self.ntfiles]
+		elif tset == TSet.Update:     return  list(range(self.ntfiles+1))
+		else: raise ValueError(f"Unknown tset: {tset}")
 
 	def get_period_range(self) -> Tuple[float,float]:
 		f0 = self.cfg.base_freq
@@ -304,10 +313,11 @@ class MITElementLoader(ElementLoader):
 		self.load_data()
 		return self._TICS
 
-	def init_epoch(self):
-		random.shuffle(self.file_sort)
+	def init_epoch(self, tset: TSet = TSet.Train):
 		self.ifile = 0
 		self.batch_offset = 0
+		self.set_tset(tset)
+		random.shuffle(self.file_sort)
 		self._load_cache_dataset()
 
 	@property

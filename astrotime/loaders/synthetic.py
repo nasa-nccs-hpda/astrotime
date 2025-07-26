@@ -16,14 +16,13 @@ class SyntheticElementLoader(ElementLoader):
 	def __init__(self, cfg: DictConfig, **kwargs):
 		super().__init__(cfg, **kwargs)
 		self.batch_index = 0
-		self.file_index = -1
 		self.batch_size =self.cfg.batch_size
 		self.file_sort = None
 		self.current_batch = None
 		self.use_batches = kwargs.get('use_batches',True)
 
 	def set_tset(self, tset: TSet):
-		self.tset = tset
+		ElementLoader.set_tset(self, tset)
 		self.file_sort = self.get_file_sort(tset)
 
 	def move_and_open( self, current_file ):

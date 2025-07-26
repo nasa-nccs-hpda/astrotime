@@ -2,7 +2,7 @@ from typing import List, Optional, Dict, Type, Tuple, Union
 from omegaconf import DictConfig
 from .checkpoints import CheckpointManager
 from astrotime.util.tensor_ops import check_nan
-from astrotime.loaders.base import Loader, RDict
+from astrotime.loaders.base import RDict, ElementLoader
 from astrotime.trainers.loss import ExpLoss, OctaveRegressionLoss
 from astrotime.encoders.embedding import EmbeddingLayer
 import time, sys, torch, logging, numpy as np
@@ -22,9 +22,9 @@ def tocpu( c, idx=0 ):
 
 class IterativeTrainer(object):
 
-    def __init__(self, cfg: DictConfig, device: torch.device, loader: Loader, model: nn.Module, embedding: EmbeddingLayer ):
+    def __init__(self, cfg: DictConfig, device: torch.device, loader: ElementLoader, model: nn.Module, embedding: EmbeddingLayer ):
         self.device: torch.device = device
-        self.loader: Loader = loader
+        self.loader: ElementLoader = loader
         self.embedding = embedding
         self.cfg: DictConfig = cfg.train
         self.model: nn.Module = model
@@ -178,7 +178,6 @@ class IterativeTrainer(object):
             for epoch in range(*self.epoch_range):
                 te = time.time()
                 self.set_train_status()
-                self.evaluate()
                 print(f" ---- Running Training cycles ---- ")
                 self.loader.init_epoch(TSet.Train)
                 losses, log_interval, t0 = [], 50, time.time()
@@ -200,7 +199,7 @@ class IterativeTrainer(object):
                                 losses.append(loss.cpu().item())
                                 if ibatch % log_interval == 0:
                                     aloss = np.array(losses[-log_interval:])
-                                    print(f"E-{epoch} B-{ibatch} loss={aloss.mean():.3f}, range=({aloss.min():.3f} -> {aloss.max():.3f}), dt/batch={elapsed(t0):.5f} sec")
+                                    print(f"E-{epoch} F-{self.loader.ifile}:{self.loader.file_index} B-{ibatch} loss={aloss.mean():.3f}, range=({aloss.min():.3f} -> {aloss.max():.3f}), dt/batch={elapsed(t0):.5f} sec")
                                     self._checkpoint_manager.save_checkpoint(epoch, ibatch)
 
                 except StopIteration:
@@ -211,33 +210,37 @@ class IterativeTrainer(object):
                 epoch_losses = np.array(losses)
                 print(f" ------ Epoch Loss: mean={epoch_losses.mean():.3f}, median={np.median(epoch_losses):.3f}, range=({epoch_losses.min():.3f} -> {epoch_losses.max():.3f})")
 
-    def evaluate(self,version=None):
-        if version is not None:
-            self.load_checkpoint(version)
-            self.loader.initialize()
+    def evaluate(self,version,ckp_version=None):
+        print(f"SignalTrainer[{self.mode}]: , {self.nepochs} epochs, device={self.device}")
+        self.optimizer = self.get_optimizer()
+        self.initialize_checkpointing(version,ckp_version)
         with self.device:
-            print( f" ---- Running Validation cycles ---- ")
+            self.loader.initialize()
+            print(f" ---- Running Test cycles ---- ")
             self.loader.init_epoch(TSet.Validation)
-            losses, log_interval= [], 50
+            losses, log_interval, t0 = [], 50, time.time()
             try:
                 for ibatch in range(0,sys.maxsize):
+                    t0 = time.time()
                     batch = self.get_next_batch()
-                    binput: Tensor = batch['z']
-                    target: Tensor = batch['target']
+                    binput: Tensor = self.get_input(batch)
+                    target: Tensor = self.get_target(batch)
+                    octave: Tensor = self.get_octave(target)
                     if binput.shape[0] > 0:
+                        self.global_time = time.time()
+                        self.embedding.set_octave_data(octave)
                         result: Tensor = self.model( binput )
                         if result.squeeze().ndim > 0:
+                            # print(f"result{list(result.shape)} range: [{result.min().cpu().item()} -> {result.max().cpu().item()}]")
                             loss: Tensor =  self.loss( result.squeeze(), target )
                             losses.append(loss.cpu().item())
-                        if ibatch % log_interval == 0:
-                            aloss = np.array(losses[-log_interval:])
-                            print(f"B-{ibatch} loss={aloss.mean():.3f}, range=({aloss.min():.3f} -> {aloss.max():.3f})")
-
+                            if ibatch % log_interval == 0:
+                                aloss = np.array(losses[-log_interval:])
+                                print(f"F-{self.loader.ifile}:{self.loader.file_index} B-{ibatch} loss={aloss.mean():.3f}, range=({aloss.min():.3f} -> {aloss.max():.3f}), dt/batch={elapsed(t0):.5f} sec")
 
             except StopIteration:
                 epoch_losses = np.array(losses)
-                print(f" ------ Epoch Loss: mean={epoch_losses.mean():.3f}, median={np.median(epoch_losses):.3f}, range=({epoch_losses.min():.3f} -> {epoch_losses.max():.3f})")
-
+                print(f" ------ EVAL Loss: mean={epoch_losses.mean():.3f}, median={np.median(epoch_losses):.3f}, range=({epoch_losses.min():.3f} -> {epoch_losses.max():.3f})")
 
     def evaluate_classification(self, version: str = None) -> Tensor:
         self.load_checkpoint(version)

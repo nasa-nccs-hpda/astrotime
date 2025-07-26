@@ -1,7 +1,6 @@
 import hydra, torch
 from omegaconf import DictConfig
 from torch import nn
-from astrotime.util.series import TSet
 from astrotime.loaders.MIT import MITElementLoader
 from astrotime.encoders.spectral import SpectralProjection, embedding_space
 from astrotime.trainers.iterative_trainer import IterativeTrainer
@@ -18,7 +17,7 @@ def my_app(cfg: DictConfig) -> None:
 	embedding = SpectralProjection( cfg.transform, embedding_space_tensor, device )
 	model: nn.Module = get_model_from_cfg(cfg, embedding).to(device)
 
-	data_loader = MITElementLoader(cfg.data, TSet.Train)
+	data_loader = MITElementLoader(cfg.data)
 	trainer = IterativeTrainer( cfg, device, data_loader, model, embedding )
 	trainer.train(version,ckp_version)
 
