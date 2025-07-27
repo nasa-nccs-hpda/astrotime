@@ -94,6 +94,7 @@ class ElementLoader(Loader):
 
 	def set_tset(self, tset: TSet):
 		self.tset = tset
+		return self
 
 	def set_file(self, file_idx: int):
 		if file_idx != self.ifile:

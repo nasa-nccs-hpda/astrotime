@@ -3,6 +3,7 @@ from omegaconf import DictConfig
 from astrotime.encoders.spectral import SpectralProjection, embedding_space
 from astrotime.encoders.embedding import EmbeddingLayer
 from astrotime.loaders.base import RDict, ElementLoader
+from astrotime.util.series import TSet
 import time, sys, torch, logging, numpy as np
 from torch import nn, optim, Tensor
 from astrotime.models.spectral.peak_finder import SpectralPeakSelector
@@ -23,7 +24,7 @@ class ModelEvaluator(object):
         espace = embedding_space(cfg.transform, device)
         self.mtype = cfg.model.mtype
         self.freqspace: np.ndarray = espace[0]
-        self.loader: ElementLoader = loader
+        self.loader: ElementLoader = loader.set_tset( TSet.Train )
         self._loss = self.get_loss(cfg.data)
         self.lossdata = {}
         self.cfg: DictConfig = cfg

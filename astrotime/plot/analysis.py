@@ -2,6 +2,7 @@ import logging, os, csv, pickle, numpy as np
 from .param import STIntParam, STFloatParam
 from matplotlib import ticker
 from torch import nn, optim, Tensor, FloatTensor
+from astrotime.util.series import TSet
 from .base import SignalPlot, bounds
 from matplotlib.axes import Axes
 from matplotlib.lines import Line2D
@@ -83,7 +84,7 @@ class RawDatasetPlot(SignalPlot):
 		SignalPlot.__init__(self, **kwargs)
 		self.name = name
 		self.version = name.split(':')[0]
-		self.data_loader: ElementLoader = data_loader
+		self.data_loader: ElementLoader = data_loader.set_tset( TSet.Train )
 		self.annotations: List[str] = tolower( kwargs.get('annotations',None) )
 		self.ofac = kwargs.get('upsample_factor',1)
 		self.plot: Line2D = None
