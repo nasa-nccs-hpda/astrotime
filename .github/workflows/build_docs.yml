@@ -1,8 +1,6 @@
 name: Publish Docs
 
 on:
-  push:
-    branches: [ main ]
   release:
     types: [ created ]
 

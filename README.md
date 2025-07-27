@@ -2,6 +2,133 @@
 
 #### Machine learning methods for irregularly spaced time series
 
+## Quick Start
+
+For a quick start, workflows and container usage have been documented in this section. For additional
+details, please read the rest of the sections of this README. As a summary, each workflow 
+(Sinusoid, Synthetic, and MIT) have a training, eval, and peakfinder script. 
+
+For the MIT dataset, the train step is replaced with finetune, because in this case the training is
+intended to start with weights from the synthetic training. The peakfinder scripts run a simple (non-ML)
+workflow that computes the frequency of the highest peak in the spectrum, and returns the corresponding 
+period, which is used for comparison and evaluation of the ML workflow.
+
+### Sinusoid Dataset Workflow
+
+An example run training the deep learning model:
+
+```bash
+PYTHONPATH=/explore/nobackup/people/jacaraba/development/astrotime python /explore/nobackup/people/jacaraba/development/astrotime/workflow/release/sinusoid/train.py platform.project_root=/explore/nobackup/projects/ilab/ilab_testing/jacaraba/astrotime data.dataset_root=/explore/nobackup/projects/ilab/data/astrotime/sinusoids/nc train.nepochs=10 data.batch_size=16
+```
+
+Note that the following are the options allowed to run this workflow. If you need to change the path to the data or any other settings,
+feel free to modify the settings coming from the CLI.
+
+```bash
+Singularity> python /explore/nobackup/people/jacaraba/development/astrotime/workflow/full/sinusoid/train.py -h
+train is powered by Hydra.
+
+== Configuration groups ==
+Compose your configuration from those groups (group=option)
+
+__legacy__: MIT_period, MIT_period.ce, MIT_period.octaves, MIT_period.octaves.pcross, MIT_period.synthetic, MIT_period.synthetic.folded, MIT_period.wp, baseline_cnn, desktop_period.analysis, desktop_period.octaves, progressive_MIT_period, sinusoid_period.baseline, sinusoid_period.baseline_small, sinusoid_period.poly, sinusoid_period.wp, sinusoid_period.wp_scaled, sinusoid_period.wp_small, sinusoid_period.wpk, sinusoid_period.wwz, sinusoid_period.wwz_small, synthetic_period_autocorr, synthetic_period_transformer, synthetic_period_transformer.classification, synthetic_period_transformer.regression, synthetic_transformer
+__legacy__/data: MIT, MIT-1, MIT.csv, MIT.octaves, MIT.synthetic, MIT.synthetic.folded, astro_synthetic, astro_synthetic_autocorr, pcross.octaves, planet_crossing_generator, sinusoids.nc, sinusoids.npz, sinusoids_small.nc
+__legacy__/model: relation_aware_transformer, transformer, transformer.classication, transformer.regression, wpk_cnn
+__legacy__/transform: MIT.octaves, MIT.synthetic, MIT.synthetic.folded, ce-MIT, correlation, gp, value, wp, wp-MIT, wp-scaled, wpk, wwz
+data: MIT, sinusoids, synthetic, synthetic.octave
+model: cnn, cnn.classification, cnn.octave_regression, dense
+platform: desktop1, explore
+train: MIT_cnn, sinusoid_cnn, synthetic_cnn
+transform: MIT, sinusoid, synthetic, synthetic.octave
+
+
+== Config ==
+Override anything in the config (foo.bar=value)
+
+platform:
+  project_root: /explore/nobackup/projects/ilab/data/astrotime
+  gpu: 0
+  log_level: info
+train:
+  optim: rms
+  lr: 0.001
+  nepochs: 5000
+  refresh_state: false
+  overwrite_log: true
+  results_path: ${platform.project_root}/results
+  weight_decay: 0.0
+  mode: train
+  base_freq: ${data.base_freq}
+transform:
+  sparsity: 0.0
+  batch_size: ${data.batch_size}
+  nfreq_oct: ${data.nfreq_oct}
+  base_freq: ${data.base_freq}
+  noctaves: ${data.noctaves}
+  test_mode: ${data.test_mode}
+  maxh: ${data.maxh}
+  accumh: false
+  decay_factor: 0.0
+  subbatch_size: 4
+  norm: std
+  fold_octaves: false
+data:
+  source: sinusoid
+  dataset_root: ${platform.project_root}/sinusoids/nc
+  dataset_files: padded_sinusoids_*.nc
+  cache_path: ${platform.project_root}/cache/data/synthetic
+  dset_reduction: 1.0
+  batch_size: 16
+  nfreq_oct: 512
+  base_freq: 0.025
+  noctaves: 9
+  test_mode: default
+  file_size: 1000
+  nfiles: 1000
+  refresh: false
+  maxh: 8
+model:
+  mtype: cnn.regression
+  cnn_channels: 64
+  dense_channels: 64
+  out_channels: 1
+  num_cnn_layers: 3
+  num_blocks: 8
+  pool_size: 2
+  stride: 1
+  kernel_size: 3
+  cnn_expansion_factor: 4
+  base_freq: ${data.base_freq}
+  feature: 1
+
+
+Powered by Hydra (https://hydra.cc)
+Use --hydra-help to view Hydra specific help
+```
+
+Then followed by the peakfinder method:
+
+```bash
+PYTHONPATH=/explore/nobackup/people/jacaraba/development/astrotime python /explore/nobackup/people/jacaraba/development/astrotime/workflow/release/sinusoid/peakfinder.py platform.project_root=/explore/nobackup/projects/ilab/ilab_testing/jacaraba/astrotime data.dataset_root=/explore/nobackup/projects/ilab/data/astrotime/sinusoids/nc
+```
+
+Finally, performing evaluation of these methods:
+
+```bash
+PYTHONPATH=/explore/nobackup/people/jacaraba/development/astrotime python /explore/nobackup/people/jacaraba/development/astrotime/workflow/release/sinusoid/eval.py platform.project_root=/explore/nobackup/projects/ilab/ilab_testing/jacaraba/astrotime data.dataset_root=/explore/nobackup/projects/ilab/data/astrotime/sinusoids/nc train.nepochs=10 data.batch_size=16
+```
+
+### Synthetic Dataset Workflow
+
+```bash
+PYTHONPATH=/explore/nobackup/people/jacaraba/development/astrotime python /explore/nobackup/people/jacaraba/development/astrotime/workflow/release/synthetic/train.py platform.project_root=/explore/nobackup/projects/ilab/ilab_testing/jacaraba/astrotime data.dataset_root=/explore/nobackup/projects/ilab/data/astrotime/sinusoids/nc train.nepochs=10 data.batch_size=16
+```
+
+### MIT Dataset Workflow
+
+```bash
+```
+
 ## Project Description
 
 This project contains the implementation of a time-aware neural network (TAN) and workflows for testing its performance on the task of predicting periods of the timeseries datasets provided by Brian Powell.  
@@ -42,11 +169,11 @@ Three datasets have been provided by Brian Powell for test and evalutaion:
     >   * pip install diffusers lightkurve --upgrade
 
 ## Dataset Preparation
+
 * This project utilizes three datasets (sinusoid, synthetic, and MIT) which are located in the **cfg.platform.project_root** directory. The project_root directory on explore is: **/explore/nobackup/projects/ilab/data/astrotime**.
 * The raw sinusoid data can be found on explore at <project_root>/sinusoids/npz.  The script **.workflow/util/npz2nc.py** has been used to convert the .npz files to netcdf files in the  <project_root>/sinusoids/nc directory.
 * The raw synthetic light curves are stored on explore at **/explore/nobackup/people/bppowel1/timehascome/**. The script **.workflow/util/npz2nc.py** has been used to convert the .npz files to netcdf files in the <project_root>/synthetic directory.
 * The MIT light curves are stored in their original form at: **/explore/nobackup/people/bppowel1/mit_lcs/**. Methods in the class **astrotime.loaders.MIT.MITLoader** have been used to convert the lc txt files to netcdf files in the <project_root>/MIT directory.
-
 
 ## Workflows
 For each of the datasets (sinusoid, synthetic, and MIT), three ML workflows are provided:
@@ -106,7 +233,6 @@ Here is a partial list of configuration parameters with typical default values. 
        train.weight_decay: 0.0                                       # Weight decay parameter for optimizer
        train.mode:  train                                            # execution mode: 'train' or 'valid'
 
-
 ## Working from the container
 
 In addition to the anaconda environment, the software can be run from
@@ -137,6 +263,8 @@ To get a shell session inside the container:
 ```bash
 singularity shell -B $NOBACKUP,/explore/nobackup/projects,/explore/nobackup/people --nv /explore/nobackup/projects/ilab/containers/astrotime-latest
 ```
+
+### An example run training
 
 An example run training:
 
