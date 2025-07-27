@@ -175,10 +175,10 @@ class IterativeTrainer(object):
         self.optimizer = self.get_optimizer()
         self.initialize_checkpointing(version,ckp_version)
         with self.device:
+            print(f" ---- Running Training cycles ---- ")
             for epoch in range(*self.epoch_range):
                 te = time.time()
                 self.set_train_status()
-                print(f" ---- Running Training cycles ---- ")
                 self.loader.init_epoch(TSet.Train)
                 losses, log_interval, t0 = [], 50, time.time()
                 try:
