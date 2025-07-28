@@ -1,9 +1,7 @@
-name: CI to Dockerhub Dev
+name: CI to Dockerhub - Grace Hopper
 
 on:
-  push:
-    branches:
-      - 'develop'
+  workflow_dispatch: # Keep only manual trigger
 
 jobs:
   docker:
@@ -44,11 +42,15 @@ jobs:
             /usr/share/dotnet \
             /usr/share/swift
           df -h /
+
       -
         name: Build and push
-        uses: docker/build-push-action@v4
+        uses: docker/build-push-action@v6
         with:
           context: .
-          file: ./requirements/Dockerfile.dev
+          file: ./requirements/Dockerfile.arm
           push: true
-          tags: nasanccs/astrotime:dev
+          platforms: linux/arm64
+          tags: |
+            nasanccs/astrotime:latest-arm
+            mydockerhubuser/myimage:${{ env.VERSION }}
