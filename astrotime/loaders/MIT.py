@@ -437,7 +437,7 @@ class MITElementLoader(ElementLoader):
 
 	def preload_elems(self) -> Optional[Dict[str,np.ndarray]]:
 		self.elems = []
-		for ielem in range( 0, self.nelements ):
+		for ielem in range( 0, len(self._TICS) ):
 			elem: Optional[RDict] = self.get_raw_element(ielem)
 			if elem is not None:
 				self.elems.append( elem )
