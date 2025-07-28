@@ -234,8 +234,8 @@ class IterativeTrainer(object):
                         self.embedding.set_octave_data(octave)
                         result: Tensor = self.model( binput )
                         if result.squeeze().ndim > 0:
-                            print(f"result{list(result.shape)} range: [{result.min().cpu().item()} -> {result.max().cpu().item()}]")
-                            print(f"target{list(target.shape)} range: [{target.min().cpu().item()} -> {target.max().cpu().item()}]")
+                            for i in range(result.shape[0]):
+                                print(f" {i}: result={result[i]:.3f} target={target[i]:.3f}")
                             loss: Tensor =  self.loss( result.squeeze(), target )
                             losses.append(loss.cpu().item())
                             if ibatch % log_interval == 0:
