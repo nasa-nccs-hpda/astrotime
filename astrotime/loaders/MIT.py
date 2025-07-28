@@ -352,7 +352,8 @@ class MITElementLoader(ElementLoader):
 
 	@property
 	def nelements(self) -> int:
-		return len(self._TICS)
+		self.load_data()
+		return len(self.elems)
 
 	@property
 	def nfiles(self) -> int:
