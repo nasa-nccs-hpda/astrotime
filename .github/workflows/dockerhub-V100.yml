@@ -77,13 +77,13 @@ jobs:
         run: echo "VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_ENV
       -
         name: Build and push
-        uses: docker/build-push-action@v4
+        uses: docker/build-push-action@v6
         with:
           context: .
           platforms: linux/amd64
-          file: ./requirements/Dockerfile
+          file: ./requirements/Dockerfile.V100
           push: true
-          tags: nasanccs/astrotime:${{ github.ref_name }}-amd64
+          tags: nasanccs/astrotime:${{ github.ref_name }}-v100-amd64
 
   docker-arm:
     runs-on: ubuntu-latest
@@ -162,7 +162,7 @@ jobs:
           platforms: linux/arm64
           file: ./requirements/Dockerfile.V100
           push: true
-          tags: nasanccs/astrotime:${{ github.ref_name }}-arm64
+          tags: nasanccs/astrotime:${{ github.ref_name }}-v100-arm64
 
   manifest:
     needs: [docker-amd, docker-arm]
@@ -178,13 +178,13 @@ jobs:
         run: echo "VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_ENV
       - name: Create and push manifest
         run: |
-          docker manifest create nasanccs/astrotime:latest \
-            nasanccs/astrotime:${{ github.ref_name }}-amd64 \
-            nasanccs/astrotime:${{ github.ref_name }}-arm64
+          docker manifest create nasanccs/astrotime:latest-v100 \
+            nasanccs/astrotime:${{ github.ref_name }}-v100-amd64 \
+            nasanccs/astrotime:${{ github.ref_name }}-v100-arm64
           docker manifest push nasanccs/astrotime:latest
       - name: Create and push manifest version
         run: |
-          docker manifest create nasanccs/astrotime:${{ github.ref_name }} \
-            nasanccs/astrotime:${{ github.ref_name }}-amd64 \
-            nasanccs/astrotime:${{ github.ref_name }}-arm64
-          docker manifest push nasanccs/astrotime:${{ github.ref_name }}
+          docker manifest create nasanccs/astrotime:${{ github.ref_name }}-v100 \
+            nasanccs/astrotime:${{ github.ref_name }}-v100-amd64 \
+            nasanccs/astrotime:${{ github.ref_name }}-v100-arm64
+          docker manifest push nasanccs/astrotime:${{ github.ref_name }}-v100
