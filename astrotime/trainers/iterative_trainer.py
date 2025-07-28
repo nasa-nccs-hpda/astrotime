@@ -22,13 +22,13 @@ def tocpu( c, idx=0 ):
 
 class IterativeTrainer(object):
 
-    def __init__(self, cfg: DictConfig, device: torch.device, loader: ElementLoader, model: nn.Module, embedding: EmbeddingLayer ):
+    def __init__(self, cfg: DictConfig, device: torch.device, loader: ElementLoader, model: nn.Module, embedding: EmbeddingLayer, **kwargs ):
         self.device: torch.device = device
         self.loader: ElementLoader = loader
         self.embedding = embedding
         self.cfg: DictConfig = cfg.train
         self.model: nn.Module = model
-        self.mtype: str = cfg.model.mtype
+        self.mtype: str = kwargs.get( 'mtype', cfg.model.mtype )
         self.noctaves = cfg.data.noctaves
         self.f0 = cfg.data.base_freq
         self.optimizer: optim.Optimizer = None
@@ -83,8 +83,9 @@ class IterativeTrainer(object):
     def get_target(self, batch: TRDict ) -> Tensor:
         f: Tensor = batch['target']
         if "regression" in self.mtype:       return f
+        elif "peakfinder" in self.mtype:       return f
         elif "classification" in self.mtype: return self.get_octave(f)
-        else: raise RuntimeError(f"Unknown model type: {self.cfg.model_type}")
+        else: raise RuntimeError(f"Unknown model type: {self.cfg.mtype}")
 
     def get_optimizer(self) -> optim.Optimizer:
         if   self.cfg.optim == "rms":  return optim.RMSprop( self.model.parameters(), lr=self.cfg.lr )
@@ -213,8 +214,9 @@ class IterativeTrainer(object):
 
     def evaluate(self,version,ckp_version=None):
         print(f"SignalTrainer[{self.mode}]: , {self.nepochs} epochs, device={self.device}")
-        self.optimizer = self.get_optimizer()
-        self.initialize_checkpointing(version,ckp_version)
+        if self.mtype != "peakfinder":
+            self.optimizer = self.get_optimizer()
+            self.initialize_checkpointing(version,ckp_version)
         with self.device:
             self.loader.initialize()
             print(f" ---- Running Test cycles ---- ")
@@ -232,7 +234,8 @@ class IterativeTrainer(object):
                         self.embedding.set_octave_data(octave)
                         result: Tensor = self.model( binput )
                         if result.squeeze().ndim > 0:
-                            # print(f"result{list(result.shape)} range: [{result.min().cpu().item()} -> {result.max().cpu().item()}]")
+                            for i in range(result.shape[0]):
+                                print(f" {i}: result={result[i]:.3f} target={target[i]:.3f}")
                             loss: Tensor =  self.loss( result.squeeze(), target )
                             losses.append(loss.cpu().item())
                             if ibatch % log_interval == 0:
