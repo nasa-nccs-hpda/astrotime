@@ -176,11 +176,10 @@ Three datasets have been provided by Brian Powell for test and evalutaion:
 * The MIT light curves are stored in their original form at: **/explore/nobackup/people/bppowel1/mit_lcs/**. Methods in the class **astrotime.loaders.MIT.MITLoader** have been used to convert the lc txt files to netcdf files in the <project_root>/MIT directory.
 
 ## Workflows
-For each of the datasets (sinusoid, synthetic, and MIT), three ML workflows are provided:
+For each of the datasets (sinusoid, synthetic, and MIT), two ML workflows are provided:
 
 *   _train_ (**.workflow/train-baseline-cnn.py**):        Runs the TAN training workflow.
 *   _eval_ (**.workflow/wavelet-synthesis-cnn.py**):      Runs the TAN validation/test workflow.
-*   _peakfinder_ (**.workflow/wavelet-analysis-cnn.py**): Runs the peakfinder validation/test workflow.
 
 The workflows save checkpoint files at the end of each epoch.  By default the model is initialized with any existing checkpoint file at the begining of script execution. 
 A workflow's checkpoints are named after it's *version* parameter.
