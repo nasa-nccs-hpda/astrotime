@@ -9,6 +9,7 @@ from astrotime.trainers.iterative_trainer import IterativeTrainer
 from astrotime.models.cnn.cnn_baseline import get_spectral_peak_selector_from_cfg
 from astrotime.config.context import astrotime_initialize
 version = "MIT_period"
+mtype = "peakfinder"
 
 @hydra.main(version_base=None, config_path="../../../config", config_name=version)
 def my_app(cfg: DictConfig) -> None:
@@ -16,12 +17,12 @@ def my_app(cfg: DictConfig) -> None:
 	cfg.data['snr_min'] = 80.0
 
 	embedding_space_array, embedding_space_tensor = embedding_space(cfg.transform, device)
-	data_loader = MITElementLoader(cfg.data, TSet.Validation)
+	data_loader = MITElementLoader(cfg.data)
 
 	embedding = SpectralProjection( cfg.transform, embedding_space_tensor, device )
 	model: nn.Module = get_spectral_peak_selector_from_cfg( cfg.model, device, embedding )
 
-	trainer = IterativeTrainer(cfg, device, data_loader, model, embedding )
+	trainer = IterativeTrainer(cfg, device, data_loader, model, embedding, mtype=mtype )
 	trainer.evaluate(None)
 
 if __name__ == "__main__":
