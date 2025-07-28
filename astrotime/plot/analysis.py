@@ -157,46 +157,55 @@ class RawDatasetPlot(SignalPlot):
 	@exception_handled
 	def _setup(self):
 		xs, ys, self.period, self.snr, stype = self.get_element_data()
-		self.origin = xs[np.argmax(np.abs(ys))]
-		self.plot: Line2D = self.ax.plot(xs, ys, label='y', color='blue', marker=".", linewidth=1, markersize=2, alpha=0.5)[0]
-		self.ax.title.set_text(f"{self.name}({stype},{self.file},{self.element}): TP={self.period:.3f} (F={1/self.period:.3f})")
-		self.ax.title.set_fontsize(8)
-		self.ax.title.set_fontweight('bold')
-		self.ax.set_xlim(xs[0],xs[-1])
-		self.update_period_marker()
-		self.ax.set_ylim(ys.min(),ys.max())
+		if ys is not None:
+			self.origin = xs[np.argmax(np.abs(ys))]
+			self.plot: Line2D = self.ax.plot(xs, ys, label='y', color='blue', marker=".", linewidth=1, markersize=2, alpha=0.5)[0]
+			self.ax.title.set_text(f"{self.name}({stype},{self.file},{self.element}): TP={self.period:.3f} (F={1/self.period:.3f})")
+			self.ax.title.set_fontsize(8)
+			self.ax.title.set_fontweight('bold')
+			self.ax.set_xlim(xs[0],xs[-1])
+			self.update_period_marker()
+			self.ax.set_ylim(ys.min(),ys.max())
+		else:
+			self.ax.title.set_text("Plot Error: See log file for details")
 
 	def get_element_data(self) -> Tuple[np.ndarray,np.ndarray,float,float,str]:
 		self.data_loader.set_file(self.file)
 		element: Dict[str,Union[np.ndarray,float]] = self.data_loader.get_element(self.element)
-		self.log.info(f" * DatasetPlot-> get_element_data({self.element}): keys={list(element.keys())}")
-		ydata: np.ndarray = element['y']
-		xdata: np.ndarray = element['t']
-		stype = element.get('type','LC')
-		target: float = element['p'] if ('p' in element) else element['period']
-		snr: float = element.get('sn',0.0)
-		if self.fold_period is not None:
-			xdata = xdata - np.floor(xdata/self.fold_period)*self.fold_period
-		return xdata, ydata.squeeze(), target, snr, stype
+		if element is not None:
+			self.log.info(f" * DatasetPlot-> get_element_data({self.element}): keys={list(element.keys())}")
+			ydata: np.ndarray = element['y']
+			xdata: np.ndarray = element['t']
+			stype = element.get('type','LC')
+			target: float = element['p'] if ('p' in element) else element['period']
+			snr: float = element.get('sn',0.0)
+			if self.fold_period is not None:
+				xdata = xdata - np.floor(xdata/self.fold_period)*self.fold_period
+			return xdata, ydata.squeeze(), target, snr, stype
+		else:
+			return None,None,None,None,None
 
 	@exception_handled
 	def update(self, val=0, **kwargs ):
 		xdata, ydata, self.period, self.snr, stype = self.get_element_data()
-		self.log.debug(f" ---------> get_element_data: xdata{xdata.shape}, ydata{ydata.shape}, period={self.period:.3f}, snr={self.snr:.3f}, stype={stype}")
-		self.origin = xdata[np.argmax(np.abs(ydata))]
-		self.plot.set_ydata(ydata)
-		self.plot.set_xdata(xdata)
-		fold_period = kwargs.get('period')
-		active_period = self.period if (fold_period is None) else fold_period
-		title = f"{self.name}({stype},{self.file},{self.element}): TP={active_period:.3f}"
-		self.ax.title.set_text( kwargs.get('title',title) )
-		self.update_period_marker()
-		self.ax.set_xlim(xdata.min(),xdata.max())
-		self.ax.set_ylim(ydata.min(), ydata.max())
-		try:  self.ax.set_ylim(ydata.min(),ydata.max())
-		except: self.log.info( f" ------------------ Error in y bounds: {ydata.min()} -> {ydata.max()}" )
-		self.log.info( f" ---- ----> E-{self.element}: xlim=({xdata.min():.3f},{xdata.max():.3f}), ylim=({ydata.min():.3f},{ydata.max():.3f}), xdata.shape={self.plot.get_xdata().shape} origin={self.origin} ---" )
-		self.ax.figure.canvas.draw_idle()
+		if ydata is not None:
+			self.log.debug(f" ---------> get_element_data: xdata{xdata.shape}, ydata{ydata.shape}, period={self.period:.3f}, snr={self.snr:.3f}, stype={stype}")
+			self.origin = xdata[np.argmax(np.abs(ydata))]
+			self.plot.set_ydata(ydata)
+			self.plot.set_xdata(xdata)
+			fold_period = kwargs.get('period')
+			active_period = self.period if (fold_period is None) else fold_period
+			title = f"{self.name}({stype},{self.file},{self.element}): TP={active_period:.3f}"
+			self.ax.title.set_text( kwargs.get('title',title) )
+			self.update_period_marker()
+			self.ax.set_xlim(xdata.min(),xdata.max())
+			self.ax.set_ylim(ydata.min(), ydata.max())
+			try:  self.ax.set_ylim(ydata.min(),ydata.max())
+			except: self.log.info( f" ------------------ Error in y bounds: {ydata.min()} -> {ydata.max()}" )
+			self.log.info( f" ---- ----> E-{self.element}: xlim=({xdata.min():.3f},{xdata.max():.3f}), ylim=({ydata.min():.3f},{ydata.max():.3f}), xdata.shape={self.plot.get_xdata().shape} origin={self.origin} ---" )
+			self.ax.figure.canvas.draw_idle()
+		else:
+			self.ax.title.set_text("Plot Error: See log file for details")
 
 class DatasetPlot(SignalPlot):
 
