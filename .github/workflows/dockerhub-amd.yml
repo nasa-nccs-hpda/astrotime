@@ -1,8 +1,7 @@
 name: CI to Dockerhub
 
 on:
-  release:
-    types: [published]  # Trigger only when a release is created
+  workflow_dispatch: # Keep only manual trigger
 
 jobs:
   docker:
@@ -53,7 +52,7 @@ jobs:
           context: .
           file: ./requirements/Dockerfile
           push: true
-          platforms: linux/amd64,linux/arm64
+          platforms: linux/amd64
           tags: |
             nasanccs/astrotime:latest
             mydockerhubuser/myimage:${{ env.VERSION }}

@@ -1,5 +1,5 @@
 # Arguments to pass to the image
-ARG VERSION_DATE=24.09
+ARG VERSION_DATE=25.04
 ARG FROM_IMAGE=nvcr.io/nvidia/pytorch
 ARG ASTROTIME_TAG=0.3.0
 
@@ -50,6 +50,7 @@ RUN apt-get update && \
 # Python dependencies
 RUN pip --no-cache-dir install \
     transformers \
+    "numpy<2" \
     datasets \
     webdataset \
     deepspeed \
@@ -79,7 +80,6 @@ RUN pip --no-cache-dir install \
     git+https://github.com/nasa-nccs-hpda/astrotime.git@${ASTROTIME_TAG}
 
 # Clone astrotime for access to scripts
-RUN pip install "numpy<2"
 RUN git clone --branch ${ASTROTIME_TAG} https://github.com/nasa-nccs-hpda/astrotime.git /usr/local/ilab/astrotime
 
 # Entrypoint
