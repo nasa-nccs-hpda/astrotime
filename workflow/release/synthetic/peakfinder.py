@@ -14,12 +14,12 @@ version = "synthetic_period_cnn"
 def my_app(cfg: DictConfig) -> None:
 	device: torch.device = astrotime_initialize( cfg, version+".pf" )
 	embedding_space_array, embedding_space_tensor = embedding_space(cfg.transform, device)
-	data_loader = SyntheticElementLoader(cfg.data, TSet.Validation)
+	data_loader = SyntheticElementLoader( cfg.data )
 	embedding = SpectralProjection(cfg.transform, embedding_space_tensor, device )
 
 	model: nn.Module = get_spectral_peak_selector_from_cfg( cfg.model, device, embedding )
 	trainer = IterativeTrainer( cfg, device, data_loader, model, embedding )
-	trainer.evaluate()
+	trainer.evaluate(version)
 
 if __name__ == "__main__":
 	my_app()
