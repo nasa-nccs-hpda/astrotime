@@ -4,7 +4,6 @@ on:
   push:
     branches:
       - 'develop'
-      - 'main'
 
 jobs:
   docker:
@@ -45,9 +44,6 @@ jobs:
             /usr/share/dotnet \
             /usr/share/swift
           df -h /
-
-
-
       -
         name: Build and push
         uses: docker/build-push-action@v4

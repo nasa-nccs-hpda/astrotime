@@ -1,9 +1,8 @@
 name: CI to Dockerhub - Grace Hopper
 
 on:
-  push:
-    branches:
-      - 'main'
+  release:
+    types: [published]  # Trigger only when a release is created
 
 jobs:
   docker:
