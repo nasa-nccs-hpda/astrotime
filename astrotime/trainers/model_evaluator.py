@@ -22,7 +22,7 @@ class ModelEvaluator(object):
 
     def __init__(self, cfg: DictConfig, version: str, loader: ElementLoader, device, **kwargs ):
         espace = embedding_space(cfg.transform, device)
-        self.mtype = cfg.model.mtype
+        self.mtype = kwargs.get( 'mtype', cfg.model.mtype)
         self.freqspace: np.ndarray = espace[0]
         self.loader: ElementLoader = loader.set_tset( TSet.Train )
         self._loss = self.get_loss(cfg.data)
