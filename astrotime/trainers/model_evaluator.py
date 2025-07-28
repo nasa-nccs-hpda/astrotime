@@ -109,3 +109,4 @@ class ModelEvaluator(object):
     @property
     def model_frequency(self) -> float:
         return self._model_freq
+
