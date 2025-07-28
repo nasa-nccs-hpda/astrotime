@@ -108,6 +108,9 @@ class ElementLoader(Loader):
 	def nelements(self) -> int:
 		return self.nfiles * self.file_size
 
+	@property
+	def nelem(self):
+		return self.file_size
 
 	def get_element( self, elem_index: int ) -> Optional[RDict]:
 		raise NotImplementedError(f"The class '{self.__class__.__name__}' does not implement the 'load_element' method")

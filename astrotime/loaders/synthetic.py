@@ -25,6 +25,10 @@ class SyntheticElementLoader(ElementLoader):
 		ElementLoader.set_tset(self, tset)
 		self.file_sort = self.get_file_sort(tset)
 
+	@property
+	def nfiles(self):
+		return len(self.file_sort)
+
 	def move_and_open( self, current_file ):
 		dspath0 = f"{self.rootdir}/nc/{self.dset}-{current_file}.nc"
 		dspath1 = f"{self.rootdir}/nc/{self.dset}-0-{current_file}.nc"
@@ -50,10 +54,6 @@ class SyntheticElementLoader(ElementLoader):
 		self.set_tset(tset)
 		random.shuffle(self.file_sort)
 		self._load_cache_dataset()
-
-	@property
-	def nelem(self):
-		return self.file_size
 
 	def get_element(self, elem_index: int) -> Optional[RDict]:
 		return self.get_batch_element( elem_index ) if self.use_batches else self.get_raw_element( elem_index )
