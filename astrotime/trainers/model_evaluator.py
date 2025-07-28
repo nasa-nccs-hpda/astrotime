@@ -48,6 +48,7 @@ class ModelEvaluator(object):
     def get_loss(self, cfg: DictConfig) -> nn.Module:
         if   "octave_regression" in self.mtype: return OctaveRegressionLoss(cfg, self.embedding)
         elif "regression"        in self.mtype: return ExpLoss(cfg)
+        elif "peakfinder"        in self.mtype: return ExpLoss(cfg)
         elif "classification"    in self.mtype: return nn.CrossEntropyLoss()
         else: raise RuntimeError(f"Unknown model type: {self.mtype}")
 
