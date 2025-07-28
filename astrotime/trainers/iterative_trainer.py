@@ -22,13 +22,13 @@ def tocpu( c, idx=0 ):
 
 class IterativeTrainer(object):
 
-    def __init__(self, cfg: DictConfig, device: torch.device, loader: ElementLoader, model: nn.Module, embedding: EmbeddingLayer ):
+    def __init__(self, cfg: DictConfig, device: torch.device, loader: ElementLoader, model: nn.Module, embedding: EmbeddingLayer, **kwargs ):
         self.device: torch.device = device
         self.loader: ElementLoader = loader
         self.embedding = embedding
         self.cfg: DictConfig = cfg.train
         self.model: nn.Module = model
-        self.mtype: str = cfg.model.mtype
+        self.mtype: str = kwargs.get( 'mtype', cfg.model.mtype )
         self.noctaves = cfg.data.noctaves
         self.f0 = cfg.data.base_freq
         self.optimizer: optim.Optimizer = None
@@ -213,8 +213,9 @@ class IterativeTrainer(object):
 
     def evaluate(self,version,ckp_version=None):
         print(f"SignalTrainer[{self.mode}]: , {self.nepochs} epochs, device={self.device}")
-        self.optimizer = self.get_optimizer()
-        self.initialize_checkpointing(version,ckp_version)
+        if self.mtype != "peakfinder":
+            self.optimizer = self.get_optimizer()
+            self.initialize_checkpointing(version,ckp_version)
         with self.device:
             self.loader.initialize()
             print(f" ---- Running Test cycles ---- ")

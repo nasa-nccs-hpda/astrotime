@@ -9,6 +9,7 @@ from astrotime.models.cnn.cnn_baseline import get_spectral_peak_selector_from_cf
 from astrotime.config.context import astrotime_initialize
 from astrotime.loaders.sinusoid import SinusoidElementLoader
 version = "sinusoid_period"
+mtype = "peakfinder"
 
 @hydra.main(version_base=None, config_path="../../../config", config_name=version)
 def my_app(cfg: DictConfig) -> None:
@@ -19,7 +20,7 @@ def my_app(cfg: DictConfig) -> None:
 	embedding = SpectralProjection( cfg.transform, embedding_space_tensor, device )
 	model: nn.Module = get_spectral_peak_selector_from_cfg( cfg.model, device, embedding )
 
-	trainer = IterativeTrainer( cfg, device, data_loader, model, embedding )
+	trainer = IterativeTrainer( cfg, device, data_loader, model, embedding, mtype=mtype )
 	trainer.evaluate(version)
 
 if __name__ == "__main__":
