@@ -24,6 +24,7 @@ class SyntheticElementLoader(ElementLoader):
 	def set_tset(self, tset: TSet):
 		ElementLoader.set_tset(self, tset)
 		self.file_sort = self.get_file_sort(tset)
+		return self
 
 	@property
 	def nfiles(self):
