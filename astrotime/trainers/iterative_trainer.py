@@ -103,7 +103,6 @@ class IterativeTrainer(object):
             self.epoch0      = self.train_state.get('epoch', 0)
             self.start_batch = self.train_state.get('batch', 0)
             self.start_epoch = int(self.epoch0)
-            print(f"\n      Loading checkpoint from {self._checkpoint_manager.checkpoint_path()}: epoch={self.start_epoch}, batch={self.start_batch}\n")
 
     def load_checkpoint( self, version: str ):
         if version is not None:

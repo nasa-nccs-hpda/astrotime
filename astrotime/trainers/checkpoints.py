@@ -37,6 +37,7 @@ class CheckpointManager(object):
 		update_model = kwargs.get('update_model', False)
 		init_version = kwargs.get('init_version')
 		cppath = self.checkpoint_path()
+		init_cppath = cppath
 		if init_version is not None:
 			init_cppath = self.checkpoint_path(init_version)
 			shutil.copyfile(init_cppath, cppath)
@@ -44,7 +45,8 @@ class CheckpointManager(object):
 		if cp_exists:
 			try:
 				train_state = self._load_state()
-				log.info(f"Loaded model checkpoint from {cppath}, update_model = {update_model}", )
+				print(f" *** Initializing {self.version} checkpoint from {init_cppath} ***")
+				log.info(f"Loaded model checkpoint from {init_cppath}, update_model = {update_model}", )
 				if update_model:
 					self.model.load_state_dict( train_state.pop('model_state_dict') )
 					if self.optimizer is None:  print( f"WARNING: No optimizer found when loading checkpoint, cannot complete model update.")
