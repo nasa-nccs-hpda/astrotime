@@ -217,11 +217,11 @@ class IterativeTrainer(object):
                 epoch_losses = np.array(losses)
                 print(f" ------ Epoch Loss: mean={epoch_losses.mean():.3f}, median={np.median(epoch_losses):.3f}, range=({epoch_losses.min():.3f} -> {epoch_losses.max():.3f})")
 
-    def evaluate(self,version,ckp_version=None):
+    def evaluate(self,version):
         print(f"SignalTrainer[{self.mode}]: , {self.nepochs} epochs, device={self.device}")
         if self.mtype != "peakfinder":
             self.optimizer = self.get_optimizer()
-            self.initialize_checkpointing(version,ckp_version)
+            self.initialize_checkpointing(version)
         with self.device:
             self.loader.initialize()
             print(f" ---- Running Test cycles ---- ")

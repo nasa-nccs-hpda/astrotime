@@ -155,9 +155,9 @@ class IterativeTrainer(object):
 			result: Tensor = self.model(batch['z'])
 			print( f" ** (batch{list(batch['z'].shape)}, target{list(batch['target'].shape)}) ->  result{list(result.shape)}")
 
-	def compute(self,version,ckp_version=None):
+	def compute(self,version):
 		print(f"SignalTrainer[{self.mode}]: , {self.nepochs} epochs, device={self.device}")
-		self.initialize_checkpointing(version,ckp_version)
+		self.initialize_checkpointing(version)
 		with self.device:
 			for epoch in range(*self.epoch_range):
 				te = time.time()
@@ -195,9 +195,9 @@ class IterativeTrainer(object):
 				epoch_losses = np.array(losses)
 				print(f" ------ Epoch Loss: mean={epoch_losses.mean():.3f}, median={np.median(epoch_losses):.3f}, range=({epoch_losses.min():.3f} -> {epoch_losses.max():.3f})")
 
-	def test_learning(self,version,ckp_version=None):
+	def test_learning(self,version):
 		print(f"test_learning: mtype={self.mtype}")
-		self.initialize_checkpointing(version,ckp_version)
+		self.initialize_checkpointing(version)
 		with self.device:
 			self.set_train_status()
 			self.loader.init_epoch()
