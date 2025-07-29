@@ -411,8 +411,8 @@ The workflows are configured using [hydra](https://hydra.cc/docs/intro/).
 * The workflow configurations can be modified at runtime as [supported by hydra](https://hydra.cc/docs/tutorials/basic/your_first_app/simple_cli/).
 * For example, the following command runs the synthetic dataset training workflow on gpu 3 with random initialization (i.e. ignoring & overwriting any existing checkpoints):
     >   python workflow/synthetic/train.py platform.gpu=3 train.refresh_state=True
-* To run validation (no training), execute:
-    >   python workflow/synthetic/train.py train.mode=valid platform.gpu=0
+* To run test/validation (no training), execute:
+    >   python workflow/synthetic/eval.py platform.gpu=0
 
 ### Configuration Parameters
 
