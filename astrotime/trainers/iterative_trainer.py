@@ -242,6 +242,8 @@ class IterativeTrainer(object):
                             peaks: Tensor = self.get_batch_peaks()
                             loss: Tensor =  self.loss( result.squeeze(), target )
                             peaks_loss: Tensor = self.loss( result.squeeze(), peaks )
+                            print(f" result= {result.cpu().tolist()}")
+                            print(f" peaks=  {peaks.cpu().tolist()}\n")
                             losses.append(loss.cpu().item())
                             peak_losses.append(peaks_loss.cpu().item())
                             if ibatch % log_interval == 0:
