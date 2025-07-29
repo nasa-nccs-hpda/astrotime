@@ -7,4 +7,5 @@ results_path: "${platform.project_root}/results"        # Save results here
 weight_decay: 0.0                                       # Weight decay parameter for optimizer
 mode:  train                                            # execution mode: 'train' or 'valid'
 base_freq:  ${data.base_freq}                           # lowest value of freq range
+ckp_version: synthetic_period_cnn
 

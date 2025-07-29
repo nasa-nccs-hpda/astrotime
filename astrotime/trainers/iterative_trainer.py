@@ -92,13 +92,14 @@ class IterativeTrainer(object):
         elif self.cfg.optim == "adam": return optim.Adam(    self.model.parameters(), lr=self.cfg.lr, weight_decay=self.cfg.weight_decay )
         else: raise RuntimeError( f"Unknown optimizer: {self.cfg.optim}")
 
-    def initialize_checkpointing( self, version: str, init_version:Optional[str]=None ):
+    def initialize_checkpointing( self, version: str ):
         self._checkpoint_manager = CheckpointManager( version, self.model, self.optimizer, self.cfg )
         if self.cfg.refresh_state:
             self._checkpoint_manager.clear_checkpoints()
             print("\n *** No checkpoint loaded: training from scratch *** \n")
         else:
-            self.train_state = self._checkpoint_manager.load_checkpoint( init_version=init_version, update_model=True )
+            init_ckp_version = self.cfg.get('ckp_version' , None )
+            self.train_state = self._checkpoint_manager.load_checkpoint( init_version=init_ckp_version, update_model=True )
             self.epoch0      = self.train_state.get('epoch', 0)
             self.start_batch = self.train_state.get('batch', 0)
             self.start_epoch = int(self.epoch0)
@@ -172,10 +173,10 @@ class IterativeTrainer(object):
             result: Tensor = self.model( batch['z'] )
             print( f" ** (batch{list(batch['z'].shape)}, target{list(batch['target'].shape)}) ->  result{list(result.shape)}")
 
-    def train(self,version,ckp_version=None):
+    def train(self,version):
         print(f"SignalTrainer[{self.mode}]: , {self.nepochs} epochs, device={self.device}")
         self.optimizer = self.get_optimizer()
-        self.initialize_checkpointing(version,ckp_version)
+        self.initialize_checkpointing(version)
         with self.device:
             print(f" ---- Running Training cycles ---- ")
             for epoch in range(*self.epoch_range):

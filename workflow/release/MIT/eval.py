@@ -11,7 +11,6 @@ version = "MIT_period"
 @hydra.main(version_base=None, config_path="../../../config", config_name=version)
 def my_app(cfg: DictConfig) -> None:
 	device: torch.device = astrotime_initialize( cfg, version )
-	cfg.data['snr_min'] = 80.0
 	embedding_space_array, embedding_space_tensor = embedding_space(cfg.transform, device)
 	embedding = SpectralProjection( cfg.transform, embedding_space_tensor, device )
 	model: nn.Module = get_model_from_cfg(cfg, embedding).to(device)
