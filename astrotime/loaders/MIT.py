@@ -285,7 +285,7 @@ class MITElementLoader(ElementLoader):
 		self.max_series_length: int = cfg.get('max_series_length', 80000 )
 		self.period_range: Tuple[float,float] = self.get_period_range()
 		self._TICS: List[str]  = None
-		self.preload = kwargs.get('preload',False)
+		self.preload = True # kwargs.get('preload',True)
 		self.elems = []
 		self.file_sort = None
 
@@ -352,7 +352,8 @@ class MITElementLoader(ElementLoader):
 
 	@property
 	def nelements(self) -> int:
-		return len(self._TICS)
+		self.load_data()
+		return len(self.elems)
 
 	@property
 	def nfiles(self) -> int:
@@ -436,9 +437,10 @@ class MITElementLoader(ElementLoader):
 
 	def preload_elems(self) -> Optional[Dict[str,np.ndarray]]:
 		self.elems = []
-		for ielem in range( 0, self.nelements ):
+		for ielem in range( 0, len(self._TICS) ):
 			elem: Optional[RDict] = self.get_raw_element(ielem)
 			if elem is not None:
 				self.elems.append( elem )
+		print(f"   --- Preloaded {len(self.elems)} elements")
 
 
