@@ -1,0 +1,194 @@
+name: CI to Dockerhub - Multi-arch
+
+on:
+  release:
+    types: [published]  # Trigger only when a release is created
+  workflow_dispatch: # Keep only manual trigger
+
+jobs:
+  docker-amd:
+    runs-on: ubuntu-latest
+    steps:
+      -
+        name: Checkout
+        uses: actions/checkout@v3
+      -
+        name: Set up QEMU
+        uses: docker/setup-qemu-action@v2
+      -
+        name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+      -
+        name: Login to Docker Hub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - 
+        name: Lower github-runner storage
+        run: |
+          # Remove software and language runtimes we're not using
+          sudo rm -rf \
+            "$AGENT_TOOLSDIRECTORY" \
+            /opt/google/chrome \
+            /opt/microsoft/msedge \
+            /opt/microsoft/powershell \
+            /opt/pipx \
+            /usr/lib/mono \
+            /usr/local/julia* \
+            /usr/local/lib/android \
+            /usr/local/lib/node_modules \
+            /usr/local/share/chromium \
+            /usr/local/share/powershell \
+            /usr/share/dotnet \
+            /usr/share/swift \
+            /opt/ghc \
+            /usr/local/share/boost
+          df -h /
+      - 
+        name: Clean up tools
+        uses: jlumbroso/free-disk-space@main
+        with:
+              # this might remove tools that are actually needed,
+              # if set to "true" but frees about 6 GB
+              tool-cache: true
+              
+              # all of these default to true, but feel free to set to
+              # "false" if necessary for your workflow
+              android: true
+              dotnet: true
+              haskell: true
+              large-packages: true
+              docker-images: true
+              swap-storage: true
+              
+      - 
+        name: Prune docker images (https://github.com/jens-maus/RaspberryMatic/blob/d5044bef3307bc61166377c162569de1a61cf332/.github/workflows/ci.yml#L34-L40)
+        run: |
+              sudo swapoff -a
+              sudo rm -f /swapfile
+              sudo apt clean
+              # docker rmi $(docker image ls -aq)
+              docker image prune -a
+              df -h
+      - name: Extract release version
+        id: vars
+        run: echo "VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_ENV
+      -
+        name: Build and push
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          platforms: linux/amd64
+          file: ./requirements/Dockerfile
+          push: true
+          tags: nasanccs/astrotime:${{ github.ref_name }}-amd64
+
+  docker-arm:
+    runs-on: ubuntu-latest
+    steps:
+      -
+        name: Checkout
+        uses: actions/checkout@v3
+      -
+        name: Set up QEMU
+        uses: docker/setup-qemu-action@v2
+      -
+        name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+      -
+        name: Login to Docker Hub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - 
+        name: Lower github-runner storage
+        run: |
+          # Remove software and language runtimes we're not using
+          sudo rm -rf \
+            "$AGENT_TOOLSDIRECTORY" \
+            /opt/google/chrome \
+            /opt/microsoft/msedge \
+            /opt/microsoft/powershell \
+            /opt/pipx \
+            /usr/lib/mono \
+            /usr/local/julia* \
+            /usr/local/lib/android \
+            /usr/local/lib/node_modules \
+            /usr/local/share/chromium \
+            /usr/local/share/powershell \
+            /usr/share/dotnet \
+            /usr/share/swift \
+            /opt/ghc \
+            /usr/local/share/boost
+          df -h /
+      - 
+        name: Clean up tools
+        uses: jlumbroso/free-disk-space@main
+        with:
+              # this might remove tools that are actually needed,
+              # if set to "true" but frees about 6 GB
+              tool-cache: true
+              
+              # all of these default to true, but feel free to set to
+              # "false" if necessary for your workflow
+              android: true
+              dotnet: true
+              haskell: true
+              large-packages: true
+              docker-images: true
+              swap-storage: true
+              
+      - 
+        name: Prune docker images (https://github.com/jens-maus/RaspberryMatic/blob/d5044bef3307bc61166377c162569de1a61cf332/.github/workflows/ci.yml#L34-L40)
+        run: |
+              sudo swapoff -a
+              sudo rm -f /swapfile
+              sudo apt clean
+              # docker rmi $(docker image ls -aq)
+              docker image prune -a
+              df -h
+      - name: Extract release version
+        id: vars
+        run: echo "VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_ENV
+      -
+        name: Build and push
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          platforms: linux/arm64
+          file: ./requirements/Dockerfile
+          push: true
+          tags: nasanccs/astrotime:${{ github.ref_name }}-arm64
+
+  manifest:
+    needs: [docker-amd, docker-arm]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Login to Docker Hub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+      - name: Extract per-platform digests
+        run: |
+          AMD_DIGEST=$(docker buildx imagetools inspect nasanccs/astrotime:${{ github.ref_name }}-v100-amd64 \
+            --format '{{range .Manifest.Manifests}}{{if eq .Platform.Architecture "amd64"}}{{.Digest}}{{end}}{{end}}')
+          ARM_DIGEST=$(docker buildx imagetools inspect nasanccs/astrotime:${{ github.ref_name }}-v100-arm64 \
+            --format '{{range .Manifest.Manifests}}{{if eq .Platform.Architecture "arm64"}}{{.Digest}}{{end}}{{end}}')
+          echo "AMD_DIGEST=$AMD_DIGEST" >> $GITHUB_ENV
+          echo "ARM_DIGEST=$ARM_DIGEST" >> $GITHUB_ENV
+      - name: Create and push manifest
+        run: |
+          docker manifest create nasanccs/astrotime:latest \
+            nasanccs/astrotime@${AMD_DIGEST} \
+            nasanccs/astrotime@${ARM_DIGEST}
+          docker manifest push nasanccs/astrotime:latest
+
+          docker manifest create nasanccs/astrotime:${{ github.ref_name }} \
+            nasanccs/astrotime@${AMD_DIGEST} \
+            nasanccs/astrotime@${ARM_DIGEST}
+          docker manifest push nasanccs/astrotime:${{ github.ref_name }}
