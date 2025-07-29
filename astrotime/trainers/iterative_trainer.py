@@ -233,10 +233,10 @@ class IterativeTrainer(object):
                     batch = self.get_next_batch()
                     binput: Tensor = self.get_input(batch)
                     target: Tensor = self.get_target(batch)
-                    octave: Tensor = self.get_octave(target)
+                #    octave: Tensor = self.get_octave(target)
                     if binput.shape[0] > 0:
                         self.global_time = time.time()
-                        self.embedding.set_octave_data(octave)
+                    #    self.embedding.set_octave_data(octave)
                         result: Tensor = self.model( binput )
                         if result.squeeze().ndim > 0:
                             peaks: Tensor = self.get_batch_peaks()
