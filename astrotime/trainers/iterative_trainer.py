@@ -243,7 +243,6 @@ class IterativeTrainer(object):
                             loss: Tensor =  self.loss( result.squeeze(), target )
                             peaks_loss: Tensor = self.loss( result.squeeze(), peaks )
                             r,p = result.squeeze().cpu().tolist(),peaks.squeeze().cpu().tolist()
-                            print(f" rp= {[r[i]/p[i] for i in range(len(r)) if p[i]>0.0]}")
                             losses.append(loss.cpu().item())
                             peak_losses.append(peaks_loss.cpu().item())
                             if ibatch % log_interval == 0:
