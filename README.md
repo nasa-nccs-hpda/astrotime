@@ -170,10 +170,6 @@ model:
   cnn_expansion_factor: 4
   base_freq: ${data.base_freq}
   feature: 1
-
-
-Powered by Hydra (https://hydra.cc)
-Use --hydra-help to view Hydra specific help
 ```
 
 #### Eval
@@ -264,19 +260,12 @@ model:
   cnn_expansion_factor: 4
   base_freq: ${data.base_freq}
   feature: 1
-
-
-Powered by Hydra (https://hydra.cc)
-Use --hydra-help to view Hydra specific help
 ```
 
 #### Eval
 
 ```bash
 singularity exec -B $NOBACKUP,/explore/nobackup/projects,/explore/nobackup/people --nv /explore/nobackup/projects/ilab/containers/astrotime-v100-latest python /usr/local/ilab/astrotime/workflow/release/synthetic/eval.py platform.project_root=/explore/nobackup/projects/ilab/ilab_testing/$USER/astrotime data.dataset_root=/explore/nobackup/projects/ilab/data/astrotime/synthetic train.nepochs=10 data.batch_size=2048
-
-
-singularity exec -B $NOBACKUP,/explore/nobackup/projects,/explore/nobackup/people --nv /lscratch/jacaraba/container/astrotime python /usr/local/ilab/astrotime/workflow/release/synthetic/eval.py platform.project_root=/explore/nobackup/projects/ilab/ilab_testing/$USER/astrotime data.dataset_root=/explore/nobackup/projects/ilab/data/astrotime/synthetic train.nepochs=10 data.batch_size=2048
 ```
 
 ### MIT Dataset Workflow
@@ -284,16 +273,93 @@ singularity exec -B $NOBACKUP,/explore/nobackup/projects,/explore/nobackup/peopl
 #### Training
 
 ```bash
+singularity exec -B $NOBACKUP,/explore/nobackup/projects,/explore/nobackup/people --nv /explore/nobackup/projects/ilab/containers/astrotime-v100-latest python /usr/local/ilab/astrotime/workflow/release/MIT/train.py platform.project_root=/explore/nobackup/projects/ilab/ilab_testing/$USER/astrotime data.dataset_root=/explore/nobackup/projects/ilab/data/astrotime/MIT train.nepochs=1 data.batch_size=4096
 ```
 
 The options to the CLI are as follow:
 
 ```bash
+== Configuration groups ==
+Compose your configuration from those groups (group=option)
+
+__legacy__: MIT_period, MIT_period.ce, MIT_period.octaves, MIT_period.octaves.pcross, MIT_period.synthetic, MIT_period.synthetic.folded, MIT_period.wp, baseline_cnn, desktop_period.analysis, desktop_period.octaves, progressive_MIT_period, sinusoid_period.baseline, sinusoid_period.baseline_small, sinusoid_period.poly, sinusoid_period.wp, sinusoid_period.wp_scaled, sinusoid_period.wp_small, sinusoid_period.wpk, sinusoid_period.wwz, sinusoid_period.wwz_small, synthetic_period_autocorr, synthetic_period_transformer, synthetic_period_transformer.classification, synthetic_period_transformer.regression, synthetic_transformer
+__legacy__/data: MIT, MIT-1, MIT.csv, MIT.octaves, MIT.synthetic, MIT.synthetic.folded, astro_synthetic, astro_synthetic_autocorr, pcross.octaves, planet_crossing_generator, sinusoids.nc, sinusoids.npz, sinusoids_small.nc
+__legacy__/model: relation_aware_transformer, transformer, transformer.classication, transformer.regression, wpk_cnn
+__legacy__/transform: MIT.octaves, MIT.synthetic, MIT.synthetic.folded, ce-MIT, correlation, gp, value, wp, wp-MIT, wp-scaled, wpk, wwz
+data: MIT, sinusoids, synthetic, synthetic.octave
+model: cnn, cnn.classification, cnn.octave_regression, dense
+platform: desktop1, explore
+train: MIT_cnn, sinusoid_cnn, synthetic_cnn
+transform: MIT, sinusoid, synthetic, synthetic.octave
+
+
+== Config ==
+Override anything in the config (foo.bar=value)
+
+platform:
+  project_root: /explore/nobackup/projects/ilab/data/astrotime
+  gpu: 0
+  log_level: info
+train:
+  optim: rms
+  lr: 0.0005
+  nepochs: 5000
+  refresh_state: false
+  overwrite_log: true
+  results_path: ${platform.project_root}/results
+  weight_decay: 0.0
+  mode: train
+  base_freq: ${data.base_freq}
+transform:
+  sparsity: 0.0
+  batch_size: ${data.batch_size}
+  nfreq_oct: ${data.nfreq_oct}
+  base_freq: ${data.base_freq}
+  noctaves: ${data.noctaves}
+  test_mode: ${data.test_mode}
+  maxh: ${data.maxh}
+  accumh: false
+  decay_factor: 0.0
+  subbatch_size: 2
+  norm: std
+  fold_octaves: false
+data:
+  source: MIT
+  raw_data_root: /explore/nobackup/people/bppowel1/mit_lcs/
+  dataset_root: ${platform.project_root}/MIT
+  cache_path: ${platform.project_root}/cache/data/MIT
+  sector_range:
+  - 59
+  - 82
+  batch_size: 16
+  nfreq_oct: 512
+  base_freq: 0.025
+  noctaves: 9
+  test_mode: default
+  refresh: false
+  max_series_length: 60000
+  maxh: 8
+  snr_min: 0
+  snr_max: 1000000000.0
+model:
+  mtype: cnn.regression
+  cnn_channels: 64
+  dense_channels: 64
+  out_channels: 1
+  num_cnn_layers: 3
+  num_blocks: 8
+  pool_size: 2
+  stride: 1
+  kernel_size: 3
+  cnn_expansion_factor: 4
+  base_freq: ${data.base_freq}
+  feature: 1
 ```
 
 #### Eval
 
 ```bash
+singularity exec -B $NOBACKUP,/explore/nobackup/projects,/explore/nobackup/people --nv /explore/nobackup/projects/ilab/containers/astrotime-v100-latest python /usr/local/ilab/astrotime/workflow/release/MIT/eval.py platform.project_root=/explore/nobackup/projects/ilab/ilab_testing/$USER/astrotime data.dataset_root=/explore/nobackup/projects/ilab/data/astrotime/MIT train.nepochs=1 data.batch_size=4096
 ```
 
 ### Sending this Jobs through Slurm
