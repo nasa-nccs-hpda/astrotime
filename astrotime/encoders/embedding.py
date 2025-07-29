@@ -39,6 +39,9 @@ class EmbeddingLayer(Transform):
 	def get_result(self) -> np.ndarray:
 		return self._result.cpu().numpy()
 
+	def get_result_tensor(self) -> torch.Tensor:
+		return self._result
+
 	def get_target_freq( self, target_period: float ) -> float:
 		return 1/target_period
 

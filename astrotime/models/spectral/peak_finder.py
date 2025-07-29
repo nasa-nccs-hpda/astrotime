@@ -37,7 +37,7 @@ class SpectralPeakSelector(Module):
             pass
 
     def forward(self, hsmag: Tensor) -> Tensor:
-        self.hsr = hsmag[:, 0, :].squeeze()
+        self.hsr = hsmag[:, 0, :].squeeze() if (hsmag.ndim == 3) else hsmag.squeeze()
         hspeak: Tensor = self.hsr.argmax(dim=-1).squeeze()
         result: Tensor = self.fspace[hspeak]
         self.log.info(f" SpectralPeakSelector.forward: result{shp(result)}, hspeak{shp(hspeak)}, hsr{shp(self.hsr)}, hsmag{shp(hsmag)}, fspace{shp(self.fspace)}")

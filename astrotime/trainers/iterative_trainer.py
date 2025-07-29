@@ -3,6 +3,7 @@ from omegaconf import DictConfig
 from .checkpoints import CheckpointManager
 from astrotime.util.tensor_ops import check_nan
 from astrotime.loaders.base import RDict, ElementLoader
+from astrotime.models.spectral.peak_finder import SpectralPeakSelector
 from astrotime.trainers.loss import ExpLoss, OctaveRegressionLoss
 from astrotime.encoders.embedding import EmbeddingLayer
 import time, sys, torch, logging, numpy as np
@@ -35,6 +36,7 @@ class IterativeTrainer(object):
         self.log = logging.getLogger()
         self.loss: nn.Module = self.get_loss(cfg.data)
         self._checkpoint_manager: CheckpointManager = None
+        self.peak_selector = SpectralPeakSelector(cfg.transform, device, self.embedding.xdata)
         self.start_batch: int = 0
         self.start_epoch: int = 0
         self.epoch_loss: float = 0.0
@@ -77,13 +79,16 @@ class IterativeTrainer(object):
     def get_input(self, batch: TRDict) -> Tensor:
         return batch['z']
 
+    def get_batch_peaks(self) -> Tensor:
+        spectral_batch: torch.Tensor = self.embedding.get_result_tensor()
+        return self.peak_selector( spectral_batch )
+
     def get_input_octave(self, batch: TRDict) -> Optional[Tensor]:
         return batch.get('octave')
 
     def get_target(self, batch: TRDict ) -> Tensor:
         f: Tensor = batch['target']
         if "regression" in self.mtype:       return f
-        elif "peakfinder" in self.mtype:       return f
         elif "classification" in self.mtype: return self.get_octave(f)
         else: raise RuntimeError(f"Unknown model type: {self.cfg.mtype}")
 
@@ -221,7 +226,7 @@ class IterativeTrainer(object):
             self.loader.initialize()
             print(f" ---- Running Test cycles ---- ")
             self.loader.init_epoch(TSet.Validation)
-            losses, log_interval, t0 = [], 50, time.time()
+            losses, peak_losses, log_interval, t0 = [], [], 50, time.time()
             try:
                 for ibatch in range(0,sys.maxsize):
                     t0 = time.time()
@@ -234,15 +239,20 @@ class IterativeTrainer(object):
                         self.embedding.set_octave_data(octave)
                         result: Tensor = self.model( binput )
                         if result.squeeze().ndim > 0:
+                            peaks: Tensor = self.get_batch_peaks()
                             loss: Tensor =  self.loss( result.squeeze(), target )
+                            peaks_loss: Tensor = self.loss( result.squeeze(), peaks )
                             losses.append(loss.cpu().item())
+                            peak_losses.append(peaks_loss.cpu().item())
                             if ibatch % log_interval == 0:
                                 aloss = np.array(losses[-log_interval:])
-                                print(f"F-{self.loader.ifile}:{self.loader.file_index} B-{ibatch} loss={aloss.mean():.3f}, range=({aloss.min():.3f} -> {aloss.max():.3f}), dt/batch={elapsed(t0):.5f} sec")
+                                ploss = np.array(peak_losses[-log_interval:])
+                                print(f"F-{self.loader.ifile}:{self.loader.file_index} B-{ibatch} ploss={ploss.mean():.3f}, loss={aloss.mean():.3f}, range=({aloss.min():.3f} -> {aloss.max():.3f}), dt/batch={elapsed(t0):.5f} sec")
 
             except StopIteration:
                 epoch_losses = np.array(losses)
-                print(f" ------ EVAL Loss: mean={epoch_losses.mean():.3f}, median={np.median(epoch_losses):.3f}, range=({epoch_losses.min():.3f} -> {epoch_losses.max():.3f})")
+                epoch_peak_losses = np.array(peak_losses)
+                print(f" ------ EVAL (peakfinder: {epoch_peak_losses.mean():.3f}) Loss: mean={epoch_losses.mean():.3f}, median={np.median(epoch_losses):.3f}, range=({epoch_losses.min():.3f} -> {epoch_losses.max():.3f})")
 
     def evaluate_classification(self, version: str = None) -> Tensor:
         self.load_checkpoint(version)
