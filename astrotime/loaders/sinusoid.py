@@ -65,7 +65,7 @@ class SinusoidElementLoader(ElementLoader):
 		return self.file_size
 
 	def get_element(self, elem_index: int) -> Optional[RDict]:
-		return self.get_batch_element( elem_index ) if self.use_batches else self.get_raw_element( elem_index, True )
+		return self.get_batch_element( elem_index ) if self.use_batches else self.get_raw_element( elem_index )
 
 	def get_raw_element(self, elem_index: int ) -> Optional[RDict]:
 		try:

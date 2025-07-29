@@ -20,6 +20,10 @@ def tocpu( c, idx=0 ):
     else:
         return c
 
+def ss( fl: List[float]) -> str:
+    sfl = [f"{f:.2f}" for f in fl]
+    return str(sfl)
+
 
 class IterativeTrainer(object):
 
@@ -241,8 +245,7 @@ class IterativeTrainer(object):
                         if result.squeeze().ndim > 0:
                             peaks: Tensor = self.get_batch_peaks()
                             loss: Tensor =  self.loss( result.squeeze(), target )
-                            peaks_loss: Tensor = self.loss( result.squeeze(), peaks )
-                            r,p = result.squeeze().cpu().tolist(),peaks.squeeze().cpu().tolist()
+                            peaks_loss: Tensor = self.loss( target, peaks )
                             losses.append(loss.cpu().item())
                             peak_losses.append(peaks_loss.cpu().item())
                             if ibatch % log_interval == 0:
@@ -254,6 +257,47 @@ class IterativeTrainer(object):
                 epoch_losses = np.array(losses)
                 epoch_peak_losses = np.array(peak_losses)
                 print(f" ------ EVAL (peakfinder: {epoch_peak_losses.mean():.3f}) Loss: mean={epoch_losses.mean():.3f}, median={np.median(epoch_losses):.3f}, range=({epoch_losses.min():.3f} -> {epoch_losses.max():.3f})")
+
+    def test(self,version, nbatches: int = 10):
+        print(f"SignalTrainer[{self.mode}]: , {self.nepochs} epochs, device={self.device}")
+        if self.mtype != "peakfinder":
+            self.optimizer = self.get_optimizer()
+            self.initialize_checkpointing(version)
+        with self.device:
+            self.loader.initialize()
+            print(f" ---- Running Test cycles ---- ")
+            self.loader.init_epoch(TSet.Validation)
+            losses, peak_losses, log_interval, t0 = [], [], 50, time.time()
+            try:
+                for ibatch in range(nbatches):
+                    t0 = time.time()
+                    batch = self.get_next_batch()
+                    binput: Tensor = self.get_input(batch)
+                    target: Tensor = self.get_target(batch)
+                #    octave: Tensor = self.get_octave(target)
+                    if binput.shape[0] > 0:
+                        self.global_time = time.time()
+                    #    self.embedding.set_octave_data(octave)
+                        result: Tensor = self.model( binput )
+                        if result.squeeze().ndim > 0:
+                            peaks: Tensor = self.get_batch_peaks()
+                            loss: Tensor =  self.loss( result.squeeze(), target )
+                            peaks_loss: Tensor = self.loss( target, peaks )
+                            t,p = target.squeeze().cpu().tolist(), peaks.squeeze().cpu().tolist()
+                            print( f" t: {ss(t)}" )
+                            print( f" p: {ss(p)}")
+                            losses.append(loss.cpu().item())
+                            peak_losses.append(peaks_loss.cpu().item())
+                            if ibatch % log_interval == 0:
+                                aloss = np.array(losses[-log_interval:])
+                                ploss = np.array(peak_losses[-log_interval:])
+                                print(f"F-{self.loader.ifile}:{self.loader.file_index} B-{ibatch} ploss={ploss.mean():.3f}, loss={aloss.mean():.3f}, range=({aloss.min():.3f} -> {aloss.max():.3f}), dt/batch={elapsed(t0):.5f} sec")
+
+            except StopIteration:
+                epoch_losses = np.array(losses)
+                epoch_peak_losses = np.array(peak_losses)
+                print(f" ------ EVAL (peakfinder: {epoch_peak_losses.mean():.3f}) Loss: mean={epoch_losses.mean():.3f}, median={np.median(epoch_losses):.3f}, range=({epoch_losses.min():.3f} -> {epoch_losses.max():.3f})")
+
 
     def evaluate_classification(self, version: str = None) -> Tensor:
         self.load_checkpoint(version)
