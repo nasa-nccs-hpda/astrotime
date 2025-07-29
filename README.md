@@ -2,8 +2,8 @@
 
 [![DOI](https://zenodo.org/badge/931632020.svg)](https://doi.org/10.5281/zenodo.16541780)
 [![Documentation](https://img.shields.io/badge/docs-latest-blue.svg)](https://github.com/nasa-nccs-hpda/astrotime/README.md)
-[![Build Docker - A100](https://github.com/nasa-nccs-hpda/astrotime/actions/workflows/dockerhub-A100.yml/badge.svg)](https://github.com/nasa-nccs-hpda/astrotime/actions/workflows/dockerhub-A100.yml)
-[![Build Docker - V100](https://github.com/nasa-nccs-hpda/astrotime/actions/workflows/dockerhub-V100.yml/badge.svg)](https://github.com/nasa-nccs-hpda/astrotime/actions/workflows/dockerhub-V100.yml)
+[![Build Docker - A100](https://github.com/nasa-nccs-hpda/astrotime/actions/workflows/dockerhub-A100.yml/badge.svg?event=release)](https://github.com/nasa-nccs-hpda/astrotime/actions/workflows/dockerhub-A100.yml)
+[![Build Docker - V100](https://github.com/nasa-nccs-hpda/astrotime/actions/workflows/dockerhub-V100.yml/badge.svg?event=release)](https://github.com/nasa-nccs-hpda/astrotime/actions/workflows/dockerhub-V100.yml)
 ![GitHub release (latest by date)](https://img.shields.io/github/v/release/nasa-nccs-hpda/astrotime)
 ![Docker Image Version](https://img.shields.io/docker/v/nasanccs/astrotime?label=Docker)
 ![License](https://img.shields.io/github/license/nasa-nccs-hpda/astrotime)
