@@ -173,18 +173,20 @@ jobs:
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
-      - name: Extract release version
-        id: vars
-        run: echo "VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_ENV
+      - name: Get digests
+        run: |
+          AMD_DIGEST=$(docker buildx imagetools inspect nasanccs/astrotime:${{ github.ref_name }}-amd64 --format '{{json .Manifest.Digest}}' | tr -d '"')
+          ARM_DIGEST=$(docker buildx imagetools inspect nasanccs/astrotime:${{ github.ref_name }}-arm64 --format '{{json .Manifest.Digest}}' | tr -d '"')
+          echo "AMD_DIGEST=$AMD_DIGEST" >> $GITHUB_ENV
+          echo "ARM_DIGEST=$ARM_DIGEST" >> $GITHUB_ENV
       - name: Create and push manifest
         run: |
           docker manifest create nasanccs/astrotime:latest \
-            nasanccs/astrotime:${{ github.ref_name }}-amd64 \
-            nasanccs/astrotime:${{ github.ref_name }}-arm64
+            nasanccs/astrotime@${AMD_DIGEST} \
+            nasanccs/astrotime@${ARM_DIGEST}
           docker manifest push nasanccs/astrotime:latest
-      - name: Create and push manifest version
-        run: |
+
           docker manifest create nasanccs/astrotime:${{ github.ref_name }} \
-            nasanccs/astrotime:${{ github.ref_name }}-amd64 \
-            nasanccs/astrotime:${{ github.ref_name }}-arm64
+            nasanccs/astrotime@${AMD_DIGEST} \
+            nasanccs/astrotime@${ARM_DIGEST}
           docker manifest push nasanccs/astrotime:${{ github.ref_name }}
