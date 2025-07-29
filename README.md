@@ -10,14 +10,41 @@
 
 #### Machine learning methods for irregularly spaced time series
 
+## Project Description
+
+This project contains the implementation of a time-aware neural network (TAN) and workflows for testing its performance on the task of predicting periods of the timeseries datasets provided by Brian Powell.  
+Three datasets have been provided by Brian Powell for test and evalutaion:
+  * Synthetic Sinusoids (SS):     A set of sinusoid timeseries with irregular time spacing. 
+  * Synthetic Light Curves (SLC): A set of artifically generated timeseries imitating realistic lightcurves. 
+  * MIT Lightcurves (MIT-LC):     A set of actual lightcurves provided by MIT.
+
+### Spectral Projection
+
+* This project utilizes a spectral projection as the first stage of data processing. The spectral coefficients represent the projection of a signal onto a set of basis functions, 
+  implemented as a weighted inner product between the signal and the basis functions (evaluated at the time points). There is a good summary of the equations implemented in this project 
+  in the appendix of [Witt & Schumann (2005)](https://www.researchgate.net/publication/200033740_Holocene_climate_variability_on_millennial_scales_recorded_in_Greenland_ice_cores). 
+  The spectral projection generates three features by computing weighted scalar products (equation A3) between the signal values and the sinusoid basis functions described by equation A5.  
+  The magnitude of the projection is defined by equation A10.  Futher mathematical detail can be found in [Foster (1996)](https://articles.adsabs.harvard.edu/pdf/1996AJ....112.1709F).
+* The frequency (f) space is scaled such that the density of f valuse is constant across octaves.  
+  The f values are given by f[j] = f0 * pow( 2, j/N ), with j ranging over [0,N*M], where N is the number of f values per octave, 
+  M is the number of octaves in the f range, and f0 is the lowest value in the f range. 
+
+### Learning Model
+
+* This project utilizes a convolutional neural network (CNN) with 24 layers.  For each of the datasets, the input to the network is the spectral projection of each light curve (LC) 
+   and the output is the frequency of a periodic component of the LC, trained using the target frequency provided in the dataset for each LC.  
+* The output layer of the network is dense, with an exponential activation function defined by the equation y = f0 * (pow(2, x) - 1), where f0 is the lowest value in the f range. 
+  In order to account for the very large dynamic range of the target frequency spectrum, a custom loss function is used, defined by the equation 
+  loss = abs( log2( (yn + f0) / (yt + f0) ) ), where yn is the network output and yt is the target frequency.
+
 ## Quick Start
 
 For a quick start, workflows and container usage have been documented in this section. For additional
 details, please read the rest of the sections of this README. As a summary, each workflow 
-(Sinusoid, Synthetic, and MIT) have a training, eval, and peakfinder script. 
+(Sinusoid, Synthetic, and MIT) have a training and eval script. 
 
 Give that this work was incremental, the workflows should be run in the following order: 
-(1), (2), and (3).
+(1) Sinusoid, (2) Synthetic, and (3) MIT.
 
 For the MIT dataset, the train step is replaced with finetune, because in this case the training is
 intended to start with weights from the synthetic training. The peakfinder scripts run a simple (non-ML)
@@ -27,33 +54,35 @@ period, which is used for comparison and evaluation of the ML workflow.
 ### Downloading the Container
 
 To download the container from Dockerhub, you will need to pull the image. Depending on the version of the
-container you are looking for the and the system you want to run it at, you will create the URL to pull
+container you are looking for and the system you want to run it at, you will create the URL to pull
 the container. There are four types of containers:
 
-1. V100 amd64
-2. V100 arm64
-3. A100 amd64
-4. A100 arm64
+| **Platform**    | **Tag**                    | **Description**                     |
+|-----------------|---------------------------|-------------------------------------|
+| `multi-arch`   | `nasanccs/astrotime:latest` | Astrotime image for A100 and newer GPUs |
+| `multi-arch`   | `nasanccs/astrotime:latest-v100` | Astrotime image for V100 and older GPUs |
+| `multi-arch`   | `nasanccs/astrotime:x.x.x` | Astrotime image for A100 and newer GPUs for specific version |
+| `multi-arch`   | `nasanccs/astrotime:x.x.x-v100` | Astrotime image for V100 and older GPUs for specific version |
 
-An example on how to pull the image to support any container newer than A100's for an arm64 system:
+An example on how to pull the image to support any container newer than A100's:
 
 ```bash
-singularity build --sandbox /lscratch/jacaraba/container/astrotime docker://nasanccs/astrotime:0.4.3-arm64
+singularity build --sandbox /lscratch/$USER/container/astrotime docker://nasanccs/astrotime:latest
+```
+
+To pull an image from for the older V100's systems from Explore:
+
+```bash
+singularity build --sandbox /lscratch/$USER/container/astrotime docker://nasanccs/astrotime:latest-v100
 ```
 
 The latest working version of the container has been added to the Explore cloud under:
 
-#### A100 - armd64
-
-```bash
-/explore/nobackup/projects/ilab/containers/astrotime-arm64-latest
-```
-
-#### V100 - amd64
-
-```bash
-/explore/nobackup/projects/ilab/containers/astrotime-amd64-latest
-```
+| **Platform**    | **Tag**                    | **Location**                     |
+|-----------------|---------------------------|-------------------------------------|
+| `linux/arm64`   | `nasanccs/astrotime:latest` | /explore/nobackup/projects/ilab/containers/astrotime-gh-latest |
+| `linux/amd64`   | `nasanccs/astrotime:latest` | /explore/nobackup/projects/ilab/containers/astrotime-a100-latest |
+| `linux/amd64`   | `nasanccs/astrotime:latest-v100` | /explore/nobackup/projects/ilab/containers/astrotime-v100-latest |
 
 ### Sinusoid Dataset Workflow
 
@@ -62,16 +91,13 @@ The latest working version of the container has been added to the Explore cloud 
 An example run training the deep learning model:
 
 ```bash
-singularity exec -B $NOBACKUP,/explore/nobackup/projects,/explore/nobackup/people --nv /explore/nobackup/projects/ilab/containers/astrotime-arm64-latest python /usr/local/ilab/astrotime/workflow/release/sinusoid/train.py platform.project_root=/explore/nobackup/projects/ilab/ilab_testing/jacaraba/astrotime data.dataset_root=/explore/nobackup/projects/ilab/data/astrotime/sinusoids/nc train.nepochs=10 data.batch_size=16
+singularity exec -B $NOBACKUP,/explore/nobackup/projects,/explore/nobackup/people --nv /explore/nobackup/projects/ilab/containers/astrotime-v100-latest python /usr/local/ilab/astrotime/workflow/release/sinusoid/train.py platform.project_root=/explore/nobackup/projects/ilab/ilab_testing/jacaraba/astrotime data.dataset_root=/explore/nobackup/projects/ilab/data/astrotime/sinusoids/nc train.nepochs=10 data.batch_size=16
 ```
 
 Note that the following are the options allowed to run this workflow. If you need to change the path to the data or any other settings,
 feel free to modify the settings coming from the CLI. Make sure you modify the output directory to somewhere you can write.
 
 ```bash
-Singularity> python /explore/nobackup/people/jacaraba/development/astrotime/workflow/full/sinusoid/train.py -h
-train is powered by Hydra.
-
 == Configuration groups ==
 Compose your configuration from those groups (group=option)
 
@@ -155,45 +181,128 @@ Use --hydra-help to view Hydra specific help
 Then, performing evaluation of these methods:
 
 ```bash
-singularity exec -B $NOBACKUP,/explore/nobackup/projects,/explore/nobackup/people --nv /explore/nobackup/projects/ilab/containers/astrotime-arm64-latest python /usr/local/ilab/astrotime/workflow/release/sinusoid/eval.py platform.project_root=/explore/nobackup/projects/ilab/ilab_testing/jacaraba/astrotime data.dataset_root=/explore/nobackup/projects/ilab/data/astrotime/sinusoids/nc train.nepochs=10 data.batch_size=16
+singularity exec -B $NOBACKUP,/explore/nobackup/projects,/explore/nobackup/people --nv /explore/nobackup/projects/ilab/containers/astrotime-v100-latest python /usr/local/ilab/astrotime/workflow/release/sinusoid/eval.py platform.project_root=/explore/nobackup/projects/ilab/ilab_testing/$USER/astrotime data.dataset_root=/explore/nobackup/projects/ilab/data/astrotime/sinusoids/nc
 ```
 
 ### Synthetic Dataset Workflow
 
+#### Training
+
 ```bash
-PYTHONPATH=/explore/nobackup/people/jacaraba/development/astrotime python /explore/nobackup/people/jacaraba/development/astrotime/workflow/release/synthetic/train.py platform.project_root=/explore/nobackup/projects/ilab/ilab_testing/jacaraba/astrotime data.dataset_root=/explore/nobackup/projects/ilab/data/astrotime/sinusoids/nc train.nepochs=10 data.batch_size=16
+singularity exec -B $NOBACKUP,/explore/nobackup/projects,/explore/nobackup/people --nv /explore/nobackup/projects/ilab/containers/astrotime-v100-latest python /usr/local/ilab/astrotime/workflow/release/synthetic/train.py platform.project_root=/explore/nobackup/projects/ilab/ilab_testing/$USER/astrotime data.dataset_root=/explore/nobackup/projects/ilab/data/astrotime/synthetic train.nepochs=10 data.batch_size=2048
+```
+
+The options to the CLI are as follow:
+
+```bash
+== Configuration groups ==
+Compose your configuration from those groups (group=option)
+
+__legacy__: MIT_period, MIT_period.ce, MIT_period.octaves, MIT_period.octaves.pcross, MIT_period.synthetic, MIT_period.synthetic.folded, MIT_period.wp, baseline_cnn, desktop_period.analysis, desktop_period.octaves, progressive_MIT_period, sinusoid_period.baseline, sinusoid_period.baseline_small, sinusoid_period.poly, sinusoid_period.wp, sinusoid_period.wp_scaled, sinusoid_period.wp_small, sinusoid_period.wpk, sinusoid_period.wwz, sinusoid_period.wwz_small, synthetic_period_autocorr, synthetic_period_transformer, synthetic_period_transformer.classification, synthetic_period_transformer.regression, synthetic_transformer
+__legacy__/data: MIT, MIT-1, MIT.csv, MIT.octaves, MIT.synthetic, MIT.synthetic.folded, astro_synthetic, astro_synthetic_autocorr, pcross.octaves, planet_crossing_generator, sinusoids.nc, sinusoids.npz, sinusoids_small.nc
+__legacy__/model: relation_aware_transformer, transformer, transformer.classication, transformer.regression, wpk_cnn
+__legacy__/transform: MIT.octaves, MIT.synthetic, MIT.synthetic.folded, ce-MIT, correlation, gp, value, wp, wp-MIT, wp-scaled, wpk, wwz
+data: MIT, sinusoids, synthetic, synthetic.octave
+model: cnn, cnn.classification, cnn.octave_regression, dense
+platform: desktop1, explore
+train: MIT_cnn, sinusoid_cnn, synthetic_cnn
+transform: MIT, sinusoid, synthetic, synthetic.octave
+
+
+== Config ==
+Override anything in the config (foo.bar=value)
+
+platform:
+  project_root: /explore/nobackup/projects/ilab/data/astrotime
+  gpu: 0
+  log_level: info
+train:
+  optim: rms
+  lr: 0.001
+  nepochs: 5000
+  refresh_state: false
+  overwrite_log: true
+  results_path: ${platform.project_root}/results
+  weight_decay: 0.0
+  mode: train
+  base_freq: ${data.base_freq}
+transform:
+  sparsity: 0.0
+  batch_size: ${data.batch_size}
+  nfreq_oct: ${data.nfreq_oct}
+  base_freq: ${data.base_freq}
+  noctaves: ${data.noctaves}
+  test_mode: ${data.test_mode}
+  maxh: ${data.maxh}
+  accumh: false
+  decay_factor: 0.0
+  subbatch_size: 4
+  fold_octaves: false
+data:
+  source: astro_signals_with_noise
+  dataset_root: ${platform.project_root}/synthetic
+  cache_path: ${platform.project_root}/cache/data/synthetic
+  batch_size: 16
+  nfreq_oct: 512
+  base_freq: 0.025
+  noctaves: 9
+  test_mode: default
+  file_size: 1000
+  nfiles: 1000
+  refresh: false
+  maxh: 8
+model:
+  mtype: cnn.regression
+  cnn_channels: 64
+  dense_channels: 64
+  out_channels: 1
+  num_cnn_layers: 3
+  num_blocks: 8
+  pool_size: 2
+  stride: 1
+  kernel_size: 3
+  cnn_expansion_factor: 4
+  base_freq: ${data.base_freq}
+  feature: 1
+
+
+Powered by Hydra (https://hydra.cc)
+Use --hydra-help to view Hydra specific help
+```
+
+#### Eval
+
+```bash
+singularity exec -B $NOBACKUP,/explore/nobackup/projects,/explore/nobackup/people --nv /explore/nobackup/projects/ilab/containers/astrotime-v100-latest python /usr/local/ilab/astrotime/workflow/release/synthetic/eval.py platform.project_root=/explore/nobackup/projects/ilab/ilab_testing/$USER/astrotime data.dataset_root=/explore/nobackup/projects/ilab/data/astrotime/synthetic train.nepochs=10 data.batch_size=2048
+
+
+singularity exec -B $NOBACKUP,/explore/nobackup/projects,/explore/nobackup/people --nv /lscratch/jacaraba/container/astrotime python /usr/local/ilab/astrotime/workflow/release/synthetic/eval.py platform.project_root=/explore/nobackup/projects/ilab/ilab_testing/$USER/astrotime data.dataset_root=/explore/nobackup/projects/ilab/data/astrotime/synthetic train.nepochs=10 data.batch_size=2048
 ```
 
 ### MIT Dataset Workflow
 
+#### Training
+
 ```bash
 ```
 
-## Project Description
+The options to the CLI are as follow:
 
-This project contains the implementation of a time-aware neural network (TAN) and workflows for testing its performance on the task of predicting periods of the timeseries datasets provided by Brian Powell.  
-Three datasets have been provided by Brian Powell for test and evalutaion:
-  * Synthetic Sinusoids (SS):     A set of sinusoid timeseries with irregular time spacing. 
-  * Synthetic Light Curves (SLC): A set of artifically generated timeseries imitating realistic lightcurves. 
-  * MIT Lightcurves (MIT-LC):     A set of actual lightcurves provided by MIT.
+```bash
+```
 
-### Spectral Projection
+#### Eval
 
-* This project utilizes a spectral projection as the first stage of data processing. The spectral coefficients represent the projection of a signal onto a set of basis functions, 
-  implemented as a weighted inner product between the signal and the basis functions (evaluated at the time points). There is a good summary of the equations implemented in this project 
-  in the appendix of [Witt & Schumann (2005)](https://www.researchgate.net/publication/200033740_Holocene_climate_variability_on_millennial_scales_recorded_in_Greenland_ice_cores). 
-  The spectral projection generates three features by computing weighted scalar products (equation A3) between the signal values and the sinusoid basis functions described by equation A5.  
-  The magnitude of the projection is defined by equation A10.  Futher mathematical detail can be found in [Foster (1996)](https://articles.adsabs.harvard.edu/pdf/1996AJ....112.1709F).
-* The frequency (f) space is scaled such that the density of f valuse is constant across octaves.  
-  The f values are given by f[j] = f0 * pow( 2, j/N ), with j ranging over [0,N*M], where N is the number of f values per octave, 
-  M is the number of octaves in the f range, and f0 is the lowest value in the f range. 
+```bash
+```
 
-### Learning Model
-* This project utilizes a convolutional neural network (CNN) with 24 layers.  For each of the datasets, the input to the network is the spectral projection of each light curve (LC) 
-   and the output is the frequency of a periodic component of the LC, trained using the target frequency provided in the dataset for each LC.  
-* The output layer of the network is dense, with an exponential activation function defined by the equation y = f0 * (pow(2, x) - 1), where f0 is the lowest value in the f range. 
-  In order to account for the very large dynamic range of the target frequency spectrum, a custom loss function is used, defined by the equation 
-  loss = abs( log2( (yn + f0) / (yt + f0) ) ), where yn is the network output and yt is the target frequency.
+### Sending this Jobs through Slurm
+
+These jobs can be launched from a slurm session as well. From gpulogin1:
+
+```bash
+sbatch --mem-per-cpu=10240 -G1 -c10 -t01:00:00 -J astrotime --wrap="time $your_singularity_command"
+```
 
 ## Conda environment
 
@@ -216,6 +325,7 @@ Three datasets have been provided by Brian Powell for test and evalutaion:
 * The MIT light curves are stored in their original form at: **/explore/nobackup/people/bppowel1/mit_lcs/**. Methods in the class **astrotime.loaders.MIT.MITLoader** have been used to convert the lc txt files to netcdf files in the <project_root>/MIT directory.
 
 ## Workflows
+
 For each of the datasets (sinusoid, synthetic, and MIT), two ML workflows are provided:
 
 *   _train_ (**.workflow/train-baseline-cnn.py**):        Runs the TAN training workflow.
@@ -271,73 +381,6 @@ Here is a partial list of configuration parameters with typical default values. 
        train.results_path: "${platform.project_root}/results"        # Checkpoint and log files are saved under this directory
        train.weight_decay: 0.0                                       # Weight decay parameter for optimizer
        train.mode:  train                                            # execution mode: 'train' or 'valid'
-
-## Working from the container
-
-In addition to the anaconda environment, the software can be run from
-a container. This project provides a Docker container that can be converted
-to Singularity or any container engine based on the user needs. The 
-instructions below are geared towards the use of Singularity since that is 
-the default available in the NCCS super computing facility.
-
-### Container Download
-
-To create a sandbox out of the container:
-
-```bash
-singularity build --sandbox /lscratch/$USER/container/astrotime docker://nasanccs/astrotime:latest
-```
-*note - /lscratch is only available on gpu### nodes
-
-An already downloaded version of this sandbox is available under:
-
-```bash
-/explore/nobackup/projects/ilab/containers/astrotime-latest
-```
-
-### Working from the container with a shell session
-
-To get a shell session inside the container:
-
-```bash
-singularity shell -B $NOBACKUP,/explore/nobackup/projects,/explore/nobackup/people --nv /explore/nobackup/projects/ilab/containers/astrotime-latest
-```
-
-### An example run training
-
-An example run training:
-
-```bash
-python /explore/nobackup/projects/ilab/ilab_testing/astrotime/workflow/baseline-cnn.py platform.project_root=/explore/nobackup/projects/ilab/ilab_testing/astrotime data.dataset_root=/explore/nobackup/projects/ilab/data/astrotime/sinusoids/nc
-```
-Expected training output files:
-```bash
-/explore/nobackup/projects/ilab/ilab_testing/astrotime/results/checkpoints/sinusoid_period.baseline.pt
-/explore/nobackup/projects/ilab/ilab_testing/astrotime/results/checkpoints/sinusoid_period.baseline.backup.pt
-```
-
-An example run validation:
-
-```bash
-python /explore/nobackup/projects/ilab/ilab_testing/astrotime/workflow/baseline-cnn.py platform.project_root=/explore/nobackup/projects/ilab/ilab_testing/astrotime data.dataset_root=/explore/nobackup/projects/ilab/data/astrotime/sinusoids/nc train.mode=valid
-```
-Expected validation output:
-```bash
-      Loading checkpoint from /explore/nobackup/projects/ilab/ilab_testing/astrotime/results/checkpoints/sinusoid_period.baseline.pt: epoch=122, batch=0
-
-SignalTrainer[TSet.Validation]: 2000 batches, 1 epochs, nelements = 100000, device=cuda:0
- Validation Loss: mean=0.021, median=0.021, range=(0.012 -> 0.043)
-98.04user 8.85system 2:00.79elapsed 88%CPU (0avgtext+0avgdata 1080416maxresident)k
-2059752inputs+1120outputs (1677major+582379minor)pagefaults 0swaps
-```
-
-### Sending a slurm job using the container (training example):
-
-From gpulogin1:
-
-```bash
-sbatch --mem-per-cpu=10240 -G1 -c10 -t01:00:00 -J astrotime --wrap="time singularity exec -B $NOBACKUP,/explore/nobackup/projects,/explore/nobackup/people --nv /explore/nobackup/projects/ilab/containers/astrotime-latest python /explore/nobackup/projects/ilab/ilab_testing/astrotime/workflow/baseline-cnn.py platform.project_root=/explore/nobackup/projects/ilab/ilab_testing/astrotime data.dataset_root=/explore/nobackup/projects/ilab/data/astrotime/sinusoids/nc"
-```
 
 ## References
 
