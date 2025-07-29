@@ -16,21 +16,57 @@ For a quick start, workflows and container usage have been documented in this se
 details, please read the rest of the sections of this README. As a summary, each workflow 
 (Sinusoid, Synthetic, and MIT) have a training, eval, and peakfinder script. 
 
+Give that this work was incremental, the workflows should be run in the following order: 
+(1), (2), and (3).
+
 For the MIT dataset, the train step is replaced with finetune, because in this case the training is
 intended to start with weights from the synthetic training. The peakfinder scripts run a simple (non-ML)
 workflow that computes the frequency of the highest peak in the spectrum, and returns the corresponding 
 period, which is used for comparison and evaluation of the ML workflow.
 
+### Downloading the Container
+
+To download the container from Dockerhub, you will need to pull the image. Depending on the version of the
+container you are looking for the and the system you want to run it at, you will create the URL to pull
+the container. There are four types of containers:
+
+1. V100 amd64
+2. V100 arm64
+3. A100 amd64
+4. A100 arm64
+
+An example on how to pull the image to support any container newer than A100's for an arm64 system:
+
+```bash
+singularity build --sandbox /lscratch/jacaraba/container/astrotime docker://nasanccs/astrotime:0.4.3-arm64
+```
+
+The latest working version of the container has been added to the Explore cloud under:
+
+#### A100 - armd64
+
+```bash
+/explore/nobackup/projects/ilab/containers/astrotime-arm64-latest
+```
+
+#### V100 - amd64
+
+```bash
+/explore/nobackup/projects/ilab/containers/astrotime-amd64-latest
+```
+
 ### Sinusoid Dataset Workflow
+
+#### Training
 
 An example run training the deep learning model:
 
 ```bash
-PYTHONPATH=/explore/nobackup/people/jacaraba/development/astrotime python /explore/nobackup/people/jacaraba/development/astrotime/workflow/release/sinusoid/train.py platform.project_root=/explore/nobackup/projects/ilab/ilab_testing/jacaraba/astrotime data.dataset_root=/explore/nobackup/projects/ilab/data/astrotime/sinusoids/nc train.nepochs=10 data.batch_size=16
+singularity exec -B $NOBACKUP,/explore/nobackup/projects,/explore/nobackup/people --nv /explore/nobackup/projects/ilab/containers/astrotime-arm64-latest python /usr/local/ilab/astrotime/workflow/release/sinusoid/train.py platform.project_root=/explore/nobackup/projects/ilab/ilab_testing/jacaraba/astrotime data.dataset_root=/explore/nobackup/projects/ilab/data/astrotime/sinusoids/nc train.nepochs=10 data.batch_size=16
 ```
 
 Note that the following are the options allowed to run this workflow. If you need to change the path to the data or any other settings,
-feel free to modify the settings coming from the CLI.
+feel free to modify the settings coming from the CLI. Make sure you modify the output directory to somewhere you can write.
 
 ```bash
 Singularity> python /explore/nobackup/people/jacaraba/development/astrotime/workflow/full/sinusoid/train.py -h
@@ -114,16 +150,12 @@ Powered by Hydra (https://hydra.cc)
 Use --hydra-help to view Hydra specific help
 ```
 
-Then followed by the peakfinder method:
+#### Eval
+
+Then, performing evaluation of these methods:
 
 ```bash
-PYTHONPATH=/explore/nobackup/people/jacaraba/development/astrotime python /explore/nobackup/people/jacaraba/development/astrotime/workflow/release/sinusoid/peakfinder.py platform.project_root=/explore/nobackup/projects/ilab/ilab_testing/jacaraba/astrotime data.dataset_root=/explore/nobackup/projects/ilab/data/astrotime/sinusoids/nc
-```
-
-Finally, performing evaluation of these methods:
-
-```bash
-PYTHONPATH=/explore/nobackup/people/jacaraba/development/astrotime python /explore/nobackup/people/jacaraba/development/astrotime/workflow/release/sinusoid/eval.py platform.project_root=/explore/nobackup/projects/ilab/ilab_testing/jacaraba/astrotime data.dataset_root=/explore/nobackup/projects/ilab/data/astrotime/sinusoids/nc train.nepochs=10 data.batch_size=16
+singularity exec -B $NOBACKUP,/explore/nobackup/projects,/explore/nobackup/people --nv /explore/nobackup/projects/ilab/containers/astrotime-arm64-latest python /usr/local/ilab/astrotime/workflow/release/sinusoid/eval.py platform.project_root=/explore/nobackup/projects/ilab/ilab_testing/jacaraba/astrotime data.dataset_root=/explore/nobackup/projects/ilab/data/astrotime/sinusoids/nc train.nepochs=10 data.batch_size=16
 ```
 
 ### Synthetic Dataset Workflow
