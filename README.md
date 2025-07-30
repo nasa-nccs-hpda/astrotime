@@ -14,7 +14,7 @@
 
 This project contains the implementation of a time-aware neural network (TAN) and workflows for testing its performance on the task of predicting periods of the timeseries datasets provided by Brian Powell.  
 Three datasets have been provided by Brian Powell for test and evalutaion:
-  * Synthetic Sinusoids (SS):     A set of sinusoid timeseries with irregular time spacing. 
+  * Sinusoids (S):                A set of sinusoid timeseries with irregular time spacing. 
   * Synthetic Light Curves (SLC): A set of artifically generated timeseries imitating realistic lightcurves. 
   * MIT Lightcurves (MIT-LC):     A set of actual lightcurves provided by MIT.
 
@@ -46,8 +46,8 @@ details, please read the rest of the sections of this README. As a summary, each
 Give that this work was incremental, the workflows should be run in the following order: 
 (1) Sinusoid, (2) Synthetic, and (3) MIT.
 
-For the MIT dataset, the train step is replaced with finetune, because in this case the training is
-intended to start with weights from the synthetic training. The peakfinder scripts run a simple (non-ML)
+For the MIT dataset, the training is intended to start with weights from the synthetic training (configured
+in the 'train' section of the cfg). The peakfinder scripts run a simple (non-ML)
 workflow that computes the frequency of the highest peak in the spectrum, and returns the corresponding 
 period, which is used for comparison and evaluation of the ML workflow.
 
@@ -400,8 +400,8 @@ For each of the datasets (sinusoid, synthetic, and MIT), two ML workflows are pr
 The workflows save checkpoint files at the end of each epoch.  By default the model is initialized with any existing checkpoint file at the begining of script execution. 
 A workflow's checkpoints are named after it's *version* parameter.
 To execute the script with a new set of checkpoints (while keeping the old ones), create a new script with a different value of the *version* parameter 
-(and a new defaults hydra yaml file with the same name in the config dir).   The second (ckp_version) argument to the _train_ method of the Trainer class is used for fine
-tuning.  If this argument is specified, then the training workflow will be initialized with the checkpoint from that version, and all new checkpoint saves will be
+(and a new defaults hydra yaml file with the same name in the config dir).   The 'ckp_version' of the _train_ configuration is used for fine
+tuning.  If this parameter is specified, then the training workflow will be initialized with the checkpoint from that version, and all new checkpoint saves will be
 to the primary version of the workflow.
 
 ## Configuration
@@ -439,7 +439,7 @@ Here is a partial list of configuration parameters with typical default values. 
        model.cnn_expansion_factor: 4                         # Increase in the number of channels from one CNN layer to the next
        train.optim: rms                                              # Optimizer
        train.lr: 1e-3                                                # Learning rate
-       train.nepochs: 5000                                           #  Training Epochs
+       train.nepochs: 5                                              #  Training Epochs
        train.refresh_state: False                                    # Start from random weights (Ignore & overwrite existing checkpoints)
        train.overwrite_log: True                                     # Start new log file
        train.results_path: "${platform.project_root}/results"        # Checkpoint and log files are saved under this directory
