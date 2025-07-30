@@ -171,7 +171,7 @@ model:
   base_freq: ${data.base_freq}
   feature: 1
 ```
-#### Expected Output for Training
+#### Expected Output from Training
 
 ```bash
 INFO:    Environment variable SINGULARITY_TMPDIR is set, but APPTAINER_TMPDIR is preferred
@@ -215,6 +215,13 @@ Then, performing evaluation of these methods:
 
 ```bash
 singularity exec -B $NOBACKUP,/explore/nobackup/projects,/explore/nobackup/people --nv /explore/nobackup/projects/ilab/containers/astrotime-v100-latest python /usr/local/ilab/astrotime/workflow/release/sinusoid/eval.py platform.project_root=/explore/nobackup/projects/ilab/ilab_testing/$USER/astrotime data.dataset_root=/explore/nobackup/projects/ilab/data/astrotime/sinusoids/nc
+```
+#### Expected Output from Eval
+
+```bash
+Check log for details:
+
+<platform.project_root>/astrotime/logs/astrotime.sinusoid_period.eval.log
 ```
 
 ### Synthetic Dataset Workflow
