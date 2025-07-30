@@ -171,6 +171,43 @@ model:
   base_freq: ${data.base_freq}
   feature: 1
 ```
+#### Expected Output for Training
+
+```bash
+INFO:    Environment variable SINGULARITY_TMPDIR is set, but APPTAINER_TMPDIR is preferred
+
+      Logging to /explore/nobackup/projects/ilab/ilab_testing/astrotime//logs/astrotime.sinusoid_period.log, level = INFO
+CNN: add_cnn_block: in_channels=1, out_channels=76
+CNN: add_cnn_block: in_channels=76, out_channels=88
+CNN: add_cnn_block: in_channels=88, out_channels=100
+CNN: add_cnn_block: in_channels=100, out_channels=112
+CNN: add_cnn_block: in_channels=112, out_channels=124
+CNN: add_cnn_block: in_channels=124, out_channels=136
+CNN: add_cnn_block: in_channels=136, out_channels=148
+CNN: add_cnn_block: in_channels=148, out_channels=160
+CNN: add_dense_block: in_channels=2880, hidden_channels=64, out_channels=1
+SignalTrainer[TSet.Train]: , 10 epochs, device=cuda:0
+
+      Loading checkpoint from /explore/nobackup/projects/ilab/ilab_testing/astrotime//results/checkpoints/sinusoid_period.pt: epoch=0, batch=0
+
+ ---- Running Training cycles ---- 
+E-0 F-0:-1 B-0 loss=3.592, range=(3.592 -> 3.592), dt/batch=4.39816 sec
+E-0 F-0:-1 B-50 loss=1.857, range=(0.186 -> 15.869), dt/batch=0.02228 sec
+.
+.
+E-10 F-998:-1 B-62900 loss=0.012, range=(0.003 -> 0.025), dt/batch=0.02344 sec
+Completed epoch 10 in 26.37548 min, mean-loss= 0.013, median= 0.013
+ ------ Epoch Loss: mean=0.013, median=0.013, range=(0.001 -> 0.194)
+
+Output files:
+
+<platform.project_root>/astrotime/results/checkpoints/sinusoid_period.pt
+<platform.project_root>/astrotime/results/checkpoints/sinusoid_period.backup.pt
+
+<platform.project_root>/astrotime/logs/astrotime.sinusoid_period.log
+
+
+```
 
 #### Eval
 
