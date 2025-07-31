@@ -89,7 +89,7 @@ class SpectralProjection(EmbeddingLayer):
 		dz: Tensor =  ts * self.get_omega(octaves)
 		mag: Tensor =  spectral_projection( dz, ys )
 		embedding: Tensor = mag.reshape( [mag.shape[0], self.focused_octaves, self.nfreq_oct] ) if self.fold_octaves else torch.unsqueeze(mag, 1)
-		self.init_log(f" Completed embedding{list(embedding.shape)} in {elapsed(t0):.5f} sec: nfeatures={embedding.shape[1]}")
+		self.init_log(f" Completed embedding{list(embedding.shape)} in {elapsed(t0):.5f} sec: nfeatures={embedding.shape[1]}, fold octaves={self.fold_octaves}, focused octaves={self.focused_octaves}")
 		self.init_state = False
 		return embedding
 
