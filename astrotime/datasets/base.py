@@ -1,11 +1,13 @@
 import numpy as np, xarray as xa
 from astrotime.util.series import TSet
 from typing import List, Optional, Dict, Type, Tuple, Union
-import logging, random
+import logging, random, torch
 from glob import glob
 from omegaconf import DictConfig, OmegaConf
-RDict = Dict[str,Union[List[str],int,np.ndarray]]
 from torch.utils.data import IterableDataset, get_worker_info
+
+RDict = Dict[str,Union[List[str],int,np.ndarray]]
+TRDict = Dict[str,Union[List[str],int,torch.Tensor]]
 
 class AstrotimeDataset(IterableDataset):
 

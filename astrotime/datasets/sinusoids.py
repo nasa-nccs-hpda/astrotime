@@ -1,9 +1,10 @@
-from .base import AstrotimeDataset, RDict
-import time, numpy as np, xarray as xa
+from .base import AstrotimeDataset, RDict, TRDict
+import time, torch, numpy as np, xarray as xa
 from typing import List, Optional, Dict, Type, Union, Tuple, Any
 from astrotime.util.logging import exception_handled
 from astrotime.util.series import TSet
 from torch.utils.data import DataLoader
+from torch import Tensor, device
 from omegaconf import DictConfig, OmegaConf
 import logging, random, os, math
 
@@ -51,22 +52,30 @@ class SinusoidDataset(AstrotimeDataset):
 class  SinusoidDataLoader(DataLoader):
 
 	def __init__(self, cfg: DictConfig, **kwargs):
+		self.log = logging.getLogger()
 		DataLoader.__init__( self,
 			dataset= SinusoidDataset(cfg),
 			collate_fn= self.build_batch,
 			**kwargs)
 
 	@classmethod
-	def build_batch(cls, batch: List[RDict]) -> RDict:
-		t, y, p, stype, result, slen = [], [], [], [], {}, 1e10
+	def build_batch(cls, batch: List[RDict]) -> TRDict:
+		tl, yl, pl, slen = [], [], [], 1e10
 		for elem in batch:
 			if elem is not None:
-				t.append(elem['t'])
-				y.append(elem['y'])
-				p.append(elem['p'])
+				tl.append(elem['t'])
+				yl.append(elem['y'])
+				pl.append(elem['p'])
 				slen = min(elem['y'].size, slen)
-		result['t'] = merge(t, slen)
-		result['y'] = merge(y, slen)
-		result['period'] = np.array(p)
-		return result
+		t: np.ndarray = merge(tl, slen)
+		y: np.ndarray = merge(yl, slen)
+		p: Tensor = torch.tensor(pl, dtype=torch.float32)
+		z: Tensor = cls.to_tensor(t, y)
+		return dict( input=z, target=1/p )
+
+	@classmethod
+	def to_tensor(cls, x: np.ndarray, y: np.ndarray) -> Tensor:
+		Y: Tensor = torch.FloatTensor(y)
+		X: Tensor = torch.FloatTensor(x)
+		return torch.stack((X, Y), dim=1)
 
