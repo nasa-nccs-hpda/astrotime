@@ -27,7 +27,7 @@ def ss( fl: List[float]) -> str:
 
 class IterativeTrainer(object):
 
-    def __init__(self, cfg: DictConfig, device: torch.device, loader: ElementLoader, model: nn.Module, embedding: EmbeddingLayer, **kwargs ):
+    def __init__( self, cfg: DictConfig, device: torch.device, loader: ElementLoader, model: nn.Module, embedding: EmbeddingLayer, **kwargs ):
         self.device: torch.device = device
         self.loader: ElementLoader = loader
         self.embedding = embedding
