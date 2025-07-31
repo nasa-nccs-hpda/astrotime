@@ -91,7 +91,7 @@ The latest working version of the container has been added to the Explore cloud 
 An example run training the deep learning model:
 
 ```bash
-singularity exec -B $NOBACKUP,/explore/nobackup/projects,/explore/nobackup/people --nv /explore/nobackup/projects/ilab/containers/astrotime-v100-latest python /usr/local/ilab/astrotime/workflow/release/sinusoid/train.py platform.project_root=/explore/nobackup/projects/ilab/ilab_testing/jacaraba/astrotime data.dataset_root=/explore/nobackup/projects/ilab/data/astrotime/sinusoids/nc train.nepochs=10 data.batch_size=16
+singularity exec -B $NOBACKUP,/explore/nobackup/projects,/explore/nobackup/people --nv /explore/nobackup/projects/ilab/containers/astrotime-v100-latest python /usr/local/ilab/astrotime/workflow/release/sinusoid/train.py platform.project_root=/explore/nobackup/projects/ilab/ilab_testing/$USER/astrotime data.dataset_root=/explore/nobackup/projects/ilab/data/astrotime/sinusoids/nc train.nepochs=10 data.batch_size=16
 ```
 
 Note that the following are the options allowed to run this workflow. If you need to change the path to the data or any other settings,
