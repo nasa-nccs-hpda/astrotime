@@ -3,8 +3,13 @@ import time, numpy as np, xarray as xa
 from typing import List, Optional, Dict, Type, Union, Tuple, Any
 from astrotime.util.logging import exception_handled
 from astrotime.util.series import TSet
+from torch.utils.data import DataLoader
 from omegaconf import DictConfig, OmegaConf
 import logging, random, os, math
+
+def merge( arrays: List[np.ndarray], slen: int ) -> np.ndarray:
+	if len( arrays ) == 0: raise IndexError
+	return np.stack( [ array[:slen] for array in arrays ], axis=0 )
 
 class SinusoidDataset(AstrotimeDataset):
 
@@ -42,3 +47,26 @@ class SinusoidDataset(AstrotimeDataset):
 		except KeyError as ex:
 			print(f"\n    Error getting elem-{self.ielement} from dataset({self.dspath}): vars = {list(self.data.data_vars.keys())}\n")
 			raise ex
+
+class  SinusoidDataLoader(DataLoader):
+
+	def __init__(self, cfg: DictConfig, **kwargs):
+		DataLoader.__init__( self,
+			dataset= SinusoidDataset(cfg),
+			collate_fn= self.build_batch,
+			**kwargs)
+
+	@classmethod
+	def build_batch(cls, batch: List[RDict]) -> RDict:
+		t, y, p, stype, result, slen = [], [], [], [], {}, 1e10
+		for elem in batch:
+			if elem is not None:
+				t.append(elem['t'])
+				y.append(elem['y'])
+				p.append(elem['p'])
+				slen = min(elem['y'].size, slen)
+		result['t'] = merge(t, slen)
+		result['y'] = merge(y, slen)
+		result['period'] = np.array(p)
+		return result
+
