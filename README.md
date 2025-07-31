@@ -429,7 +429,7 @@ sbatch --mem-per-cpu=10240 -G1 -c10 -t01:00:00 -J astrotime --wrap="time $your_s
 
     >   * mamba create -n astrotime.pt ninja python=3.10
     >   * mamba activate astrotime
-    >   * pip install torch jupyterlab==4.0.13 ipywidgets==7.8.4 cuda-python jupyterlab_widgets ipykernel==6.29 ipympl ipython==8.26 xarray netCDF4 pygam wotan statsmodels transitleastsquares scikit-learn hydra-core rich 
+    >   * pip install torch jupyterlab==4.0.13 ipywidgets==7.8.4 cuda-python jupyterlab_widgets torchmetrics pytorch-lightning ipykernel==6.29 ipympl ipython==8.26 xarray netCDF4 pygam wotan statsmodels transitleastsquares scikit-learn hydra-core rich 
     >   * pip install diffusers lightkurve --upgrade
 
 ## Dataset Preparation
