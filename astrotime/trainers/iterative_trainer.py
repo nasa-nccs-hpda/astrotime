@@ -39,6 +39,7 @@ class IterativeTrainer(object):
         self.optimizer: optim.Optimizer = None
         self.log = logging.getLogger()
         self.loss: nn.Module = self.get_loss(cfg.data)
+        self.comp_loss: nn.Module = ExpLoss(cfg.data)
         self._checkpoint_manager: CheckpointManager = None
         self.peak_selector = SpectralPeakSelector(cfg.transform, device, self.embedding.xdata)
         self.start_batch: int = 0
@@ -181,6 +182,11 @@ class IterativeTrainer(object):
             result: Tensor = self.model( batch['z'] )
             print( f" ** (batch{list(batch['z'].shape)}, target{list(batch['target'].shape)}) ->  result{list(result.shape)}")
 
+    def closs(self, r: Tensor, targ: Tensor) -> Tensor:
+        o: torch.Tensor = self.embedding.get_octave_data()
+        f: torch.Tensor = self.f0 * torch.pow( 2, o + r )
+        return self.comp_loss( f, targ )
+
     def train(self,version):
         print(f"SignalTrainer[{self.mode}]: , {self.nepochs} epochs, device={self.device}")
         self.optimizer = self.get_optimizer()
@@ -191,7 +197,7 @@ class IterativeTrainer(object):
                 te = time.time()
                 self.set_train_status()
                 self.loader.init_epoch(TSet.Train)
-                losses, log_interval, t0 = [], 50, time.time()
+                losses, c_loss, log_interval, t0, clstr = [], [], 50, time.time(), ""
                 try:
                     for ibatch in range(0,sys.maxsize):
                         t0 = time.time()
@@ -208,9 +214,15 @@ class IterativeTrainer(object):
                                 loss: Tensor =  self.loss( result.squeeze(), target )
                                 self.conditionally_update_weights(loss)
                                 losses.append(loss.cpu().item())
+                                if "octave_regression" in self.mtype:
+                                    closs: Tensor = self.closs(result.squeeze(), target)
+                                    c_loss.append(closs.cpu().item())
                                 if ibatch % log_interval == 0:
                                     aloss = np.array(losses[-log_interval:])
-                                    print(f"E-{epoch} F-{self.loader.ifile}:{self.loader.file_index} B-{ibatch} loss={aloss.mean():.3f}, range=({aloss.min():.3f} -> {aloss.max():.3f}), dt/batch={elapsed(t0):.5f} sec")
+                                    if "octave_regression" in self.mtype:
+                                        closses = np.array(c_loss[-log_interval:])
+                                        clstr = f" closs = {np.median(closses):.3f}, "
+                                    print(f"E-{epoch} F-{self.loader.ifile}:{self.loader.file_index} B-{ibatch} loss={np.median(aloss):.3f}, {clstr} range=({aloss.min():.3f} -> {aloss.max():.3f}), dt/batch={elapsed(t0):.5f} sec")
                                     self._checkpoint_manager.save_checkpoint(epoch, ibatch)
 
                 except StopIteration:
