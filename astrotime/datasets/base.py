@@ -41,6 +41,8 @@ class AstrotimeDataset(IterableDataset):
 	def update_file(self):
 		self.ifile += 1
 		if self.ifile >= len(self.file_sort):
+			self.ifile = -1
+			self.ielement = -1
 			raise StopIteration
 		self._load_next_file()
 

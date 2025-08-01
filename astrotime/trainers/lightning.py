@@ -7,7 +7,7 @@ from astrotime.models.cnn.cnn_baseline import get_model_from_cfg
 from astrotime.encoders.lightning import SpectralProjection, embedding_space
 from astrotime.trainers.checkpoints import CheckpointManager
 import torchmetrics
-import lightning.pytorch as pl
+import pytorch_lightning as pl
 from torch.utils.data import DataLoader
 
 class LightningTrainer(pl.LightningModule):
@@ -89,7 +89,7 @@ class LightningTrainer(pl.LightningModule):
 
 	def training_step(self, batch, batch_idx):
 		samples, timestamps = batch
-		samples = samples.to(self.device, non_blocking=True)
+		input = samples.to(self.device, non_blocking=True)
 		timestamps = timestamps.to(self.device, non_blocking=True)
 
 		loss, pred, mask = self.forward(samples, timestamps)

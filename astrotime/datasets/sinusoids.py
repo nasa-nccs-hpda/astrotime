@@ -51,12 +51,16 @@ class SinusoidDataset(AstrotimeDataset):
 
 class  SinusoidDataLoader(DataLoader):
 
-	def __init__(self, cfg: DictConfig, **kwargs):
+	def __init__(self, cfg: DictConfig ):
 		self.log = logging.getLogger()
 		DataLoader.__init__( self,
 			dataset= SinusoidDataset(cfg),
 			collate_fn= self.build_batch,
-			**kwargs)
+			batch_size= cfg.batch_size,
+			num_workers= cfg.num_workers,
+			pin_memory= cfg.pin_memory,
+			persistent_workers= cfg.persistent_workers,
+			prefetch_factor=4 )
 
 	@classmethod
 	def build_batch(cls, batch: List[RDict]) -> TRDict:

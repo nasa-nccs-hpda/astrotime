@@ -1,7 +1,6 @@
 source: astro_signals_with_noise                                                # Dataset type
 dataset_root:  "${platform.project_root}/synthetic"    # Location of processed netcdf files
 cache_path:  "${platform.project_root}/cache/data/synthetic"
-batch_size: 16
 nfreq_oct: 512                      # Number of frequency values (log2 spaced) in each octave
 base_freq:  0.025                     # Start frequency of base freq range
 noctaves: 9                         # Number of octaves in base freq range
@@ -10,5 +9,8 @@ file_size: 1000
 nfiles: 1000
 refresh: false
 maxh: 8
-
+batch_size: 16
+num_workers: 8
+pin_memory: true
+persistent_workers: true
 
