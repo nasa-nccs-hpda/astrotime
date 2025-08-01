@@ -18,6 +18,7 @@ class PLSpectralCNN(PL.LightningModule):
 		self.cnn: nn.Module = self.get_model_from_cfg()
 		self.loss = ExpLoss(cfg.data)
 		self.train_loss_avg = torchmetrics.MeanMetric()
+		self.val_loss_avg   = torchmetrics.MeanMetric()
 		self.save_hyperparameters()
 
 	def ckpt_path(self, version: str ) -> Optional[str]:

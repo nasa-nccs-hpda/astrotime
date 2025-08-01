@@ -13,8 +13,9 @@ version = "sinusoid_period"
 def my_app(cfg: DictConfig) -> None:
 	astrotime_initialize( cfg, version )
 
-	loader = SinusoidDataLoader(cfg.data)
+	train_loader = SinusoidDataLoader(cfg.data, TSet.Train)
+	val_loader   = SinusoidDataLoader(cfg.data, TSet.Validation)
 	model = PLSpectralCNN(cfg)
 	trainer = PL.Trainer()
 
-	trainer.fit(model=model, train_dataloaders=loader, ckpt_path=model.ckpt_path(version) )
+	trainer.fit(model=model, train_dataloaders=train_loader, val_dataloaders=val_loader, ckpt_path=model.ckpt_path(version) )

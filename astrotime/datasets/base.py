@@ -11,7 +11,7 @@ TRDict = Dict[str,Union[List[str],int,torch.Tensor]]
 
 class AstrotimeDataset(IterableDataset):
 
-	def __init__(self, cfg: DictConfig ):
+	def __init__(self, cfg: DictConfig, tset: TSet ):
 		super(AstrotimeDataset).__init__()
 		self.log = logging.getLogger()
 		self.cfg = cfg
@@ -19,11 +19,10 @@ class AstrotimeDataset(IterableDataset):
 		self.ifile: int = -1
 		self.ielement = -1
 		self.worker_idx: int = 0
-		self.tset: TSet = None
 		self.rootdir: str = cfg.dataset_root
 		self.nfiles: int = cfg.nfiles
 		self._files: List[str] = None
-		self.file_sort: List[int] = None
+		self.file_sort: List[int] = self.get_file_sort(tset)
 
 	def get_file_sort(self, tset: TSet):
 		if   tset == TSet.Train:      flist = list(range(self.nfiles-1))
@@ -41,8 +40,7 @@ class AstrotimeDataset(IterableDataset):
 	def update_file(self):
 		self.ifile += 1
 		if self.ifile >= len(self.file_sort):
-			self.ifile = -1
-			self.ielement = -1
+			self.init_epoch()
 			raise StopIteration
 		self._load_next_file()
 
@@ -63,18 +61,15 @@ class AstrotimeDataset(IterableDataset):
 		return self
 
 	def __next__(self) -> RDict:
-		element = self.get_next_element()
-		if element is None:
-			raise StopIteration
-		return element
+		while True:
+			element = self.get_next_element()
+			if element is not None:
+				return element
 
-	def init_epoch(self, tset: TSet = TSet.Train):
+	def init_epoch(self):
 		self.ifile = -1
 		self.ielement = -1
-		self.tset = tset
-		self.file_sort = self.get_file_sort(tset)
 		random.shuffle(self.file_sort)
-		self.update_file()
 
 	def initialize(self):
 		pass

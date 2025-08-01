@@ -14,8 +14,8 @@ def merge( arrays: List[np.ndarray], slen: int ) -> np.ndarray:
 
 class SinusoidDataset(AstrotimeDataset):
 
-	def __init__(self, cfg: DictConfig ):
-		super(SinusoidDataset).__init__(cfg)
+	def __init__(self, cfg: DictConfig, tset: TSet ):
+		super(SinusoidDataset).__init__(cfg, tset)
 		self.data: xa.Dataset = None
 
 	def _load_next_file( self ):
@@ -51,10 +51,10 @@ class SinusoidDataset(AstrotimeDataset):
 
 class  SinusoidDataLoader(DataLoader):
 
-	def __init__(self, cfg: DictConfig ):
+	def __init__(self, cfg: DictConfig, tset: TSet ):
 		self.log = logging.getLogger()
 		DataLoader.__init__( self,
-			dataset= SinusoidDataset(cfg),
+			dataset= SinusoidDataset(cfg, tset),
 			collate_fn= self.build_batch,
 			batch_size= cfg.batch_size,
 			num_workers= cfg.num_workers,
