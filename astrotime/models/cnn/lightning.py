@@ -12,7 +12,7 @@ class PLSpectralCNN(PL.LightningModule):
 	def __init__(self, cfg: DictConfig):
 		super().__init__()
 		self.cfg = cfg
-		self.batch_size: int = self.cfg.train.batch_size
+		self.batch_size: int = self.cfg.data.batch_size
 		self.embedding_space = embedding_space(cfg.transform)[1]
 		self.embedding = SpectralProjection( cfg.transform, self.embedding_space )
 		self.cnn: nn.Module = self.get_model_from_cfg()
