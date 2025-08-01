@@ -18,4 +18,6 @@ def my_app(cfg: DictConfig) -> None:
 	model = PLSpectralCNN(cfg)
 	trainer = PL.Trainer()
 
+	print( f"Training {version}...")
 	trainer.fit(model=model, train_dataloaders=train_loader, val_dataloaders=val_loader, ckpt_path=model.ckpt_path(version) )
+	print(f"DONE")
