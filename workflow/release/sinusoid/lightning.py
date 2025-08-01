@@ -16,7 +16,7 @@ def my_app(cfg: DictConfig) -> None:
 	train_loader = SinusoidDataLoader(cfg.data, TSet.Train)
 	val_loader   = SinusoidDataLoader(cfg.data, TSet.Validation)
 	model = PLSpectralCNN(cfg)
-	trainer = PL.Trainer()
+	trainer = PL.Trainer(max_epochs=10)
 
 	print( f"Training {version}...")
 	trainer.fit(model=model, train_dataloaders=train_loader, val_dataloaders=val_loader, ckpt_path=model.ckpt_path(version) )
