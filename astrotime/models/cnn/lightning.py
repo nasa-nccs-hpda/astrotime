@@ -94,6 +94,7 @@ class PLSpectralCNN(PL.LightningModule):
 	def training_step(self, batch, batch_idx):
 		binput: Tensor =  batch['input'].to( self.device, non_blocking=True )
 		btarget: Tensor = batch['target'].to( self.device, non_blocking=True )
+		self.embedding.set_device( self.device )
 		boutput: Tensor = self.forward( binput )
 		loss = self.loss( boutput, btarget )
 		self.train_loss_avg.update(loss)

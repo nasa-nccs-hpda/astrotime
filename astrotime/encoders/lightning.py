@@ -101,15 +101,6 @@ def embedding_space( cfg: DictConfig ) -> Tuple[np.ndarray,Tensor]:
 	tfspace = torch.FloatTensor( nfspace )
 	return nfspace, tfspace
 
-def spectral_projection( x: Tensor, y: Tensor ) -> Tensor:
-	yn: Tensor = tnorm(y)
-	pw1: Tensor = torch.sin(x)
-	pw2: Tensor = torch.cos(x)
-	p1: Tensor = torch.sum( yn * pw1, dim=-1)
-	p2: Tensor = torch.sum( yn * pw2, dim=-1)
-	mag: Tensor =  torch.sqrt( p1**2 + p2**2 )
-	rv = tnorm(mag)
-	return rv
 
 class SpectralProjection(EmbeddingLayer):
 
@@ -121,8 +112,22 @@ class SpectralProjection(EmbeddingLayer):
 		self.nfreq_oct: int = self.cfg.nfreq_oct
 		self.fold_octaves = self.cfg.fold_octaves
 		self.f0 = self.cfg.base_freq
+		self.device = None
 		self.focused_octaves = self.cfg.get('focused_octaves',self.noctaves)
 		self.expspace: Tensor = torch.pow(2.0, torch.tensor(range(self.focused_octaves * self.nfreq_oct)) / self.nfreq_oct )
+
+	def set_device(self, device):
+		self.device = device
+
+	def spectral_projection(self, x: Tensor, y: Tensor) -> Tensor:
+		yn: Tensor = tnorm(y)
+		pw1: Tensor = torch.sin(x).to( self.device, non_blocking=True )
+		pw2: Tensor = torch.cos(x).to( self.device, non_blocking=True )
+		p1: Tensor = torch.sum(yn * pw1, dim=-1)
+		p2: Tensor = torch.sum(yn * pw2, dim=-1)
+		mag: Tensor = torch.sqrt(p1 ** 2 + p2 ** 2)
+		rv = tnorm(mag)
+		return rv
 
 	@property
 	def output_channels(self):
@@ -163,14 +168,14 @@ class SpectralProjection(EmbeddingLayer):
 			base_f: torch.Tensor = self.f0 * torch.pow(2, octaves)
 			omg = base_f[:,None,None] * self.expspace[None,:,None]
 			# print(f"get_omega(o): omg{list(omg.shape)} expspace{list(self.expspace.shape)}")
-		return omg
+		return omg.to( self.device, non_blocking=True )
 
 	def embed_subbatch(self, ts: torch.Tensor, ys: torch.Tensor,  octaves:torch.Tensor=None, **kwargs ) -> Tensor:
 		t0 = time.time()
 		self.init_log(f"SpectralProjection shapes: ts{list(ts.shape)} ys{list(ys.shape)}")
 		ts: Tensor = ts[:, None, :]  # broadcast-to(self.batch_size,self.nfreq,slen)
 		dz: Tensor =  ts * self.get_omega(octaves)
-		mag: Tensor =  spectral_projection( dz, ys )
+		mag: Tensor =  self.spectral_projection( dz, ys )
 		embedding: Tensor = mag.reshape( [mag.shape[0], self.focused_octaves, self.nfreq_oct] ) if self.fold_octaves else torch.unsqueeze(mag, 1)
 		self.init_log(f" Completed embedding{list(embedding.shape)} in {elapsed(t0):.5f} sec: nfeatures={embedding.shape[1]}, fold octaves={self.fold_octaves}, focused octaves={self.focused_octaves}")
 		self.init_state = False
