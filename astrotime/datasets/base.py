@@ -33,7 +33,7 @@ class AstrotimeDataset(IterableDataset):
 
 	def update_element(self):
 		self.ielement += 1
-		if self.ielement >= self.nelem_in_file():
+		if (self.ielement == 0) or (self.ielement >= self.nelem_in_file()):
 			self.update_file()
 			self.ielement = 0
 
