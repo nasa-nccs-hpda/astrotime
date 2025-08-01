@@ -23,7 +23,9 @@ class CheckpointManager(object):
 		if self.optimizer is not None: checkpoint['optimizer_state_dict'] = self.optimizer.state_dict()
 		cpath = self.checkpoint_path()
 		if os.path.isfile(cpath):
-			shutil.copyfile( cpath, self.checkpoint_path(backup=True) )
+			bkup_cpath = self.checkpoint_path(backup=True)
+			os.remove(bkup_cpath)
+			shutil.move( cpath, bkup_cpath )
 		torch.save( checkpoint, cpath )
 		return cpath
 
