@@ -30,7 +30,12 @@ class SinusoidDataset(AstrotimeDataset):
 
 	@property
 	def dspath(self) -> str:
-		return f"{self.rootdir}/{self.file_paths[self.file_sort[self.ifile]]}"
+		try:
+			return f"{self.rootdir}/{self._files[self.file_sort[self.ifile]]}"
+		except IndexError as err:
+			print(f"IndexError getting dspath: ifile={self.ifile}, nfiles={self.nfiles}")
+			raise err
+
 
 	def nelem_in_file(self) -> int:
 		return self.data['y'].shape[0]

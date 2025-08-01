@@ -20,13 +20,13 @@ class AstrotimeDataset(IterableDataset):
 		self.ielement = -1
 		self.worker_idx: int = 0
 		self.rootdir: str = cfg.dataset_root
-		self.nfiles: int = cfg.nfiles
-		self._files: List[str] = None
+		self._files: List[str] = glob( self.cfg.dataset_files, root_dir=self.rootdir )
+		self.nfiles: int = len(self._files)
 		self.file_sort: List[int] = self.get_file_sort(tset)
 
 	def get_file_sort(self, tset: TSet):
 		if   tset == TSet.Train:      flist = list(range(self.nfiles-1))
-		elif tset == TSet.Validation: flist = [self.nfiles]
+		elif tset == TSet.Validation: flist = [self.nfiles-1]
 		elif tset == TSet.Update:     flist = list(range(self.nfiles))
 		else: raise ValueError(f"Unknown tset: {tset}")
 		return flist[self.worker_idx::self.num_workers]
@@ -43,12 +43,6 @@ class AstrotimeDataset(IterableDataset):
 			self.init_epoch()
 			raise StopIteration
 		self._load_next_file()
-
-	@property
-	def file_paths( self ) -> List[str]:
-		if self._files is None:
-			self._files = glob( self.cfg.dataset_files, root_dir=self.rootdir )
-		return self._files
 
 	def update_worker_info(self):
 		worker_info = get_worker_info()
