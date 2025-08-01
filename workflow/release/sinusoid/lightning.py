@@ -21,3 +21,6 @@ def my_app(cfg: DictConfig) -> None:
 	print( f"Training {version}...")
 	trainer.fit(model=model, train_dataloaders=train_loader, val_dataloaders=val_loader, ckpt_path=model.ckpt_path(version) )
 	print(f"DONE")
+
+if __name__ == "__main__":
+	my_app()
