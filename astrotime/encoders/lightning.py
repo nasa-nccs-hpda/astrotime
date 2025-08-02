@@ -175,7 +175,7 @@ class SpectralProjection(EmbeddingLayer):
 		self.init_log(f"SpectralProjection shapes: ts{list(ts.shape)} ys{list(ys.shape)}")
 		ts: Tensor = ts[:, None, :]  # broadcast-to(self.batch_size,self.nfreq,slen)
 		om: Tensor = self.get_omega(octaves)
-		print( f"embed_subbatch devices: om:{om.device} ts:{ts.device} ys:{ys.device}")
+		print( f"embed_subbatch devices: om:{om.device} ts:{ts.device} ys:{ys.device} self:{self.device}")
 		dz: Tensor =  ts * om
 		mag: Tensor =  self.spectral_projection( dz, ys )
 		embedding: Tensor = mag.reshape( [mag.shape[0], self.focused_octaves, self.nfreq_oct] ) if self.fold_octaves else torch.unsqueeze(mag, 1)
