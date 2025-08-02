@@ -161,8 +161,7 @@ class SpectralProjection(EmbeddingLayer):
 		om: Tensor = self.get_omega(octaves)
 		dz: Tensor =  ts * om
 		mag: Tensor =  self.spectral_projection( dz, ys )
-		embedding: Tensor = mag.reshape( [mag.shape[0], self.focused_octaves, self.nfreq_oct] ) if self.fold_octaves else torch.unsqueeze(mag, 1)
-		return embedding
+		return torch.unsqueeze( mag, 1 )
 
 	@property
 	def nf(self):
