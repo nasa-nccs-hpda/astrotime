@@ -98,7 +98,6 @@ class SpectralProjection(EmbeddingLayer):
 
 	def __init__(self, cfg, embedding_space: Tensor):
 		EmbeddingLayer.__init__( self, 'spectral_projection', cfg, embedding_space )
-		self.init_log(f"SpectralProjection: nfreq={self.nfreq} ")
 		self.subbatch_size: int = cfg.get('subbatch_size',-1)
 		self.noctaves: int = self.cfg.noctaves
 		self.nfreq_oct: int = self.cfg.nfreq_oct
