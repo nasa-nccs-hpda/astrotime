@@ -37,6 +37,7 @@ class PLSpectralCNN(PL.LightningModule):
 		return cls.load_from_checkpoint( ckpt_path ) if os.path.exists(ckpt_path) else None
 
 	def forward(self, x: Tensor) -> Tensor:
+		self.embedding.set_device( self.device )
 		return self.cnn( self.embedding(x) )
 
 	def add_cnn_block( self, model: nn.Sequential, nchannels: int, num_input_features: int) -> int:
@@ -94,7 +95,6 @@ class PLSpectralCNN(PL.LightningModule):
 	def training_step(self, batch, batch_idx):
 		binput: Tensor =  batch['input'].to( self.device, non_blocking=True )
 		btarget: Tensor = batch['target'].to( self.device, non_blocking=True )
-		self.embedding.set_device( self.device )
 		boutput: Tensor = self.forward( binput )
 		loss = self.loss( boutput, btarget )
 		self.train_loss_avg.update(loss)
