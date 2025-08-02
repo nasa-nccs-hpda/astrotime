@@ -101,11 +101,9 @@ class SpectralProjection(EmbeddingLayer):
 		self.subbatch_size: int = cfg.get('subbatch_size',-1)
 		self.noctaves: int = self.cfg.noctaves
 		self.nfreq_oct: int = self.cfg.nfreq_oct
-		self.fold_octaves = self.cfg.fold_octaves
 		self.f0 = self.cfg.base_freq
 		self.device = None
-		self.focused_octaves = self.cfg.get('focused_octaves',self.noctaves)
-		self.expspace: Tensor = torch.pow(2.0, torch.tensor(range(self.focused_octaves * self.nfreq_oct)) / self.nfreq_oct )
+		self.expspace: Tensor = torch.pow(2.0, torch.tensor(range(self.nf)) / self.nfreq_oct )
 
 	def set_device(self, device):
 		self.device = device
@@ -122,7 +120,7 @@ class SpectralProjection(EmbeddingLayer):
 
 	@property
 	def output_channels(self):
-		return self.focused_octaves if self.fold_octaves else 1
+		return  1
 
 	@property
 	def xdata(self) -> Tensor:
@@ -130,7 +128,7 @@ class SpectralProjection(EmbeddingLayer):
 
 	@property
 	def output_series_length(self) -> int:
-		return self.nfreq_oct if self.fold_octaves else self.nf
+		return self.nf
 
 	def sbatch(self, ts: torch.Tensor, ys: torch.Tensor, subbatch: int) -> tuple[Tensor,Tensor,Tensor]:
 		sbr = [ subbatch*self.subbatch_size, (subbatch+1)*self.subbatch_size ]

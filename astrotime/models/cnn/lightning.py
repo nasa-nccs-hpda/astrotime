@@ -66,24 +66,13 @@ class PLSpectralCNN(PL.LightningModule):
 		mtype, cfg, dcfg = self.cfg.model.mtype, self.cfg.model, self.cfg.data
 		model: nn.Sequential = nn.Sequential()
 		num_input_channels = self.embedding.output_channels
-		if mtype.startswith("cnn"):
-			cnn_channels = cfg.cnn_channels
-			for iblock in range(cfg.num_blocks):
-				cnn_channels = self.add_cnn_block( model, cnn_channels, num_input_channels)
-				num_input_channels = -1
-			reduced_series_len = self.embedding.output_series_length // int(math.pow(cfg.pool_size, cfg.num_blocks))
-			self.add_dense_block( model, cnn_channels * reduced_series_len, cfg.dense_channels, cfg.out_channels)
-		elif mtype.startswith("dense"):
-			in_channels = self.embedding.output_series_length
-			for iL, lsize in enumerate(cfg.layer_sizes):
-				model.append(nn.Linear(in_channels, lsize))
-				model.append(nn.ELU())
-				in_channels = lsize
-			model.append(nn.Linear(in_channels, 1))
-
-		if 'regression' in mtype:
-			if 'octave' in mtype: model.append(nn.Sigmoid())
-			else:                 model.append(ExpU(dcfg))
+		cnn_channels = cfg.cnn_channels
+		for iblock in range(cfg.num_blocks):
+			cnn_channels = self.add_cnn_block( model, cnn_channels, num_input_channels)
+			num_input_channels = -1
+		reduced_series_len = self.embedding.output_series_length // int(math.pow(cfg.pool_size, cfg.num_blocks))
+		self.add_dense_block( model, cnn_channels * reduced_series_len, cfg.dense_channels, cfg.out_channels)
+		model.append(ExpU(dcfg))
 		return model
 
 	def configure_optimizers(self) -> torch.optim.Optimizer:
