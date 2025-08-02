@@ -3,7 +3,6 @@ import logging, torch, numpy as np, math, time
 from omegaconf import DictConfig
 from torch import Tensor
 from astrotime.util.math import l2space
-from astrotime.util.logging import elapsed
 
 class Transform(torch.nn.Module):
 
@@ -12,7 +11,6 @@ class Transform(torch.nn.Module):
 		self.name = name
 		self.requires_grad_(False)
 		self.cfg: DictConfig = cfg
-		self.log = logging.getLogger()
 
 	def process_event(self, **kwargs ):
 		pass
@@ -35,7 +33,6 @@ class EmbeddingLayer(Transform):
 		self.nfreq: int = embedding_space.shape[0]
 		self.batch_size: int = cfg.batch_size
 		self._embedding_space: Tensor = embedding_space
-		self.init_state: bool = True
 		self._result: torch.Tensor = None
 		self._octaves: torch.Tensor = None
 
@@ -49,15 +46,10 @@ class EmbeddingLayer(Transform):
 	def get_octave_data(self) -> torch.Tensor:
 		return self._octaves
 
-	def init_log(self, msg: str):
-		if self.init_state: self.log.info(msg)
-
 	def forward(self, batch: torch.Tensor ) -> torch.Tensor:
-		self.log.debug(f"WaveletEmbeddingLayer shapes:")
 		xs: torch.Tensor = batch[:, 0, :]
 		ys: torch.Tensor = batch[:, 1:, :]
 		self._result: torch.Tensor = self.embed(xs,ys)
-		self.init_state = False
 		return self._result
 
 	def get_result(self) -> np.ndarray:
@@ -155,7 +147,6 @@ class SpectralProjection(EmbeddingLayer):
 			nsubbatches = math.ceil(ys.shape[0]/self.subbatch_size)
 			subbatches = [ self.embed_subbatch( *self.sbatch(ts,ys,i), **kwargs ) for i in range(nsubbatches) ]
 			result = torch.concat( subbatches, dim=0 )
-			# print(f" embedding{list(result.shape)}: ({result.min():.3f} -> {result.max():.3f})")
 		embedding =  torch.unsqueeze(result, 1) if result.ndim == 2 else result
 		return embedding
 
@@ -163,24 +154,17 @@ class SpectralProjection(EmbeddingLayer):
 		if octaves is None:
 			omega = self._embedding_space * 2.0 * math.pi
 			omg = omega[None, :, None] # broadcast-to(self.batch_size,self.nfreq,slen)
-			# print( f"get_omega: omega{list(omg.shape)} embedding_space{list(self._embedding_space.shape)}")
 		else:
 			base_f: torch.Tensor = self.f0 * torch.pow(2, octaves)
 			omg = base_f[:,None,None] * self.expspace[None,:,None]
-			# print(f"get_omega(o): omg{list(omg.shape)} expspace{list(self.expspace.shape)}")
 		return omg.to( self.device, non_blocking=True )
 
 	def embed_subbatch(self, ts: torch.Tensor, ys: torch.Tensor,  octaves:torch.Tensor=None, **kwargs ) -> Tensor:
-		t0 = time.time()
-		self.init_log(f"SpectralProjection shapes: ts{list(ts.shape)} ys{list(ys.shape)}")
 		ts: Tensor = ts[:, None, :]  # broadcast-to(self.batch_size,self.nfreq,slen)
 		om: Tensor = self.get_omega(octaves)
-		print( f"embed_subbatch devices: om:{om.device} ts:{ts.device} ys:{ys.device} self:{self.device}")
 		dz: Tensor =  ts * om
 		mag: Tensor =  self.spectral_projection( dz, ys )
 		embedding: Tensor = mag.reshape( [mag.shape[0], self.focused_octaves, self.nfreq_oct] ) if self.fold_octaves else torch.unsqueeze(mag, 1)
-		self.init_log(f" Completed embedding{list(embedding.shape)} in {elapsed(t0):.5f} sec: nfeatures={embedding.shape[1]}, fold octaves={self.fold_octaves}, focused octaves={self.focused_octaves}")
-		self.init_state = False
 		return embedding
 
 	@property
@@ -192,7 +176,6 @@ class SpectralProjection(EmbeddingLayer):
 		return 1
 
 	def magnitude(self, embedding: Tensor) -> np.ndarray:
-		self.init_log(f" -> Embedding magnitude{embedding.shape}")
 		return embedding.cpu().numpy()
 
 
