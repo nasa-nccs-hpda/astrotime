@@ -39,10 +39,8 @@ class PLSpectralCNN(PL.LightningModule):
 
 	def forward(self, x: Tensor) -> Tensor:
 		from astrotime.util.tensor_ops import print_status
-		if self.debug: print_status("input", x)
 		self.embedding.set_device( self.device )
 		embedding = self.embedding(x)
-		if self.debug: print_status("embedding", embedding)
 		result = self.cnn( embedding )
 		if self.debug: print_status("result", result)
 		return result

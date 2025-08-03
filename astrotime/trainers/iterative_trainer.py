@@ -210,7 +210,6 @@ class IterativeTrainer(object):
                         if binput.shape[0] > 0:
                             self.global_time = time.time()
                             self.embedding.set_octave_data(octave)
-                            if self.debug: print_status("input", binput)
                             result: Tensor = self.model( binput )
                             if self.debug: print_status("result", result)
                             if result.squeeze().ndim > 0:

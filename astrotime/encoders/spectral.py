@@ -40,7 +40,7 @@ class SpectralProjection(EmbeddingLayer):
 		self.f0 = self.cfg.base_freq
 		self.focused_octaves = self.cfg.get('focused_octaves',self.noctaves)
 		self.expspace: Tensor = torch.pow(2.0, torch.tensor(range(self.focused_octaves * self.nfreq_oct)).to(self.device) / self.nfreq_oct )
-		self.debug = True
+		self.debug = False
 
 
 	@property
