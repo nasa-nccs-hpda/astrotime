@@ -16,8 +16,7 @@ class ExpU(nn.Module):
 
 	def forward(self, x: torch.Tensor) -> torch.Tensor:
 		result = self.f0 * (torch.pow(2, x) - 1)
-		print_status("ExpU", x )
-		print_status("result", result)
+		# print_status("ExpU", x )
 		return result
 
 class PLSpectralCNN(PL.LightningModule):
@@ -33,7 +32,7 @@ class PLSpectralCNN(PL.LightningModule):
 		self.train_loss_avg = torchmetrics.MeanMetric()
 		self.val_loss_avg   = torchmetrics.MeanMetric()
 		self.save_hyperparameters('cfg')
-		self.debug = True
+		self.debug = False
 
 	def ckpt_path(self, version: str ) -> Optional[str]:
 		cpath = self.checkpoint_path( version, self.cfg.train)
