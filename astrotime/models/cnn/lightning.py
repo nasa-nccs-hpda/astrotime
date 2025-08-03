@@ -20,6 +20,7 @@ class PLSpectralCNN(PL.LightningModule):
 		self.train_loss_avg = torchmetrics.MeanMetric()
 		self.val_loss_avg   = torchmetrics.MeanMetric()
 		self.save_hyperparameters('cfg')
+		self.debug = True
 
 	def ckpt_path(self, version: str ) -> Optional[str]:
 		cpath = self.checkpoint_path( version, self.cfg.train)
@@ -37,8 +38,14 @@ class PLSpectralCNN(PL.LightningModule):
 		return cls.load_from_checkpoint( ckpt_path ) if os.path.exists(ckpt_path) else None
 
 	def forward(self, x: Tensor) -> Tensor:
+		from astrotime.util.tensor_ops import print_status
+		if self.debug: print_status("input", x)
 		self.embedding.set_device( self.device )
-		return self.cnn( self.embedding(x) )
+		embedding = self.embedding(x)
+		if self.debug: print_status("embedding", embedding)
+		result = self.cnn( embedding )
+		if self.debug: print_status("result", result)
+		return result
 
 	def add_cnn_block( self, model: nn.Sequential, nchannels: int, num_input_features: int) -> int:
 		mcfg = self.cfg.model

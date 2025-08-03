@@ -4,6 +4,7 @@ from omegaconf import DictConfig
 from torch import Tensor
 from astrotime.util.math import l2space
 
+
 class Transform(torch.nn.Module):
 
 	def __init__(self, name: str, cfg: DictConfig):

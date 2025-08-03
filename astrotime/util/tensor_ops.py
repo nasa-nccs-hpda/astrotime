@@ -6,6 +6,9 @@ from torch.fft import irfft, rfft
 _ROOT_TWO_INVERSE = 1.0 / math.sqrt(2.0)
 CHOLESKY_RELATIVE_JITTER = 4.0  # in units of finfo.eps
 
+def print_status( label: str, v: torch.Tensor ):
+    print(f"  ~~~ {label}{list(v.shape)}: ({v.mean():.3f}, {v.std():.3f}) ({v.min():.3f} -> {v.max():.3f})")
+
 def check_nan(label: str, x: torch.Tensor):
     nnan = torch.isnan(x).sum()
     if nnan > 0:

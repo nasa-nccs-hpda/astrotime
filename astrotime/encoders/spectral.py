@@ -40,6 +40,8 @@ class SpectralProjection(EmbeddingLayer):
 		self.f0 = self.cfg.base_freq
 		self.focused_octaves = self.cfg.get('focused_octaves',self.noctaves)
 		self.expspace: Tensor = torch.pow(2.0, torch.tensor(range(self.focused_octaves * self.nfreq_oct)).to(self.device) / self.nfreq_oct )
+		self.debug = True
+
 
 	@property
 	def output_channels(self):
@@ -59,6 +61,7 @@ class SpectralProjection(EmbeddingLayer):
 		return ts[sbr[0]:sbr[1]], ys[sbr[0]:sbr[1]], octaves
 
 	def embed(self, ts: torch.Tensor, ys: torch.Tensor, **kwargs) -> Tensor:
+		from astrotime.util.tensor_ops import print_status
 		if ys.ndim == 1:
 			result = self.embed_subbatch( 0, ts[None,:], ys[None,:], self._octaves )
 		elif self.subbatch_size <= 0:
@@ -69,6 +72,7 @@ class SpectralProjection(EmbeddingLayer):
 			result = torch.concat( subbatches, dim=0 )
 			# print(f" embedding{list(result.shape)}: ({result.min():.3f} -> {result.max():.3f})")
 		embedding =  torch.unsqueeze(result, 1) if result.ndim == 2 else result
+		if self.debug: print_status( "embedding", embedding)
 		return embedding
 
 	def get_omega(self, octaves:torch.Tensor=None ):

@@ -49,6 +49,7 @@ class IterativeTrainer(object):
         self.train_state = None
         self.global_time = None
         self.exec_stats = []
+        self.debug = True
         if model is not None:
             for module in model.modules(): self.add_callbacks(module)
 
@@ -188,6 +189,7 @@ class IterativeTrainer(object):
         return self.comp_loss( f, targ )
 
     def train(self,version):
+        from astrotime.util.tensor_ops import print_status
         print(f"SignalTrainer[{self.mode}]: , {self.nepochs} epochs, device={self.device}")
         self.optimizer = self.get_optimizer()
         self.initialize_checkpointing(version)
@@ -208,7 +210,9 @@ class IterativeTrainer(object):
                         if binput.shape[0] > 0:
                             self.global_time = time.time()
                             self.embedding.set_octave_data(octave)
+                            if self.debug: print_status("input", binput)
                             result: Tensor = self.model( binput )
+                            if self.debug: print_status("result", result)
                             if result.squeeze().ndim > 0:
                                 # print(f"result{list(result.shape)} range: [{result.min().cpu().item()} -> {result.max().cpu().item()}]")
                                 loss: Tensor =  self.loss( result.squeeze(), target )
