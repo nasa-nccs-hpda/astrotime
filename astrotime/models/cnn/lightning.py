@@ -6,6 +6,7 @@ from astrotime.util.tensor_ops import print_status
 from astrotime.trainers.loss import ExpLoss, ExpU
 from typing import List, Optional, Dict, Type, Union, Tuple
 from astrotime.encoders.lightning import SpectralProjection, embedding_space
+from astrotime.models.cnn.cnn_baseline import get_model_from_cfg
 import pytorch_lightning as PL
 
 class PLSpectralCNN(PL.LightningModule):
@@ -16,7 +17,7 @@ class PLSpectralCNN(PL.LightningModule):
 		self.batch_size: int = self.cfg.data.batch_size
 		self.embedding_space = embedding_space(cfg.transform)[1]
 		self.embedding = SpectralProjection( cfg.transform, self.embedding_space )
-		self.cnn: nn.Module = self.get_model_from_cfg()
+		self.cnn: nn.Module = get_model_from_cfg(cfg,self.embedding)
 		self.loss = ExpLoss(cfg.data)
 		self.train_loss_avg = torchmetrics.MeanMetric()
 		self.val_loss_avg   = torchmetrics.MeanMetric()
@@ -38,10 +39,15 @@ class PLSpectralCNN(PL.LightningModule):
 		ckpt_path = cls.checkpoint_path( version, cfg.train )
 		return cls.load_from_checkpoint( ckpt_path ) if os.path.exists(ckpt_path) else None
 
-	def forward(self, x: Tensor) -> Tensor:
+	def forward1(self, x: Tensor) -> Tensor:
 		self.embedding.set_device( self.device )
 		embedding = self.embedding(x)
 		result = self.cnn( embedding )
+		return result
+
+	def forward(self, x: Tensor) -> Tensor:
+		self.embedding.set_device( self.device )
+		result = self.cnn( x )
 		return result
 
 	def add_cnn_block( self, model: nn.Sequential, nchannels: int, num_input_features: int) -> int:
@@ -66,7 +72,7 @@ class PLSpectralCNN(PL.LightningModule):
 		model.append(nn.ELU())
 		model.append(nn.Linear(hidden_channels, out_channels))
 
-	def get_model_from_cfg( self ) -> nn.Module:
+	def get_model_from_cfg1( self ) -> nn.Module:
 		mtype, cfg, dcfg = self.cfg.model.mtype, self.cfg.model, self.cfg.data
 		model: nn.Sequential = nn.Sequential()
 		num_input_channels = self.embedding.output_channels
