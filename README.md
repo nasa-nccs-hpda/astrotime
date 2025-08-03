@@ -458,8 +458,8 @@ to the primary version of the workflow.
 The workflows are configured using [hydra](https://hydra.cc/docs/intro/).
 * All hydra yaml configuration files are found under **.config**.
 * The workflow configurations can be modified at runtime as [supported by hydra](https://hydra.cc/docs/tutorials/basic/your_first_app/simple_cli/).
-* For example, the following command runs the synthetic dataset training workflow on gpu 3 with random initialization (i.e. ignoring & overwriting any existing checkpoints):
-    >   python workflow/synthetic/train.py platform.gpu=3 train.refresh_state=True
+* For example, the following command runs the synthetic dataset training workflow on gpu 1 with random initialization (i.e. ignoring & overwriting any existing checkpoints):
+    >   python workflow/synthetic/train.py platform.gpu=1 train.refresh_state=True
 
 ### Configuration Parameters
 

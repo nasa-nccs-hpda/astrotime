@@ -49,7 +49,7 @@ class IterativeTrainer(object):
         self.train_state = None
         self.global_time = None
         self.exec_stats = []
-        self.debug = True
+        self.debug = False
         if model is not None:
             for module in model.modules(): self.add_callbacks(module)
 
