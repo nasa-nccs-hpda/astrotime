@@ -72,7 +72,6 @@ class SpectralProjection(EmbeddingLayer):
 			result = torch.concat( subbatches, dim=0 )
 			# print(f" embedding{list(result.shape)}: ({result.min():.3f} -> {result.max():.3f})")
 		embedding =  torch.unsqueeze(result, 1) if result.ndim == 2 else result
-		if self.debug: print_status( "embedding", embedding)
 		return embedding
 
 	def get_omega(self, octaves:torch.Tensor=None ):

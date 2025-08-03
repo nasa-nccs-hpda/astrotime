@@ -16,7 +16,6 @@ class ExpU(nn.Module):
 
 	def forward(self, x: torch.Tensor) -> torch.Tensor:
 		result = self.f0 * (torch.pow(2, x) - 1)
-		# print_status("ExpU", x )
 		return result
 
 class PLSpectralCNN(PL.LightningModule):
@@ -100,9 +99,6 @@ class PLSpectralCNN(PL.LightningModule):
 		binput: Tensor =  batch['input'].to( self.device )
 		btarget: Tensor = batch['target'].to( self.device )
 		boutput: Tensor = self.forward( binput )
-		if self.debug:
-			print_status("result", boutput )
-			print_status("target", btarget )
 		loss = self.loss( boutput, btarget )
 		self.train_loss_avg.update(loss)
 		self.log('train_loss', self.train_loss_avg.compute(), prog_bar=True, sync_dist=True, batch_size=self.batch_size)
