@@ -211,8 +211,9 @@ class IterativeTrainer(object):
                             self.global_time = time.time()
                             self.embedding.set_octave_data(octave)
                             result: Tensor = self.model( binput )
-                            if self.debug: print_status("result", result)
                             if result.squeeze().ndim > 0:
+                                if self.debug: print_status("result", result)
+                                if self.debug: print_status("target", target)
                                 # print(f"result{list(result.shape)} range: [{result.min().cpu().item()} -> {result.max().cpu().item()}]")
                                 loss: Tensor =  self.loss( result.squeeze(), target )
                                 self.conditionally_update_weights(loss)
