@@ -3,10 +3,22 @@ import torchmetrics
 from omegaconf import DictConfig
 from torch import nn, Tensor
 from astrotime.util.tensor_ops import print_status
-from astrotime.trainers.loss import ExpLoss, ExpU
+from astrotime.trainers.loss import ExpLoss
 from typing import List, Optional, Dict, Type, Union, Tuple
 from astrotime.encoders.lightning import SpectralProjection, embedding_space
 import pytorch_lightning as PL
+
+class ExpU(nn.Module):
+
+	def __init__(self, cfg: DictConfig ) -> None:
+		super().__init__()
+		self.f0: float = cfg.base_freq
+
+	def forward(self, x: torch.Tensor) -> torch.Tensor:
+		result = self.f0 * (torch.pow(2, x) - 1)
+		print_status("ExpU", x )
+		print_status("result", result)
+		return result
 
 class PLSpectralCNN(PL.LightningModule):
 
@@ -86,8 +98,8 @@ class PLSpectralCNN(PL.LightningModule):
 		else: raise RuntimeError(f"Unknown optimizer: {tcfg.optim}")
 
 	def training_step(self, batch, batch_idx):
-		binput: Tensor =  batch['input'].to( self.device, non_blocking=True )
-		btarget: Tensor = batch['target'].to( self.device, non_blocking=True )
+		binput: Tensor =  batch['input'].to( self.device )
+		btarget: Tensor = batch['target'].to( self.device )
 		boutput: Tensor = self.forward( binput )
 		if self.debug:
 			print_status("result", boutput )
@@ -98,8 +110,8 @@ class PLSpectralCNN(PL.LightningModule):
 		return loss
 
 	def validation_step(self, batch, batch_idx):
-		binput: Tensor =  batch['input'].to( self.device, non_blocking=True )
-		btarget: Tensor = batch['target'].to( self.device, non_blocking=True )
+		binput: Tensor =  batch['input'].to( self.device )
+		btarget: Tensor = batch['target'].to( self.device )
 		boutput: Tensor = self.forward( binput )
 		loss = self.loss( boutput, btarget )
 		self.val_loss_avg.update(loss)
