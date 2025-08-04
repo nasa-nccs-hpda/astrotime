@@ -17,8 +17,8 @@ version = "sinusoid_period"
 def my_app(cfg: DictConfig) -> None:
     astrotime_initialize( cfg, version )
 
-    train_loader = SinusoidDataLoader( cfg, TSet.Train )
-    val_loader = SinusoidDataLoader( cfg, TSet.Validation )
+    train_loader = SinusoidDataLoader( cfg.data, TSet.Train )
+    val_loader = SinusoidDataLoader( cfg.data, TSet.Validation )
 
     trainer = TimeFMTrainer( cfg, train_loader, val_loader )
     trainer.train( version)
