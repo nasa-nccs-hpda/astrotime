@@ -72,6 +72,7 @@ class TimeFMTrainer(object):
 			self.model.train()
 			train_losses = []
 			for batch in self.train_loader:
+				print( list(batch.keys()) )
 				x: Tensor = batch['z']
 				y: Tensor = batch['target']
 				with torch.no_grad():
