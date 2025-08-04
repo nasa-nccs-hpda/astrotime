@@ -5,7 +5,7 @@ from torch.optim.optimizer import Optimizer
 from torch.utils.data import DataLoader
 import hydra, torch
 from omegaconf import DictConfig
-from torch import nn
+from torch import nn, Tensor
 from typing import List, Optional, Dict, Type, Union, Tuple
 RDict = Dict[str,Union[List[str],int,np.ndarray]]
 TRDict = Dict[str,Union[List[str],int,torch.Tensor]]
@@ -46,6 +46,19 @@ class TimeFMTrainer(object):
 		)
 		return TimesFm( hparams=hparams, checkpoint=checkpoint )
 
+	# def encode_batch(self, batch: RDict) -> TRDict:
+	# 	t, y = batch.pop('t'), batch.pop('y')
+	# 	p: Tensor = torch.from_numpy(batch.pop('period')).cuda()
+	# 	o = batch.pop('octave', None)
+	# 	if o is not None: o = torch.from_numpy(o).cuda()
+	# 	z: Tensor = self.to_tensor(t, y)
+	# 	return dict(z=z, target=1 / p, octave=o, **batch)
+	#
+	# def to_tensor(self, x: np.ndarray, y: np.ndarray) -> Tensor:
+	# 	Y: Tensor = torch.FloatTensor(y).cuda()
+	# 	X: Tensor = torch.FloatTensor(x).cuda()
+	# 	return torch.stack((X, Y), dim=1)
+
 	def get_embedding( self, series_batch):
 		# Convert list of numpy arrays into batched tensor
 		padded = torch.nn.utils.rnn.pad_sequence(series_batch, batch_first=True)
@@ -58,9 +71,9 @@ class TimeFMTrainer(object):
 		for epoch in range(10):
 			self.model.train()
 			train_losses = []
-			for x, y in self.train_loader:
-				x = [s.cuda() for s in x]
-				y = y.cuda()
+			for batch in self.train_loader:
+				x: Tensor = batch['z']
+				y: Tensor = batch['target']
 				with torch.no_grad():
 					emb = self.get_embedding(x)
 				pred = self.model(emb)
@@ -74,9 +87,9 @@ class TimeFMTrainer(object):
 			self.model.eval()
 			val_preds, val_targets = [], []
 			with torch.no_grad():
-				for x, y in self.val_loader:
-					x = [s.cuda() for s in x]
-					y = y.cuda()
+				for batch in self.val_loader:
+					x: Tensor = batch['z']
+					y: Tensor = batch['target']
 					emb = self.get_embedding(x)
 					pred = self.model(emb)
 					val_preds.extend(pred.cpu().numpy())
