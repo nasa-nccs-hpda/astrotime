@@ -411,7 +411,7 @@ Check log for details:
 <platform.project_root>/astrotime/logs/astrotime.sinusoid_period.eval.log
 ```
 
-### Sending this Jobs through Slurm
+### Sending these Jobs through Slurm
 
 These jobs can be launched from a slurm session as well. From gpulogin1:
 
@@ -421,16 +421,19 @@ sbatch --mem-per-cpu=10240 -G1 -c10 -t01:00:00 -J astrotime --wrap="time $your_s
 
 ## Conda environment
 
-* On Adapt load modules: gcc/12.1.0, nvidia/12.1
 * If mamba is not available, install [miniforge](https://github.com/conda-forge/miniforge) (or load mamba module)
 * Execute the following to set up a conda environment for astrotime:
 
 ### Torch Environment:
 
-    >   * mamba create -n astrotime ninja python=3.10
+    >   * mamba create -n astrotime python=3.11 pytorch pytorch-cuda=12.1 -c pytorch -c conda-forge -c nvidia --override-channels
     >   * mamba activate astrotime
-    >   * pip install torch jupyterlab==4.0.13 ipywidgets==7.8.4 cuda-python jupyterlab_widgets torchmetrics pytorch-lightning ipykernel==6.29 ipympl ipython==8.26 xarray netCDF4 pygam wotan statsmodels transitleastsquares scikit-learn hydra-core rich timesfm[torch]
-    >   * pip install diffusers lightkurve --upgrade
+    >   * pip install jupyterlab ipywidgets jupyterlab_widgets torchmetrics pytorch-lightning ipykernel ipympl ipython xarray netCDF4 scikit-learn hydra-core rich timesfm[torch] 
+
+    >   * pip install jupyterlab==4.0.13 ipywidgets==7.8.4 jupyterlab_widgets torchmetrics pytorch-lightning ipykernel==6.29 ipympl ipython==8.26 xarray netCDF4 scikit-learn hydra-core rich timesfm[torch] 
+
+  #  >   * pip install torch jupyterlab==4.0.13 ipywidgets==7.8.4 cuda-python jupyterlab_widgets torchmetrics pytorch-lightning ipykernel==6.29 ipympl ipython==8.26 xarray netCDF4 pygam wotan statsmodels transitleastsquares scikit-learn hydra-core rich timesfm[torch]
+  #  >   * pip install diffusers lightkurve --upgrade
 
 ## Dataset Preparation
 
