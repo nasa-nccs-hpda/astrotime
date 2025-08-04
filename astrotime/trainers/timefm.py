@@ -27,20 +27,24 @@ class TimeFMTrainer(object):
 
 	def __init__( self, cfg: DictConfig, train_loader: DataLoader, val_loader: DataLoader ):
 		self.cfg = cfg
-		self.tfm: TimesFm = self.get_tfm( ckpt=None )
+		self.tfm: TimesFm = self.get_tfm()
 		self.train_loader: DataLoader = train_loader
 		self.val_loader: DataLoader = val_loader
 		self.model: nn.Module = PeriodRegressor(embed_dim=1280).cuda()
 		self.optimizer: Optimizer = torch.optim.Adam(self.model.parameters(), lr=1e-4)
 		self.loss_fn: nn.Module = nn.L1Loss()  # MAE
 
-	def get_tfm(self, ckpt: Optional[str] = "google/timesfm-2.0-500m-pytorch" ) -> TimesFm:
-		hparams = TimesFmHparams(backend="gpu", per_core_batch_size=16)
-		if ckpt is not None:
-			checkpoint = TimesFmCheckpoint(huggingface_repo_id=ckpt)
-			return TimesFm(hparams=hparams, checkpoint=checkpoint)
-		else:
-			return TimesFm(hparams=hparams)
+	def get_tfm(self ) -> TimesFm:
+		checkpoint = TimesFmCheckpoint(huggingface_repo_id="google/timesfm-2.0-500m-pytorch")
+		hparams = TimesFmHparams(
+			backend="gpu",
+			per_core_batch_size=32,
+			horizon_len=128,
+			num_layers=50,
+			use_positional_embedding=False,
+			context_len=2048,
+		)
+		return TimesFm( hparams=hparams, checkpoint=checkpoint )
 
 	def get_embedding( self, series_batch):
 		# Convert list of numpy arrays into batched tensor
