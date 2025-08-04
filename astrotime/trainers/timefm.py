@@ -46,19 +46,6 @@ class TimeFMTrainer(object):
 		)
 		return TimesFm( hparams=hparams, checkpoint=checkpoint )
 
-	# def encode_batch(self, batch: RDict) -> TRDict:
-	# 	t, y = batch.pop('t'), batch.pop('y')
-	# 	p: Tensor = torch.from_numpy(batch.pop('period')).cuda()
-	# 	o = batch.pop('octave', None)
-	# 	if o is not None: o = torch.from_numpy(o).cuda()
-	# 	z: Tensor = self.to_tensor(t, y)
-	# 	return dict(z=z, target=1 / p, octave=o, **batch)
-	#
-	# def to_tensor(self, x: np.ndarray, y: np.ndarray) -> Tensor:
-	# 	Y: Tensor = torch.FloatTensor(y).cuda()
-	# 	X: Tensor = torch.FloatTensor(x).cuda()
-	# 	return torch.stack((X, Y), dim=1)
-
 	def get_embedding( self, series_batch):
 		# Convert list of numpy arrays into batched tensor
 		padded = torch.nn.utils.rnn.pad_sequence(series_batch, batch_first=True)
@@ -72,8 +59,7 @@ class TimeFMTrainer(object):
 			self.model.train()
 			train_losses = []
 			for batch in self.train_loader:
-				print( list(batch.keys()) )
-				x: Tensor = batch['z']
+				x: Tensor = batch['input']
 				y: Tensor = batch['target']
 				with torch.no_grad():
 					emb = self.get_embedding(x)
@@ -89,7 +75,7 @@ class TimeFMTrainer(object):
 			val_preds, val_targets = [], []
 			with torch.no_grad():
 				for batch in self.val_loader:
-					x: Tensor = batch['z']
+					x: Tensor = batch['input']
 					y: Tensor = batch['target']
 					emb = self.get_embedding(x)
 					pred = self.model(emb)
