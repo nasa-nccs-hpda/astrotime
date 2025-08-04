@@ -1,6 +1,8 @@
 import numpy as np
 from sklearn.metrics import mean_absolute_error
-import timesfm
+from timesfm import TimesFmHparams, TimesFmCheckpoint, TimesFm
+from torch.optim.optimizer import Optimizer
+from torch.utils.data import DataLoader
 import hydra, torch
 from omegaconf import DictConfig
 from torch import nn
@@ -23,16 +25,22 @@ class PeriodRegressor(nn.Module):
 
 class TimeFMTrainer(object):
 
-	def __init__( self, cfg: DictConfig, train_loader, val_loader ):
+	def __init__( self, cfg: DictConfig, train_loader: DataLoader, val_loader: DataLoader ):
 		self.cfg = cfg
-		self.checkpoint = timesfm.TimesFmCheckpoint(huggingface_repo_id="google/timesfm-2.0-500m-pytorch")
-		self.hparams = timesfm.TimesFmHparams(backend="gpu", per_core_batch_size=16)
-		self.tfm = timesfm.TimesFm(hparams=self.hparams, checkpoint=self.checkpoint)
-		self.train_loader = train_loader
-		self.val_loader = val_loader
-		self.model = PeriodRegressor(embed_dim=1280).cuda()
-		self.optimizer = torch.optim.Adam(self.model.parameters(), lr=1e-4)
-		self.loss_fn = nn.L1Loss()  # MAE
+		self.tfm: TimesFm = self.get_tfm( ckpt=None )
+		self.train_loader: DataLoader = train_loader
+		self.val_loader: DataLoader = val_loader
+		self.model: nn.Module = PeriodRegressor(embed_dim=1280).cuda()
+		self.optimizer: Optimizer = torch.optim.Adam(self.model.parameters(), lr=1e-4)
+		self.loss_fn: nn.Module = nn.L1Loss()  # MAE
+
+	def get_tfm(self, ckpt: Optional[str] = "google/timesfm-2.0-500m-pytorch" ) -> TimesFm:
+		hparams = TimesFmHparams(backend="gpu", per_core_batch_size=16)
+		if ckpt is not None:
+			checkpoint = TimesFmCheckpoint(huggingface_repo_id=ckpt)
+			return TimesFm(hparams=hparams, checkpoint=checkpoint)
+		else:
+			return TimesFm(hparams=hparams)
 
 	def get_embedding( self, series_batch):
 		# Convert list of numpy arrays into batched tensor
