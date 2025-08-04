@@ -13,7 +13,7 @@ TRDict = Dict[str,Union[List[str],int,torch.Tensor]]
 
 version = "sinusoid_period"
 
-@hydra.main(version_base=None, config_path="../../../config", config_name=version)
+@hydra.main(version_base=None, config_path="../config", config_name=version)
 def my_app(cfg: DictConfig) -> None:
     astrotime_initialize( cfg, version )
 
