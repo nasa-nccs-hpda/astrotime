@@ -72,9 +72,16 @@ jobs:
               # docker rmi $(docker image ls -aq)
               docker image prune -a
               df -h
-      - name: Extract release version
-        id: vars
-        run: echo "VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_ENV
+      - name: Set build versions
+        id: set_versions
+        env:
+          DEP_REPO: nasa-nccs-hpda/astrotime
+        run: |
+          DEP_TAG=$(curl -s https://api.github.com/repos/${DEP_REPO}/releases/latest | jq -r .tag_name)
+          echo "ASTROTIME_TAG=$DEP_TAG" >> $GITHUB_ENV
+          echo "VERSION_TAG=${GITHUB_REF#refs/tags/}" >> $GITHUB_ENV
+          echo "Using ${DEP_REPO} release tag: $DEP_TAG"
+          echo "Workflow release version: ${GITHUB_REF#refs/tags/}"
       -
         name: Build and push
         uses: docker/build-push-action@v6
@@ -84,6 +91,8 @@ jobs:
           file: ./requirements/Dockerfile.V100
           push: true
           tags: nasanccs/astrotime:${{ github.ref_name }}-v100-amd64
+          build-args: |
+            ASTROTIME_TAG=${{ env.ASTROTIME_TAG }}
 
   docker-arm:
     runs-on: ubuntu-latest
@@ -151,9 +160,16 @@ jobs:
               # docker rmi $(docker image ls -aq)
               docker image prune -a
               df -h
-      - name: Extract release version
-        id: vars
-        run: echo "VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_ENV
+      - name: Set build versions
+        id: set_versions
+        env:
+          DEP_REPO: nasa-nccs-hpda/astrotime
+        run: |
+          DEP_TAG=$(curl -s https://api.github.com/repos/${DEP_REPO}/releases/latest | jq -r .tag_name)
+          echo "ASTROTIME_TAG=$DEP_TAG" >> $GITHUB_ENV
+          echo "VERSION_TAG=${GITHUB_REF#refs/tags/}" >> $GITHUB_ENV
+          echo "Using ${DEP_REPO} release tag: $DEP_TAG"
+          echo "Workflow release version: ${GITHUB_REF#refs/tags/}"
       -
         name: Build and push
         uses: docker/build-push-action@v6
@@ -163,6 +179,8 @@ jobs:
           file: ./requirements/Dockerfile.V100
           push: true
           tags: nasanccs/astrotime:${{ github.ref_name }}-v100-arm64
+          build-args: |
+            ASTROTIME_TAG=${{ env.ASTROTIME_TAG }}
 
   manifest:
     needs: [docker-amd, docker-arm]

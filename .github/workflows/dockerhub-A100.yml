@@ -9,74 +9,52 @@ jobs:
   docker-amd:
     runs-on: ubuntu-latest
     steps:
-      -
-        name: Checkout
+      - name: Checkout
         uses: actions/checkout@v3
-      -
-        name: Set up QEMU
+
+      - name: Set up QEMU
         uses: docker/setup-qemu-action@v2
-      -
-        name: Set up Docker Buildx
+
+      - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2
-      -
-        name: Login to Docker Hub
+
+      - name: Login to Docker Hub
         uses: docker/login-action@v2
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      - 
-        name: Lower github-runner storage
-        run: |
-          # Remove software and language runtimes we're not using
-          sudo rm -rf \
-            "$AGENT_TOOLSDIRECTORY" \
-            /opt/google/chrome \
-            /opt/microsoft/msedge \
-            /opt/microsoft/powershell \
-            /opt/pipx \
-            /usr/lib/mono \
-            /usr/local/julia* \
-            /usr/local/lib/android \
-            /usr/local/lib/node_modules \
-            /usr/local/share/chromium \
-            /usr/local/share/powershell \
-            /usr/share/dotnet \
-            /usr/share/swift \
-            /opt/ghc \
-            /usr/local/share/boost
-          df -h /
-      - 
-        name: Clean up tools
+      - name: Free up disk space
         uses: jlumbroso/free-disk-space@main
         with:
-              # this might remove tools that are actually needed,
-              # if set to "true" but frees about 6 GB
-              tool-cache: true
-              
-              # all of these default to true, but feel free to set to
-              # "false" if necessary for your workflow
-              android: true
-              dotnet: true
-              haskell: true
-              large-packages: true
-              docker-images: true
-              swap-storage: true
-              
-      - 
-        name: Prune docker images (https://github.com/jens-maus/RaspberryMatic/blob/d5044bef3307bc61166377c162569de1a61cf332/.github/workflows/ci.yml#L34-L40)
+          tool-cache: true
+          android: true
+          dotnet: true
+          haskell: true
+          large-packages: true
+          docker-images: true
+          swap-storage: true
+
+      - name: Prune docker images and swap
         run: |
-              sudo swapoff -a
-              sudo rm -f /swapfile
-              sudo apt clean
-              # docker rmi $(docker image ls -aq)
-              docker image prune -a
-              df -h
-      - name: Extract release version
-        id: vars
-        run: echo "VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_ENV
-      -
-        name: Build and push
+          sudo swapoff -a
+          sudo rm -f /swapfile
+          sudo apt clean
+          docker image prune -a -f
+          df -h
+
+      - name: Set build versions
+        id: set_versions
+        env:
+          DEP_REPO: nasa-nccs-hpda/astrotime
+        run: |
+          DEP_TAG=$(curl -s https://api.github.com/repos/${DEP_REPO}/releases/latest | jq -r .tag_name)
+          echo "ASTROTIME_TAG=$DEP_TAG" >> $GITHUB_ENV
+          echo "VERSION_TAG=${GITHUB_REF#refs/tags/}" >> $GITHUB_ENV
+          echo "Using ${DEP_REPO} release tag: $DEP_TAG"
+          echo "Workflow release version: ${GITHUB_REF#refs/tags/}"
+
+      - name: Build and push
         uses: docker/build-push-action@v6
         with:
           context: .
@@ -84,6 +62,9 @@ jobs:
           file: ./requirements/Dockerfile
           push: true
           tags: nasanccs/astrotime:${{ github.ref_name }}-amd64
+          build-args: |
+            ASTROTIME_TAG=${{ env.ASTROTIME_TAG }}
+
 
   docker-arm:
     runs-on: ubuntu-latest
@@ -151,9 +132,16 @@ jobs:
               # docker rmi $(docker image ls -aq)
               docker image prune -a
               df -h
-      - name: Extract release version
-        id: vars
-        run: echo "VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_ENV
+      - name: Set build versions
+        id: set_versions
+        env:
+          DEP_REPO: nasa-nccs-hpda/astrotime
+        run: |
+          DEP_TAG=$(curl -s https://api.github.com/repos/${DEP_REPO}/releases/latest | jq -r .tag_name)
+          echo "ASTROTIME_TAG=$DEP_TAG" >> $GITHUB_ENV
+          echo "VERSION_TAG=${GITHUB_REF#refs/tags/}" >> $GITHUB_ENV
+          echo "Using ${DEP_REPO} release tag: $DEP_TAG"
+          echo "Workflow release version: ${GITHUB_REF#refs/tags/}"
       -
         name: Build and push
         uses: docker/build-push-action@v6
@@ -163,6 +151,8 @@ jobs:
           file: ./requirements/Dockerfile
           push: true
           tags: nasanccs/astrotime:${{ github.ref_name }}-arm64
+          build-args: |
+            ASTROTIME_TAG=${{ env.ASTROTIME_TAG }}
 
   manifest:
     needs: [docker-amd, docker-arm]
