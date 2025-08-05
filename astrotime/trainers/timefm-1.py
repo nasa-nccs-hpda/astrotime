@@ -5,6 +5,7 @@ from torch.optim.optimizer import Optimizer
 from torch.utils.data import DataLoader
 import hydra, torch
 from omegaconf import DictConfig
+from  timesfm.pytorch_patched_decoder import ResidualBlock, StackedDecoder
 from torch import nn, Tensor
 from typing import List, Optional, Dict, Type, Union, Tuple
 RDict = Dict[str,Union[List[str],int,np.ndarray]]
@@ -27,7 +28,27 @@ class TimeFMTrainer(object):
 
 	def __init__( self, cfg: DictConfig, train_loader: DataLoader, val_loader: DataLoader ):
 		self.cfg = cfg
-		self.tfm: TimesFm = self.get_tfm()
+
+		self.input_ff_layer = ResidualBlock(
+			input_dims=2 * self.cfg.patch_len,
+			output_dims=self.cfg.hidden_size,
+			hidden_dims=self.cfg.intermediate_size,
+		)
+		self.output_ff_layer = ResidualBlock(
+			input_dims=self.cfg.hidden_size,
+			output_dims=self.cfg.horizon_len * (1 + len(self.cfg.quantiles)),
+			hidden_dims=self.cfg.intermediate_size,
+		)
+		self.stacked_transformer = StackedDecoder(
+			hidden_size=self.cfg.hidden_size,
+			intermediate_size=self.cfg.intermediate_size,
+			num_heads=self.cfg.num_heads,
+			num_kv_heads=self.cfg.num_kv_heads,
+			head_dim=self.cfg.head_dim,
+			num_layers=self.cfg.num_layers,
+			rms_norm_eps=self.cfg.rms_norm_eps,
+		)
+
 		self.train_loader: DataLoader = train_loader
 		self.val_loader: DataLoader = val_loader
 		self.model: nn.Module = PeriodRegressor(embed_dim=1280).cuda()
@@ -47,12 +68,10 @@ class TimeFMTrainer(object):
 		return TimesFm( hparams=hparams, checkpoint=checkpoint )
 
 	def get_embedding( self, series_batch):
-		# Convert list of numpy arrays into batched tensor
-		padded = torch.nn.utils.rnn.pad_sequence(series_batch, batch_first=True)
-		padded = padded.cuda()
-		# Forecast is not used — we only use embeddings
-		x = self.tfm.forecast( padded )
-		return embeddings
+		model_input = self.input_ff_layer(series_batch)
+		transformed = self.stacked_transformer(model_input)
+		embedding = self.output_ff_layer(transformed)
+		return embedding
 
 	def train(self, version: str ):
 		for epoch in range(10):
