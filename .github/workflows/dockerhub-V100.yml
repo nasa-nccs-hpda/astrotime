@@ -191,6 +191,16 @@ jobs:
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
+      - name: Set build versions
+        id: set_versions
+        env:
+          DEP_REPO: nasa-nccs-hpda/astrotime
+        run: |
+          DEP_TAG=$(curl -s https://api.github.com/repos/${DEP_REPO}/releases/latest | jq -r .tag_name)
+          echo "ASTROTIME_TAG=$DEP_TAG" >> $GITHUB_ENV
+          echo "VERSION_TAG=${GITHUB_REF#refs/tags/}" >> $GITHUB_ENV
+          echo "Using ${DEP_REPO} release tag: $DEP_TAG"
+          echo "Workflow release version: ${GITHUB_REF#refs/tags/}"
       - name: Extract per-platform digests
         run: |
           AMD_DIGEST=$(docker buildx imagetools inspect nasanccs/astrotime:${{ env.ASTROTIME_TAG }}-v100-amd64 \
