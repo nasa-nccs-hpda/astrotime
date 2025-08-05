@@ -61,7 +61,7 @@ jobs:
           platforms: linux/amd64
           file: ./requirements/Dockerfile
           push: true
-          tags: nasanccs/astrotime:${{ github.ref_name }}-amd64
+          tags: nasanccs/astrotime:${{ env.ASTROTIME_TAG }}-amd64
           build-args: |
             ASTROTIME_TAG=${{ env.ASTROTIME_TAG }}
 
@@ -150,7 +150,7 @@ jobs:
           platforms: linux/arm64
           file: ./requirements/Dockerfile
           push: true
-          tags: nasanccs/astrotime:${{ github.ref_name }}-arm64
+          tags: nasanccs/astrotime:${{ env.ASTROTIME_TAG }}-arm64
           build-args: |
             ASTROTIME_TAG=${{ env.ASTROTIME_TAG }}
 
@@ -165,9 +165,9 @@ jobs:
           password: ${{ secrets.DOCKERHUB_TOKEN }}
       - name: Extract per-platform digests
         run: |
-          AMD_DIGEST=$(docker buildx imagetools inspect nasanccs/astrotime:${{ github.ref_name }}-v100-amd64 \
+          AMD_DIGEST=$(docker buildx imagetools inspect nasanccs/astrotime:${{ env.ASTROTIME_TAG }}-v100-amd64 \
             --format '{{range .Manifest.Manifests}}{{if eq .Platform.Architecture "amd64"}}{{.Digest}}{{end}}{{end}}')
-          ARM_DIGEST=$(docker buildx imagetools inspect nasanccs/astrotime:${{ github.ref_name }}-v100-arm64 \
+          ARM_DIGEST=$(docker buildx imagetools inspect nasanccs/astrotime:${{ env.ASTROTIME_TAG }}-v100-arm64 \
             --format '{{range .Manifest.Manifests}}{{if eq .Platform.Architecture "arm64"}}{{.Digest}}{{end}}{{end}}')
           echo "AMD_DIGEST=$AMD_DIGEST" >> $GITHUB_ENV
           echo "ARM_DIGEST=$ARM_DIGEST" >> $GITHUB_ENV
@@ -178,7 +178,7 @@ jobs:
             nasanccs/astrotime@${ARM_DIGEST}
           docker manifest push nasanccs/astrotime:latest
 
-          docker manifest create nasanccs/astrotime:${{ github.ref_name }} \
+          docker manifest create nasanccs/astrotime:${{ env.ASTROTIME_TAG }} \
             nasanccs/astrotime@${AMD_DIGEST} \
             nasanccs/astrotime@${ARM_DIGEST}
-          docker manifest push nasanccs/astrotime:${{ github.ref_name }}
+          docker manifest push nasanccs/astrotime:${{ env.ASTROTIME_TAG }}
