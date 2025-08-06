@@ -39,11 +39,11 @@ class CheckpointManager(object):
 		update_model = kwargs.get('update_model', False)
 		init_version = kwargs.get('init_version')
 		cppath = self.checkpoint_path()
+		train_state, cp_exists = {}, os.path.exists(cppath)
 		init_cppath = cppath
-		if init_version is not None:
+		if (init_version is not None) and not cp_exists:
 			init_cppath = self.checkpoint_path(init_version)
 			shutil.copyfile(init_cppath, cppath)
-		train_state, cp_exists = {}, os.path.exists( cppath )
 		if cp_exists:
 			try:
 				train_state = self._load_state()

@@ -17,7 +17,7 @@ def my_app(cfg: DictConfig) -> None:
 
 	data_loader = MITElementLoader(cfg.data)
 	trainer = IterativeTrainer( cfg, device, data_loader, model, embedding )
-	trainer.train(version)
+	trainer.train( version, log_interval=10 )
 
 if __name__ == "__main__":
 	my_app()

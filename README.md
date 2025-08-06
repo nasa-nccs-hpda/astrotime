@@ -426,13 +426,9 @@ sbatch --mem-per-cpu=10240 -G1 -c10 -t01:00:00 -J astrotime --wrap="time $your_s
 
 ### Torch Environment:
 
-    >   * mamba create -n astrotime python=3.11 pytorch pytorch-cuda=12.1 -c pytorch -c conda-forge -c nvidia --override-channels
+    >   * mamba create -n astrotime ninja python=3.10
     >   * mamba activate astrotime
-    >   * pip install jupyterlab ipywidgets jupyterlab_widgets torchmetrics pytorch-lightning ipykernel ipympl ipython xarray netCDF4 scikit-learn hydra-core rich timesfm[torch] 
-
-  #  >   * pip install jupyterlab==4.0.13 ipywidgets==7.8.4 jupyterlab_widgets torchmetrics pytorch-lightning ipykernel==6.29 ipympl ipython==8.26 xarray netCDF4 scikit-learn hydra-core rich timesfm[torch]
-  #  >   * pip install torch jupyterlab==4.0.13 ipywidgets==7.8.4 cuda-python jupyterlab_widgets torchmetrics pytorch-lightning ipykernel==6.29 ipympl ipython==8.26 xarray netCDF4 pygam wotan statsmodels transitleastsquares scikit-learn hydra-core rich timesfm[torch]
-  #  >   * pip install diffusers lightkurve --upgrade
+    >   * pip install torch jupyterlab==4.0.13 ipywidgets==7.8.4 cuda-python jupyterlab_widgets torchmetrics pytorch-lightning ipykernel==6.29 ipympl ipython==8.26 xarray netCDF4 pygam scikit-learn hydra-core rich timesfm[torch]
 
 ## Dataset Preparation
 

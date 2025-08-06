@@ -106,13 +106,11 @@ class IterativeTrainer(object):
         self._checkpoint_manager = CheckpointManager( version, self.model, self.optimizer, self.cfg )
         if self.cfg.refresh_state:
             self._checkpoint_manager.clear_checkpoints()
-            print("\n *** No checkpoint loaded: training from scratch *** \n")
-        else:
-            init_ckp_version = self.cfg.get('ckp_version' , None )
-            self.train_state = self._checkpoint_manager.load_checkpoint( init_version=init_ckp_version, update_model=True )
-            self.epoch0      = self.train_state.get('epoch', 0)
-            self.start_batch = self.train_state.get('batch', 0)
-            self.start_epoch = int(self.epoch0)
+        init_ckp_version = self.cfg.get('ckp_version' , None )
+        self.train_state = self._checkpoint_manager.load_checkpoint( init_version=init_ckp_version, update_model=True )
+        self.epoch0      = self.train_state.get('epoch', 0)
+        self.start_batch = self.train_state.get('batch', 0)
+        self.start_epoch = int(self.epoch0)
 
     def load_checkpoint( self, version: str ):
         if version is not None:
@@ -187,7 +185,7 @@ class IterativeTrainer(object):
         f: torch.Tensor = self.f0 * torch.pow( 2, o + r )
         return self.comp_loss( f, targ )
 
-    def train(self,version):
+    def train( self, version, **kwargs ):
         from astrotime.util.tensor_ops import print_status
         print(f"SignalTrainer[{self.mode}]: , {self.nepochs} epochs, device={self.device}")
         self.optimizer = self.get_optimizer()
@@ -198,7 +196,8 @@ class IterativeTrainer(object):
                 te = time.time()
                 self.set_train_status()
                 self.loader.init_epoch(TSet.Train)
-                losses, c_loss, log_interval, t0, clstr = [], [], 50, time.time(), ""
+                losses, c_loss, t0, clstr = [], [], time.time(), ""
+                log_interval = kwargs.get( 'log_interval', 50 )
                 try:
                     for ibatch in range(0,sys.maxsize):
                         t0 = time.time()

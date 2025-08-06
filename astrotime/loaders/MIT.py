@@ -441,6 +441,6 @@ class MITElementLoader(ElementLoader):
 			elem: Optional[RDict] = self.get_raw_element(ielem)
 			if elem is not None:
 				self.elems.append( elem )
-		print(f"   --- Preloaded {len(self.elems)} elements")
+		self.log.info(f"   --- Preloaded {len(self.elems)} elements from file-{self.ifile}")
 
 
