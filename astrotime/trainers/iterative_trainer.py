@@ -205,13 +205,17 @@ class IterativeTrainer(object):
                         binput: Tensor = self.get_input(batch)
                         target: Tensor = self.get_target(batch)
                         octave: Tensor = self.get_octave(target)
+                        self.log.info(f"train: input{list(binput.shape)}, target{list(target.shape)}")
                         if binput.shape[0] > 0:
                             self.global_time = time.time()
                             self.embedding.set_octave_data(octave)
+                            if octave is not None: self.log.info(f"train: octave{list(octave.shape)}")
                             result: Tensor = self.model( binput )
+                            self.log.info(f"train: result{list(result.shape)}")
                             if result.squeeze().ndim > 0:
                                 # print(f"result{list(result.shape)} range: [{result.min().cpu().item()} -> {result.max().cpu().item()}]")
                                 loss: Tensor =  self.loss( result.squeeze(), target )
+                                self.log.info(f"train: loss{list(loss.shape)}")
                                 self.conditionally_update_weights(loss)
                                 losses.append(loss.cpu().item())
                                 if "octave_regression" in self.mtype:
