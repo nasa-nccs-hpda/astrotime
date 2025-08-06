@@ -146,8 +146,11 @@ class IterativeTrainer(object):
     def get_next_batch(self) -> Optional[TRDict]:
         while True:
             dset: RDict = self.loader.get_next_batch()
+            self.log.info( f"train.get_next_batch: {list(dset.keys())}" )
             if dset is not None:
-                return self.encode_batch(dset)
+                batch: TRDict = self.encode_batch(dset)
+                self.log.info(f"train.encode_batch: {list(batch.keys())}")
+                return batch
 
     @property
     def mode(self) -> TSet:
@@ -199,10 +202,11 @@ class IterativeTrainer(object):
                 self.loader.init_epoch(TSet.Train)
                 losses, c_loss, t0, clstr = [], [], time.time(), ""
                 log_interval = kwargs.get( 'log_interval', 50 )
+                self.log.info( f"start epoch, batch size = {self.loader.batch_size}")
                 try:
                     for ibatch in range(0,sys.maxsize):
                         t0 = time.time()
-                        self.log.info(f"train: start batch, file={self.loader.ifile}, batch offset={self.loader.batch_offset}")
+                        self.log.info(f"train: start batch, file={self.loader.ifile}, batch offset={self.loader.batch_offset}, file size={self.loader.file_size}")
                         batch = self.get_next_batch()
                         binput: Tensor = self.get_input(batch)
                         target: Tensor = self.get_target(batch)
