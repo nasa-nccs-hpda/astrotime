@@ -11,4 +11,3 @@ subbatch_size: 2                    # If>0: Split batches into (serially compute
 norm:        std
 fold_octaves: false
 
-

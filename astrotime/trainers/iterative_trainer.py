@@ -1,7 +1,7 @@
 from typing import List, Optional, Dict, Type, Tuple, Union
 from omegaconf import DictConfig
 from .checkpoints import CheckpointManager
-from astrotime.util.tensor_ops import check_nan
+from astrotime.util.logging import exception_handled
 from astrotime.loaders.base import RDict, ElementLoader
 from astrotime.models.spectral.peak_finder import SpectralPeakSelector
 from astrotime.trainers.loss import ExpLoss, OctaveRegressionLoss
@@ -185,6 +185,7 @@ class IterativeTrainer(object):
         f: torch.Tensor = self.f0 * torch.pow( 2, o + r )
         return self.comp_loss( f, targ )
 
+    @exception_handled
     def train( self, version, **kwargs ):
         from astrotime.util.tensor_ops import print_status
         print(f"SignalTrainer[{self.mode}]: , {self.nepochs} epochs, device={self.device}")
@@ -201,6 +202,7 @@ class IterativeTrainer(object):
                 try:
                     for ibatch in range(0,sys.maxsize):
                         t0 = time.time()
+                        self.log.info(f"train: start batch, file={self.loader.ifile}, batch offset={self.loader.batch_offset}")
                         batch = self.get_next_batch()
                         binput: Tensor = self.get_input(batch)
                         target: Tensor = self.get_target(batch)
