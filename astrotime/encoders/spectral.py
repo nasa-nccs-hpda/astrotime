@@ -68,7 +68,7 @@ class SpectralProjection(EmbeddingLayer):
 			result = self.embed_subbatch( 0, ts, ys, self._octaves  )
 		else:
 			nsubbatches = math.ceil(ys.shape[0]/self.subbatch_size)
-			subbatches = [ self.embed_subbatch(i, *self.sbatch(ts,ys,i), self._octaves, **kwargs ) for i in range(nsubbatches) ]
+			subbatches = [ self.embed_subbatch(i, *self.sbatch(ts,ys,i), **kwargs ) for i in range(nsubbatches) ]
 			result = torch.concat( subbatches, dim=0 )
 			# print(f" embedding{list(result.shape)}: ({result.min():.3f} -> {result.max():.3f})")
 		embedding =  torch.unsqueeze(result, 1) if result.ndim == 2 else result
