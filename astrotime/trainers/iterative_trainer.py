@@ -261,7 +261,7 @@ class IterativeTrainer(object):
                 epoch_losses = np.array(losses)
                 print(f" ------ Epoch Loss: mean={epoch_losses.mean():.3f}, median={np.median(epoch_losses):.3f}, range=({epoch_losses.min():.3f} -> {epoch_losses.max():.3f})")
 
-    def init_evel(self, version):
+    def init_eval(self, version):
         self.optimizer = self.get_optimizer()
         self.initialize_checkpointing(version)
         with self.device:
@@ -301,7 +301,7 @@ class IterativeTrainer(object):
         self.optimizer = self.get_optimizer()
         self.initialize_checkpointing(version)
         with self.device:
-            print(f" ---- Running Validation cycles ---- ")
+            print(f" ---- Running *IterativeTrainer* Validation cycles ---- ")
             te = time.time()
             self.loader.initialize()
             self.loader.init_epoch(TSet.Validation)
