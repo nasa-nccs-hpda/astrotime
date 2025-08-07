@@ -214,7 +214,6 @@ class IterativeTrainer(object):
 
     @exception_handled
     def train( self, version, **kwargs ):
-        from astrotime.util.tensor_ops import print_status
         print(f"SignalTrainer[{self.mode}]: , {self.nepochs} epochs, device={self.device}")
         self.optimizer = self.get_optimizer()
         self.initialize_checkpointing(version)
@@ -266,13 +265,14 @@ class IterativeTrainer(object):
 
                 epoch_losses = np.array(losses)
                 print(f" ------ Epoch Loss: mean={epoch_losses.mean():.3f}, median={np.median(epoch_losses):.3f}, range=({epoch_losses.min():.3f} -> {epoch_losses.max():.3f})")
+                self.evaluate()
 
     def init_eval(self, version):
         self.optimizer = self.get_optimizer()
         self.initialize_checkpointing(version)
         with self.device:
             self.loader.initialize()
-            self.loader.init_epoch(TSet.Validation)
+
 
     def process_event( self, id: str, key: str, ax=None, **kwargs ) -> Optional[Dict[str,Any]]:
         if id == "KeyEvent":
@@ -306,13 +306,10 @@ class IterativeTrainer(object):
                 self.peak_frequency = None
 
     @exception_handled
-    def evaluate( self, version ):
-        self.optimizer = self.get_optimizer()
-        self.initialize_checkpointing(version)
+    def evaluate( self ):
         with self.device:
             print(f" ---- Running *IterativeTrainer* Validation cycles ---- ")
             te = time.time()
-            self.loader.initialize()
             self.loader.init_epoch(TSet.Validation)
             losses, peak_losses, c_loss, t0, clstr = [], [], [], time.time(), ""
             log_interval = 10
