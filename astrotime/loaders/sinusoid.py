@@ -89,7 +89,7 @@ class SinusoidElementLoader(ElementLoader):
 			return None
 
 	def check_epoch_end(self):
-		end_index = self.ntfiles if (self.tset == TSet.Train) else 1
+		end_index = self.max_files_per_epoch if (self.tset == TSet.Train) else 1
 		if self.ifile >= end_index:
 			raise StopIteration
 
