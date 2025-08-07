@@ -499,26 +499,29 @@ class EvaluatorPlot(SignalPlot):
 	def _setup(self):
 		self.evaluator.evaluate_element(self.element)
 		target_freq = self.evaluator.target_frequency
-		model_freq  = self.evaluator.model_frequency
-		loss =  self.evaluator.lossdata['model']
-		x = self.evaluator.embedding.xdata.cpu().numpy()
-		y = self.evaluator.embedding.get_result()
-		self.nlines = y.shape[0]
-		print( f"PLOT: x{x.shape} y{y.shape}")
-		for ip in range(self.nlines):
-			self.plots.append( self.ax.plot(x, y[ip], label=f"{self.tname}-{ip}", color=self.colors[ip], marker=".", linewidth=1, markersize=1, alpha=4.0/(ip+4) )[0] )
-		self.ax.set_xlim( x.min(), x.max() )
-		self.ax.set_ylim( y.min(), y.max() )
+		if target_freq is None:
+			print( f"No data for element {self.element} in file-{self.evaluator.loader.ifile} ---")
+		else:
+			model_freq  = self.evaluator.model_frequency
+			loss =  self.evaluator.lossdata['model']
+			x = self.evaluator.embedding.xdata.cpu().numpy()
+			y = self.evaluator.embedding.get_result()
+			self.nlines = y.shape[0]
+			print( f"PLOT: x{x.shape} y{y.shape}")
+			for ip in range(self.nlines):
+				self.plots.append( self.ax.plot(x, y[ip], label=f"{self.tname}-{ip}", color=self.colors[ip], marker=".", linewidth=1, markersize=1, alpha=4.0/(ip+4) )[0] )
+			self.ax.set_xlim( x.min(), x.max() )
+			self.ax.set_ylim( y.min(), y.max() )
 
-		self.target_marker: Line2D = self.ax.axvline( target_freq, 0.0, 1.0, color=self.marker_colors[0], linestyle='-', linewidth=2, alpha=0.7)
-		self.model_marker: Line2D  = self.ax.axvline( model_freq,  0.0, 1.0, color=self.marker_colors[1], linestyle='-', linewidth=2, alpha=0.7)
-		self.ax.title.set_text(f"{self.name}: target({self.file},{self.element})={target_freq:.3f} model({self.marker_colors[1]})={model_freq:.3f}, loss={sL(loss)}")
-		self.ax.title.set_fontsize(8)
-		self.ax.title.set_fontweight('bold')
-		self.ax.set_xscale('log')
-		self.ax.xaxis.set_major_formatter(ticker.StrMethodFormatter("{x:.2f}"))
-		self.ax.xaxis.set_major_locator(ticker.LogLocator(base=2, numticks=8))
-		self.ax.legend(loc="upper right", fontsize=8)
+			self.target_marker: Line2D = self.ax.axvline( target_freq, 0.0, 1.0, color=self.marker_colors[0], linestyle='-', linewidth=2, alpha=0.7)
+			self.model_marker: Line2D  = self.ax.axvline( model_freq,  0.0, 1.0, color=self.marker_colors[1], linestyle='-', linewidth=2, alpha=0.7)
+			self.ax.title.set_text(f"{self.name}: target({self.file},{self.element})={target_freq:.3f} model({self.marker_colors[1]})={model_freq:.3f}, loss={sL(loss)}")
+			self.ax.title.set_fontsize(8)
+			self.ax.title.set_fontweight('bold')
+			self.ax.set_xscale('log')
+			self.ax.xaxis.set_major_formatter(ticker.StrMethodFormatter("{x:.2f}"))
+			self.ax.xaxis.set_major_locator(ticker.LogLocator(base=2, numticks=8))
+			self.ax.legend(loc="upper right", fontsize=8)
 
 	@exception_handled
 	def button_press(self, event: MouseEvent) -> Any:
