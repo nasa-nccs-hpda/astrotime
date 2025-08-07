@@ -297,9 +297,9 @@ class IterativeTrainer(object):
                 peaks_loss: Tensor = self.loss(target, peaks)
                 self.lossdata['peak'] = peaks_loss.cpu().item()
 
-                self.target_frequency = target.squeeze().cpu().item()
-                self.model_frequency = result.squeeze().cpu().item()
-                self.peak_frequency = peaks.squeeze().cpu().item()
+                self.target_frequency = target.item()
+                self.model_frequency = result.item()
+                self.peak_frequency = peaks.item()
                 print(f" F-{self.loader.ifile}:{self.loader.file_index} E-{ielem} ploss={peaks_loss.item():.3f}, loss={loss.item():.3f}")
             else:
                 self.target_frequency = None
