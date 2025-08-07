@@ -29,7 +29,7 @@ class EmbeddingLayer(Transform):
 		if self.init_state: self.log.info(msg)
 
 	def forward(self, batch: torch.Tensor ) -> torch.Tensor:
-		self.log.debug(f"WaveletEmbeddingLayer shapes:")
+		print(f"EmbeddingLayer.forward: batch{list(batch.shape)}")
 		xs: torch.Tensor = batch[:, 0, :]
 		ys: torch.Tensor = batch[:, 1:, :]
 		self._result: torch.Tensor = self.embed(xs,ys)
