@@ -1,6 +1,7 @@
 import logging, os, csv, pickle, numpy as np
 from .param import STIntParam, STFloatParam
 from matplotlib import ticker
+from astrotime.trainers.iterative_trainer import IterativeTrainer
 from torch import nn, optim, Tensor, FloatTensor
 from astrotime.util.series import TSet
 from .base import SignalPlot, bounds
@@ -10,7 +11,6 @@ from matplotlib.backend_bases import KeyEvent, MouseEvent, MouseButton
 from astrotime.loaders.base import IterativeDataLoader, ElementLoader, RDict
 from astrotime.util.logging import exception_handled
 from astrotime.encoders.embedding import Transform
-from astrotime.trainers.model_evaluator import ModelEvaluator
 from typing import List, Optional, Dict, Type, Union, Tuple, Any, Set
 from astrotime.util.math import tnorm
 log = logging.getLogger()
@@ -470,13 +470,13 @@ class TransformPlot(SignalPlot):
 
 class EvaluatorPlot(SignalPlot):
 
-	def __init__(self, name: str, evaluator: ModelEvaluator, **kwargs):
+	def __init__(self, name: str, evaluator: IterativeTrainer, **kwargs):
 		SignalPlot.__init__(self, **kwargs)
 		self.name = name
-		self.evaluator: ModelEvaluator = evaluator
+		self.evaluator: IterativeTrainer = evaluator
 		self.annotations: List[str] = tolower( kwargs.get('annotations',None) )
 		self.colors = [ 'red', 'blue', 'magenta', 'cyan', 'darkviolet', 'darkorange', 'saddlebrown', 'darkturquoise', 'green', 'brown', 'purple', 'yellow', 'olive', 'pink', 'gold', 'grey', 'grey', 'grey', 'grey', 'grey', 'grey', 'grey', 'grey', 'grey', 'grey', 'grey']
-		self.marker_colors = ['black', 'green']
+		self.marker_colors = ['black', 'green', 'blue']
 		self.ofac = kwargs.get('upsample_factor',1)
 		self.plots: List[Line2D] = []
 		self.target_marker: Line2D = None
@@ -490,7 +490,7 @@ class EvaluatorPlot(SignalPlot):
 
 	@property
 	def nelements(self) -> int:
-		return self.evaluator.nelements
+		return self.evaluator.loader.nelem
 
 	@property
 	def tname(self):
@@ -499,9 +499,9 @@ class EvaluatorPlot(SignalPlot):
 	def _setup(self):
 		tdata = self.evaluator.evaluate(self.element).squeeze()
 		target_freq = self.evaluator.target_frequency
-		model_freq = self.evaluator.model_frequency
-		loss =  self.evaluator.lossdata['loss']
-		x = self.evaluator.xdata.cpu().numpy()
+		model_freq  = self.evaluator.model_frequency
+		loss =  self.evaluator.lossdata['model']
+		x = self.evaluator.embedding.xdata.cpu().numpy()
 		y = tdata[None,:] if (tdata.ndim == 1) else tdata
 		self.nlines = y.shape[0]
 		print( f"PLOT: x{x.shape} y{y.shape}")
@@ -553,8 +553,8 @@ class EvaluatorPlot(SignalPlot):
 		else:
 			target_freq = self.evaluator.target_frequency
 			model_freq = self.evaluator.model_frequency
-			loss =  self.evaluator.lossdata['loss']
-			x = self.evaluator.xdata.cpu().numpy()
+			loss =  self.evaluator.lossdata['model']
+			x = self.evaluator.embedding.xdata.cpu().numpy()
 			y = tdata[None,:] if (tdata.ndim == 1) else tdata
 
 			for ip in range(self.nlines):

@@ -64,9 +64,6 @@ class SinusoidElementLoader(ElementLoader):
 	def nelem(self):
 		return self.file_size
 
-	def get_element(self, elem_index: int) -> Optional[RDict]:
-		return self.get_batch_element( elem_index ) if self.use_batches else self.get_raw_element( elem_index )
-
 	def get_raw_element(self, elem_index: int ) -> Optional[RDict]:
 		try:
 			y: np.ndarray = self.data[ 'y' ].values[elem_index]
@@ -128,6 +125,13 @@ class SinusoidElementLoader(ElementLoader):
 			# print(f"get_batch({batch_index})-> y{result['y'].shape}: nnan={count_nan(result['y'])}")
 			return result
 		return None
+
+	def get_element( self, ielem: int ) -> Optional[Dict[str,Any]]:
+		if self.data is None: return None
+		elem = self.get_raw_element(ielem)
+		if elem is None: return None
+		result = dict( t=elem['t'], y=elem['y'], period=elem['p'], offset=ielem, file=self.ifile )
+		return result
 
 	@property
 	def dspath(self) -> str:

@@ -1,4 +1,4 @@
-from typing import List, Optional, Dict, Type, Tuple, Union
+from typing import List, Optional, Dict, Any, Tuple, Union
 from omegaconf import DictConfig
 from .checkpoints import CheckpointManager
 from astrotime.util.logging import exception_handled
@@ -49,6 +49,10 @@ class IterativeTrainer(object):
         self.train_state = None
         self.global_time = None
         self.exec_stats = []
+        self.target_frequency = None
+        self.model_frequency = None
+        self.peak_frequency = None
+        self.lossdata = {}
         if model is not None:
             for module in model.modules(): self.add_callbacks(module)
 
@@ -155,6 +159,17 @@ class IterativeTrainer(object):
                 self.log.info(f"train.get_next_batch returned None")
                 return None
 
+    def get_element(self, ielem: int) -> Optional[TRDict]:
+        elem: Optional[Dict[str, Any]] = self.loader.get_element(ielem)
+        if elem is not None:
+            #self.log.info(f"train.get_next_batch: {list(dset.keys())}")
+            batch: TRDict = self.encode_batch(elem)
+            #self.log.info(f"train.encode_batch: {list(batch.keys())}")
+            return batch
+        else:
+            self.log.info(f"train.get_next_batch returned None")
+            return None
+
     @property
     def mode(self) -> TSet:
         return self.loader.tset
@@ -245,6 +260,41 @@ class IterativeTrainer(object):
 
                 epoch_losses = np.array(losses)
                 print(f" ------ Epoch Loss: mean={epoch_losses.mean():.3f}, median={np.median(epoch_losses):.3f}, range=({epoch_losses.min():.3f} -> {epoch_losses.max():.3f})")
+
+    def init_evel(self, version):
+        self.optimizer = self.get_optimizer()
+        self.initialize_checkpointing(version)
+        with self.device:
+            self.loader.initialize()
+            self.loader.init_epoch(TSet.Validation)
+
+    def process_event( self, id: str, key: str, ax=None, **kwargs ) -> Optional[Dict[str,Any]]:
+        if id == "KeyEvent":
+            if self.peak_selector is not None:
+                self.peak_selector.process_key_event( key )
+                return dict( peakfeature=self.peak_selector.feature )
+        return None
+
+    @exception_handled
+    def evaluate_element(self, ielem: int):
+        with self.device:
+            batch = self.get_element(ielem)
+            if batch is not None:
+                binput: Tensor = self.get_input(batch)
+                target: Tensor = self.get_target(batch)
+                if binput.shape[0] > 0:
+                    result: Tensor = self.model(binput)
+                    if result.squeeze().ndim > 0:
+                        peaks: Tensor = self.get_batch_peaks()
+                        loss: Tensor = self.loss(result.squeeze(), target)
+                        peaks_loss: Tensor = self.loss(target, peaks)
+                        self.lossdata['model'] = loss.cpu().item()
+                        self.lossdata['peak'] = peaks_loss.cpu().item()
+                        self.target_frequency = target.squeeze().cpu().item()
+                        self.model_frequency = result.squeeze().cpu().item()
+                        self.peak_frequency = peaks.squeeze().cpu().item()
+                        print(f" F-{self.loader.ifile}:{self.loader.file_index} E-{ielem} ploss={peaks_loss.item():.3f}, loss={loss.item():.3f}")
+
 
     @exception_handled
     def evaluate( self, version ):
