@@ -282,19 +282,21 @@ class IterativeTrainer(object):
             if batch is not None:
                 binput: Tensor = self.get_input(batch)
                 target: Tensor = self.get_target(batch)
-                if binput.shape[0] > 0:
-                    result: Tensor = self.model(binput)
-                    if result.squeeze().ndim > 0:
-                        peaks: Tensor = self.get_batch_peaks()
-                        loss: Tensor = self.loss(result.squeeze(), target)
-                        peaks_loss: Tensor = self.loss(target, peaks)
-                        self.lossdata['model'] = loss.cpu().item()
-                        self.lossdata['peak'] = peaks_loss.cpu().item()
-                        self.target_frequency = target.squeeze().cpu().item()
-                        self.model_frequency = result.squeeze().cpu().item()
-                        self.peak_frequency = peaks.squeeze().cpu().item()
-                        print(f" F-{self.loader.ifile}:{self.loader.file_index} E-{ielem} ploss={peaks_loss.item():.3f}, loss={loss.item():.3f}")
-
+                result: Tensor = self.model(binput)
+                if result.squeeze().ndim > 0:
+                    peaks: Tensor = self.get_batch_peaks()
+                    loss: Tensor = self.loss(result.squeeze(), target)
+                    peaks_loss: Tensor = self.loss(target, peaks)
+                    self.lossdata['model'] = loss.cpu().item()
+                    self.lossdata['peak'] = peaks_loss.cpu().item()
+                    self.target_frequency = target.squeeze().cpu().item()
+                    self.model_frequency = result.squeeze().cpu().item()
+                    self.peak_frequency = peaks.squeeze().cpu().item()
+                    print(f" F-{self.loader.ifile}:{self.loader.file_index} E-{ielem} ploss={peaks_loss.item():.3f}, loss={loss.item():.3f}")
+            else:
+                self.target_frequency = None
+                self.target_frequency = None
+                self.peak_frequency = None
 
     @exception_handled
     def evaluate( self, version ):

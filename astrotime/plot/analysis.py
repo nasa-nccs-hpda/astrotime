@@ -497,12 +497,12 @@ class EvaluatorPlot(SignalPlot):
 		return self.evaluator.tname
 
 	def _setup(self):
-		tdata = self.evaluator.evaluate(self.element).squeeze()
+		self.evaluator.evaluate_element(self.element)
 		target_freq = self.evaluator.target_frequency
 		model_freq  = self.evaluator.model_frequency
 		loss =  self.evaluator.lossdata['model']
 		x = self.evaluator.embedding.xdata.cpu().numpy()
-		y = tdata[None,:] if (tdata.ndim == 1) else tdata
+		y = self.evaluator.embedding.get_result()
 		self.nlines = y.shape[0]
 		print( f"PLOT: x{x.shape} y{y.shape}")
 		for ip in range(self.nlines):
@@ -546,8 +546,8 @@ class EvaluatorPlot(SignalPlot):
 
 	@exception_handled
 	def update(self, val=0):
-		tdata = self.evaluator.evaluate(self.element).squeeze()
-		if tdata is None:
+		self.evaluator.evaluate_element(self.element)
+		if self.evaluator.target_frequency is None:
 			self.ax.title.set_text(f"{self.name}({self.file},{self.element}): No data for this element")
 			self.ax.figure.canvas.draw_idle()
 		else:
@@ -555,7 +555,7 @@ class EvaluatorPlot(SignalPlot):
 			model_freq = self.evaluator.model_frequency
 			loss =  self.evaluator.lossdata['model']
 			x = self.evaluator.embedding.xdata.cpu().numpy()
-			y = tdata[None,:] if (tdata.ndim == 1) else tdata
+			y = self.evaluator.embedding.get_result()
 
 			for ip in range(self.nlines):
 				self.plots[ip].set_ydata(y[ip])
