@@ -481,6 +481,7 @@ class EvaluatorPlot(SignalPlot):
 		self.plots: List[Line2D] = []
 		self.target_marker: Line2D = None
 		self.model_marker: Line2D = None
+		self.peaks_marker: Line2D = None
 		self.nfiles = self.evaluator.loader.nfiles
 		self.add_param( STIntParam('element', (0, evaluator.loader.nelem)  ) )
 		self.add_param( STIntParam('file', (0, evaluator.loader.nfiles), key_press_mode=2) )
@@ -503,6 +504,7 @@ class EvaluatorPlot(SignalPlot):
 			print( f"No data for element {self.element} in file-{self.evaluator.loader.ifile} ---")
 		else:
 			model_freq  = self.evaluator.model_frequency
+			peak_freq = self.evaluator.peak_frequency
 			loss =  self.evaluator.lossdata['model']
 			x: np.ndarray = self.evaluator.embedding.xdata.cpu().numpy()
 			y: np.ndarray = self.evaluator.embedding.get_result()
@@ -515,6 +517,7 @@ class EvaluatorPlot(SignalPlot):
 
 			self.target_marker: Line2D = self.ax.axvline( target_freq, 0.0, 1.0, color=self.marker_colors[0], linestyle='-', linewidth=2, alpha=0.7)
 			self.model_marker: Line2D  = self.ax.axvline( model_freq,  0.0, 1.0, color=self.marker_colors[1], linestyle='-', linewidth=2, alpha=0.7)
+			self.peaks_marker: Line2D  = self.ax.axvline( peak_freq,  0.0, 1.0, color=self.marker_colors[2], linestyle='-', linewidth=2, alpha=0.7)
 			self.ax.title.set_text(f"{self.name}: target({self.file},{self.element})={target_freq:.3f} model({self.marker_colors[1]})={model_freq:.3f}, loss={sL(loss)}")
 			self.ax.title.set_fontsize(8)
 			self.ax.title.set_fontweight('bold')
@@ -556,6 +559,7 @@ class EvaluatorPlot(SignalPlot):
 		else:
 			target_freq = self.evaluator.target_frequency
 			model_freq = self.evaluator.model_frequency
+			peak_freq = self.evaluator.peak_frequency
 			loss =  self.evaluator.lossdata['model']
 			x = self.evaluator.embedding.xdata.cpu().numpy()
 			y = self.evaluator.embedding.get_result()
@@ -569,6 +573,7 @@ class EvaluatorPlot(SignalPlot):
 
 			self.target_marker.set_xdata([target_freq,target_freq])
 			self.model_marker.set_xdata( [model_freq, model_freq] )
+			self.peaks_marker.set_xdata([peak_freq, peak_freq])
 			self.process_event(id="period-update", period=1/model_freq,  ax=str(id(self.ax)), color=self.marker_colors[1])
 			self.ax.title.set_text(f"{self.name}({self.file},{self.element}): target_freq={target_freq:.3f} (model_freq={model_freq:.3f}), loss={sL(loss)}")
 			self.ax.figure.canvas.draw_idle()
