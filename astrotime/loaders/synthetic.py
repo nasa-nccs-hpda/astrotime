@@ -120,6 +120,7 @@ class SyntheticElementLoader(ElementLoader):
 		if self.data is not None:
 			batch_start = batch_index * self.batch_size
 			batch_end = min(batch_start + self.batch_size, self.file_size)
+			self.log.info(f"Loader.get_batch(F{self.file_index}.B{batch_index}): {batch_start} -> {batch_end}")
 			t,y,p,o,stype,result,tlen0,tlen1 = [],[],[],[],[],{},1000000,0
 			for ielem in range(batch_start, batch_end):
 				elem = self.get_raw_element(ielem)
@@ -139,7 +140,7 @@ class SyntheticElementLoader(ElementLoader):
 				result['stype'] = np.array(stype)
 				result['offset'] = batch_start
 				result['file'] = self.file_index
-				self.log.debug(f"get_batch(F{self.file_index}.B{batch_index}): y{result['y'].shape}, t{result['t'].shape}, len-diff={tlen1-tlen0}, pmax={result['period'].max():.3f}, trng0={result['t'][0][-1]-result['t'][0][0]:.3f}")
+				self.log.info(f" **** LOADED: y{result['y'].shape}, t{result['t'].shape}, len-diff={tlen1-tlen0}, pmax={result['period'].max():.3f}, trng0={result['t'][0][-1]-result['t'][0][0]:.3f}")
 				return result
 		return None
 
@@ -151,8 +152,10 @@ class SyntheticElementLoader(ElementLoader):
 	def _load_cache_dataset( self ):
 		if os.path.exists(self.dspath):
 			try:
+				self.log.info(f"Loading cache dataset-{self.ifile}")
+				self.log.info(f" ---> path={self.dspath}")
 				self.data = xa.open_dataset( self.dspath, engine="netcdf4" )
-				self.log.info( f"Opened cache dataset from {self.dspath}, nvars = {len(self.data.data_vars)}")
+				self.log.info( f"Opened cache dataset, nvars = {len(self.data.data_vars)}")
 				if self.tset == TSet.Update:
 					print(f"Computing octaves from dataset-{self.ifile}: {self.dspath} with {len(self.data.data_vars)} vars")
 			except KeyError as ex:
