@@ -82,6 +82,7 @@ class IterativeTrainer(object):
         return f / octave_base_freq
 
     def get_input(self, batch: TRDict) -> Tensor:
+        self.log.info( f"Logger.get_input: {list(batch.keys())}")
         return batch['z']
 
     def get_batch_peaks(self) -> Tensor:
