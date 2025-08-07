@@ -428,8 +428,10 @@ class MITElementLoader(ElementLoader):
 				slens.append( elem['y'].size )
 			if len(ts) >= self.cfg.batch_size:
 				break
-		if len(ts) == 0: return None
 		self.batch_offset = ielem + 1
+		if len(ts) == 0:
+			self.update_file()
+			return None
 		slen = np.array(slens).min()
 		yn = np.stack( [ y[:slen] for y in ys], axis=0 )
 		tn = np.stack( [ t[:slen] for t in ts], axis=0 )
