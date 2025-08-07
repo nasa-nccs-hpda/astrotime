@@ -30,8 +30,8 @@ class EmbeddingLayer(Transform):
 
 	def forward(self, batch: torch.Tensor ) -> torch.Tensor:
 		print(f"EmbeddingLayer.forward: batch{list(batch.shape)}")
-		xs: torch.Tensor = batch[:, 0, :]
-		ys: torch.Tensor = batch[:, 1:, :]
+		xs: torch.Tensor = torch.unsqueeze(batch[0, :],0) if batch.ndim == 2 else batch[:, 0, :]
+		ys: torch.Tensor = torch.unsqueeze(batch[1, :],0) if batch.ndim == 2 else batch[:, 1:, :]
 		self._result: torch.Tensor = self.embed(xs,ys)
 		self.init_state = False
 		return self._result
