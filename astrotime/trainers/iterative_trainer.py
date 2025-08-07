@@ -141,6 +141,12 @@ class IterativeTrainer(object):
         z: Tensor = self.to_tensor( t, y )
         return dict( z=z, target=1/p, octave=o, **batch )
 
+    def encode_element(self, element: RDict) -> TRDict:
+        t,y = element.pop('t'), element.pop('y')
+        p: float = element.pop('period')
+        z: Tensor = self.to_tensor( t, y )
+        return dict( z=z, target=1/p, **element )
+
     def to_tensor(self, x: np.ndarray, y: np.ndarray) -> Tensor:
         with (self.device):
             Y: Tensor = torch.FloatTensor(y).to(self.device)
@@ -163,7 +169,7 @@ class IterativeTrainer(object):
         elem: Optional[Dict[str, Any]] = self.loader.get_element(ielem)
         if elem is not None:
             #self.log.info(f"train.get_next_batch: {list(dset.keys())}")
-            batch: TRDict = self.encode_batch(elem)
+            batch: TRDict = self.encode_element(elem)
             #self.log.info(f"train.encode_batch: {list(batch.keys())}")
             return batch
         else:
