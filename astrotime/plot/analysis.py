@@ -547,22 +547,26 @@ class EvaluatorPlot(SignalPlot):
 	@exception_handled
 	def update(self, val=0):
 		tdata = self.evaluator.evaluate(self.element).squeeze()
-		target_freq = self.evaluator.target_frequency
-		model_freq = self.evaluator.model_frequency
-		loss =  self.evaluator.lossdata['loss']
-		x = self.evaluator.xdata.cpu().numpy()
-		y = tdata[None,:] if (tdata.ndim == 1) else tdata
+		if tdata is None:
+			self.ax.title.set_text(f"{self.name}({self.file},{self.element}): No data for this element")
+			self.ax.figure.canvas.draw_idle()
+		else:
+			target_freq = self.evaluator.target_frequency
+			model_freq = self.evaluator.model_frequency
+			loss =  self.evaluator.lossdata['loss']
+			x = self.evaluator.xdata.cpu().numpy()
+			y = tdata[None,:] if (tdata.ndim == 1) else tdata
 
-		for ip in range(self.nlines):
-			self.plots[ip].set_ydata(y[ip])
-			self.plots[ip].set_xdata(x)
-		self.ax.set_xlim( x.min(), x.max() )
-		self.ax.set_ylim( y.min(), y.max() )
-		self.log.info(f"---- TransformPlot {self.tname}[{self.element})] update: y{y.shape}, x range=({x.min():.3f}->{x.max():.3f}), model_freq={model_freq:.3f}  ")
+			for ip in range(self.nlines):
+				self.plots[ip].set_ydata(y[ip])
+				self.plots[ip].set_xdata(x)
+			self.ax.set_xlim( x.min(), x.max() )
+			self.ax.set_ylim( y.min(), y.max() )
+			self.log.info(f"---- TransformPlot {self.tname}[{self.element})] update: y{y.shape}, x range=({x.min():.3f}->{x.max():.3f}), model_freq={model_freq:.3f}  ")
 
-		self.target_marker.set_xdata([target_freq,target_freq])
-		self.model_marker.set_xdata( [model_freq, model_freq] )
-		self.process_event(id="period-update", period=1/model_freq,  ax=str(id(self.ax)), color=self.marker_colors[1])
-		self.ax.title.set_text(f"{self.name}({self.file},{self.element}): target_freq={target_freq:.3f} (model_freq={model_freq:.3f}), loss={sL(loss)}")
-		self.ax.figure.canvas.draw_idle()
+			self.target_marker.set_xdata([target_freq,target_freq])
+			self.model_marker.set_xdata( [model_freq, model_freq] )
+			self.process_event(id="period-update", period=1/model_freq,  ax=str(id(self.ax)), color=self.marker_colors[1])
+			self.ax.title.set_text(f"{self.name}({self.file},{self.element}): target_freq={target_freq:.3f} (model_freq={model_freq:.3f}), loss={sL(loss)}")
+			self.ax.figure.canvas.draw_idle()
 

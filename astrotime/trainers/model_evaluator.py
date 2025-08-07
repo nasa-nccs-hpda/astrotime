@@ -91,8 +91,9 @@ class ModelEvaluator(object):
             X: Tensor = torch.FloatTensor(x).to(self.device)
             return torch.stack((X,tnorm(Y)), dim=0).unsqueeze(0)
 
-    def evaluate(self, element: int) -> np.ndarray:
+    def evaluate(self, element: int) -> Optional[np.ndarray]:
         element: TRDict = self.get_element( element)
+        if element is None: return None
         result: Tensor = self.model( element['z'] )
         self._target_freq = element['target']
         self._model_freq  = result.cpu().item()
@@ -100,6 +101,8 @@ class ModelEvaluator(object):
         self.lossdata = dict( loss=loss.detach().cpu().numpy() )
         self.log.info( f"Model loss: {self.lossdata['loss']}")
         return self.embedding.get_result()
+
+
 
     @property
     def target_frequency(self) -> float:
