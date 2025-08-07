@@ -82,7 +82,6 @@ class IterativeTrainer(object):
         return f / octave_base_freq
 
     def get_input(self, batch: TRDict) -> Tensor:
-        self.log.info( f"Logger.get_input: {list(batch.keys())}")
         return batch['z']
 
     def get_batch_peaks(self) -> Tensor:
@@ -220,7 +219,6 @@ class IterativeTrainer(object):
                             if binput.shape[0] > 0:
                                 self.global_time = time.time()
                                 self.embedding.set_octave_data(octave)
-                                if octave is not None: self.log.info(f"train: octave{list(octave.shape)}")
                                 result: Tensor = self.model( binput )
                                 #self.log.info(f"train: result{list(result.shape)}")
                                 if result.squeeze().ndim > 0:
