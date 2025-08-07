@@ -146,11 +146,14 @@ class IterativeTrainer(object):
     def get_next_batch(self) -> Optional[TRDict]:
         while True:
             dset: RDict = self.loader.get_next_batch()
-            self.log.info( f"train.get_next_batch: {list(dset.keys())}" )
             if dset is not None:
+                self.log.info(f"train.get_next_batch: {list(dset.keys())}")
                 batch: TRDict = self.encode_batch(dset)
                 self.log.info(f"train.encode_batch: {list(batch.keys())}")
                 return batch
+            else:
+                self.log.info(f"train.get_next_batch returned None")
+                return None
 
     @property
     def mode(self) -> TSet:
