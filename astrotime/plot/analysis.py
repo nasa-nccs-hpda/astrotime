@@ -494,7 +494,7 @@ class EvaluatorPlot(SignalPlot):
 
 	@property
 	def tname(self):
-		return self.evaluator.tname
+		return self.evaluator.embedding.name
 
 	def _setup(self):
 		self.evaluator.evaluate_element(self.element)
