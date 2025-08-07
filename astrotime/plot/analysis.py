@@ -504,12 +504,12 @@ class EvaluatorPlot(SignalPlot):
 		else:
 			model_freq  = self.evaluator.model_frequency
 			loss =  self.evaluator.lossdata['model']
-			x = self.evaluator.embedding.xdata.cpu().numpy()
-			y = self.evaluator.embedding.get_result()
+			x: np.ndarray = self.evaluator.embedding.xdata.cpu().numpy()
+			y: np.ndarray = self.evaluator.embedding.get_result()
 			self.nlines = y.shape[0]
 			print( f"PLOT: x{x.shape} y{y.shape}")
 			for ip in range(self.nlines):
-				self.plots.append( self.ax.plot(x, y[ip], label=f"{self.tname}-{ip}", color=self.colors[ip], marker=".", linewidth=1, markersize=1, alpha=4.0/(ip+4) )[0] )
+				self.plots.append( self.ax.plot(x, y[ip].squeeze(), label=f"{self.tname}-{ip}", color=self.colors[ip], marker=".", linewidth=1, markersize=1, alpha=4.0/(ip+4) )[0] )
 			self.ax.set_xlim( x.min(), x.max() )
 			self.ax.set_ylim( y.min(), y.max() )
 
@@ -561,7 +561,7 @@ class EvaluatorPlot(SignalPlot):
 			y = self.evaluator.embedding.get_result()
 
 			for ip in range(self.nlines):
-				self.plots[ip].set_ydata(y[ip])
+				self.plots[ip].set_ydata(y[ip].squeeze())
 				self.plots[ip].set_xdata(x)
 			self.ax.set_xlim( x.min(), x.max() )
 			self.ax.set_ylim( y.min(), y.max() )
