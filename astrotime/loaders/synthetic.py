@@ -146,10 +146,10 @@ class SyntheticElementLoader(ElementLoader):
 
 	@property
 	def dspath(self) -> str:
-		self.file_index = self.file_sort[self.ifile]
 		return f"{self.rootdir}/nc/{self.dset}-{self.file_index}.nc"
 
 	def _load_cache_dataset( self ):
+		self.file_index = self.file_sort[self.ifile]
 		if os.path.exists(self.dspath):
 			try:
 				self.log.info(f"Loading cache dataset-{self.ifile}")

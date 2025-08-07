@@ -324,10 +324,11 @@ class MITElementLoader(ElementLoader):
 	@property
 	def cache_path(self) -> str:
 		os.makedirs(self.cfg.dataset_root, exist_ok=True)
-		isector = self.cfg.sector_range[0] + self.file_sort[self.ifile]
+		isector = self.cfg.sector_range[0] + self.file_index
 		return f"{self.cfg.dataset_root}/sector-{isector}.nc"
 
 	def _load_cache_dataset( self ):
+		self.file_index = self.file_sort[self.ifile]
 		dspath: str = self.cache_path
 		if os.path.exists(dspath):
 			self.data = xa.open_dataset( dspath, engine="netcdf4" )

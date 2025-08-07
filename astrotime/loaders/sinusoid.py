@@ -131,9 +131,10 @@ class SinusoidElementLoader(ElementLoader):
 
 	@property
 	def dspath(self) -> str:
-		return f"{self.rootdir}/{self.file_paths[self.file_sort[self.ifile]]}"
+		return f"{self.rootdir}/{self.file_paths[self.file_index]}"
 
 	def _load_cache_dataset( self ):
+		self.file_index = self.file_sort[self.ifile]
 		if os.path.exists(self.dspath):
 			try:
 				self.data = xa.open_dataset( self.dspath, engine="netcdf4" )
