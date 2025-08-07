@@ -476,7 +476,7 @@ class EvaluatorPlot(SignalPlot):
 		self.evaluator: IterativeTrainer = evaluator
 		self.annotations: List[str] = tolower( kwargs.get('annotations',None) )
 		self.colors = [ 'red', 'blue', 'magenta', 'cyan', 'darkviolet', 'darkorange', 'saddlebrown', 'darkturquoise', 'green', 'brown', 'purple', 'yellow', 'olive', 'pink', 'gold', 'grey', 'grey', 'grey', 'grey', 'grey', 'grey', 'grey', 'grey', 'grey', 'grey', 'grey']
-		self.marker_colors = ['black', 'green', 'blue']
+		self.marker_colors = ['black', 'green', 'yellow']
 		self.ofac = kwargs.get('upsample_factor',1)
 		self.plots: List[Line2D] = []
 		self.target_marker: Line2D = None
@@ -515,9 +515,9 @@ class EvaluatorPlot(SignalPlot):
 			self.ax.set_xlim( x.min(), x.max() )
 			self.ax.set_ylim( y.min(), y.max() )
 
-			self.target_marker: Line2D = self.ax.axvline( target_freq, 0.0, 1.0, color=self.marker_colors[0], linestyle='-', linewidth=2, alpha=0.7)
+			self.target_marker: Line2D = self.ax.axvline( target_freq, 0.0, 1.0, color=self.marker_colors[0], linestyle='-', linewidth=1, alpha=1.0)
 			self.model_marker: Line2D  = self.ax.axvline( model_freq,  0.0, 1.0, color=self.marker_colors[1], linestyle='-', linewidth=2, alpha=0.7)
-			self.peaks_marker: Line2D  = self.ax.axvline( peak_freq,  0.0, 1.0, color=self.marker_colors[2], linestyle='-', linewidth=2, alpha=0.7)
+			self.peaks_marker: Line2D  = self.ax.axvline( peak_freq,  0.0, 1.0, color=self.marker_colors[2], linestyle='-', linewidth=3, alpha=0.5)
 			self.ax.title.set_text(f"{self.name}: target({self.file},{self.element})={target_freq:.3f} model({self.marker_colors[1]})={model_freq:.3f}, loss={sL(loss)}")
 			self.ax.title.set_fontsize(8)
 			self.ax.title.set_fontweight('bold')
