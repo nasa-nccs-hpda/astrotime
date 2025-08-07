@@ -300,7 +300,6 @@ class IterativeTrainer(object):
                 self.target_frequency = target.item()
                 self.model_frequency = result.item()
                 self.peak_frequency = peaks.item()
-                print(f" F-{self.loader.ifile}:{self.loader.file_index} E-{ielem} ploss={peaks_loss.item():.3f}, loss={loss.item():.3f}")
             else:
                 self.target_frequency = None
                 self.target_frequency = None

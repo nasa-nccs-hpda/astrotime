@@ -561,6 +561,7 @@ class EvaluatorPlot(SignalPlot):
 			model_freq = self.evaluator.model_frequency
 			peak_freq = self.evaluator.peak_frequency
 			loss =  self.evaluator.lossdata['model']
+			ploss = self.evaluator.lossdata['peak']
 			x = self.evaluator.embedding.xdata.cpu().numpy()
 			y = self.evaluator.embedding.get_result()
 
@@ -575,6 +576,6 @@ class EvaluatorPlot(SignalPlot):
 			self.model_marker.set_xdata( [model_freq, model_freq] )
 			self.peaks_marker.set_xdata([peak_freq, peak_freq])
 			self.process_event(id="period-update", period=1/model_freq,  ax=str(id(self.ax)), color=self.marker_colors[1])
-			self.ax.title.set_text(f"{self.name}({self.file},{self.element}): target_freq={target_freq:.3f} (model_freq={model_freq:.3f}), loss={sL(loss)}")
+			self.ax.title.set_text(f"{self.name}({self.file},{self.element}): target_freq={target_freq:.3f} (model_freq={model_freq:.3f}), loss={sL(loss)}, ploss={sL(ploss)}")
 			self.ax.figure.canvas.draw_idle()
 
