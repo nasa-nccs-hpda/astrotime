@@ -212,32 +212,33 @@ class IterativeTrainer(object):
                         t0 = time.time()
                         self.log.info(f"train: start batch, file={self.loader.ifile}, batch offset={self.loader.batch_offset}, file size={self.loader.file_size}")
                         batch = self.get_next_batch()
-                        binput: Tensor = self.get_input(batch)
-                        target: Tensor = self.get_target(batch)
-                        octave: Tensor = self.get_octave(target)
-                        self.log.info(f"train: input{list(binput.shape)}, target{list(target.shape)}")
-                        if binput.shape[0] > 0:
-                            self.global_time = time.time()
-                            self.embedding.set_octave_data(octave)
-                            if octave is not None: self.log.info(f"train: octave{list(octave.shape)}")
-                            result: Tensor = self.model( binput )
-                            self.log.info(f"train: result{list(result.shape)}")
-                            if result.squeeze().ndim > 0:
-                                # print(f"result{list(result.shape)} range: [{result.min().cpu().item()} -> {result.max().cpu().item()}]")
-                                loss: Tensor =  self.loss( result.squeeze(), target )
-                                self.log.info(f"train: loss{list(loss.shape)}")
-                                self.conditionally_update_weights(loss)
-                                losses.append(loss.cpu().item())
-                                if "octave_regression" in self.mtype:
-                                    closs: Tensor = self.closs(result.squeeze(), target)
-                                    c_loss.append(closs.cpu().item())
-                                if ibatch % log_interval == 0:
-                                    aloss = np.array(losses[-log_interval:])
+                        if batch is not None:
+                            binput: Tensor = self.get_input(batch)
+                            target: Tensor = self.get_target(batch)
+                            octave: Tensor = self.get_octave(target)
+                            self.log.info(f"train: input{list(binput.shape)}, target{list(target.shape)}")
+                            if binput.shape[0] > 0:
+                                self.global_time = time.time()
+                                self.embedding.set_octave_data(octave)
+                                if octave is not None: self.log.info(f"train: octave{list(octave.shape)}")
+                                result: Tensor = self.model( binput )
+                                self.log.info(f"train: result{list(result.shape)}")
+                                if result.squeeze().ndim > 0:
+                                    # print(f"result{list(result.shape)} range: [{result.min().cpu().item()} -> {result.max().cpu().item()}]")
+                                    loss: Tensor =  self.loss( result.squeeze(), target )
+                                    self.log.info(f"train: loss{list(loss.shape)}")
+                                    self.conditionally_update_weights(loss)
+                                    losses.append(loss.cpu().item())
                                     if "octave_regression" in self.mtype:
-                                        closses = np.array(c_loss[-log_interval:])
-                                        clstr = f" closs = {np.median(closses):.3f}, "
-                                    print(f"E-{epoch} F-{self.loader.ifile}:{self.loader.file_index} B-{ibatch} loss={np.median(aloss):.3f}, {clstr} range=({aloss.min():.3f} -> {aloss.max():.3f}), dt/batch={elapsed(t0):.5f} sec")
-                                    self._checkpoint_manager.save_checkpoint(epoch, ibatch)
+                                        closs: Tensor = self.closs(result.squeeze(), target)
+                                        c_loss.append(closs.cpu().item())
+                                    if ibatch % log_interval == 0:
+                                        aloss = np.array(losses[-log_interval:])
+                                        if "octave_regression" in self.mtype:
+                                            closses = np.array(c_loss[-log_interval:])
+                                            clstr = f" closs = {np.median(closses):.3f}, "
+                                        print(f"E-{epoch} F-{self.loader.ifile}:{self.loader.file_index} B-{ibatch} loss={np.median(aloss):.3f}, {clstr} range=({aloss.min():.3f} -> {aloss.max():.3f}), dt/batch={elapsed(t0):.5f} sec")
+                                        self._checkpoint_manager.save_checkpoint(epoch, ibatch)
 
                 except StopIteration:
                     loss_data = np.array(losses)
