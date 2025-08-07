@@ -88,7 +88,7 @@ class RawDatasetPlot(SignalPlot):
 		self.annotations: List[str] = tolower( kwargs.get('annotations',None) )
 		self.ofac = kwargs.get('upsample_factor',1)
 		self.plot: Line2D = None
-		self.add_param( STIntParam('element', (0,self.data_loader.nelements), key_press_mode=1 ) )
+		self.add_param( STIntParam('element', (0,self.data_loader.nelem), key_press_mode=1 ) )
 		self.add_param( STIntParam('file', (0, self.data_loader.nfiles), key_press_mode=2 ) )
 		self.period_markers: Dict[str,PeriodMarkers] = {}
 		self.ext_pm_ids: Set[str] = set()
@@ -482,7 +482,7 @@ class EvaluatorPlot(SignalPlot):
 		self.target_marker: Line2D = None
 		self.model_marker: Line2D = None
 		self.nfiles = self.evaluator.loader.nfiles
-		self.add_param( STIntParam('element', (0, evaluator.loader.nelements)  ) )
+		self.add_param( STIntParam('element', (0, evaluator.loader.nelem)  ) )
 		self.add_param( STIntParam('file', (0, evaluator.loader.nfiles), key_press_mode=2) )
 		self.transax = None
 		self.nlines = -1
