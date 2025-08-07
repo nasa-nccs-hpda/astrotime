@@ -130,7 +130,7 @@ class IterativeTrainer(object):
             self.optimizer.step()
 
     def encode_batch(self, batch: RDict) -> TRDict:
-        self.log.debug( f"encode_batch: {list(batch.keys())}")
+        #self.log.debug( f"encode_batch: {list(batch.keys())}")
         t,y = batch.pop('t'), batch.pop('y')
         p: Tensor = torch.from_numpy(batch.pop('period')).to(self.device)
         o = batch.pop('octave', None)
@@ -148,9 +148,9 @@ class IterativeTrainer(object):
         while True:
             dset: RDict = self.loader.get_next_batch()
             if dset is not None:
-                self.log.info(f"train.get_next_batch: {list(dset.keys())}")
+                #self.log.info(f"train.get_next_batch: {list(dset.keys())}")
                 batch: TRDict = self.encode_batch(dset)
-                self.log.info(f"train.encode_batch: {list(batch.keys())}")
+                #self.log.info(f"train.encode_batch: {list(batch.keys())}")
                 return batch
             else:
                 self.log.info(f"train.get_next_batch returned None")
@@ -210,23 +210,23 @@ class IterativeTrainer(object):
                 try:
                     for ibatch in range(0,sys.maxsize):
                         t0 = time.time()
-                        self.log.info(f"train: start batch, file={self.loader.ifile}, batch offset={self.loader.batch_offset}, file size={self.loader.file_size}")
+                        #self.log.info(f"train: start batch, file={self.loader.ifile}, batch offset={self.loader.batch_offset}, file size={self.loader.file_size}")
                         batch = self.get_next_batch()
                         if batch is not None:
                             binput: Tensor = self.get_input(batch)
                             target: Tensor = self.get_target(batch)
                             octave: Tensor = self.get_octave(target)
-                            self.log.info(f"train: input{list(binput.shape)}, target{list(target.shape)}")
+                            #self.log.info(f"train: input{list(binput.shape)}, target{list(target.shape)}")
                             if binput.shape[0] > 0:
                                 self.global_time = time.time()
                                 self.embedding.set_octave_data(octave)
                                 if octave is not None: self.log.info(f"train: octave{list(octave.shape)}")
                                 result: Tensor = self.model( binput )
-                                self.log.info(f"train: result{list(result.shape)}")
+                                #self.log.info(f"train: result{list(result.shape)}")
                                 if result.squeeze().ndim > 0:
                                     # print(f"result{list(result.shape)} range: [{result.min().cpu().item()} -> {result.max().cpu().item()}]")
                                     loss: Tensor =  self.loss( result.squeeze(), target )
-                                    self.log.info(f"train: loss{list(loss.shape)}")
+                                    #self.log.info(f"train: loss{list(loss.shape)}")
                                     self.conditionally_update_weights(loss)
                                     losses.append(loss.cpu().item())
                                     if "octave_regression" in self.mtype:
