@@ -39,7 +39,7 @@ class IterativeTrainer(object):
         self.f0 = cfg.data.base_freq
         self.optimizer: optim.Optimizer = None
         self.log = logging.getLogger()
-        self.loss: nn.Module = self.get_loss(cfg.data)
+        self.loss: nn.Module = ExpLoss(cfg.data)
         self.comp_loss: nn.Module = ExpLoss(cfg.data)
         self._checkpoint_manager: CheckpointManager = None
         self.peak_selector = SpectralPeakSelector(cfg.transform, device, self.embedding.xdata)
@@ -246,7 +246,7 @@ class IterativeTrainer(object):
                                 #self.log.info(f"train: result{list(result.shape)}")
                                 if result.squeeze().ndim > 0:
                                     # print(f"result{list(result.shape)} range: [{result.min().cpu().item()} -> {result.max().cpu().item()}]")
-                                    loss: Tensor =  self.loss( result.squeeze(), target )
+                                    loss: Tensor =  self.loss( result.squeeze(), target ).mean()
                                     #self.log.info(f"train: loss{list(loss.shape)}")
                                     self.conditionally_update_weights(loss)
                                     losses.append(loss.cpu().item())
@@ -294,7 +294,7 @@ class IterativeTrainer(object):
                 target: Tensor = self.get_target(batch)
 
                 result: Tensor = self.model(binput)
-                loss: Tensor   = self.loss(result.squeeze(), target)
+                loss: Tensor   = self.loss(result.squeeze(), target).mean()
                 self.lossdata['model'] = loss.cpu().item()
 
                 peaks: Tensor  = self.get_batch_peaks()
@@ -325,14 +325,32 @@ class IterativeTrainer(object):
                         peaks: Tensor = self.peak_selector(spectral_batch)
                         loss: Tensor =  self.loss( result.squeeze(), target )
                         peaks_loss: Tensor = self.loss(target, peaks)
-                        losses.append(loss.cpu().item())
-                        peak_losses.append(peaks_loss.cpu().item())
-                        nelem += binput.shape[0]
+                        for iL in range(loss.shape[0]):
+                            losses.append(loss[iL].item())
+                            peak_losses.append(peaks_loss[iL].item())
+                            nelem += 1
 
             except StopIteration:
                 mloss = np.array(losses)
                 ploss = np.array(peak_losses)
                 print(f" ------ Batch Validation Loss: model={np.mean(mloss):.3f}, peakfinder={np.median(ploss):.3f}, nelem={nelem}")
+
+    @exception_handled
+    def evaluate_batch( self ):
+        with self.device:
+            self.loader.init_epoch(TSet.Validation)
+            batch = self.get_next_batch()
+            binput: Tensor = batch['z']
+            target: Tensor = batch['target']
+            result: Tensor = self.model( binput )
+            spectral_batch: torch.Tensor = self.embedding.get_result_tensor()
+            peaks: Tensor = self.peak_selector(spectral_batch)
+            loss: Tensor =  self.loss( result.squeeze(), target ).mean()
+            peaks_loss: Tensor = self.loss(target, peaks)
+            mloss = loss.cpu().item()
+            ploss = peaks_loss.cpu().item()
+            nelem = binput.shape[0]
+            print(f" ------ Batch Validation Loss: model={np.mean(mloss):.3f}, peakfinder={np.median(ploss):.3f}, nelem={nelem}")
 
 
     @exception_handled
@@ -380,8 +398,8 @@ class IterativeTrainer(object):
                         result: Tensor = self.model( binput )
                         if result.squeeze().ndim > 0:
                             peaks: Tensor = self.get_batch_peaks()
-                            loss: Tensor =  self.loss( result.squeeze(), target )
-                            peaks_loss: Tensor = self.loss( target, peaks )
+                            loss: Tensor =  self.loss( result.squeeze(), target ).mean()
+                            peaks_loss: Tensor = self.loss( target, peaks ).mean()
                             t,p = target.squeeze().cpu().tolist(), peaks.squeeze().cpu().tolist()
                             print( f" t: {ss(t)}" )
                             print( f" p: {ss(p)}")
