@@ -352,14 +352,14 @@ class IterativeTrainer(object):
             nelem = binput.shape[0]
             print(f" ------ Batch Validation Loss: model={np.mean(mloss):.3f}, peakfinder={np.median(ploss):.3f}, nelem={nelem}")
             print(f" LOSS: {lstr(loss.cpu().tolist())}" )
-            sp = [ spectral_batch[i].std().item() for i in range(spectral_batch.shape[0])]
-            print(f" SB: {lstr(sp)}")
+            sp = [ spectral_batch[i][11].item() for i in range(spectral_batch.shape[0])]
+            print(f" SB[{spectral_batch.shape[0]}]: {lstr(sp)}")
 
     @exception_handled
     def evaluate_batch_elems( self ):
         with self.device:
             self.loader.init_epoch(TSet.Validation,True)
-            losses, peak_losses, sp, nelem = [], [], [], 0
+            losses, peak_losses, sp, nelem, sl = [], [], [], 0, 0
             for ielement in range(0,self.loader.batch_size):
                 element = self.get_element(ielement)
                 if element is not None:
@@ -367,7 +367,8 @@ class IterativeTrainer(object):
                     target: Tensor = element['target']
                     result: Tensor = self.model( binput )
                     spectral_batch: torch.Tensor = self.embedding.get_result_tensor()
-                    sp.append( spectral_batch.std().item() )
+                    sl = spectral_batch.shape[1]
+                    sp.append( spectral_batch[11].item() )
                     peaks: Tensor = self.peak_selector(spectral_batch)
                     loss: Tensor =  self.loss( result.squeeze(), target )
                     peaks_loss: Tensor = self.loss(target, peaks)
@@ -378,7 +379,7 @@ class IterativeTrainer(object):
             ploss = np.array(peak_losses)
             print(f" ------ Batch Element Validation Loss: model={np.mean(mloss):.3f}, peakfinder={np.median(ploss):.3f}, nelem={nelem}")
             print(f" LOSS: {lstr(losses)}")
-            print(f" SB: {lstr(sp)}")
+            print(f" SB[{sl}]: {lstr(sp)}")
 
     @exception_handled
     def evaluate_elems( self ):
