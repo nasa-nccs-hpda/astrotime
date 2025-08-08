@@ -36,7 +36,6 @@ class SinusoidElementLoader(ElementLoader):
 		self.batch_size =self.cfg.batch_size
 		self.current_batch = None
 		self.file_sort = None
-		self.use_batches = kwargs.get('use_batches',True)
 		self._files = None
 
 	@property
