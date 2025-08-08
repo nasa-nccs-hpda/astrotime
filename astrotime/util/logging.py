@@ -1,11 +1,15 @@
 import numpy as np
 import torch
 from functools import wraps
+from typing import List, Optional, Dict, Type, Union, Tuple, Any
 from time import time
 import time, traceback
 Array = torch.Tensor | np.ndarray
 import logging
 
+def lstr(x: List[float]):
+    sx = [f"{x:.3f}" for x in x]
+    return '[' + ', '.join(sx) + ']'
 
 def shp(x): return list(x.shape)
 

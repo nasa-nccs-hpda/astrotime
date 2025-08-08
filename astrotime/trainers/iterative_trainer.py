@@ -1,6 +1,6 @@
 from typing import List, Optional, Dict, Any, Tuple, Union
 from omegaconf import DictConfig
-from astrotime.util.math import shp
+from astrotime.util.logging import lstr, shp
 from .checkpoints import CheckpointManager
 from astrotime.util.logging import exception_handled
 from astrotime.loaders.base import RDict, ElementLoader
@@ -345,12 +345,13 @@ class IterativeTrainer(object):
             result: Tensor = self.model( binput )
             spectral_batch: torch.Tensor = self.embedding.get_result_tensor()
             peaks: Tensor = self.peak_selector(spectral_batch)
-            loss: Tensor =  self.loss( result.squeeze(), target ).mean()
-            peaks_loss: Tensor = self.loss(target, peaks).mean()
-            mloss = loss.cpu().item()
-            ploss = peaks_loss.cpu().item()
+            loss: Tensor =  self.loss( result.squeeze(), target )
+            peaks_loss: Tensor = self.loss(target, peaks)
+            mloss = loss.mean().cpu().item()
+            ploss = peaks_loss.mean().cpu().item()
             nelem = binput.shape[0]
             print(f" ------ Batch Validation Loss: model={np.mean(mloss):.3f}, peakfinder={np.median(ploss):.3f}, nelem={nelem}")
+            print(f" LOSS: {lstr(loss.cpu().tolist())}" )
 
     @exception_handled
     def evaluate_batch_elems( self ):
@@ -372,7 +373,8 @@ class IterativeTrainer(object):
                     nelem += 1
             mloss = np.array(losses)
             ploss = np.array(peak_losses)
-            print(f" ------ Element Validation Loss: model={np.mean(mloss):.3f}, peakfinder={np.median(ploss):.3f}, nelem={nelem}")
+            print(f" ------ Batch Element Validation Loss: model={np.mean(mloss):.3f}, peakfinder={np.median(ploss):.3f}, nelem={nelem}")
+            print(f" LOSS: {lstr(losses)}")
 
     @exception_handled
     def evaluate_elems( self ):
