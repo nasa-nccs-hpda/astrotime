@@ -65,7 +65,8 @@ class SinusoidElementLoader(ElementLoader):
 
 	def get_raw_element(self, elem_index: int ) -> Optional[RDict]:
 		try:
-			print( f"get_raw_element({elem_index}) file = {self.ifile}: {self.file_sort[self.ifile]}")
+			if self.debug:
+				print( f"get_raw_element({elem_index}) file = {self.ifile}: {self.file_sort[self.ifile]}")
 			y: np.ndarray = self.data[ 'y' ].values[elem_index]
 			t: np.ndarray = self.data[ 't' ].values[elem_index]
 			p = self.data['p'].values[elem_index]

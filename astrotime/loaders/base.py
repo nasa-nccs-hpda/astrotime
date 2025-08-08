@@ -43,6 +43,7 @@ class Loader:
 	def __init__(self, cfg: DictConfig, **kwargs ):
 		self.log = logging.getLogger()
 		self.cfg = cfg
+		self.debug = False
 
 
 	def init_epoch(self, tset: TSet = TSet.Train ):
@@ -86,12 +87,13 @@ class ElementLoader(Loader):
 	def ntfiles(self):
 		return self.cfg.nfiles-1
 
-	def init_epoch(self, tset: TSet = TSet.Train):
+	def init_epoch(self, tset: TSet = TSet.Train, debug=False):
 		self.ifile = 0
 		self.data = None
 		self.batch_offset = 0
 		self.set_tset(tset)
 		self.load_data()
+		self.debug = debug
 
 	def set_tset(self, tset: TSet):
 		self.tset = tset
