@@ -38,7 +38,6 @@ class SinusoidElementLoader(ElementLoader):
 		self.file_sort = None
 		self.use_batches = kwargs.get('use_batches',True)
 		self._files = None
-		self._load_cache_dataset()
 
 	@property
 	def file_paths( self ) -> List[str]:
