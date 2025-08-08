@@ -268,8 +268,8 @@ class IterativeTrainer(object):
 
                 epoch_losses = np.array(losses)
                 print(f" ------ Epoch Loss: mean={epoch_losses.mean():.3f}, median={np.median(epoch_losses):.3f}, range=({epoch_losses.min():.3f} -> {epoch_losses.max():.3f})")
-                self.evaluate()
-                self.evaluate_elems()
+                self.evaluate_batch()
+                self.evaluate_batch_elems()
 
     def init_eval(self, version):
         self.optimizer = self.get_optimizer()
@@ -352,6 +352,27 @@ class IterativeTrainer(object):
             nelem = binput.shape[0]
             print(f" ------ Batch Validation Loss: model={np.mean(mloss):.3f}, peakfinder={np.median(ploss):.3f}, nelem={nelem}")
 
+    @exception_handled
+    def evaluate_batch_elems( self ):
+        with self.device:
+            self.loader.init_epoch(TSet.Validation)
+            losses, peak_losses, nelem = [], [], 0
+            for ielement in range(0,self.loader.batch_size):
+                element = self.get_element(ielement)
+                if element is not None:
+                    binput: Tensor = element['z']
+                    target: Tensor = element['target']
+                    result: Tensor = self.model( binput )
+                    spectral_batch: torch.Tensor = self.embedding.get_result_tensor()
+                    peaks: Tensor = self.peak_selector(spectral_batch)
+                    loss: Tensor =  self.loss( result.squeeze(), target )
+                    peaks_loss: Tensor = self.loss(target, peaks)
+                    losses.append(loss.cpu().item())
+                    peak_losses.append(peaks_loss.cpu().item())
+                    nelem += 1
+            mloss = np.array(losses)
+            ploss = np.array(peak_losses)
+            print(f" ------ Element Validation Loss: model={np.mean(mloss):.3f}, peakfinder={np.median(ploss):.3f}, nelem={nelem}")
 
     @exception_handled
     def evaluate_elems( self ):
