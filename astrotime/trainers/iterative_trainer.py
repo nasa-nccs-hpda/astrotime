@@ -352,6 +352,7 @@ class IterativeTrainer(object):
             nelem = binput.shape[0]
             print(f" ------ Batch Validation Loss: model={np.mean(mloss):.3f}, peakfinder={np.median(ploss):.3f}, nelem={nelem}")
             print(f" LOSS: {lstr(loss.cpu().tolist())}" )
+            print(f" SB: {shp(spectral_batch)}")
             sp = [ spectral_batch[i][11].item() for i in range(spectral_batch.shape[0])]
             print(f" SB[{spectral_batch.shape[0]}]: {lstr(sp)}")
 
