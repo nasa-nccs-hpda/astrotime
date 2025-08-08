@@ -343,7 +343,7 @@ class IterativeTrainer(object):
             binput: Tensor = batch['z']
             target: Tensor = batch['target']
             result: Tensor = self.model( binput )
-            spectral_batch: torch.Tensor = self.embedding.get_result_tensor()
+            spectral_batch: torch.Tensor = self.embedding.get_result_tensor().squeeze()
             peaks: Tensor = self.peak_selector(spectral_batch)
             loss: Tensor =  self.loss( result.squeeze(), target )
             peaks_loss: Tensor = self.loss(target, peaks)
@@ -352,9 +352,8 @@ class IterativeTrainer(object):
             nelem = binput.shape[0]
             print(f" ------ Batch Validation Loss: model={np.mean(mloss):.3f}, peakfinder={np.median(ploss):.3f}, nelem={nelem}")
             print(f" LOSS: {lstr(loss.cpu().tolist())}" )
-            print(f" SB: {shp(spectral_batch)}")
             sp = [ spectral_batch[i][11].item() for i in range(spectral_batch.shape[0])]
-            print(f" SB[{spectral_batch.shape[0]}]: {lstr(sp)}")
+            print(f" SB: {lstr(sp)}")
 
     @exception_handled
     def evaluate_batch_elems( self ):
@@ -367,10 +366,8 @@ class IterativeTrainer(object):
                     binput: Tensor = element['z']
                     target: Tensor = element['target']
                     result: Tensor = self.model( binput )
-                    spectral_batch: torch.Tensor = self.embedding.get_result_tensor()
-                    print(f" SB: {shp(spectral_batch)}")
-                    sl = spectral_batch.shape[1]
-                    sp.append( spectral_batch[0,11].item() )
+                    spectral_batch: torch.Tensor = self.embedding.get_result_tensor().squeeze()
+                    sp.append( spectral_batch[11].item() )
                     peaks: Tensor = self.peak_selector(spectral_batch)
                     loss: Tensor =  self.loss( result.squeeze(), target )
                     peaks_loss: Tensor = self.loss(target, peaks)
@@ -381,7 +378,7 @@ class IterativeTrainer(object):
             ploss = np.array(peak_losses)
             print(f" ------ Batch Element Validation Loss: model={np.mean(mloss):.3f}, peakfinder={np.median(ploss):.3f}, nelem={nelem}")
             print(f" LOSS: {lstr(losses)}")
-            print(f" SB[{sl}]: {lstr(sp)}")
+            print(f" SB: {lstr(sp)}")
 
     @exception_handled
     def evaluate_elems( self ):
