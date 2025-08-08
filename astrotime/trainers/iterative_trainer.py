@@ -152,6 +152,7 @@ class IterativeTrainer(object):
         with (self.device):
             Y: Tensor = torch.FloatTensor(y).to(self.device)
             X: Tensor = torch.FloatTensor(x).to(self.device)
+            print( f"to_tensor: X{shp(X)}, Y{shp(Y)}")
             return torch.stack((X,Y), dim=-2)
 
     def get_next_batch(self) -> Optional[TRDict]:
