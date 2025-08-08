@@ -218,7 +218,6 @@ class IterativeTrainer(object):
         self.optimizer = self.get_optimizer()
         self.initialize_checkpointing(version)
         with self.device:
-            print(f" ---- Running Training cycles ---- ")
             for epoch in range(*self.epoch_range):
                 te = time.time()
                 self.set_train_status()
@@ -227,6 +226,7 @@ class IterativeTrainer(object):
                 log_interval = kwargs.get( 'log_interval', 50 )
                 self.log.info( f"start epoch, batch size = {self.loader.batch_size}")
                 try:
+                    print(f" ---- Running Training cycles ---- ")
                     for ibatch in range(0,sys.maxsize):
                         t0 = time.time()
                         #self.log.info(f"train: start batch, file={self.loader.ifile}, batch offset={self.loader.batch_offset}, file size={self.loader.file_size}")
@@ -309,14 +309,11 @@ class IterativeTrainer(object):
     @exception_handled
     def evaluate( self ):
         with self.device:
-            print(f" ---- Running *IterativeTrainer* Validation cycles ---- ")
-            te = time.time()
+            print(f" ---- Running *IterativeTrainer* Batch Validation cycles ---- ")
             self.loader.init_epoch(TSet.Validation)
             losses, peak_losses, c_loss, t0, clstr = [], [], [], time.time(), ""
-            log_interval = 10
             try:
                 for ibatch in range(0,sys.maxsize):
-                    t0 = time.time()
                     batch = self.get_next_batch()
                     if batch is not None:
                         binput: Tensor = self.get_input(batch)
@@ -332,29 +329,17 @@ class IterativeTrainer(object):
                                 peaks_loss: Tensor = self.loss(target, peaks)
                                 losses.append(loss.cpu().item())
                                 peak_losses.append(peaks_loss.cpu().item())
-                                if "octave_regression" in self.mtype:
-                                    closs: Tensor = self.closs(result.squeeze(), target)
-                                    c_loss.append(closs.cpu().item())
-                                if ibatch % log_interval == 0:
-                                    aloss = np.array(losses[-log_interval:])
-                                    ploss = np.array(peak_losses[-log_interval:])
-                                    if "octave_regression" in self.mtype:
-                                        closses = np.array(c_loss[-log_interval:])
-                                        clstr = f" closs = {np.median(closses):.3f}, "
-                                    print(f" F-{self.loader.ifile}:{self.loader.file_index} B-{ibatch} ploss={ploss.mean():.3f}, loss={np.median(aloss):.3f}, {clstr} range=({aloss.min():.3f} -> {aloss.max():.3f}), dt/batch={elapsed(t0):.5f} sec")
 
             except StopIteration:
-                loss_data = np.array(losses)
-                print( f"Completed Validation in {elapsed(te)/60:.5f} min, mean-loss= {loss_data.mean():.3f}, median= {np.median(loss_data):.3f}")
+                mloss = np.array(losses)
+                ploss = np.array(peak_losses)
+                print(f" ------ Batch Validation Loss: model={np.median(mloss):.3f}, peakfinder={np.median(ploss):.3f}, ")
 
-            val_losses = np.array(losses)
-            print(f" ------ Validation Loss: mean={val_losses.mean():.3f}, median={np.median(val_losses):.3f}, range=({val_losses.min():.3f} -> {val_losses.max():.3f})")
 
     @exception_handled
     def evaluate_elems( self ):
         with self.device:
-            print(f" ---- Running *IterativeTrainer* Validation cycles ---- ")
-            te = time.time()
+            print(f" ---- Running *IterativeTrainer* Element Validation cycles ---- ")
             self.loader.init_epoch(TSet.Validation)
             losses, peak_losses, c_loss, t0, clstr = [], [], [], time.time(), ""
             try:
