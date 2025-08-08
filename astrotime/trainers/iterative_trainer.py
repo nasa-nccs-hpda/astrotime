@@ -267,7 +267,6 @@ class IterativeTrainer(object):
 
                 epoch_losses = np.array(losses)
                 print(f" ------ Epoch Loss: mean={epoch_losses.mean():.3f}, median={np.median(epoch_losses):.3f}, range=({epoch_losses.min():.3f} -> {epoch_losses.max():.3f})")
-                self.evaluate_batch()
                 self.evaluate_batch_elems()
 
     def init_eval(self, version):
