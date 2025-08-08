@@ -31,7 +31,7 @@ class EmbeddingLayer(Transform):
 	def forward(self, batch: torch.Tensor ) -> torch.Tensor:
 		xs: torch.Tensor = torch.unsqueeze(batch[0, :],0) if batch.ndim == 2 else batch[:, 0, :]
 		ys: torch.Tensor = torch.unsqueeze(batch[1, :],0) if batch.ndim == 2 else batch[:, 1:, :]
-		self._result: torch.Tensor = self.embed(xs,ys)
+		self._result: torch.Tensor = self.full_embedding(xs,ys)
 		self.init_state = False
 		return self._result
 
@@ -46,6 +46,9 @@ class EmbeddingLayer(Transform):
 
 	def embed(self, xs: Tensor, ys: Tensor, **kwargs) -> Tensor:
 		raise NotImplementedError("EmbeddingLayer.embed() not implemented")
+
+	def full_embedding(self, xs: Tensor, ys: Tensor ) -> Tensor:
+		raise NotImplementedError("EmbeddingLayer.full_embedding() not implemented")
 
 	def magnitude(self, embedding: Tensor) -> np.ndarray:
 		raise NotImplementedError("EmbeddingLayer.embed() not implemented")

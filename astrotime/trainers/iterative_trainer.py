@@ -241,7 +241,6 @@ class IterativeTrainer(object):
                             #self.log.info(f"train: input{list(binput.shape)}, target{list(target.shape)}")
                             if binput.shape[0] > 0:
                                 self.global_time = time.time()
-                                self.embedding.set_octave_data(octave)
                                 result: Tensor = self.model( binput )
                                 #self.log.info(f"train: result{list(result.shape)}")
                                 if result.squeeze().ndim > 0:

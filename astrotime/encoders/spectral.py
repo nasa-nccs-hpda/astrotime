@@ -76,6 +76,17 @@ class SpectralProjection(EmbeddingLayer):
 		embedding =  torch.unsqueeze(result, 1) if result.ndim == 2 else result
 		return embedding
 
+	def full_embedding(self, ts: torch.Tensor, ys: torch.Tensor ) -> Tensor:
+		t0 = time.time()
+		self.init_log(f"SpectralProjection shapes: ts{list(ts.shape)} ys{list(ys.shape)}")
+		ts: Tensor = ts[:, None, :]  # broadcast-to(self.batch_size,self.nfreq,slen)
+		dz: Tensor =  ts * self.get_omega()
+		mag: Tensor =  spectral_projection( dz, ys )
+		embedding: Tensor = torch.unsqueeze(mag, 1)
+		self.init_log(f" Completed embedding{list(embedding.shape)} in {elapsed(t0):.5f} sec: nfeatures={embedding.shape[1]}")
+		self.init_state = False
+		return embedding
+
 	def embed(self, ts: torch.Tensor, ys: torch.Tensor, **kwargs) -> Tensor:
 		if ys.ndim == 1:
 			result = self.embed_subbatch( 0, ts[None,:], ys[None,:] )
