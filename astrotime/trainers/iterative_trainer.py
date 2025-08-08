@@ -352,7 +352,7 @@ class IterativeTrainer(object):
             nelem = binput.shape[0]
             print(f" ------ Batch Validation Loss: model={np.mean(mloss):.3f}, peakfinder={np.median(ploss):.3f}, nelem={nelem}")
             print(f" LOSS: {lstr(loss.cpu().tolist())}" )
-            sp = [ spectral_batch[i].mean().item() for i in range(spectral_batch.shape[0])]
+            sp = [ spectral_batch[i].std().item() for i in range(spectral_batch.shape[0])]
             print(f" SB: {lstr(sp)}")
 
     @exception_handled
@@ -367,7 +367,7 @@ class IterativeTrainer(object):
                     target: Tensor = element['target']
                     result: Tensor = self.model( binput )
                     spectral_batch: torch.Tensor = self.embedding.get_result_tensor()
-                    sp.append( spectral_batch.mean().item() )
+                    sp.append( spectral_batch.std().item() )
                     peaks: Tensor = self.peak_selector(spectral_batch)
                     loss: Tensor =  self.loss( result.squeeze(), target )
                     peaks_loss: Tensor = self.loss(target, peaks)
