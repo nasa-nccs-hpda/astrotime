@@ -30,13 +30,12 @@ class SinusoidLoader(DataLoader):
 
 class SinusoidElementLoader(ElementLoader):
 
-	def __init__(self, cfg: DictConfig, tset: TSet, **kwargs):
+	def __init__(self, cfg: DictConfig,  **kwargs):
 		super().__init__(cfg, **kwargs)
 		self.batch_index = 0
-		self.tset = tset
 		self.batch_size =self.cfg.batch_size
 		self.current_batch = None
-		self.file_sort = list(range(self.ntfiles)) if (tset == TSet.Train) else [self.ntfiles]
+		self.file_sort = None
 		self.use_batches = kwargs.get('use_batches',True)
 		self._files = None
 		self._load_cache_dataset()
@@ -56,8 +55,9 @@ class SinusoidElementLoader(ElementLoader):
 	def init_epoch(self, tset: TSet = TSet.Train):
 		self.ifile = 0
 		self.batch_index = 0
+		self.file_sort = list(range(self.ntfiles)) if (tset == TSet.Train) else [self.ntfiles]
+		if tset == TSet.Train: random.shuffle(self.file_sort)
 		self.set_tset(tset)
-		random.shuffle(self.file_sort)
 		self._load_cache_dataset()
 
 	@property
