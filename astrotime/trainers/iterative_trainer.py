@@ -264,7 +264,6 @@ class IterativeTrainer(object):
                     loss_data = np.array(losses)
                     print( f"Completed epoch {epoch} in {elapsed(te)/60:.5f} min, mean-loss= {loss_data.mean():.3f}, median= {np.median(loss_data):.3f}")
 
-
                 epoch_losses = np.array(losses)
                 print(f" ------ Epoch Loss: mean={epoch_losses.mean():.3f}, median={np.median(epoch_losses):.3f}, range=({epoch_losses.min():.3f} -> {epoch_losses.max():.3f})")
                 self.evaluate_batch_elems()
@@ -349,17 +348,12 @@ class IterativeTrainer(object):
             ploss = peaks_loss.mean().cpu().item()
             nelem = binput.shape[0]
             print(f" ------ Batch Validation Loss: model={np.mean(mloss):.3f}, peakfinder={np.median(ploss):.6f}, nelem={nelem}")
-            print(f" LOSS: {lstr(loss.cpu().tolist())}" )
-            sp = [ spectral_batch[i].mean().item() for i in range(spectral_batch.shape[0])]
-            si = [binput[i].mean().item() for i in range(binput.shape[0])]
-            print(f" SB: {lstr(sp)}")
-            print(f" SI: {lstr(si)}")
 
     @exception_handled
     def evaluate_batch_elems( self ):
         with self.device:
             self.loader.init_epoch(TSet.Validation,True)
-            losses, peak_losses, sp, si, nelem, sl = [], [], [], [], 0, 0
+            losses, peak_losses,  nelem, sl = [], [], 0, 0
             for ielement in range(0,self.loader.batch_size):
                 element = self.get_element(ielement)
                 if element is not None:
@@ -367,8 +361,6 @@ class IterativeTrainer(object):
                     target: Tensor = element['target']
                     result: Tensor = self.model( binput )
                     spectral_batch: torch.Tensor = self.embedding.get_result_tensor()
-                    sp.append( spectral_batch.mean().item() )
-                    si.append(binput.mean().item())
                     peaks: Tensor = self.peak_selector(spectral_batch)
                     loss: Tensor =  self.loss( result.squeeze(), target )
                     peaks_loss: Tensor = self.loss(target, peaks)
@@ -378,9 +370,6 @@ class IterativeTrainer(object):
             mloss = np.array(losses)
             ploss = np.array(peak_losses)
             print(f" ------ Batch Element Validation Loss: model={np.mean(mloss):.3f}, peakfinder={np.median(ploss):.6f}, nelem={nelem}")
-            print(f" LOSS: {lstr(losses)}")
-            print(f" SB: {lstr(sp)}")
-            print(f" SI: {lstr(si)}")
 
     @exception_handled
     def evaluate_elems( self ):
