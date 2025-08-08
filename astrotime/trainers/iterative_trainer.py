@@ -1,5 +1,6 @@
 from typing import List, Optional, Dict, Any, Tuple, Union
 from omegaconf import DictConfig
+from astrotime.util.math import shp
 from .checkpoints import CheckpointManager
 from astrotime.util.logging import exception_handled
 from astrotime.loaders.base import RDict, ElementLoader
@@ -311,24 +312,22 @@ class IterativeTrainer(object):
         with self.device:
             print(f" ---- Running *IterativeTrainer* Batch Validation cycles ---- ")
             self.loader.init_epoch(TSet.Validation)
-            losses, peak_losses, c_loss, t0, clstr = [], [], [], time.time(), ""
+            losses, peak_losses = [], []
             try:
                 for ibatch in range(0,sys.maxsize):
                     batch = self.get_next_batch()
                     if batch is not None:
-                        binput: Tensor = self.get_input(batch)
-                        target: Tensor = self.get_target(batch)
-                        octave: Tensor = self.get_octave(target)
-                        if binput.shape[0] > 0:
-                            self.global_time = time.time()
-                            self.embedding.set_octave_data(octave)
-                            result: Tensor = self.model( binput )
-                            if result.squeeze().ndim > 0:
-                                peaks: Tensor = self.get_batch_peaks()
-                                loss: Tensor =  self.loss( result.squeeze(), target )
-                                peaks_loss: Tensor = self.loss(target, peaks)
-                                losses.append(loss.cpu().item())
-                                peak_losses.append(peaks_loss.cpu().item())
+                        binput: Tensor = batch['z']
+                        target: Tensor = batch['target']
+                        result: Tensor = self.model( binput )
+                        spectral_batch: torch.Tensor = self.embedding.get_result_tensor()
+                        peaks: Tensor = self.peak_selector(spectral_batch)
+                        if ibatch == 0:
+                            print(f"+++ binput{shp(binput)} target{shp(target)} result{shp(result)} spect{shp(spectral_batch)} peaks{shp(peaks)} ")
+                        loss: Tensor =  self.loss( result.squeeze(), target )
+                        peaks_loss: Tensor = self.loss(target, peaks)
+                        losses.append(loss.cpu().item())
+                        peak_losses.append(peaks_loss.cpu().item())
 
             except StopIteration:
                 mloss = np.array(losses)
@@ -345,10 +344,13 @@ class IterativeTrainer(object):
             for ielement in range(0,self.loader.file_size):
                 element = self.get_element(ielement)
                 if element is not None:
-                    binput: Tensor = self.get_input(element)
-                    target: Tensor = self.get_target(element)
+                    binput: Tensor = element['z']
+                    target: Tensor = element['target']
                     result: Tensor = self.model( binput )
-                    peaks: Tensor = self.get_batch_peaks()
+                    spectral_batch: torch.Tensor = self.embedding.get_result_tensor()
+                    peaks: Tensor = self.peak_selector(spectral_batch)
+                    if ielement == 0:
+                        print(f"+++ binput{shp(binput)} target{shp(target)} result{shp(result)} spect{shp(spectral_batch)} peaks{shp(peaks)} ")
                     loss: Tensor =  self.loss( result.squeeze(), target )
                     peaks_loss: Tensor = self.loss(target, peaks)
                     losses.append(loss.cpu().item())
