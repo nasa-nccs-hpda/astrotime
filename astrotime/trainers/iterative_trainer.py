@@ -330,7 +330,7 @@ class IterativeTrainer(object):
             except StopIteration:
                 mloss = np.array(losses)
                 ploss = np.array(peak_losses)
-                print(f" ------ Batch Validation Loss: model={np.mean(mloss):.3f}, peakfinder={np.median(ploss):.3f}, nelem={nelem}")
+                print(f" ------ Batch Validation Loss: model={np.median(mloss):.3f}, peakfinder={np.median(ploss):.3f}, nelem={nelem}")
 
     @exception_handled
     def evaluate_batch( self ):
@@ -347,7 +347,7 @@ class IterativeTrainer(object):
             mloss = loss.mean().cpu().item()
             ploss = peaks_loss.mean().cpu().item()
             nelem = binput.shape[0]
-            print(f" ------ Batch Validation Loss: model={np.mean(mloss):.3f}, peakfinder={np.median(ploss):.6f}, nelem={nelem}")
+            print(f" ------ Batch Validation Loss: model={np.median(mloss):.3f}, peakfinder={np.median(ploss):.6f}, nelem={nelem}")
 
     @exception_handled
     def evaluate_batch_elems( self ):
@@ -369,7 +369,7 @@ class IterativeTrainer(object):
                     nelem += 1
             mloss = np.array(losses)
             ploss = np.array(peak_losses)
-            print(f" ------ Batch Element Validation Loss: model={np.mean(mloss):.3f}, peakfinder={np.median(ploss):.6f}, nelem={nelem}")
+            print(f" ------ Validation Loss: model={np.median(mloss):.3f}, peakfinder={np.median(ploss):.6f}, nelem={nelem}")
 
     @exception_handled
     def evaluate_elems( self ):
