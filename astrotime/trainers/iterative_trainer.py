@@ -150,10 +150,11 @@ class IterativeTrainer(object):
 
     def to_tensor(self, x: np.ndarray, y: np.ndarray) -> Tensor:
         with (self.device):
+            if y.ndim == 1:  y = y[None,:]
+            if x.ndim == 1:  x = x[None,:]
             Y: Tensor = torch.FloatTensor(y).to(self.device)
             X: Tensor = torch.FloatTensor(x).to(self.device)
-            print( f"to_tensor: X{shp(X)}, Y{shp(Y)}")
-            return torch.stack((X,Y), dim=-2)
+            return torch.stack((X,Y), dim=1)
 
     def get_next_batch(self) -> Optional[TRDict]:
         while True:
