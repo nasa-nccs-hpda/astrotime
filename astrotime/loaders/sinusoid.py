@@ -66,14 +66,14 @@ class SinusoidElementLoader(ElementLoader):
 
 	def get_raw_element(self, elem_index: int ) -> Optional[RDict]:
 		try:
-			if self.debug:
-				print( f"get_raw_element({elem_index}) file = {self.ifile}: {self.file_sort[self.ifile]}")
 			y: np.ndarray = self.data[ 'y' ].values[elem_index]
 			t: np.ndarray = self.data[ 't' ].values[elem_index]
 			p = self.data['p'].values[elem_index]
 			nan_mask = np.isnan(y)
 			y = y[~nan_mask]
 			t = t[~nan_mask]
+			if self.debug:
+				print( f"get_raw_element({elem_index}) file = {self.ifile}: {self.file_sort[self.ifile]}: {y.mean():.4f} {y.mean():.4f} {p:.4f}")
 			return dict( t=t, y=y, p=p )
 		except KeyError as ex:
 			print(f"\n    Error getting elem-{elem_index} from dataset({self.dspath}): vars = {list(self.data.data_vars.keys())}\n")
