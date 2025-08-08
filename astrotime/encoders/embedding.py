@@ -4,6 +4,11 @@ import numpy as np
 import logging
 from .base import Transform
 
+def tnorm(x: Tensor, dim: int=-1) -> Tensor:
+	m: Tensor = x.mean( dim=dim, keepdim=True)
+	s: Tensor = torch.std( x, dim=dim, keepdim=True)
+	return (x - m) / (s + 0.0001)
+
 class EmbeddingLayer(Transform):
 
 	def __init__(self, name: str, cfg, embedding_space: Tensor, device: device ):
@@ -31,9 +36,10 @@ class EmbeddingLayer(Transform):
 	def forward(self, batch: torch.Tensor ) -> torch.Tensor:
 		xs: torch.Tensor = torch.unsqueeze(batch[0, :],0) if batch.ndim == 2 else batch[:, 0, :]
 		ys: torch.Tensor = torch.unsqueeze(batch[1, :],0) if batch.ndim == 2 else batch[:, 1:, :]
-		self._result: torch.Tensor = self.full_embedding(xs,ys)
+		yn: Tensor = tnorm(ys)
+		self._result: torch.Tensor = self.full_embedding(xs,yn)
 		self.init_state = False
-		return self._result
+		return tnorm(self._result)
 
 	def get_result(self) -> np.ndarray:
 		return self._result.cpu().numpy()

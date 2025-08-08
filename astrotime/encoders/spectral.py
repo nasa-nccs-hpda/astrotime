@@ -8,25 +8,18 @@ from astrotime.util.math import l2space
 from astrotime.util.logging import elapsed
 from astrotime.util.tensor_ops import check_nan, check_constant
 
-def tnorm(x: Tensor, dim: int=-1) -> Tensor:
-	m: Tensor = x.mean( dim=dim, keepdim=True)
-	s: Tensor = torch.std( x, dim=dim, keepdim=True)
-	return (x - m) / (s + 0.0001)
-
 def embedding_space( cfg: DictConfig, device: device ) -> Tuple[np.ndarray,Tensor]:
 	nfspace = l2space( cfg.base_freq, cfg.noctaves, cfg.nfreq_oct )
 	tfspace = torch.FloatTensor( nfspace ).to(device)
 	return nfspace, tfspace
 
 def spectral_projection( x: Tensor, y: Tensor ) -> Tensor:
-	yn: Tensor = tnorm(y)
 	pw1: Tensor = torch.sin(x)
 	pw2: Tensor = torch.cos(x)
-	p1: Tensor = torch.sum( yn * pw1, dim=-1)
-	p2: Tensor = torch.sum( yn * pw2, dim=-1)
+	p1: Tensor = torch.sum( y * pw1, dim=-1)
+	p2: Tensor = torch.sum( y * pw2, dim=-1)
 	mag: Tensor =  torch.sqrt( p1**2 + p2**2 )
-	rv = tnorm(mag)
-	return rv
+	return mag
 
 class SpectralProjection(EmbeddingLayer):
 
@@ -78,12 +71,12 @@ class SpectralProjection(EmbeddingLayer):
 
 	def full_embedding(self, ts: torch.Tensor, ys: torch.Tensor ) -> Tensor:
 		t0 = time.time()
-		self.init_log(f"SpectralProjection shapes: ts{list(ts.shape)} ys{list(ys.shape)}")
+		self.init_log(f"FULL SpectralProjection shapes: ts{list(ts.shape)} ys{list(ys.shape)}")
 		ts: Tensor = ts[:, None, :]  # broadcast-to(self.batch_size,self.nfreq,slen)
 		dz: Tensor =  ts * self.get_omega()
 		mag: Tensor =  spectral_projection( dz, ys )
 		embedding: Tensor = torch.unsqueeze(mag, 1)
-		self.init_log(f" Completed embedding{list(embedding.shape)} in {elapsed(t0):.5f} sec: nfeatures={embedding.shape[1]}")
+		self.init_log(f" Completed FULL embedding{list(embedding.shape)} in {elapsed(t0):.5f} sec: nfeatures={embedding.shape[1]}")
 		self.init_state = False
 		return embedding
 

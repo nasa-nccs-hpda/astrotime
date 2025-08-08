@@ -40,10 +40,10 @@ class SpectralPeakSelector(Module):
         self.hsr = hsmag[:, 0, :].squeeze() if (hsmag.ndim == 3) else hsmag.squeeze()
         hspeak: Tensor = self.hsr.argmax(dim=-1).squeeze()
         result: Tensor = self.fspace[hspeak]
-        self.log.info(f" SpectralPeakSelector.forward: result{shp(result)}, hspeak{shp(hspeak)}, hsr{shp(self.hsr)}, hsmag{shp(hsmag)}, fspace{shp(self.fspace)}")
-        self.log.info(f"  **** pindex: {hspeak.cpu().tolist()}")
-        self.log.info(f"  **** pvalue: {result.cpu().tolist()}")
-        self.log.info(f"  **** fspace: {self.fspace[0].item():.3f} -> {self.fspace[-1].item():.3f}")
+       # self.log.info(f" SpectralPeakSelector.forward: result{shp(result)}, hspeak{shp(hspeak)}, hsr{shp(self.hsr)}, hsmag{shp(hsmag)}, fspace{shp(self.fspace)}")
+       # self.log.info(f"  **** pindex: {hspeak.cpu().tolist()}")
+       # self.log.info(f"  **** pvalue: {result.cpu().tolist()}")
+       # self.log.info(f"  **** fspace: {self.fspace[0].item():.3f} -> {self.fspace[-1].item():.3f}")
         return result
 
 class Evaluator:

@@ -21,7 +21,7 @@ def my_app(cfg: DictConfig) -> None:
 	model: nn.Module = get_model_from_cfg( cfg,  embedding ).to(device)
 
 	trainer = IterativeTrainer( cfg, device, data_loader, model, embedding )
-	trainer.train(version)
+	trainer.train( version )
 
 if __name__ == "__main__":
 	my_app()
