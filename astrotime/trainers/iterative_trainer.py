@@ -368,7 +368,7 @@ class IterativeTrainer(object):
                     result: Tensor = self.model( binput )
                     spectral_batch: torch.Tensor = self.embedding.get_result_tensor()
                     sl = spectral_batch.shape[1]
-                    sp.append( spectral_batch[11].item() )
+                    sp.append( spectral_batch[0,11].item() )
                     peaks: Tensor = self.peak_selector(spectral_batch)
                     loss: Tensor =  self.loss( result.squeeze(), target )
                     peaks_loss: Tensor = self.loss(target, peaks)
