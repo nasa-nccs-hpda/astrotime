@@ -266,6 +266,7 @@ class IterativeTrainer(object):
                 epoch_losses = np.array(losses)
                 print(f" ------ Epoch Loss: mean={epoch_losses.mean():.3f}, median={np.median(epoch_losses):.3f}, range=({epoch_losses.min():.3f} -> {epoch_losses.max():.3f})")
                 self.evaluate()
+                self.evaluate_elems()
 
     def init_eval(self, version):
         self.optimizer = self.get_optimizer()
@@ -349,42 +350,30 @@ class IterativeTrainer(object):
             val_losses = np.array(losses)
             print(f" ------ Validation Loss: mean={val_losses.mean():.3f}, median={np.median(val_losses):.3f}, range=({val_losses.min():.3f} -> {val_losses.max():.3f})")
 
-    def evaluate1(self,version):
-        print(f"SignalTrainer[{self.mode}]: , {self.nepochs} epochs, device={self.device}")
-        if self.mtype != "peakfinder":
-            self.optimizer = self.get_optimizer()
-            self.initialize_checkpointing(version)
+    @exception_handled
+    def evaluate_elems( self ):
         with self.device:
-            self.loader.initialize()
-            print(f" ---- Running Test cycles ---- ")
+            print(f" ---- Running *IterativeTrainer* Validation cycles ---- ")
+            te = time.time()
             self.loader.init_epoch(TSet.Validation)
-            losses, peak_losses, log_interval, t0 = [], [], 50, time.time()
+            losses, peak_losses, c_loss, t0, clstr = [], [], [], time.time(), ""
             try:
-                for ibatch in range(0,sys.maxsize):
-                    t0 = time.time()
-                    batch = self.get_next_batch()
-                    binput: Tensor = self.get_input(batch)
-                    target: Tensor = self.get_target(batch)
-                #    octave: Tensor = self.get_octave(target)
-                    if binput.shape[0] > 0:
-                        self.global_time = time.time()
-                    #    self.embedding.set_octave_data(octave)
+                for ielement in range(0,self.loader.file_size):
+                    element = self.get_element(ielement)
+                    if element is not None:
+                        binput: Tensor = self.get_input(element)
+                        target: Tensor = self.get_target(element)
                         result: Tensor = self.model( binput )
-                        if result.squeeze().ndim > 0:
-                            peaks: Tensor = self.get_batch_peaks()
-                            loss: Tensor =  self.loss( result.squeeze(), target )
-                            peaks_loss: Tensor = self.loss( target, peaks )
-                            losses.append(loss.cpu().item())
-                            peak_losses.append(peaks_loss.cpu().item())
-                            if ibatch % log_interval == 0:
-                                aloss = np.array(losses[-log_interval:])
-                                ploss = np.array(peak_losses[-log_interval:])
-                                print(f"F-{self.loader.ifile}:{self.loader.file_index} B-{ibatch} ploss={ploss.mean():.3f}, loss={aloss.mean():.3f}, range=({aloss.min():.3f} -> {aloss.max():.3f}), dt/batch={elapsed(t0):.5f} sec")
+                        peaks: Tensor = self.get_batch_peaks()
+                        loss: Tensor =  self.loss( result.squeeze(), target )
+                        peaks_loss: Tensor = self.loss(target, peaks)
+                        losses.append(loss.cpu().item())
+                        peak_losses.append(peaks_loss.cpu().item())
 
             except StopIteration:
-                epoch_losses = np.array(losses)
-                epoch_peak_losses = np.array(peak_losses)
-                print(f" ------ EVAL (peakfinder: {epoch_peak_losses.mean():.3f}) Loss: mean={epoch_losses.mean():.3f}, median={np.median(epoch_losses):.3f}, range=({epoch_losses.min():.3f} -> {epoch_losses.max():.3f})")
+                mloss = np.array(losses)
+                ploss = np.array(peak_losses)
+                print(f" ------ Element Validation Loss: model={np.median(mloss):.3f}, peakfinder={np.median(ploss):.3f}, ")
 
     def test(self,version, nbatches: int = 10):
         print(f"SignalTrainer[{self.mode}]: , {self.nepochs} epochs, device={self.device}")
