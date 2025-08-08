@@ -312,9 +312,8 @@ class IterativeTrainer(object):
     @exception_handled
     def evaluate( self ):
         with self.device:
-            print(f" ---- Running *IterativeTrainer* Batch Validation cycles ---- ")
             self.loader.init_epoch(TSet.Validation)
-            losses, peak_losses = [], []
+            losses, peak_losses, nelem = [], [], 0
             try:
                 for ibatch in range(0,sys.maxsize):
                     batch = self.get_next_batch()
@@ -328,19 +327,19 @@ class IterativeTrainer(object):
                         peaks_loss: Tensor = self.loss(target, peaks)
                         losses.append(loss.cpu().item())
                         peak_losses.append(peaks_loss.cpu().item())
+                        nelem += binput.shape[0]
 
             except StopIteration:
                 mloss = np.array(losses)
                 ploss = np.array(peak_losses)
-                print(f" ------ Batch Validation Loss: model={np.median(mloss):.3f}, peakfinder={np.median(ploss):.3f}, ")
+                print(f" ------ Batch Validation Loss: model={np.mean(mloss):.3f}, peakfinder={np.median(ploss):.3f}, nelem={nelem}")
 
 
     @exception_handled
     def evaluate_elems( self ):
         with self.device:
-            print(f" ---- Running *IterativeTrainer* Element Validation cycles ---- ")
             self.loader.init_epoch(TSet.Validation)
-            losses, peak_losses = [], []
+            losses, peak_losses, nelem = [], [], 0
             for ielement in range(0,self.loader.file_size):
                 element = self.get_element(ielement)
                 if element is not None:
@@ -353,9 +352,10 @@ class IterativeTrainer(object):
                     peaks_loss: Tensor = self.loss(target, peaks)
                     losses.append(loss.cpu().item())
                     peak_losses.append(peaks_loss.cpu().item())
+                    nelem += 1
             mloss = np.array(losses)
             ploss = np.array(peak_losses)
-            print(f" ------ Element Validation Loss: model={np.median(mloss):.3f}, peakfinder={np.median(ploss):.3f}, ")
+            print(f" ------ Element Validation Loss: model={np.mean(mloss):.3f}, peakfinder={np.median(ploss):.3f}, nelem={nelem}")
 
     def test(self,version, nbatches: int = 10):
         print(f"SignalTrainer[{self.mode}]: , {self.nepochs} epochs, device={self.device}")
