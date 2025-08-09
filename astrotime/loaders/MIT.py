@@ -380,7 +380,7 @@ class MITElementLoader(ElementLoader):
 	def get_raw_element( self, elem_index: int ) -> Optional[RDict]:
 		TIC = self._TICS[elem_index]
 		dsy: xa.DataArray = self.data[TIC+".y"]
-		period = dsy.attrs["p"]
+		period = dsy.attrs["period"]
 		sn = dsy.attrs["sn"]
 		if self.in_range(period) and (sn>self.snr_min) and (sn<self.snr_max):
 			nanmask = np.isnan(dsy.values)
