@@ -131,7 +131,7 @@ class SinusoidElementLoader(ElementLoader):
 		if self.data is None: return None
 		elem = self.get_raw_element(ielem)
 		if elem is None: return None
-		result = dict( t=elem['t'], y=elem['y'], period=elem['p'], offset=ielem, file=self.ifile )
+		result = dict( t=elem['t'], y=elem['y'], p=elem['p'], offset=ielem, file=self.ifile )
 		return result
 
 	@property

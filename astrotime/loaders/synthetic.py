@@ -140,7 +140,7 @@ class SyntheticElementLoader(ElementLoader):
 				result['stype'] = np.array(stype)
 				result['offset'] = batch_start
 				result['file'] = self.file_index
-				self.log.info(f" **** LOADED: y{result['y'].shape}, t{result['t'].shape}, len-diff={tlen1-tlen0}, pmax={result['period'].max():.3f}, trng0={result['t'][0][-1]-result['t'][0][0]:.3f}")
+				self.log.info(f" **** LOADED: y{result['y'].shape}, t{result['t'].shape}, len-diff={tlen1-tlen0}, pmax={result['p'].max():.3f}, trng0={result['t'][0][-1]-result['t'][0][0]:.3f}")
 				return result
 		return None
 
