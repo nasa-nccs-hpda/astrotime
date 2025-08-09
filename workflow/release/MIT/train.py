@@ -15,7 +15,7 @@ def my_app(cfg: DictConfig) -> None:
 	embedding = SpectralProjection( cfg.transform, embedding_space_tensor, device )
 	model: nn.Module = get_model_from_cfg(cfg, embedding).to(device)
 
-	data_loader = MITElementLoader(cfg.data, files_per_epoch=10)
+	data_loader = MITElementLoader( cfg.data )
 	trainer = IterativeTrainer( cfg, device, data_loader, model, embedding )
 	trainer.train( version, log_interval=10 )
 
