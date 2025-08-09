@@ -14,7 +14,7 @@ max_series_length: 60000
 maxh: 8
 snr_min: 50
 snr_max: 1.0e9
-batch_size: 8
+batch_size: 16
 num_workers: 8
 pin_memory: true
 persistent_workers: true
