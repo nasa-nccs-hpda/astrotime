@@ -335,7 +335,7 @@ class IterativeTrainer(object):
     @exception_handled
     def evaluate_batch( self ):
         with self.device:
-            self.loader.init_epoch(TSet.Validation,True)
+            self.loader.init_epoch(TSet.Validation)
             batch = self.get_next_batch()
             binput: Tensor = batch['z']
             target: Tensor = batch['target']
@@ -352,7 +352,7 @@ class IterativeTrainer(object):
     @exception_handled
     def evaluate_batch_elems( self ):
         with self.device:
-            self.loader.init_epoch(TSet.Validation,True)
+            self.loader.init_epoch(TSet.Validation)
             losses, peak_losses,  nelem, sl = [], [], 0, 0
             for ielement in range(0,self.loader.batch_size):
                 element = self.get_element(ielement)
