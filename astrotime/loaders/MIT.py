@@ -275,7 +275,7 @@ class MITOctavesLoader(MITLoader):
 class MITElementLoader(ElementLoader):
 
 	def __init__(self, cfg: DictConfig, **kwargs ):
-		super().__init__(cfg)
+		super().__init__(cfg, **kwargs)
 		self.sector_range = cfg.sector_range
 		self.loaded_file = -1
 		self.filters = kwargs.get('filters',True)
@@ -400,7 +400,7 @@ class MITElementLoader(ElementLoader):
 		if self.batch_offset >= self.nelements-1:
 			self.batch_offset = 0
 			self.ifile += 1
-			if (self.ifile >= self.ntfiles) or (self.tset == TSet.Validation):
+			if (self.ifile >= self.max_files_per_epoch) or (self.tset == TSet.Validation):
 				raise StopIteration
 			self.load_data()
 

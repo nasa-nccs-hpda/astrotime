@@ -237,7 +237,6 @@ class IterativeTrainer(object):
                         if batch is not None:
                             binput: Tensor = self.get_input(batch)
                             target: Tensor = self.get_target(batch)
-                            octave: Tensor = self.get_octave(target)
                             #self.log.info(f"train: input{list(binput.shape)}, target{list(target.shape)}")
                             if binput.shape[0] > 0:
                                 self.global_time = time.time()
@@ -363,9 +362,9 @@ class IterativeTrainer(object):
                     spectral_batch: torch.Tensor = self.embedding.get_result_tensor()
                     peaks: Tensor = self.peak_selector(spectral_batch)
                     loss: Tensor =  self.loss( result.squeeze(), target )
-                    peaks_loss: Tensor = self.loss(target, peaks)
-                    losses.append(loss.cpu().item())
-                    peak_losses.append(peaks_loss.cpu().item())
+                    peaks_loss: Tensor = self.loss( target, peaks )
+                    losses.append( loss.cpu().item() )
+                    peak_losses.append( peaks_loss.cpu().item() )
                     nelem += 1
             mloss = np.array(losses)
             ploss = np.array(peak_losses)
