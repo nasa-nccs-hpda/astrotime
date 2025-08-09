@@ -286,7 +286,6 @@ class MITElementLoader(ElementLoader):
 		self.period_range: Tuple[float,float] = self.get_period_range()
 		self._TICS: List[str]  = None
 		self.preload = True # kwargs.get('preload',True)
-		self.elems = []
 		self.file_sort = None
 
 	def set_tset(self, tset: TSet):
@@ -341,8 +340,6 @@ class MITElementLoader(ElementLoader):
 		if (self.loaded_file != self.ifile) or (self.data is None):
 			self._load_cache_dataset()
 			self.loaded_file = self.ifile
-			if self.preload:
-				self.preload_elems()
 			return True
 		return False
 
@@ -354,7 +351,7 @@ class MITElementLoader(ElementLoader):
 	@property
 	def nelements(self) -> int:
 		self.load_data()
-		return len(self.elems)
+		return len(self._TICS)
 
 	@property
 	def nfiles(self) -> int:
@@ -366,16 +363,7 @@ class MITElementLoader(ElementLoader):
 
 	def get_element(self, elem_index: int) -> Optional[RDict]:
 		self.load_data()
-		if self.preload: return self.get_loaded_element(elem_index)
-		else:            return self.get_raw_element(elem_index)
-
-	def get_loaded_element(self, elem_index: int) -> Optional[RDict]:
-		try:
-			elem = self.elems[elem_index]
-			return dict( **elem )
-		except IndexError:
-			self.log.error(f"get_loaded_element: elem_index={elem_index} outside elems[{len(self.elems)}], nelements={self.nelements}")
-			return None
+		return self.get_raw_element(elem_index)
 
 	def get_raw_element( self, elem_index: int ) -> Optional[RDict]:
 		TIC = self._TICS[elem_index]
@@ -409,9 +397,6 @@ class MITElementLoader(ElementLoader):
 		elems.sort(key=lambda x: x[0])
 		self._TICS = [elem[1] for elem in elems]
 
-	def n_loaded_elems(self) -> int:
-		return len(self.elems)
-
 	def get_next_batch(self, update_file=True ) -> Optional[Dict[str,np.ndarray]]:
 		ielem, periods, sns, tics, ts, ys, slens, b0  = 0, [], [], [], [], [], [], self.batch_offset
 		if update_file: self.update_file()
@@ -437,13 +422,5 @@ class MITElementLoader(ElementLoader):
 		yn = np.stack( [ y[:slen] for y in ys], axis=0 )
 		tn = np.stack( [ t[:slen] for t in ts], axis=0 )
 		return dict( t=tn, y=yn, p=np.array(periods), sn=np.array(sns), TICS=np.array(tics) )
-
-	def preload_elems(self) -> Optional[Dict[str,np.ndarray]]:
-		self.elems = []
-		for ielem in range( 0, len(self._TICS) ):
-			elem: Optional[RDict] = self.get_raw_element(ielem)
-			if elem is not None:
-				self.elems.append( elem )
-		#self.log.info(f"   --- Preloaded {len(self.elems)} elements from file-{self.ifile}")
 
 
