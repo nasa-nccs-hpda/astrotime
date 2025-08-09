@@ -37,7 +37,7 @@ class EmbeddingLayer(Transform):
 		xs: torch.Tensor = torch.unsqueeze(batch[0, :],0) if batch.ndim == 2 else batch[:, 0, :]
 		ys: torch.Tensor = torch.unsqueeze(batch[1, :],0) if batch.ndim == 2 else batch[:, 1:, :]
 		yn: Tensor = tnorm(ys)
-		self._result: torch.Tensor = self.full_embedding(xs,yn)
+		self._result: torch.Tensor = self.embed(xs,yn)
 		self.init_state = False
 		return tnorm(self._result)
 
