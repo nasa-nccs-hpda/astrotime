@@ -285,7 +285,6 @@ class MITElementLoader(ElementLoader):
 		self.max_series_length: int = cfg.get('max_series_length', 80000 )
 		self.period_range: Tuple[float,float] = self.get_period_range()
 		self._TICS: List[str]  = None
-		self.preload = True # kwargs.get('preload',True)
 		self.file_sort = None
 
 	def set_tset(self, tset: TSet):
