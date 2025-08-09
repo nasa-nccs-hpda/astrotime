@@ -100,7 +100,7 @@ class SyntheticElementLoader(ElementLoader):
 				self.current_batch = self.get_batch(batch_idx)
 				self.batch_index = batch_idx
 			ib, b = elem_index % self.batch_size, self.current_batch
-			return dict(t=b['t'][ib], y=b['y'][ib], p=b['period'][ib])
+			return dict(t=b['t'][ib], y=b['y'][ib], p=b['p'][ib])
 		except IndexError:
 			return None
 
@@ -109,7 +109,7 @@ class SyntheticElementLoader(ElementLoader):
 		if batch_start >= self.file_size:
 			self.ifile += 1
 			self.batch_index = 0
-			if self.ifile  >=  len(self.file_sort):
+			if self.ifile  >= self.max_files_per_epoch:
 				raise StopIteration
 			self._load_cache_dataset()
 		batch: Optional[Dict[str,Any]] = self.get_batch(self.batch_index)
@@ -135,7 +135,7 @@ class SyntheticElementLoader(ElementLoader):
 			if tlen1 > 0:
 				result['t'] = merge(t,tlen0)
 				result['y'] = merge(y,tlen0)
-				result['period'] = np.array(p)
+				result['p'] = np.array(p)
 				result['octave'] = np.array(o)
 				result['stype'] = np.array(stype)
 				result['offset'] = batch_start

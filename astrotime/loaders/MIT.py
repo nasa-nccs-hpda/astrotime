@@ -380,7 +380,7 @@ class MITElementLoader(ElementLoader):
 	def get_raw_element( self, elem_index: int ) -> Optional[RDict]:
 		TIC = self._TICS[elem_index]
 		dsy: xa.DataArray = self.data[TIC+".y"]
-		period = dsy.attrs["period"]
+		period = dsy.attrs["p"]
 		sn = dsy.attrs["sn"]
 		if self.in_range(period) and (sn>self.snr_min) and (sn<self.snr_max):
 			nanmask = np.isnan(dsy.values)
@@ -388,7 +388,7 @@ class MITElementLoader(ElementLoader):
 			y: np.ndarray = dsy.values[~nanmask]
 			ss = y.std()
 			if (ss > 0.0) and (ss < 1e10):
-				train_data = dict( t=dst.values[~nanmask], y=y, period=period, sn=sn, sector=self.ifile, tic=TIC )
+				train_data = dict( t=dst.values[~nanmask], y=y, p=period, sn=sn, sector=self.ifile, tic=TIC )
 				return train_data
 		return None
 
@@ -423,7 +423,7 @@ class MITElementLoader(ElementLoader):
 			if elem is not None:
 				ts.append(elem['t'])
 				ys.append(elem['y'])
-				periods.append(elem['period'])
+				periods.append(elem['p'])
 				sns.append(elem['sn'])
 				tics.append(elem['tic'])
 				slens.append( elem['y'].size )
@@ -436,7 +436,7 @@ class MITElementLoader(ElementLoader):
 		slen = np.array(slens).min()
 		yn = np.stack( [ y[:slen] for y in ys], axis=0 )
 		tn = np.stack( [ t[:slen] for t in ts], axis=0 )
-		return dict( t=tn, y=yn, period=np.array(periods), sn=np.array(sns), TICS=np.array(tics) )
+		return dict( t=tn, y=yn, p=np.array(periods), sn=np.array(sns), TICS=np.array(tics) )
 
 	def preload_elems(self) -> Optional[Dict[str,np.ndarray]]:
 		self.elems = []

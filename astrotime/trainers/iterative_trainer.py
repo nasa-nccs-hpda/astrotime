@@ -136,7 +136,7 @@ class IterativeTrainer(object):
     def encode_batch(self, batch: RDict) -> TRDict:
         #self.log.debug( f"encode_batch: {list(batch.keys())}")
         t,y = batch.pop('t'), batch.pop('y')
-        p: Tensor = torch.from_numpy(batch.pop('period')).to(self.device)
+        p: Tensor = torch.from_numpy(batch.pop('p')).to(self.device)
         o = batch.pop('octave', None)
         if o is not None: o = torch.from_numpy(o).to(self.device)
         z: Tensor = self.to_tensor( t, y )
@@ -144,7 +144,7 @@ class IterativeTrainer(object):
 
     def encode_element(self, element: RDict) -> TRDict:
         t,y = element.pop('t'), element.pop('y')
-        p: float = element.pop('period')
+        p: float = element.pop('p')
         z: Tensor = self.to_tensor( t, y )
         return dict( z=z, target=1/p, **element )
 
