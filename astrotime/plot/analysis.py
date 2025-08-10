@@ -129,7 +129,7 @@ class RawDatasetPlot(SignalPlot):
 				period = event_data['period']
 				pm = self.period_markers.setdefault(pm_name, PeriodMarkers(pm_name, self.ax, color=event_data['color'], linewidth=2 ) )
 				pm.update( self.origin, period )
-				title = f"{self.name}({self.file},{self.element}) snr={self.snr}"
+				title = f"{self.name}({self.file},{self.element}) snr={self.snr:.2f}"
 				self.ax.title.set_text(title)
 
 	@exception_handled
@@ -161,7 +161,7 @@ class RawDatasetPlot(SignalPlot):
 		if ys is not None:
 			self.origin = xs[np.argmax(np.abs(ys))]
 			self.plot: Line2D = self.ax.plot(xs, ys, label='y', color='blue', marker=".", linewidth=1, markersize=2, alpha=0.5)[0]
-			self.ax.title.set_text(f"{self.name}({stype},{self.file},{self.element}): snr={self.snr:.3f}")
+			self.ax.title.set_text(f"{self.name}({stype},{self.file},{self.element}): snr={self.snr:.2f}")
 			self.ax.title.set_fontsize(8)
 			self.ax.title.set_fontweight('bold')
 			self.ax.set_xlim(xs[0],xs[-1])
@@ -190,7 +190,6 @@ class RawDatasetPlot(SignalPlot):
 	def update(self, val=0, **kwargs ):
 		xdata, ydata, self.period, self.snr, stype = self.get_element_data()
 		if ydata is not None:
-			self.log.debug(f" ---------> get_element_data: xdata{xdata.shape}, ydata{ydata.shape}, period={self.period:.3f}, snr={self.snr:.3f}, stype={stype}")
 			self.origin = xdata[np.argmax(np.abs(ydata))]
 			self.plot.set_ydata(ydata)
 			self.plot.set_xdata(xdata)

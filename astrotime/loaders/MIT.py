@@ -328,7 +328,7 @@ class MITElementLoader(ElementLoader):
 		try:
 			self.file_index = self.file_sort[self.ifile]
 		except IndexError:
-			self.log.info( f"File Index error: {len(self.file_sort)} files, index={self.ifile}, sectort-range={self.cfg.sector_range}")
+			self.log.info( f"\n ---- File Index error: {len(self.file_sort)} files, index={self.ifile}, sectort-range={self.cfg.sector_range} ----\n")
 			self.file_index = self.file_sort[-1]
 		dspath: str = self.cache_path
 		if os.path.exists(dspath):
