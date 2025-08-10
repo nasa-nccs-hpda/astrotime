@@ -342,6 +342,7 @@ class MITElementLoader(ElementLoader):
 
 	@property
 	def nelem(self):
+		self.load_data()
 		return len(self._TICS)
 
 	@property

@@ -530,7 +530,6 @@ class EvaluatorPlot(SignalPlot):
 			self.ax.xaxis.set_major_formatter(ticker.StrMethodFormatter("{x:.2f}"))
 			self.ax.xaxis.set_major_locator(ticker.LogLocator(base=2, numticks=8))
 			self.ax.legend(loc="upper right", fontsize=8)
-			self.update_nelements()
 
 	@exception_handled
 	def button_press(self, event: MouseEvent) -> Any:
@@ -557,7 +556,7 @@ class EvaluatorPlot(SignalPlot):
 			self.update()
 
 	def update_nelements(self):
-		nelements = self.evaluator.loader.nelements
+		nelements = self.evaluator.loader.nelem
 		elem_slider = self.get_slider('element')
 		if nelements != elem_slider.valmax:
 			elem_slider.valmax = nelements
