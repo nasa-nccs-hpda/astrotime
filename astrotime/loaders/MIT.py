@@ -325,7 +325,11 @@ class MITElementLoader(ElementLoader):
 		return f"{self.cfg.dataset_root}/sector-{isector}.nc"
 
 	def _load_cache_dataset( self ):
-		self.file_index = self.file_sort[self.ifile]
+		try:
+			self.file_index = self.file_sort[self.ifile]
+		except IndexError:
+			self.log.info( f"File Index error: {len(self.file_sort)} files, index={self.ifile}, sectort-range={self.cfg.sector_range}")
+			self.file_index = self.file_sort[-1]
 		dspath: str = self.cache_path
 		if os.path.exists(dspath):
 			self.data = xa.open_dataset( dspath, engine="netcdf4" )
