@@ -152,6 +152,9 @@ class STIntParam(STParam):
 		self.log.info( f" STIntParam({name}): vrange = {self.vrange}" )
 		self.key_press_mode = kwargs.get('key_press_mode', 1)
 
+	def get_slider(self) -> Slider:
+		return self._widget
+
 	def process_key_press(self, key: str ):
 		if self.key_press_mode == 1:
 			if   key == "right": self.set_value( self.value_selected() + 1 )

@@ -99,10 +99,11 @@ class ElementLoader(Loader):
 		self.tset = tset
 		return self
 
-	def set_file(self, file_idx: int):
+	def set_file(self, file_idx: int) -> int:
 		if file_idx != self.ifile:
 			self.ifile = file_idx
 			self.data = None
+		return self.nelements
 
 	def load_data(self):
 		raise NotImplementedError(f"The class '{self.__class__.__name__}' does not implement the 'load_data' method")
@@ -115,7 +116,7 @@ class ElementLoader(Loader):
 	def nelem(self):
 		return self.file_size
 
-	def get_element( self, elem_index: int ) -> Optional[RDict]:
+	def get_element( self, elem_index: int, **kwargs ) -> Optional[RDict]:
 		raise NotImplementedError(f"The class '{self.__class__.__name__}' does not implement the 'load_element' method")
 
 	def get_next_batch( self ) -> Optional[RDict]:

@@ -335,12 +335,14 @@ class MITElementLoader(ElementLoader):
 		else:
 			self.log.info( f"Cache file not found: {dspath}")
 
-	def load_data( self ) -> bool:
+	def load_data( self ):
 		if (self.loaded_file != self.ifile) or (self.data is None):
 			self._load_cache_dataset()
 			self.loaded_file = self.ifile
-			return True
-		return False
+
+	@property
+	def nelem(self):
+		return len(self._TICS)
 
 	@property
 	def file_size(self) -> int:
@@ -360,16 +362,18 @@ class MITElementLoader(ElementLoader):
 	def ntfiles(self) -> int:
 		return self.nfiles-1
 
-	def get_element(self, elem_index: int) -> Optional[RDict]:
+	def get_element(self, elem_index: int, **kwargs) -> Optional[RDict]:
 		self.load_data()
-		return self.get_raw_element(elem_index)
+		return self.get_raw_element(elem_index, **kwargs)
 
-	def get_raw_element( self, elem_index: int ) -> Optional[RDict]:
+	def get_raw_element( self, elem_index: int, **kwarg ) -> Optional[RDict]:
+		unfiltered: bool = kwarg.get('unfiltered', False)
 		TIC = self._TICS[elem_index]
 		dsy: xa.DataArray = self.data[TIC+".y"]
 		period = dsy.attrs["period"]
 		sn = dsy.attrs["sn"]
-		if self.in_range(period) and (sn>self.snr_min) and (sn<self.snr_max):
+		within_spec = self.in_range(period) and (sn>self.snr_min) and (sn<self.snr_max)
+		if within_spec or unfiltered:
 			nanmask = np.isnan(dsy.values)
 			dst: xa.DataArray = self.data[TIC + ".time"]
 			y: np.ndarray = dsy.values[~nanmask]

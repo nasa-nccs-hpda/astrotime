@@ -1,5 +1,6 @@
 import logging, os, csv, pickle, numpy as np
 from .param import STIntParam, STFloatParam
+from matplotlib.widgets import Slider
 from matplotlib import ticker
 from astrotime.trainers.iterative_trainer import IterativeTrainer
 from torch import nn, optim, Tensor, FloatTensor
@@ -489,16 +490,21 @@ class EvaluatorPlot(SignalPlot):
 		self.nlines = -1
 		self.transforms = {}
 
+	def get_slider(self, name: str ) -> Slider:
+		param: STIntParam = self._sparms[name]
+		return param.get_slider()
+
 	@property
 	def nelements(self) -> int:
-		return self.evaluator.loader.nelem
+		return self.evaluator.loader.nelements
 
 	@property
 	def tname(self):
 		return self.evaluator.embedding.name
 
 	def _setup(self):
-		self.evaluator.evaluate_element(self.element)
+		self.evaluator.evaluate_element(self.element,unfiltered=True)
+		self.update_nelements()
 		target_freq = self.evaluator.target_frequency
 		if target_freq is None:
 			print( f"No data for element {self.element} in file-{self.evaluator.loader.ifile} ---")
@@ -550,9 +556,17 @@ class EvaluatorPlot(SignalPlot):
 				pass
 			self.update()
 
+	def update_nelements(self):
+		nelements = self.evaluator.loader.nelements
+		elem_slider = self.get_slider('element')
+		if nelements != elem_slider.valmax:
+			elem_slider.valmax = nelements
+			elem_slider.ax.set_xlim(0, nelements )
+
 	@exception_handled
 	def update(self, val=0):
-		self.evaluator.evaluate_element(self.element)
+		self.evaluator.evaluate_element(self.element,unfiltered=True)
+		self.update_nelements()
 		if self.evaluator.target_frequency is None:
 			self.ax.title.set_text(f"{self.name}({self.file},{self.element}): No data for this element")
 			self.ax.figure.canvas.draw_idle()

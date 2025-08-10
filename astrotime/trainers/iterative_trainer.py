@@ -168,8 +168,8 @@ class IterativeTrainer(object):
                 self.log.info(f"train.get_next_batch returned None")
                 return None
 
-    def get_element(self, ielem: int) -> Optional[TRDict]:
-        elem: Optional[Dict[str, Any]] = self.loader.get_element(ielem)
+    def get_element(self, ielem: int, **kwargs) -> Optional[TRDict]:
+        elem: Optional[Dict[str, Any]] = self.loader.get_element(ielem, **kwargs)
         if elem is not None:
             #self.log.info(f"train.get_next_batch: {list(dset.keys())}")
             batch: TRDict = self.encode_element(elem)
@@ -282,9 +282,9 @@ class IterativeTrainer(object):
         return None
 
     @exception_handled
-    def evaluate_element(self, ielem: int):
+    def evaluate_element(self, ielem: int, **kwargs):
         with self.device:
-            batch = self.get_element(ielem)
+            batch = self.get_element(ielem, **kwargs)
             if batch is not None:
                 binput: Tensor = self.get_input(batch)
                 target: Tensor = self.get_target(batch)
