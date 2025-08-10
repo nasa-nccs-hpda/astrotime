@@ -561,6 +561,7 @@ class EvaluatorPlot(SignalPlot):
 		if nelements != elem_slider.valmax:
 			elem_slider.valmax = nelements
 			elem_slider.ax.set_xlim(0, nelements )
+			elem_slider.ax.figure.canvas.draw_idle()
 
 	@exception_handled
 	def update(self, val=0):
