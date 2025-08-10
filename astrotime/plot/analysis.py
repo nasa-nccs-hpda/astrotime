@@ -129,8 +129,11 @@ class RawDatasetPlot(SignalPlot):
 				period = event_data['period']
 				pm = self.period_markers.setdefault(pm_name, PeriodMarkers(pm_name, self.ax, color=event_data['color'], linewidth=2 ) )
 				pm.update( self.origin, period )
-				title = f"{self.name},{self.file},{self.element}): snr={self.snr:.3f}"
-				self.ax.title.set_text(title)
+				try:
+					title = f"{self.name}({self.file},{self.element}): snr={self.snr}"
+					self.ax.title.set_text(title)
+				except TypeError:
+					self.log.info(f"Error in title update: name={self.name} file={self.file} element={self.element} snr={self.snr}")
 
 	@exception_handled
 	def get_ext_period(self) -> float:
