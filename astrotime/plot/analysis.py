@@ -504,7 +504,6 @@ class EvaluatorPlot(SignalPlot):
 
 	def _setup(self):
 		self.evaluator.evaluate_element(self.element,unfiltered=True)
-		self.update_nelements()
 		target_freq = self.evaluator.target_frequency
 		if target_freq is None:
 			print( f"No data for element {self.element} in file-{self.evaluator.loader.ifile} ---")
@@ -531,6 +530,7 @@ class EvaluatorPlot(SignalPlot):
 			self.ax.xaxis.set_major_formatter(ticker.StrMethodFormatter("{x:.2f}"))
 			self.ax.xaxis.set_major_locator(ticker.LogLocator(base=2, numticks=8))
 			self.ax.legend(loc="upper right", fontsize=8)
+			self.update_nelements()
 
 	@exception_handled
 	def button_press(self, event: MouseEvent) -> Any:
