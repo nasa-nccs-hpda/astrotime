@@ -395,7 +395,6 @@ class TransformPlot(SignalPlot):
 		x = self.transform.xdata.squeeze()
 		y = tdata[None,:] if (tdata.ndim == 1) else tdata
 		self.nlines = y.shape[0]
-		print( f"PLOT: x{list(x.shape)} y{list(y.shape)} ")
 		for ip in range(self.nlines):
 			alpha = 1.0 - ip/self.nlines
 			lw = 2 if (ip == 0) else 1
@@ -514,7 +513,6 @@ class EvaluatorPlot(SignalPlot):
 			x: np.ndarray = self.evaluator.embedding.xdata.cpu().numpy()
 			y: np.ndarray = self.evaluator.embedding.get_result()
 			self.nlines = y.shape[0]
-			print( f"PLOT: x{x.shape} y{y.shape}")
 			for ip in range(self.nlines):
 				self.plots.append( self.ax.plot(x, y[ip].squeeze(), label=f"{self.tname}-{ip}", color=self.colors[ip], marker=".", linewidth=1, markersize=1, alpha=4.0/(ip+4) )[0] )
 			self.ax.set_xlim( x.min(), x.max() )
@@ -561,7 +559,6 @@ class EvaluatorPlot(SignalPlot):
 		if nelements != elem_slider.valmax:
 			elem_slider.valmax = nelements
 			elem_slider.ax.set_xlim(0, nelements )
-			elem_slider.ax.figure.canvas.draw_idle()
 
 	@exception_handled
 	def update(self, val=0):
@@ -590,6 +587,6 @@ class EvaluatorPlot(SignalPlot):
 			self.model_marker.set_xdata( [model_freq, model_freq] )
 			self.peaks_marker.set_xdata([peak_freq, peak_freq])
 			self.process_event(id="period-update", period=1/model_freq,  ax=str(id(self.ax)), color=self.marker_colors[1])
-			self.ax.title.set_text(f"{self.name}({self.file},{self.element}): target_freq={target_freq:.3f} (model_freq={model_freq:.3f}), loss={sL(loss)}, ploss={sL(ploss)}")
+			self.ax.title.set_text(f"{self.name}({self.file},{self.element}): loss={sL(loss)}, ploss={sL(ploss)}")
 			self.ax.figure.canvas.draw_idle()
 

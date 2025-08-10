@@ -149,7 +149,6 @@ class STIntParam(STParam):
 		self.vrange: Tuple[int, int] = vrange
 		self.step: int = kwargs.get( 'step', 1 )
 		self._widget: Slider = None
-		self.log.info( f" STIntParam({name}): vrange = {self.vrange}" )
 		self.key_press_mode = kwargs.get('key_press_mode', 1)
 
 	def get_slider(self) -> Slider:
