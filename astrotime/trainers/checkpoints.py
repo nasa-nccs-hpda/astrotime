@@ -47,7 +47,6 @@ class CheckpointManager(object):
 		if cp_exists:
 			try:
 				train_state = self._load_state()
-				print(f" *** Initializing {self.version} checkpoint from {init_cppath} ***")
 				log.info(f"Loaded model checkpoint from {init_cppath}, update_model = {update_model}", )
 				if update_model:
 					self.model.load_state_dict( train_state.pop('model_state_dict') )

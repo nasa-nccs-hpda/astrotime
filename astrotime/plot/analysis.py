@@ -129,7 +129,7 @@ class RawDatasetPlot(SignalPlot):
 				period = event_data['period']
 				pm = self.period_markers.setdefault(pm_name, PeriodMarkers(pm_name, self.ax, color=event_data['color'], linewidth=2 ) )
 				pm.update( self.origin, period )
-				title = f"{self.name},{self.file},{self.element}): TP={self.period:.3f} (TF={1/self.period:.3f}), MP={period:.3f} (MF={1/period:.3f}) snr={self.snr:.3f}"
+				title = f"{self.name},{self.file},{self.element}): snr={self.snr:.3f}"
 				self.ax.title.set_text(title)
 
 	@exception_handled
@@ -161,7 +161,7 @@ class RawDatasetPlot(SignalPlot):
 		if ys is not None:
 			self.origin = xs[np.argmax(np.abs(ys))]
 			self.plot: Line2D = self.ax.plot(xs, ys, label='y', color='blue', marker=".", linewidth=1, markersize=2, alpha=0.5)[0]
-			self.ax.title.set_text(f"{self.name}({stype},{self.file},{self.element}): TP={self.period:.3f} (F={1/self.period:.3f})")
+			self.ax.title.set_text(f"{self.name}({stype},{self.file},{self.element}): snr={self.snr:.3f}")
 			self.ax.title.set_fontsize(8)
 			self.ax.title.set_fontweight('bold')
 			self.ax.set_xlim(xs[0],xs[-1])

@@ -7,7 +7,6 @@ from astrotime.util.math import shp
 from typing import Any, Dict, List, Optional, Tuple, Mapping
 
 def add_cnn_block( cfg: DictConfig, model: nn.Sequential, nchannels: int, num_input_features: int ) -> int:
-	log = logging.getLogger()
 	block_input_channels = num_input_features if (num_input_features > 0) else nchannels
 	in_channels = block_input_channels
 	out_channels = nchannels
@@ -20,12 +19,9 @@ def add_cnn_block( cfg: DictConfig, model: nn.Sequential, nchannels: int, num_in
 	model.append(nn.ELU())
 	model.append( nn.BatchNorm1d(out_channels) )
 	model.append( nn.MaxPool1d(cfg.pool_size) )
-	print(f"CNN: add_cnn_block: in_channels={block_input_channels}, out_channels={out_channels}")
 	return out_channels
 
 def add_dense_block( model: nn.Sequential, in_channels:int, hidden_channels:int, out_channels:int  ):
-	log = logging.getLogger()
-	print(f"CNN: add_dense_block: in_channels={in_channels}, hidden_channels={hidden_channels}, out_channels={out_channels}")
 	model.append( nn.Flatten() )
 	model.append( nn.Linear( in_channels, hidden_channels ) )  # 64
 	model.append( nn.ELU() )

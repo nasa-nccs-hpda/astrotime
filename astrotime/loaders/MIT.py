@@ -281,7 +281,6 @@ class MITElementLoader(ElementLoader):
 		self.filters = kwargs.get('filters',True)
 		self.snr_min: float = cfg.get('snr_min',0.0 )
 		self.snr_max: float = cfg.get('snr_max', 1.0e9 )
-		print(f" MITElementLoader.snr: {self.snr_min:.3f} -> {self.snr_max:.3f}")
 		self.max_series_length: int = cfg.get('max_series_length', 80000 )
 		self.period_range: Tuple[float,float] = self.get_period_range()
 		self._TICS: List[str]  = None
