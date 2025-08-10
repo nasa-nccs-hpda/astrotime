@@ -129,11 +129,8 @@ class RawDatasetPlot(SignalPlot):
 				period = event_data['period']
 				pm = self.period_markers.setdefault(pm_name, PeriodMarkers(pm_name, self.ax, color=event_data['color'], linewidth=2 ) )
 				pm.update( self.origin, period )
-				try:
-					title = f"{self.name}({self.file},{self.element}): snr={self.snr}"
-					self.ax.title.set_text(title)
-				except TypeError:
-					self.log.info(f"Error in title update: name={self.name} file={self.file} element={self.element} snr={self.snr}")
+				title = f"{self.name}({self.file},{self.element}) snr={self.snr}"
+				self.ax.title.set_text(title)
 
 	@exception_handled
 	def get_ext_period(self) -> float:
@@ -590,6 +587,6 @@ class EvaluatorPlot(SignalPlot):
 			self.model_marker.set_xdata( [model_freq, model_freq] )
 			self.peaks_marker.set_xdata([peak_freq, peak_freq])
 			self.process_event(id="period-update", period=1/model_freq,  ax=str(id(self.ax)), color=self.marker_colors[1])
-			self.ax.title.set_text(f"{self.name}({self.file},{self.element}): loss={sL(loss)}, ploss={sL(ploss)}")
+			self.ax.title.set_text(f"{self.name}({self.file},{self.element}): model-loss={sL(loss)}, peak-loss={sL(ploss)}")
 			self.ax.figure.canvas.draw_idle()
 
