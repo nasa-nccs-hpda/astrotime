@@ -204,7 +204,7 @@ class OctaveClassificationTrainer(object):
                                 #self.log.info(f"train: result{list(result.shape)}")
                                 if result.squeeze().ndim > 0:
                                     # print(f"result{list(result.shape)} range: [{result.min().cpu().item()} -> {result.max().cpu().item()}]")
-                                    loss: Tensor =  self.loss( result.squeeze(), target ).mean()
+                                    loss: Tensor =  self.loss( result.squeeze(), target.squeeze() ).mean()
                                     #self.log.info(f"train: loss{list(loss.shape)}")
                                     self.conditionally_update_weights(loss)
                                     losses.append(loss.cpu().item())
