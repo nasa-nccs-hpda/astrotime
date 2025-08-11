@@ -1,6 +1,6 @@
 optim: rms                                              # Optimizer
 lr: 0.001                                                 # Learning rate
-nepochs: 5000                                           #  Training Epochs
+nepochs: 10                                           #  Training Epochs
 refresh_state: False                                    # Start from random weights (Ignore existing checkpoints)
 overwrite_log: True                                     # Start new log file
 results_path: "${platform.project_root}/results"        # Save results here
