@@ -48,7 +48,7 @@ class CheckpointManager(object):
 		if cp_exists:
 			try:
 				train_state = self._load_state()
-				log.info(f"Loaded model checkpoint from {init_cppath}, update_model = {update_model}", )
+				print(f"Loaded model checkpoint from {init_cppath}, update_model = {update_model}", )
 				if update_model:
 					self.model.load_state_dict( train_state.pop('model_state_dict') )
 					if self.optimizer is None:  print( f"WARNING: No optimizer found when loading checkpoint, cannot complete model update.")
