@@ -24,7 +24,8 @@ class CheckpointManager(object):
 		cpath = self.checkpoint_path()
 		if os.path.isfile(cpath):
 			bkup_cpath = self.checkpoint_path(backup=True)
-			os.remove(bkup_cpath)
+			if os.path.isfile(bkup_cpath):
+				os.remove(bkup_cpath)
 			shutil.move( cpath, bkup_cpath )
 		torch.save( checkpoint, cpath )
 		return cpath
