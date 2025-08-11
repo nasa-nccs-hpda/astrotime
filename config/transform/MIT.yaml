@@ -7,7 +7,7 @@ test_mode:  ${data.test_mode}
 maxh:       ${data.maxh}
 accumh:     false
 decay_factor: 0.0                   # Time envelope decay factor
-subbatch_size: 2                    # If>0: Split batches into (serially computed) subbatches in order to fit into gpu memory
+subbatch_size: 1                    # If>0: Split batches into (serially computed) subbatches in order to fit into gpu memory
 norm:        std
 fold_octaves: false
 
