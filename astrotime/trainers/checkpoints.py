@@ -1,13 +1,11 @@
 import torch, time, traceback, shutil
 from typing import Any, Dict, Optional
 from torch.optim.optimizer import Optimizer
-from astrotime.util.series import TSet
 from omegaconf import DictConfig
 from torch import nn
 import os
 import logging
 log = logging.getLogger()
-
 
 class CheckpointManager(object):
 
@@ -30,12 +28,6 @@ class CheckpointManager(object):
 		torch.save( checkpoint, cpath )
 		return cpath
 
-	def _load_state(self) -> Dict[str,Any]:
-		cpath = self.checkpoint_path()
-		print( f"Loading checkpoint from {cpath}")
-		checkpoint = torch.load( cpath, map_location='cpu' )
-		return checkpoint
-
 	def load_checkpoint( self,  **kwargs ) -> Optional[Dict[str,Any]]:
 		update_model = kwargs.get('update_model', False)
 		init_version = kwargs.get('init_version')
@@ -45,21 +37,22 @@ class CheckpointManager(object):
 		if (init_version is not None) and not cp_exists:
 			init_cppath = self.checkpoint_path(init_version)
 			shutil.copyfile(init_cppath, cppath)
+			cp_exists = True
 		if cp_exists:
 			try:
-				train_state = self._load_state()
-				print(f"Loaded model checkpoint from {init_cppath}, update_model = {update_model}", )
+				train_state = torch.load(cppath, map_location='cpu' )
+				print( f"Loading checkpoint from {init_cppath}")
 				if update_model:
 					self.model.load_state_dict( train_state.pop('model_state_dict') )
 					if self.optimizer is None:  print( f"WARNING: No optimizer found when loading checkpoint, cannot complete model update.")
 					elif 'optimizer_state_dict' not in train_state: print( f"WARNING: No optimizer_state_dict found in checkpoint, cannot complete model update.")
 					else: self.optimizer.load_state_dict( train_state.pop('optimizer_state_dict') )
 			except Exception as e:
-				log.info(f"Unable to load model from {cppath}: {e}", )
+				print(f"Unable to load model from {cppath}: {e}", )
 				traceback.print_exc()
 				return None
 		else:
-			log.info( f"No checkpoint file found at '{cppath}': starting from scratch.")
+			print( f"No checkpoint file found at '{cppath}': starting from scratch.")
 		log.info( f" ------ Saving checkpoints to '{cppath}' ------ " )
 		return train_state
 
