@@ -229,13 +229,14 @@ class OctaveClassificationTrainer(object):
             try:
                 for ibatch in range(0, sys.maxsize):
                     batch = self.get_next_batch()
-                    binput: Tensor = self.get_input(batch)
-                    target: Tensor = self.get_target(batch)
-                    result: Tensor = self.model(binput)
-                    max_idx: Tensor = torch.argmax(result,dim=1,keepdim=False)
-                    results.append( max_idx )
-                    ncorrect = torch.eq(max_idx,target).sum()
-                    losses.append( (ncorrect,result.shape[0]) )
+                    if batch is not None:
+                        binput: Tensor = self.get_input(batch)
+                        target: Tensor = self.get_target(batch)
+                        result: Tensor = self.model(binput)
+                        max_idx: Tensor = torch.argmax(result,dim=1,keepdim=False)
+                        results.append( max_idx )
+                        ncorrect = torch.eq(max_idx,target).sum()
+                        losses.append( (ncorrect,result.shape[0]) )
             except StopIteration:
                     ncorrect, ntotal = 0, 0
                     for (nc,nt) in losses:
