@@ -9,5 +9,5 @@ accumh:     false
 decay_factor: 0.0                   # Time envelope decay factor
 subbatch_size: 1                    # If>0: Split batches into (serially computed) subbatches in order to fit into gpu memory
 norm:        std
-octave_partitions: 0
+octave_partitions: ${train.octave_partitions}
 

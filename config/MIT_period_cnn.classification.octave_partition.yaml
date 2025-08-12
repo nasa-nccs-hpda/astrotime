@@ -1,6 +1,6 @@
 defaults:
   - platform: "explore"
-  - train: "MIT_cnn.classification.octaves"
+  - train: "MIT_cnn.classification.octave_partition"
   - transform: "MIT.oparts"
   - data: "MIT"
   - model: "cnn.classification.octave_partition"
