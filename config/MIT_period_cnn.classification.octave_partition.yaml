@@ -1,0 +1,15 @@
+defaults:
+  - platform: "explore"
+  - train: "MIT_cnn.classification.octaves"
+  - transform: "MIT.oparts"
+  - data: "MIT"
+  - model: "cnn.classification.octave_partition"
+  - _self_
+  - override hydra/hydra_logging: disabled
+  - override hydra/job_logging: disabled
+
+hydra:
+  output_subdir: null
+  run:
+    dir: .
+

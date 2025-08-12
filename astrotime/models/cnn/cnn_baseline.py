@@ -32,25 +32,14 @@ def get_model_from_cfg( gcfg: DictConfig, embedding_layer: EmbeddingLayer  ) -> 
 	mtype, cfg, dcfg = gcfg.model.mtype, gcfg.model, gcfg.data
 	model: nn.Sequential = nn.Sequential( embedding_layer )
 	num_input_channels = embedding_layer.output_channels
-	if mtype.startswith("cnn"):
-		cnn_channels = cfg.cnn_channels
-		for iblock in range(cfg.num_blocks):
-			cnn_channels = add_cnn_block( cfg, model, cnn_channels, num_input_channels )
-			num_input_channels = -1
-		reduced_series_len = embedding_layer.output_series_length // int( math.pow(cfg.pool_size, cfg.num_blocks) )
-		log.info(f"CNN: reduced_series_len={reduced_series_len}, cnn_channels={cnn_channels}, output_series_length={embedding_layer.output_series_length}")
-		add_dense_block( model, cnn_channels*reduced_series_len, cfg.dense_channels, cfg.out_channels  )
-	elif mtype.startswith("dense"):
-		in_channels = embedding_layer.output_series_length
-		for iL, lsize in enumerate( cfg.layer_sizes):
-			model.append( nn.Linear(in_channels, lsize))
-			model.append(nn.ELU())
-			in_channels = lsize
-		model.append( nn.Linear(in_channels, 1) )
-
-	if 'regression' in mtype:
-		if 'octave' in mtype: model.append( nn.Sigmoid() )
-		else:                 model.append( ExpU(dcfg) )
+	cnn_channels = cfg.cnn_channels
+	for iblock in range(cfg.num_blocks):
+		cnn_channels = add_cnn_block( cfg, model, cnn_channels, num_input_channels )
+		num_input_channels = -1
+	reduced_series_len = embedding_layer.output_series_length // int( math.pow(cfg.pool_size, cfg.num_blocks) )
+	log.info(f"CNN: reduced_series_len={reduced_series_len}, cnn_channels={cnn_channels}, output_series_length={embedding_layer.output_series_length}")
+	add_dense_block( model, cnn_channels*reduced_series_len, cfg.dense_channels, cfg.out_channels  )
+	if 'regression' in mtype: model.append( ExpU(dcfg) )
 	return model
 
 def get_spectral_peak_selector_from_cfg( cfg: DictConfig, device: torch.device, embedding_layer: EmbeddingLayer ) -> nn.Module:

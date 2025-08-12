@@ -36,6 +36,7 @@ class OctaveClassificationTrainer(object):
         self.model: nn.Module = model
         self.mtype: str = kwargs.get( 'mtype', cfg.model.mtype )
         self.noctaves = cfg.data.noctaves
+        self.oparts = cfg.transform.octave_partitions
         self.f0 = cfg.data.base_freq
         self.optimizer: optim.Optimizer = None
         self.log = logging.getLogger()
@@ -70,7 +71,11 @@ class OctaveClassificationTrainer(object):
 
     def get_octave(self, f: Tensor) -> Tensor:
         octave = torch.floor( torch.log2(f/self.f0) ).to(torch.long)
-        return octave
+        if self.oparts < 2:
+            return octave
+        else:
+            octave_base_freq = self.f0 * torch.pow(2, octave)
+            return torch.floor(  (f/octave_base_freq-1)*self.oparts ).to(torch.long)
 
     def get_input(self, batch: TRDict) -> Tensor:
         return batch['z']
