@@ -221,10 +221,9 @@ class OctaveClassificationTrainer(object):
                 print(f" ------ Epoch Loss: mean={epoch_losses.mean():.3f}, median={np.median(epoch_losses):.3f}, range=({epoch_losses.min():.3f} -> {epoch_losses.max():.3f})")
                 self.evaluate_classification()
 
-    def evaluate_classification(self, version: str = None) -> Tensor:
-        self.load_checkpoint(version)
+    def evaluate_classification(self) -> Tensor:
         with self.device:
-            self.loader.init_epoch()
+            self.loader.init_epoch(TSet.Validation)
             losses, log_interval, results = [], 50, []
             try:
                 for ibatch in range(0, sys.maxsize):
