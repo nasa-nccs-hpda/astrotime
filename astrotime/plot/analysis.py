@@ -3,6 +3,7 @@ from .param import STIntParam, STFloatParam
 from matplotlib.widgets import Slider
 from matplotlib import ticker
 from astrotime.trainers.iterative_trainer import IterativeTrainer
+from astrotime.trainers.octave_classification import OctaveClassificationTrainer
 from torch import nn, optim, Tensor, FloatTensor
 from astrotime.util.series import TSet
 from .base import SignalPlot, bounds
@@ -470,6 +471,129 @@ class TransformPlot(SignalPlot):
 class EvaluatorPlot(SignalPlot):
 
 	def __init__(self, name: str, evaluator: IterativeTrainer, **kwargs):
+		SignalPlot.__init__(self, **kwargs)
+		self.name = name
+		self.evaluator: IterativeTrainer = evaluator
+		self.annotations: List[str] = tolower( kwargs.get('annotations',None) )
+		self.colors = [ 'red', 'blue', 'magenta', 'cyan', 'darkviolet', 'darkorange', 'saddlebrown', 'darkturquoise', 'green', 'brown', 'purple', 'yellow', 'olive', 'pink', 'gold', 'grey', 'grey', 'grey', 'grey', 'grey', 'grey', 'grey', 'grey', 'grey', 'grey', 'grey']
+		self.marker_colors = ['black', 'green', 'yellow']
+		self.ofac = kwargs.get('upsample_factor',1)
+		self.plots: List[Line2D] = []
+		self.target_marker: Line2D = None
+		self.model_marker: Line2D = None
+		self.peaks_marker: Line2D = None
+		self.nfiles = self.evaluator.loader.nfiles
+		self.add_param( STIntParam('element', (0, evaluator.loader.nelem)  ) )
+		self.add_param( STIntParam('file', (0, evaluator.loader.nfiles), key_press_mode=2) )
+		self.transax = None
+		self.nlines = -1
+		self.transforms = {}
+
+	def get_slider(self, name: str ) -> Slider:
+		param: STIntParam = self._sparms[name]
+		return param.get_slider()
+
+	@property
+	def nelements(self) -> int:
+		return self.evaluator.loader.nelements
+
+	@property
+	def tname(self):
+		return self.evaluator.embedding.name
+
+	def _setup(self):
+		self.evaluator.evaluate_element(self.element,unfiltered=True)
+		target_freq = self.evaluator.target_frequency
+		if target_freq is None:
+			print( f"No data for element {self.element} in file-{self.evaluator.loader.ifile} ---")
+		else:
+			model_freq  = self.evaluator.model_frequency
+			peak_freq = self.evaluator.peak_frequency
+			loss =  self.evaluator.lossdata['model']
+			x: np.ndarray = self.evaluator.embedding.xdata.cpu().numpy()
+			y: np.ndarray = self.evaluator.embedding.get_result()
+			self.nlines = y.shape[0]
+			for ip in range(self.nlines):
+				self.plots.append( self.ax.plot(x, y[ip].squeeze(), label=f"{self.tname}-{ip}", color=self.colors[ip], marker=".", linewidth=1, markersize=1, alpha=4.0/(ip+4) )[0] )
+			self.ax.set_xlim( x.min(), x.max() )
+			self.ax.set_ylim( y.min(), y.max() )
+
+			self.target_marker: Line2D = self.ax.axvline( target_freq, 0.0, 1.0, label='target', color=self.marker_colors[0], linestyle='-', linewidth=1, alpha=1.0)
+			self.model_marker: Line2D  = self.ax.axvline( model_freq,  0.0, 1.0, label='model', color=self.marker_colors[1], linestyle='-', linewidth=2, alpha=0.7)
+			self.peaks_marker: Line2D  = self.ax.axvline( peak_freq,  0.0, 1.0, label='peak', color=self.marker_colors[2], linestyle='-', linewidth=3, alpha=0.5)
+			self.ax.title.set_text(f"{self.name}: target({self.file},{self.element})={target_freq:.3f} model({self.marker_colors[1]})={model_freq:.3f}, loss={sL(loss)}")
+			self.ax.title.set_fontsize(8)
+			self.ax.title.set_fontweight('bold')
+			self.ax.set_xscale('log')
+			self.ax.xaxis.set_major_formatter(ticker.StrMethodFormatter("{x:.2f}"))
+			self.ax.xaxis.set_major_locator(ticker.LogLocator(base=2, numticks=8))
+			self.ax.legend(loc="upper right", fontsize=8)
+
+	@exception_handled
+	def button_press(self, event: MouseEvent) -> Any:
+		if event.inaxes == self.ax and (event.button == MouseButton.RIGHT):
+			self.log.info(f"           *** ---- TransformPlot.button_press: selected freq={event.xdata:.2f} mods={event.modifiers} --- ")
+			if "shift" in event.modifiers:
+				freq, period = event.xdata, 1/event.xdata
+				self.log.info(f"           *** ---- TransformPlot.button_press: selected freq={freq:.2f}, period={period:.2f} --- ")
+				self.ax.title.set_text(f"{self.name}: TP={period:.3f} (F={freq:.3f})")
+				self.model_marker.set_xdata([freq, freq])
+				self.process_event( id="period-update", period=period, ax=str(id(self.ax)), color=self.colors[0] )
+			elif "ctrl" in event.modifiers:
+				for t in self.transforms.values():
+					t.process_event( id="crtl-mouse-press", x=event.xdata, y=event.ydata, ax=event.inaxes )
+				self.update()
+
+	def key_press(self, event: KeyEvent) -> Any:
+		if event.key.startswith( 'ctrl+'):
+			for t in self.transforms.values():
+				t.process_event( id="KeyEvent", key=event.key, ax=event.inaxes )
+			evresult = self.evaluator.process_event( id="KeyEvent", key=event.key, ax=event.inaxes )
+			if evresult is not None:
+				pass
+			self.update()
+
+	def update_nelements(self):
+		nelements = self.evaluator.loader.nelem
+		elem_slider = self.get_slider('element')
+		if nelements != elem_slider.valmax:
+			elem_slider.valmax = nelements
+			elem_slider.ax.set_xlim(0, nelements )
+
+	@exception_handled
+	def update(self, val=0):
+		self.evaluator.evaluate_element(self.element,unfiltered=True)
+		self.update_nelements()
+		if self.evaluator.target_frequency is None:
+			self.ax.title.set_text(f"{self.name}({self.file},{self.element}): No data for this element")
+			self.ax.figure.canvas.draw_idle()
+		else:
+			target_freq = self.evaluator.target_frequency
+			model_freq = self.evaluator.model_frequency
+			peak_freq = self.evaluator.peak_frequency
+			loss =  self.evaluator.lossdata['model']
+			ploss = self.evaluator.lossdata['peak']
+			x = self.evaluator.embedding.xdata.cpu().numpy()
+			y = self.evaluator.embedding.get_result()
+
+			for ip in range(self.nlines):
+				self.plots[ip].set_ydata(y[ip].squeeze())
+				self.plots[ip].set_xdata(x)
+			self.ax.set_xlim( x.min(), x.max() )
+			self.ax.set_ylim( y.min(), y.max() )
+			self.log.info(f"---- TransformPlot {self.tname}[{self.element})] update: y{y.shape}, x range=({x.min():.3f}->{x.max():.3f}), model_freq={model_freq:.3f}  ")
+
+			self.target_marker.set_xdata([target_freq,target_freq])
+			self.model_marker.set_xdata( [model_freq, model_freq] )
+			self.peaks_marker.set_xdata([peak_freq, peak_freq])
+			self.process_event(id="period-update", period=1/model_freq,  ax=str(id(self.ax)), color=self.marker_colors[1])
+			self.ax.title.set_text(f"{self.name}({self.file},{self.element}): model-loss={sL(loss)}, peak-loss={sL(ploss)}")
+			self.ax.figure.canvas.draw_idle()
+
+
+class ClassificationEvalPlot(SignalPlot):
+
+	def __init__(self, name: str, evaluator: OctaveClassificationTrainer, **kwargs):
 		SignalPlot.__init__(self, **kwargs)
 		self.name = name
 		self.evaluator: IterativeTrainer = evaluator
