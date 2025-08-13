@@ -5,7 +5,7 @@ from matplotlib import ticker
 from astrotime.trainers.iterative_trainer import IterativeTrainer
 from astrotime.trainers.octave_classification import OctaveClassificationTrainer
 from torch import nn, optim, Tensor, FloatTensor
-from astrotime.util.series import TSet
+from astrotime.util.logging import lstr
 from matplotlib.patches import Rectangle
 from .base import SignalPlot, bounds
 from matplotlib.axes import Axes
@@ -614,11 +614,13 @@ class ClassificationEvalPlot(SignalPlot):
 		self.transforms = {}
 
 	def mark_freq_range(self, f0: float, f1: float):
-		self.ax.add_patch(Rectangle((f0, 0), f1-f0, 0.5, facecolor='yellow', edgecolor = 'orange', fill=True, lw=1, alpha=0.5))
+		self.ax.add_patch(Rectangle((f0, 0), f1-f0, 0.5, facecolor='yellow', edgecolor = 'orange', fill=True, lw=1, alpha=0.5, zorder=10))
+		self.ax.figure.canvas.draw_idle()
 
 	def mark_octave(self, octave: int ):
 		f0: float = self.evaluator.f0 * math.pow(2, octave)
 		f1: float = f0*2.0
+		self.log.info( f"\n       mark_octave: {f0:.3f} ->  {f1:.3f}, xlim={lstr(self.ax.get_xlim())}, ylim={lstr(self.ax.get_ylim())}\n")
 		self.mark_freq_range(f0,f1)
 
 	def get_slider(self, name: str ) -> Slider:
@@ -654,7 +656,7 @@ class ClassificationEvalPlot(SignalPlot):
 			self.mark_octave(model_octave)
 		#	self.model_marker: Line2D  = self.ax.axvline( model_freq,  0.0, 1.0, label='model', color=self.marker_colors[1], linestyle='-', linewidth=2, alpha=0.7)
 		#	self.peaks_marker: Line2D  = self.ax.axvline( peak_freq,  0.0, 1.0, label='peak', color=self.marker_colors[2], linestyle='-', linewidth=3, alpha=0.5)
-			self.ax.title.set_text(f"{self.name}: target({self.file},{self.element})={target_freq:.3f} ({target_octave}) model({self.marker_colors[1]})={model_octave}")
+			self.ax.title.set_text(f"{self.name}({self.file},{self.element}): model_octave={model_octave}, target_octave={target_octave}, target_freq={target_freq:.3f}")
 			self.ax.title.set_fontsize(8)
 			self.ax.title.set_fontweight('bold')
 			self.ax.set_xscale('log')
@@ -717,6 +719,6 @@ class ClassificationEvalPlot(SignalPlot):
 			self.target_marker.set_xdata([target_freq,target_freq])
 			self.mark_octave(model_octave)
 			#self.process_event(id="period-update", period=1/model_freq,  ax=str(id(self.ax)), color=self.marker_colors[1])
-			self.ax.title.set_text(f"{self.name}({self.file},{self.element}): model_octave={model_octave}, target_octave={target_octave}")
+			self.ax.title.set_text(f"{self.name}({self.file},{self.element}): model_octave={model_octave}, target_octave={target_octave}, target_freq={target_freq:.3f}")
 			self.ax.figure.canvas.draw_idle()
 
