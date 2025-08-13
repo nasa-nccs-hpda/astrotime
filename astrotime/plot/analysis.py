@@ -607,8 +607,8 @@ class ClassificationEvalPlot(SignalPlot):
 		self.model_marker: Line2D = None
 		self.peaks_marker: Line2D = None
 		self.nfiles = self.evaluator.loader.nfiles
-		self.add_param( STIntParam('element', (0, evaluator.loader.nelem)  ) )
-		self.add_param( STIntParam('file', (0, evaluator.loader.nfiles), key_press_mode=2) )
+		self.add_param( STIntParam('element', (0, self.nelements)  ) )
+		self.add_param( STIntParam('file', (0, self.nfiles), key_press_mode=2) )
 		self.octave_marker: Rectangle = None
 		self.transax = None
 		self.nlines = -1
@@ -634,6 +634,10 @@ class ClassificationEvalPlot(SignalPlot):
 	@property
 	def nelements(self) -> int:
 		return self.evaluator.loader.nelements
+
+	@property
+	def nfiles(self) -> int:
+		return self.evaluator.loader.nfiles
 
 	@property
 	def tname(self):
@@ -693,11 +697,10 @@ class ClassificationEvalPlot(SignalPlot):
 			self.update()
 
 	def update_nelements(self):
-		nelements = self.evaluator.loader.nelem
 		elem_slider = self.get_slider('element')
-		if nelements != elem_slider.valmax:
-			elem_slider.valmax = nelements
-			elem_slider.ax.set_xlim(0, nelements )
+		if self.nelements != elem_slider.valmax:
+			elem_slider.valmax = self.nelements
+			elem_slider.ax.set_xlim(0, self.nelements )
 
 	@exception_handled
 	def update(self, val=0):
