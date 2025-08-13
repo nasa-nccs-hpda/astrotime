@@ -608,23 +608,39 @@ class ClassificationEvalPlot(SignalPlot):
 		self.peaks_marker: Line2D = None
 		self.add_param( STIntParam('element', (0, self.nelements)  ) )
 		self.add_param( STIntParam('file', (0, self.nfiles), key_press_mode=2) )
-		self.octave_marker: Rectangle = None
+		self.octave_markers: List[Rectangle] = []
 		self.transax = None
 		self.nlines = -1
 		self.transforms = {}
 
 	def mark_freq_range(self, f0: float, f1: float):
 		(y0,y1) = self.ax.get_ylim()
-		if self.octave_marker is not None: self.octave_marker.remove()
-		self.octave_marker = Rectangle((f0, y0), f1 - f0, y0 + (y1 - y0) / 2, facecolor='yellow', edgecolor='orange', fill=True, lw=1, alpha=0.5)
-		self.ax.add_patch( self.octave_marker )
+		self.octave_markers.append( Rectangle((f0, y0), f1 - f0, y0 + (y1 - y0) / 2, facecolor='yellow', edgecolor='orange', fill=True, lw=1, alpha=0.5) )
+		self.ax.add_patch( self.octave_markers[-1] )
 		self.ax.figure.canvas.draw_idle()
 
+	def clear_markers(self):
+		for marker in self.octave_markers:
+			marker.remove()
+		self.octave_markers = []
+
 	def mark_octave(self, octave: int ):
+		self.clear_markers()
 		f0: float = self.evaluator.f0 * math.pow(2, octave)
 		f1: float = f0*2.0
 		self.log.info( f"\n       mark_octave: {f0:.3f} ->  {f1:.3f}, xlim={lstr(self.ax.get_xlim())}, ylim={lstr(self.ax.get_ylim())}\n")
 		self.mark_freq_range(f0,f1)
+
+	def mark_octave_parition(self, octave: int, partition: int ):
+		octave_base: float = self.evaluator.f0 * math.pow(2, octave)
+		dfp0 =  octave_base * partition / self.evaluator.oparts
+		dfp1 =  octave_base * (partition+1) / self.evaluator.oparts
+		self.mark_freq_range( octave_base+dfp0, octave_base+dfp1 )
+
+	def mark_octave_paritions(self, partition: int):
+		self.clear_markers()
+		for octave in range(self.evaluator.noctaves):
+			self.mark_octave_parition(octave, partition)
 
 	def get_slider(self, name: str ) -> Slider:
 		param: STIntParam = self._sparms[name]
