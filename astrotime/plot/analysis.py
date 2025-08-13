@@ -484,7 +484,7 @@ class EvaluatorPlot(SignalPlot):
 		self.model_marker: Line2D = None
 		self.peaks_marker: Line2D = None
 		self.nfiles = self.evaluator.loader.nfiles
-		self.add_param( STIntParam('element', (0, evaluator.loader.nelem)  ) )
+		self.add_param( STIntParam('element', (0, evaluator.loader.nelements)  ) )
 		self.add_param( STIntParam('file', (0, evaluator.loader.nfiles), key_press_mode=2) )
 		self.transax = None
 		self.nlines = -1
@@ -555,7 +555,7 @@ class EvaluatorPlot(SignalPlot):
 			self.update()
 
 	def update_nelements(self):
-		nelements = self.evaluator.loader.nelem
+		nelements = self.evaluator.loader.nelements
 		elem_slider = self.get_slider('element')
 		if nelements != elem_slider.valmax:
 			elem_slider.valmax = nelements

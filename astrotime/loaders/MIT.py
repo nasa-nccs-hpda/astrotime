@@ -285,6 +285,7 @@ class MITElementLoader(ElementLoader):
 		self.period_range: Tuple[float,float] = self.get_period_range()
 		self._TICS: List[str]  = None
 		self.file_sort = None
+		self.elements = []
 
 	def set_tset(self, tset: TSet):
 		ElementLoader.set_tset(self, tset)
@@ -341,6 +342,7 @@ class MITElementLoader(ElementLoader):
 	def load_data( self ):
 		if (self.loaded_file != self.ifile) or (self.data is None):
 			self._load_cache_dataset()
+			self.load_filtered_elements()
 			self.loaded_file = self.ifile
 
 	@property
@@ -356,7 +358,7 @@ class MITElementLoader(ElementLoader):
 	@property
 	def nelements(self) -> int:
 		self.load_data()
-		return len(self._TICS)
+		return len(self.elements)
 
 	@property
 	def nfiles(self) -> int:
@@ -366,9 +368,16 @@ class MITElementLoader(ElementLoader):
 	def ntfiles(self) -> int:
 		return self.nfiles-1
 
-	def get_element(self, elem_index: int, **kwargs) -> Optional[RDict]:
+	def get_element(self, elem_index: int, **kwargs) -> RDict:
 		self.load_data()
-		return self.get_raw_element(elem_index, **kwargs)
+		return self.elements[elem_index]
+
+	def load_filtered_elements(self):
+		self.elements = []
+		for iE in range(len(self._TICS)):
+			elem = self.get_raw_element(iE)
+			if elem is not None:
+				self.elements.append(elem)
 
 	def get_raw_element( self, elem_index: int, **kwarg ) -> Optional[RDict]:
 		unfiltered: bool = kwarg.get('unfiltered', False)
@@ -411,7 +420,7 @@ class MITElementLoader(ElementLoader):
 			self.batch_offset = 0
 			return None
 		for ielem in range( b0, self.nelements ):
-			elem: RDict = self.get_raw_element(ielem)
+			elem: RDict = self.get_element(ielem)
 			if elem is not None:
 				ts.append(elem['t'])
 				ys.append(elem['y'])
