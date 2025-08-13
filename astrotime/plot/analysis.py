@@ -614,7 +614,8 @@ class ClassificationEvalPlot(SignalPlot):
 		self.transforms = {}
 
 	def mark_freq_range(self, f0: float, f1: float):
-		self.ax.add_patch(Rectangle((f0, 0), f1-f0, 0.5, facecolor='yellow', edgecolor = 'orange', fill=True, lw=1, alpha=0.5, zorder=10))
+		(y0,y1) = self.ax.get_ylim()
+		self.ax.add_patch(Rectangle((f0, y0), f1-f0, y0+(y1-y0)/2, facecolor='yellow', edgecolor = 'orange', fill=True, lw=1, alpha=0.5))
 		self.ax.figure.canvas.draw_idle()
 
 	def mark_octave(self, octave: int ):
