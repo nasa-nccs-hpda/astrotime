@@ -7,7 +7,7 @@ from astrotime.loaders.base import RDict, ElementLoader
 from astrotime.models.spectral.peak_finder import SpectralPeakSelector
 from astrotime.trainers.loss import ExpLoss, OctaveRegressionLoss
 from astrotime.encoders.embedding import EmbeddingLayer
-import time, sys, torch, logging, numpy as np
+import time, math, sys, torch, logging, numpy as np
 from torch import nn, optim, Tensor
 from astrotime.util.series import TSet
 from astrotime.util.logging import elapsed
@@ -78,11 +78,23 @@ class OctaveClassificationTrainer(object):
             octave_base_freq = self.f0 * torch.pow(2, octave)
             return torch.floor(  (f/octave_base_freq-1)*self.oparts ).to(torch.long)
 
+    def get_octave_element(self, f: float) -> int:
+        self.target_frequency = f
+        octave = math.floor( math.log2(f/self.f0) )
+        if self.oparts < 2:
+            return octave
+        else:
+            octave_base_freq = self.f0 * math.pow(2, octave)
+            return math.floor(  (f/octave_base_freq-1)*self.oparts )
+
     def get_input(self, batch: TRDict) -> Tensor:
         return batch['z']
 
     def get_target(self, batch: TRDict ) -> Tensor:
         return self.get_octave( batch['target'] )
+
+    def get_target_element(self, batch: TRDict ) -> int:
+        return self.get_octave_element( batch['target'] )
 
     def get_optimizer(self) -> optim.Optimizer:
         if   self.cfg.optim == "rms":  return optim.RMSprop( self.model.parameters(), lr=self.cfg.lr )
@@ -256,13 +268,13 @@ class OctaveClassificationTrainer(object):
             batch = self.get_element(ielem, **kwargs)
             if batch is not None:
                 binput: Tensor = self.get_input(batch)
-                target: Tensor = self.get_target(batch)
+                target: int = self.get_target_element(batch)
 
                 result: Tensor = self.model(binput)
-                max_idx: Tensor = torch.argmax(result, dim=1, keepdim=False)
+                max_idx: int = torch.argmax(result, dim=1, keepdim=False).item()
 
-                self.target_octave = target.item()
-                self.model_octave = max_idx.item()
+                self.target_octave = target
+                self.model_octave = max_idx
             else:
                 self.target_octave = None
                 self.model_octave = None
