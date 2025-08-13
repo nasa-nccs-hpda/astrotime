@@ -50,8 +50,8 @@ class OctaveClassificationTrainer(object):
         self.global_time = None
         self.exec_stats = []
         self.target_frequency = None
-        self.model_frequency = None
-        self.peak_frequency = None
+        self.target_octave = None
+        self.model_octave = None
         self.lossdata = {}
         if model is not None:
             for module in model.modules(): self.add_callbacks(module)
@@ -70,6 +70,7 @@ class OctaveClassificationTrainer(object):
             self.log.info(f"{stats[0]}: dt={stats[1]}s")
 
     def get_octave(self, f: Tensor) -> Tensor:
+        self.target_frequency = f
         octave = torch.floor( torch.log2(f/self.f0) ).to(torch.long)
         if self.oparts < 2:
             return octave
@@ -248,6 +249,23 @@ class OctaveClassificationTrainer(object):
                         ntotal += nt
                     print(f"       *** Classification: {ncorrect*100.0/ntotal:.1f}% correct with {ntotal} elements.")
             return torch.concatenate(results)
+
+    @exception_handled
+    def evaluate_element(self, ielem: int, **kwargs):
+        with self.device:
+            batch = self.get_element(ielem, **kwargs)
+            if batch is not None:
+                binput: Tensor = self.get_input(batch)
+                target: Tensor = self.get_target(batch)
+
+                result: Tensor = self.model(binput)
+                max_idx: Tensor = torch.argmax(result, dim=1, keepdim=False)
+
+                self.target_octave = target.item()
+                self.model_octave = max_idx.item()
+            else:
+                self.target_octave = None
+                self.model_octave = None
 
 
     def init_eval(self, version):

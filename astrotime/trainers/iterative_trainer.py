@@ -302,7 +302,7 @@ class IterativeTrainer(object):
                 self.peak_frequency = peaks.item()
             else:
                 self.target_frequency = None
-                self.target_frequency = None
+                self.model_frequency = None
                 self.peak_frequency = None
 
     @exception_handled

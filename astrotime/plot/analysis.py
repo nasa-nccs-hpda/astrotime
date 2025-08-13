@@ -6,6 +6,7 @@ from astrotime.trainers.iterative_trainer import IterativeTrainer
 from astrotime.trainers.octave_classification import OctaveClassificationTrainer
 from torch import nn, optim, Tensor, FloatTensor
 from astrotime.util.series import TSet
+from matplotlib.patches import Rectangle
 from .base import SignalPlot, bounds
 from matplotlib.axes import Axes
 from matplotlib.lines import Line2D
@@ -596,7 +597,7 @@ class ClassificationEvalPlot(SignalPlot):
 	def __init__(self, name: str, evaluator: OctaveClassificationTrainer, **kwargs):
 		SignalPlot.__init__(self, **kwargs)
 		self.name = name
-		self.evaluator: IterativeTrainer = evaluator
+		self.evaluator: OctaveClassificationTrainer = evaluator
 		self.annotations: List[str] = tolower( kwargs.get('annotations',None) )
 		self.colors = [ 'red', 'blue', 'magenta', 'cyan', 'darkviolet', 'darkorange', 'saddlebrown', 'darkturquoise', 'green', 'brown', 'purple', 'yellow', 'olive', 'pink', 'gold', 'grey', 'grey', 'grey', 'grey', 'grey', 'grey', 'grey', 'grey', 'grey', 'grey', 'grey']
 		self.marker_colors = ['black', 'green', 'yellow']
@@ -611,6 +612,9 @@ class ClassificationEvalPlot(SignalPlot):
 		self.transax = None
 		self.nlines = -1
 		self.transforms = {}
+
+	def mark_freq_range(self, f0: float, f1: float):
+		self.ax.add_patch(Rectangle((f0, 0), f1-f0, 0.5, facecolor='yellow', edgecolor = 'orange', fill=True, lw=1, alpha=0.5))
 
 	def get_slider(self, name: str ) -> Slider:
 		param: STIntParam = self._sparms[name]
