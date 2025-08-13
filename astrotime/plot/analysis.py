@@ -609,13 +609,16 @@ class ClassificationEvalPlot(SignalPlot):
 		self.nfiles = self.evaluator.loader.nfiles
 		self.add_param( STIntParam('element', (0, evaluator.loader.nelem)  ) )
 		self.add_param( STIntParam('file', (0, evaluator.loader.nfiles), key_press_mode=2) )
+		self.octave_marker: Rectangle = None
 		self.transax = None
 		self.nlines = -1
 		self.transforms = {}
 
 	def mark_freq_range(self, f0: float, f1: float):
 		(y0,y1) = self.ax.get_ylim()
-		self.ax.add_patch(Rectangle((f0, y0), f1-f0, y0+(y1-y0)/2, facecolor='yellow', edgecolor = 'orange', fill=True, lw=1, alpha=0.5))
+		if self.octave_marker is not None: self.octave_marker.remove()
+		self.octave_marker = Rectangle((f0, y0), f1 - f0, y0 + (y1 - y0) / 2, facecolor='yellow', edgecolor='orange', fill=True, lw=1, alpha=0.5)
+		self.ax.add_patch( self.octave_marker )
 		self.ax.figure.canvas.draw_idle()
 
 	def mark_octave(self, octave: int ):
