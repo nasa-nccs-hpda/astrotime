@@ -1,4 +1,4 @@
-import logging, os, csv, pickle, numpy as np
+import logging, os, csv, pickle, numpy as np, math
 from .param import STIntParam, STFloatParam
 from matplotlib.widgets import Slider
 from matplotlib import ticker
@@ -616,6 +616,11 @@ class ClassificationEvalPlot(SignalPlot):
 	def mark_freq_range(self, f0: float, f1: float):
 		self.ax.add_patch(Rectangle((f0, 0), f1-f0, 0.5, facecolor='yellow', edgecolor = 'orange', fill=True, lw=1, alpha=0.5))
 
+	def mark_octave(self, octave: int ):
+		f0: float = self.f0 * math.pow(2, octave)
+		f1: float = f0*2.0
+		self.mark_freq_range(f0,f1)
+
 	def get_slider(self, name: str ) -> Slider:
 		param: STIntParam = self._sparms[name]
 		return param.get_slider()
@@ -634,9 +639,9 @@ class ClassificationEvalPlot(SignalPlot):
 		if target_freq is None:
 			print( f"No data for element {self.element} in file-{self.evaluator.loader.ifile} ---")
 		else:
-			model_freq  = self.evaluator.model_frequency
-			peak_freq = self.evaluator.peak_frequency
-			loss =  self.evaluator.lossdata['model']
+			model_octave  = self.evaluator.model_octave
+			target_octave = self.evaluator.target_octave
+		#	loss =  self.evaluator.lossdata['model']
 			x: np.ndarray = self.evaluator.embedding.xdata.cpu().numpy()
 			y: np.ndarray = self.evaluator.embedding.get_result()
 			self.nlines = y.shape[0]
@@ -646,9 +651,10 @@ class ClassificationEvalPlot(SignalPlot):
 			self.ax.set_ylim( y.min(), y.max() )
 
 			self.target_marker: Line2D = self.ax.axvline( target_freq, 0.0, 1.0, label='target', color=self.marker_colors[0], linestyle='-', linewidth=1, alpha=1.0)
-			self.model_marker: Line2D  = self.ax.axvline( model_freq,  0.0, 1.0, label='model', color=self.marker_colors[1], linestyle='-', linewidth=2, alpha=0.7)
-			self.peaks_marker: Line2D  = self.ax.axvline( peak_freq,  0.0, 1.0, label='peak', color=self.marker_colors[2], linestyle='-', linewidth=3, alpha=0.5)
-			self.ax.title.set_text(f"{self.name}: target({self.file},{self.element})={target_freq:.3f} model({self.marker_colors[1]})={model_freq:.3f}, loss={sL(loss)}")
+			self.mark_octave(model_octave)
+		#	self.model_marker: Line2D  = self.ax.axvline( model_freq,  0.0, 1.0, label='model', color=self.marker_colors[1], linestyle='-', linewidth=2, alpha=0.7)
+		#	self.peaks_marker: Line2D  = self.ax.axvline( peak_freq,  0.0, 1.0, label='peak', color=self.marker_colors[2], linestyle='-', linewidth=3, alpha=0.5)
+			self.ax.title.set_text(f"{self.name}: target({self.file},{self.element})={target_freq:.3f} ({target_octave}) model({self.marker_colors[1]})={model_octave}")
 			self.ax.title.set_fontsize(8)
 			self.ax.title.set_fontweight('bold')
 			self.ax.set_xscale('log')
@@ -696,10 +702,8 @@ class ClassificationEvalPlot(SignalPlot):
 			self.ax.figure.canvas.draw_idle()
 		else:
 			target_freq = self.evaluator.target_frequency
-			model_freq = self.evaluator.model_frequency
-			peak_freq = self.evaluator.peak_frequency
-			loss =  self.evaluator.lossdata['model']
-			ploss = self.evaluator.lossdata['peak']
+			model_octave  = self.evaluator.model_octave
+			target_octave = self.evaluator.target_octave
 			x = self.evaluator.embedding.xdata.cpu().numpy()
 			y = self.evaluator.embedding.get_result()
 
@@ -708,12 +712,11 @@ class ClassificationEvalPlot(SignalPlot):
 				self.plots[ip].set_xdata(x)
 			self.ax.set_xlim( x.min(), x.max() )
 			self.ax.set_ylim( y.min(), y.max() )
-			self.log.info(f"---- TransformPlot {self.tname}[{self.element})] update: y{y.shape}, x range=({x.min():.3f}->{x.max():.3f}), model_freq={model_freq:.3f}  ")
+			self.log.info(f"---- TransformPlot {self.tname}[{self.element})] update: y{y.shape}, x range=({x.min():.3f}->{x.max():.3f}), model_octave={model_octave}  ")
 
 			self.target_marker.set_xdata([target_freq,target_freq])
-			self.model_marker.set_xdata( [model_freq, model_freq] )
-			self.peaks_marker.set_xdata([peak_freq, peak_freq])
-			self.process_event(id="period-update", period=1/model_freq,  ax=str(id(self.ax)), color=self.marker_colors[1])
-			self.ax.title.set_text(f"{self.name}({self.file},{self.element}): model-loss={sL(loss)}, peak-loss={sL(ploss)}")
+			self.mark_octave(model_octave)
+			#self.process_event(id="period-update", period=1/model_freq,  ax=str(id(self.ax)), color=self.marker_colors[1])
+			self.ax.title.set_text(f"{self.name}({self.file},{self.element}): model_octave={model_octave}, target_octave={target_octave}")
 			self.ax.figure.canvas.draw_idle()
 
