@@ -723,7 +723,7 @@ class ClassificationEvalPlot(SignalPlot):
 			self.ax.set_ylim( y.min(), y.max() )
 
 			self.target_marker: Line2D = self.ax.axvline( target_freq, 0.0, 1.0, label='target', color=self.marker_colors[0], linestyle='-', linewidth=1, alpha=1.0)
-			self.mark_octave(model_octave)
+			self.mark_octave(x,y.flatten(),model_octave)
 		#	self.model_marker: Line2D  = self.ax.axvline( model_freq,  0.0, 1.0, label='model', color=self.marker_colors[1], linestyle='-', linewidth=2, alpha=0.7)
 		#	self.peaks_marker: Line2D  = self.ax.axvline( peak_freq,  0.0, 1.0, label='peak', color=self.marker_colors[2], linestyle='-', linewidth=3, alpha=0.5)
 			self.ax.title.set_text(f"{self.name}({self.file},{self.element}): model_octave={model_octave}, target_octave={target_octave}, target_freq={target_freq:.3f}")
@@ -786,7 +786,7 @@ class ClassificationEvalPlot(SignalPlot):
 			self.log.info(f"---- TransformPlot {self.tname}[{self.element})] update: y{y.shape}, x range=({x.min():.3f}->{x.max():.3f}), model_octave={model_octave}  ")
 
 			self.target_marker.set_xdata([target_freq,target_freq])
-			self.mark_octave(model_octave)
+			self.mark_octave(x,y.flatten(),model_octave)
 			#self.process_event(id="period-update", period=1/model_freq,  ax=str(id(self.ax)), color=self.marker_colors[1])
 			self.ax.title.set_text(f"{self.name}({self.file},{self.element}): model_octave={model_octave}, target_octave={target_octave}, target_freq={target_freq:.3f}")
 			self.ax.figure.canvas.draw_idle()
