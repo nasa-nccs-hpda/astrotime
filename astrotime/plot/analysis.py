@@ -643,7 +643,7 @@ class ClassificationEvalPlot(SignalPlot):
 
 	def mark_partiton_peaks(self, x: np.ndarray, y: np.ndarray, partition: int):
 		nfreq_part = self.nfreq_oct // self.oparts
-		self.log.info( f" ------------------- mark_partiton_peaks({partition}): prange = {partition*nfreq_part} -> {(partition+1)*nfreq_part}")
+		self.log.info( f" ------------------- mark_partiton_peaks({partition}): prange = {partition*nfreq_part} -> {(partition+1)*nfreq_part}, nfreq_part = {nfreq_part}")
 		ppeak_xvals: List[float] = self.get_peak_part_xvals(x, y, partition)
 		if len(self.peak_markers) == 0:
 			for ip in range(len(ppeak_xvals)):
@@ -677,7 +677,7 @@ class ClassificationEvalPlot(SignalPlot):
 			yp: np.ndarray = y.flatten()[obase+idx_rng[0]:obase+idx_rng[1]]
 			ipeak: int = yp.argmax()
 			pval: float = yp[ipeak]
-			self.log.info( f" ** octave={octave}, partition={partition}, idx_rng={idx_rng}, ipeak={ipeak}, pval={pval:.3f}")
+			self.log.info( f" ** octave={octave}, partition={partition}, obase={obase}, ipeak=({ipeak},{obase+ipeak}), pval={pval:.3f}")
 			if (pimax == -1) or (pval > pvmax):
 				pvmax = pval
 				pimax = ipeak
@@ -689,6 +689,7 @@ class ClassificationEvalPlot(SignalPlot):
 		o_idx, pp_idx = self.get_peak_part_idx(y,partition)
 		for octave in range(self.evaluator.noctaves):
 			obase = octave * self.nfreq_oct
+			self.log.info(f"  ---> o={octave},  pp_idx={pp_idx},  idx={obase+pp_idx} ")
 			peak_part_xvals.append( x[obase + pp_idx] )
 		return peak_part_xvals
 
