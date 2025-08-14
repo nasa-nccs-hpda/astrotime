@@ -74,8 +74,7 @@ class WaveletAnalysisLayer(EmbeddingLayer):
 		self.C: float = cfg.decay_factor / (8 * math.pi ** 2)
 		self.init_log(f"WaveletAnalysisLayer: nfreq={self.nfreq} ")
 		self.subbatch_size: int = cfg.get('subbatch_size',-1)
-		self.noctaves: int = self.cfg.noctaves
-		self.nfreq_oct: int = self.cfg.nfreq_oct
+
 
 	@property
 	def xdata(self) -> Tensor:

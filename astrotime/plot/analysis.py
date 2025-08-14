@@ -1,4 +1,7 @@
 import logging, os, csv, pickle, numpy as np, math
+
+from sympy.printing import octave
+
 from .param import STIntParam, STFloatParam
 from matplotlib.widgets import Slider
 from matplotlib import ticker
@@ -599,6 +602,8 @@ class ClassificationEvalPlot(SignalPlot):
 		self.name = name
 		self.evaluator: OctaveClassificationTrainer = evaluator
 		self.oparts = evaluator.oparts
+		self.noctaves = evaluator.noctaves
+		self.nfreq_oct = evaluator.nfreq_oct
 		self.annotations: List[str] = tolower( kwargs.get('annotations',None) )
 		self.colors = [ 'red', 'blue', 'magenta', 'cyan', 'darkviolet', 'darkorange', 'saddlebrown', 'darkturquoise', 'green', 'brown', 'purple', 'yellow', 'olive', 'pink', 'gold', 'grey', 'grey', 'grey', 'grey', 'grey', 'grey', 'grey', 'grey', 'grey', 'grey', 'grey']
 		self.marker_colors = ['black', 'green', 'yellow']
@@ -606,7 +611,7 @@ class ClassificationEvalPlot(SignalPlot):
 		self.plots: List[Line2D] = []
 		self.target_marker: Line2D = None
 		self.model_marker: Line2D = None
-		self.peaks_marker: Line2D = None
+		self.peak_markers: List[Line2D] = []
 		self.add_param( STIntParam('element', (0, self.nelements)  ) )
 		self.add_param( STIntParam('file', (0, self.nfiles), key_press_mode=2) )
 		self.octave_markers: List[Rectangle] = []
@@ -625,15 +630,25 @@ class ClassificationEvalPlot(SignalPlot):
 			marker.remove()
 		self.octave_markers = []
 
-	def mark_octave(self, octave: int ):
+	def mark_octave(self, x: np.ndarray, y: np.ndarray, octave: int ):
 		self.clear_markers()
 		if self.oparts > 1:
 			self.mark_octave_paritions( octave )
+			self.mark_partiton_peaks(x,y,octave)
 		else:
 			f0: float = self.evaluator.f0 * math.pow(2, octave)
 			f1: float = f0*2.0
 			self.log.info( f"\n       mark_octave: {f0:.3f} ->  {f1:.3f}, xlim={lstr(self.ax.get_xlim())}, ylim={lstr(self.ax.get_ylim())}\n")
 			self.mark_freq_range(f0,f1)
+
+	def mark_partiton_peaks(self, x: np.ndarray, y: np.ndarray, partition: int):
+		ppeak_xvals: List[float] = self.get_peak_part_xvals(x, y, partition)
+		if len(self.peak_markers) == 0:
+			for ip in range(len(ppeak_xvals)):
+				self.peak_markers.append( self.ax.axvline( ppeak_xvals[ip], 0.0, 1.0, label=f"peak-{ip}", color=self.marker_colors[2], linestyle='-', linewidth=3, alpha=0.5) )
+		else:
+			for ip in range(len(ppeak_xvals)):
+				self.peak_markers[ip].set_xdata([ppeak_xvals[ip],ppeak_xvals[ip]])
 
 	def mark_octave_parition(self, octave: int, partition: int ):
 		octave_base: float = self.evaluator.f0 * math.pow(2, octave)
@@ -645,6 +660,34 @@ class ClassificationEvalPlot(SignalPlot):
 		self.clear_markers()
 		for octave in range(self.evaluator.noctaves):
 			self.mark_octave_parition(octave, partition)
+
+	def get_partition_idx_rng(self, octave: int, partition: int) -> Tuple[int,int]:
+		obase = octave * self.nfreq_oct
+		nfreq_part = self.nfreq_oct//self.oparts
+		idx0 = obase + partition * nfreq_part
+		idx1 = idx0 + nfreq_part
+		return idx0, idx1
+
+	def get_peak_part_idx(self, y: np.ndarray, partition: int ) -> Tuple[int,int]:
+		pvmax, pimax, omax = 0.0, -1, -1
+		for octave in range(self.evaluator.noctaves):
+			idx_rng: Tuple[int, int] = self.get_partition_idx_rng(octave,partition)
+			yp: np.ndarray = y.flatten()[idx_rng[0]:idx_rng[1]]
+			ipeak: int = yp.argmax()
+			pval: float = yp[ipeak]
+			if (pimax == -1) or (pval > pvmax):
+				pvmax = pval
+				pimax = ipeak
+				omax = octave
+		return omax, pimax
+
+	def get_peak_part_xvals(self, x: np.ndarray, y: np.ndarray, partition: int) -> List[float]:
+		peak_part_xvals = []
+		o_idx, pp_idx = self.get_peak_part_idx(y,partition)
+		for octave in range(self.evaluator.noctaves):
+			obase = octave * self.nfreq_oct
+			peak_part_xvals.append( x[obase + pp_idx] )
+		return peak_part_xvals
 
 	def get_slider(self, name: str ) -> Slider:
 		param: STIntParam = self._sparms[name]

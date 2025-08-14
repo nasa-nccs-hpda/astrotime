@@ -36,6 +36,7 @@ class OctaveClassificationTrainer(object):
         self.model: nn.Module = model
         self.mtype: str = kwargs.get( 'mtype', cfg.model.mtype )
         self.noctaves = cfg.data.noctaves
+        self.nfreq_oct = cfg.data.nfreq_oct
         self.oparts = cfg.transform.octave_partitions
         self.f0 = cfg.data.base_freq
         self.optimizer: optim.Optimizer = None
