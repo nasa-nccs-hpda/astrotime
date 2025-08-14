@@ -598,6 +598,7 @@ class ClassificationEvalPlot(SignalPlot):
 		SignalPlot.__init__(self, **kwargs)
 		self.name = name
 		self.evaluator: OctaveClassificationTrainer = evaluator
+		self.oparts = evaluator.oparts
 		self.annotations: List[str] = tolower( kwargs.get('annotations',None) )
 		self.colors = [ 'red', 'blue', 'magenta', 'cyan', 'darkviolet', 'darkorange', 'saddlebrown', 'darkturquoise', 'green', 'brown', 'purple', 'yellow', 'olive', 'pink', 'gold', 'grey', 'grey', 'grey', 'grey', 'grey', 'grey', 'grey', 'grey', 'grey', 'grey', 'grey']
 		self.marker_colors = ['black', 'green', 'yellow']
@@ -626,10 +627,13 @@ class ClassificationEvalPlot(SignalPlot):
 
 	def mark_octave(self, octave: int ):
 		self.clear_markers()
-		f0: float = self.evaluator.f0 * math.pow(2, octave)
-		f1: float = f0*2.0
-		self.log.info( f"\n       mark_octave: {f0:.3f} ->  {f1:.3f}, xlim={lstr(self.ax.get_xlim())}, ylim={lstr(self.ax.get_ylim())}\n")
-		self.mark_freq_range(f0,f1)
+		if self.oparts > 1:
+			self.mark_octave_paritions( octave )
+		else:
+			f0: float = self.evaluator.f0 * math.pow(2, octave)
+			f1: float = f0*2.0
+			self.log.info( f"\n       mark_octave: {f0:.3f} ->  {f1:.3f}, xlim={lstr(self.ax.get_xlim())}, ylim={lstr(self.ax.get_ylim())}\n")
+			self.mark_freq_range(f0,f1)
 
 	def mark_octave_parition(self, octave: int, partition: int ):
 		octave_base: float = self.evaluator.f0 * math.pow(2, octave)
