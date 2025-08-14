@@ -643,7 +643,7 @@ class ClassificationEvalPlot(SignalPlot):
 
 	def mark_partiton_peaks(self, x: np.ndarray, y: np.ndarray, partition: int):
 		nfreq_part = self.nfreq_oct // self.oparts
-		print( f" ------------------- mark_partiton_peaks: prange = {partition*nfreq_part} -> {(partition+1)*nfreq_part}")
+		self.log.info( f" ------------------- mark_partiton_peaks({partition}): prange = {partition*nfreq_part} -> {(partition+1)*nfreq_part}")
 		ppeak_xvals: List[float] = self.get_peak_part_xvals(x, y, partition)
 		if len(self.peak_markers) == 0:
 			for ip in range(len(ppeak_xvals)):
