@@ -686,11 +686,13 @@ class ClassificationEvalPlot(SignalPlot):
 
 	def get_peak_part_xvals(self, x: np.ndarray, y: np.ndarray, partition: int) -> List[float]:
 		peak_part_xvals = []
+		nfreq_part = self.nfreq_oct // self.oparts
 		o_idx, pp_idx = self.get_peak_part_idx(y,partition)
 		for octave in range(self.evaluator.noctaves):
 			obase = octave * self.nfreq_oct
-			self.log.info(f"  ---> o={octave},  pp_idx={pp_idx},  idx={obase+pp_idx} ")
-			peak_part_xvals.append( x[obase + pp_idx] )
+			pbase = partition * nfreq_part
+			self.log.info(f"  ---> o={octave},  pp_idx={pp_idx},  idx={obase+pbase+pp_idx} ")
+			peak_part_xvals.append( x[obase + pbase + pp_idx] )
 		return peak_part_xvals
 
 	def get_slider(self, name: str ) -> Slider:
