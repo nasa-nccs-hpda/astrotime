@@ -645,7 +645,7 @@ class ClassificationEvalPlot(SignalPlot):
 		ppeak_xvals: List[float] = self.get_peak_part_xvals(x, y, partition)
 		if len(self.peak_markers) == 0:
 			for ip in range(len(ppeak_xvals)):
-				self.peak_markers.append( self.ax.axvline( ppeak_xvals[ip], 0.0, 1.0, label=f"peak-{ip}", color=self.marker_colors[2], linestyle='-', linewidth=3, alpha=0.5) )
+				self.peak_markers.append( self.ax.axvline( ppeak_xvals[ip], 0.0, 1.0, color='orange', linestyle='-', linewidth=2, alpha=0.7) )
 		else:
 			for ip in range(len(ppeak_xvals)):
 				self.peak_markers[ip].set_xdata([ppeak_xvals[ip],ppeak_xvals[ip]])
@@ -661,20 +661,21 @@ class ClassificationEvalPlot(SignalPlot):
 		for octave in range(self.evaluator.noctaves):
 			self.mark_octave_parition(octave, partition)
 
-	def get_partition_idx_rng(self, octave: int, partition: int) -> Tuple[int,int]:
-		obase = octave * self.nfreq_oct
+	def get_partition_idx_rng(self, partition: int) -> Tuple[int,int]:
 		nfreq_part = self.nfreq_oct//self.oparts
-		idx0 = obase + partition * nfreq_part
+		idx0 = partition * nfreq_part
 		idx1 = idx0 + nfreq_part
 		return idx0, idx1
 
 	def get_peak_part_idx(self, y: np.ndarray, partition: int ) -> Tuple[int,int]:
 		pvmax, pimax, omax = 0.0, -1, -1
 		for octave in range(self.evaluator.noctaves):
-			idx_rng: Tuple[int, int] = self.get_partition_idx_rng(octave,partition)
-			yp: np.ndarray = y.flatten()[idx_rng[0]:idx_rng[1]]
+			obase = octave * self.nfreq_oct
+			idx_rng: Tuple[int, int] = self.get_partition_idx_rng(partition)
+			yp: np.ndarray = y.flatten()[obase+idx_rng[0]:obase+idx_rng[1]]
 			ipeak: int = yp.argmax()
 			pval: float = yp[ipeak]
+			self.log.info( f" ** octave={octave}, partition={partition}, idx_rng={idx_rng}, ipeak={ipeak}, pval={pval:.3f}")
 			if (pimax == -1) or (pval > pvmax):
 				pvmax = pval
 				pimax = ipeak
