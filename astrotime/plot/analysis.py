@@ -675,7 +675,7 @@ class ClassificationEvalPlot(SignalPlot):
 			y: np.ndarray = self.evaluator.embedding.get_result()
 			self.nlines = y.shape[0]
 			for ip in range(self.nlines):
-				self.plots.append( self.ax.plot(x, y[ip].squeeze(), label=f"{self.tname}-{ip}", color=self.colors[ip], marker=".", linewidth=1, markersize=1, alpha=4.0/(ip+4) )[0] )
+				self.plots.append( self.ax.plot(x, y[ip].flatten(), label=f"{self.tname}-{ip}", color=self.colors[ip], marker=".", linewidth=1, markersize=1, alpha=4.0/(ip+4) )[0] )
 			self.ax.set_xlim( x.min(), x.max() )
 			self.ax.set_ylim( y.min(), y.max() )
 
@@ -736,7 +736,7 @@ class ClassificationEvalPlot(SignalPlot):
 			y = self.evaluator.embedding.get_result()
 
 			for ip in range(self.nlines):
-				self.plots[ip].set_ydata(y[ip].squeeze())
+				self.plots[ip].set_ydata(y[ip].flatten())
 				self.plots[ip].set_xdata(x)
 			self.ax.set_xlim( x.min(), x.max() )
 			self.ax.set_ylim( y.min(), y.max() )
