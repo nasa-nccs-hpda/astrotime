@@ -652,17 +652,6 @@ class ClassificationEvalPlot(SignalPlot):
 			self.log.info( f"\n       mark_octave: {f0:.3f} ->  {f1:.3f}, xlim={lstr(self.ax.get_xlim())}, ylim={lstr(self.ax.get_ylim())}\n")
 			self.mark_freq_range(f0,f1)
 
-	def mark_partiton_peaks1(self, x: np.ndarray, y: np.ndarray, partition: int):
-		nfreq_part = self.nfreq_oct // self.oparts
-		self.log.info( f" ------------------- mark_partiton_peaks({partition}): prange = {partition*nfreq_part} -> {(partition+1)*nfreq_part}, nfreq_part = {nfreq_part}")
-		ppeak_xvals: List[float] = self.get_peak_part_xvals(x, y, partition)
-		if len(self.peak_markers) == 0:
-			for ip in range(len(ppeak_xvals)):
-				self.peak_markers.append( self.ax.axvline( ppeak_xvals[ip], 0.0, 1.0, color='orange', linestyle='-', linewidth=2, alpha=0.7) )
-		else:
-			for ip in range(len(ppeak_xvals)):
-				self.peak_markers[ip].set_xdata([ppeak_xvals[ip],ppeak_xvals[ip]])
-
 	def mark_partiton_peaks(self, x: np.ndarray, y: np.ndarray, partition: int):
 		nfreq_part = self.nfreq_oct // self.oparts
 		yf: np.ndarray = y.reshape( self.noctaves, self.nfreq_oct )
@@ -751,7 +740,7 @@ class ClassificationEvalPlot(SignalPlot):
 			self.ax.set_xlim( x.min(), x.max() )
 			self.ax.set_ylim( y.min(), y.max() )
 
-			self.target_marker: Line2D = self.ax.axvline( target_freq, 0.0, 1.0, label='target', color='blue', linestyle='-', linewidth=2, alpha=1.0)
+			self.target_marker: Line2D = self.ax.axvline( target_freq, 0.0, 1.0, label='target', color='blue', linestyle='-', linewidth=1, alpha=1.0)
 			self.mark_class_partition(x,y.flatten(),model_octave)
 		#	self.model_marker: Line2D  = self.ax.axvline( model_freq,  0.0, 1.0, label='model', color=self.marker_colors[1], linestyle='-', linewidth=2, alpha=0.7)
 		#	self.peaks_marker: Line2D  = self.ax.axvline( peak_freq,  0.0, 1.0, label='peak', color=self.marker_colors[2], linestyle='-', linewidth=3, alpha=0.5)
