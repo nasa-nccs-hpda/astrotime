@@ -673,7 +673,7 @@ class ClassificationEvalPlot(SignalPlot):
 		self.log.info( f" ------------------- mark_partiton_peaks({partition}): yf{yf.shape}, nfreq_part = {nfreq_part}, prange={[ip0, ip1]}, ipp={ipp}, ppeak_xvals={ppeak_xvals}")
 		if len(self.peak_markers) == 0:
 			for ip in range(len(ppeak_xvals)):
-				self.peak_markers.append( self.ax.axvline( ppeak_xvals[ip], 0.0, 1.0, color='orange', linestyle='-', linewidth=2, alpha=0.7) )
+				self.peak_markers.append( self.ax.axvline( ppeak_xvals[ip], 0.0, 1.0, color='yellow', linestyle='-', linewidth=4, alpha=0.7) )
 		else:
 			for ip in range(len(ppeak_xvals)):
 				self.peak_markers[ip].set_xdata([ppeak_xvals[ip],ppeak_xvals[ip]])
@@ -751,7 +751,7 @@ class ClassificationEvalPlot(SignalPlot):
 			self.ax.set_xlim( x.min(), x.max() )
 			self.ax.set_ylim( y.min(), y.max() )
 
-			self.target_marker: Line2D = self.ax.axvline( target_freq, 0.0, 1.0, label='target', color=self.marker_colors[0], linestyle='-', linewidth=1, alpha=1.0)
+			self.target_marker: Line2D = self.ax.axvline( target_freq, 0.0, 1.0, label='target', color='blue', linestyle='-', linewidth=2, alpha=1.0)
 			self.mark_class_partition(x,y.flatten(),model_octave)
 		#	self.model_marker: Line2D  = self.ax.axvline( model_freq,  0.0, 1.0, label='model', color=self.marker_colors[1], linestyle='-', linewidth=2, alpha=0.7)
 		#	self.peaks_marker: Line2D  = self.ax.axvline( peak_freq,  0.0, 1.0, label='peak', color=self.marker_colors[2], linestyle='-', linewidth=3, alpha=0.5)
