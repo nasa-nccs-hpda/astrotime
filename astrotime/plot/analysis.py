@@ -641,13 +641,13 @@ class ClassificationEvalPlot(SignalPlot):
 			marker.remove()
 		self.octave_markers = []
 
-	def mark_octave(self, x: np.ndarray, y: np.ndarray, octave: int ):
+	def mark_class_partition(self, x: np.ndarray, y: np.ndarray, model_class: int):
 		self.clear_markers()
 		if self.oparts > 1:
-			self.mark_octave_paritions( octave )
-			self.mark_partiton_peaks(x,y,octave)
+			self.mark_octave_paritions( model_class )
+			self.mark_partiton_peaks(x,y,model_class)
 		else:
-			f0: float = self.evaluator.f0 * math.pow(2, octave)
+			f0: float = self.evaluator.f0 * math.pow(2, model_class)
 			f1: float = f0*2.0
 			self.log.info( f"\n       mark_octave: {f0:.3f} ->  {f1:.3f}, xlim={lstr(self.ax.get_xlim())}, ylim={lstr(self.ax.get_ylim())}\n")
 			self.mark_freq_range(f0,f1)
@@ -680,13 +680,14 @@ class ClassificationEvalPlot(SignalPlot):
 
 	def mark_octave_parition(self, octave: int, partition: int ):
 		octave_base: float = self.evaluator.f0 * math.pow(2, octave)
-		dfp0 =  octave_base * partition / self.evaluator.oparts
-		dfp1 =  octave_base * (partition+1) / self.evaluator.oparts
+		nfreq_part =  self.nfreq_oct // self.oparts
+		dfp0 =  nfreq_part * partition
+		dfp1 =  nfreq_part * (partition+1)
 		self.mark_freq_range( octave_base+dfp0, octave_base+dfp1 )
 
 	def mark_octave_paritions(self, partition: int):
 		self.clear_markers()
-		for octave in range(self.evaluator.noctaves):
+		for octave in range(self.noctaves):
 			self.mark_octave_parition(octave, partition)
 
 	def get_partition_idx_rng(self, partition: int) -> Tuple[int,int]:
@@ -697,7 +698,7 @@ class ClassificationEvalPlot(SignalPlot):
 
 	def get_peak_part_idx(self, y: np.ndarray, partition: int ) -> Tuple[int,int]:
 		pvmax, pimax, omax = 0.0, -1, -1
-		for octave in range(self.evaluator.noctaves):
+		for octave in range(self.noctaves):
 			obase = octave * self.nfreq_oct
 			idx_rng: Tuple[int, int] = self.get_partition_idx_rng(partition)
 			yp: np.ndarray = y.flatten()[obase+idx_rng[0]:obase+idx_rng[1]]
@@ -713,7 +714,7 @@ class ClassificationEvalPlot(SignalPlot):
 	def get_peak_part_xvals(self, x: np.ndarray, y: np.ndarray, partition: int) -> List[float]:
 		peak_part_xvals = []
 		o_idx, pp_idx = self.get_peak_part_idx(y,partition)
-		for octave in range(self.evaluator.noctaves):
+		for octave in range(self.noctaves):
 			pidx = octave * self.nfreq_oct + pp_idx
 			peak_part_xvals.append( x[pidx] )
 		return peak_part_xvals
@@ -752,7 +753,7 @@ class ClassificationEvalPlot(SignalPlot):
 			self.ax.set_ylim( y.min(), y.max() )
 
 			self.target_marker: Line2D = self.ax.axvline( target_freq, 0.0, 1.0, label='target', color=self.marker_colors[0], linestyle='-', linewidth=1, alpha=1.0)
-			self.mark_octave(x,y.flatten(),model_octave)
+			self.mark_class_partition(x,y.flatten(),model_octave)
 		#	self.model_marker: Line2D  = self.ax.axvline( model_freq,  0.0, 1.0, label='model', color=self.marker_colors[1], linestyle='-', linewidth=2, alpha=0.7)
 		#	self.peaks_marker: Line2D  = self.ax.axvline( peak_freq,  0.0, 1.0, label='peak', color=self.marker_colors[2], linestyle='-', linewidth=3, alpha=0.5)
 			self.ax.title.set_text(f"{self.name}({self.file},{self.element}): model_octave={model_octave}, target_octave={target_octave}, target_freq={target_freq:.3f}")
@@ -802,8 +803,8 @@ class ClassificationEvalPlot(SignalPlot):
 			self.ax.figure.canvas.draw_idle()
 		else:
 			target_freq = self.evaluator.target_frequency
-			model_octave  = self.evaluator.model_octave
-			target_octave = self.evaluator.target_octave
+			model_class  = self.evaluator.model_octave
+			target_class = self.evaluator.target_octave
 			x = self.evaluator.embedding.xdata.cpu().numpy()
 			y = self.evaluator.embedding.get_result()
 
@@ -812,11 +813,11 @@ class ClassificationEvalPlot(SignalPlot):
 				self.plots[ip].set_xdata(x)
 			self.ax.set_xlim( x.min(), x.max() )
 			self.ax.set_ylim( y.min(), y.max() )
-			self.log.info(f"---- TransformPlot {self.tname}[{self.element})] update: y{y.shape}, x range=({x.min():.3f}->{x.max():.3f}), model_octave={model_octave}  ")
+			self.log.info(f"---- TransformPlot {self.tname}[{self.element})] update: y{y.shape}, x range=({x.min():.3f}->{x.max():.3f}), model_class={model_class}  ")
 
 			self.target_marker.set_xdata([target_freq,target_freq])
-			self.mark_octave(x,y.flatten(),model_octave)
+			self.mark_class_partition(x,y.flatten(),model_class)
 			#self.process_event(id="period-update", period=1/model_freq,  ax=str(id(self.ax)), color=self.marker_colors[1])
-			self.ax.title.set_text(f"{self.name}({self.file},{self.element}): model_octave={model_octave}, target_octave={target_octave}, target_freq={target_freq:.3f}")
+			self.ax.title.set_text(f"{self.name}({self.file},{self.element}): model_class={model_class}, target_class={target_class}, target_freq={target_freq:.3f}")
 			self.ax.figure.canvas.draw_idle()
 
