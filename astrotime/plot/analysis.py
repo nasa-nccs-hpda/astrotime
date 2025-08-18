@@ -679,11 +679,10 @@ class ClassificationEvalPlot(SignalPlot):
 				self.peak_markers[ip].set_xdata([ppeak_xvals[ip],ppeak_xvals[ip]])
 
 	def mark_octave_parition(self, octave: int, partition: int ):
-		octave_base: float = self.evaluator.f0 * math.pow(2, octave)
-		nfreq_part =  self.nfreq_oct // self.oparts
-		dfp0 =  nfreq_part * partition
-		dfp1 =  nfreq_part * (partition+1)
-		self.mark_freq_range( octave_base+dfp0, octave_base+dfp1 )
+		psize = self.nfreq_oct / self.evaluator.oparts
+		obase, iprng =  octave*self.nfreq_oct, ( psize*partition, psize*partition+1 )
+		pf = [ self.evaluator.f0 * np.power(2.0, obase + ip ) for ip in iprng ]
+		self.mark_freq_range( *pf )
 
 	def mark_octave_paritions(self, partition: int):
 		self.clear_markers()
