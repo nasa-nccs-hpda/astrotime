@@ -21,6 +21,17 @@ from typing import List, Optional, Dict, Type, Union, Tuple, Any, Set
 from astrotime.util.math import tnorm
 log = logging.getLogger()
 
+def get_yval_for_xval( x: np.ndarray, y: np.ndarray, xval: float) -> float:
+	if not isinstance(x, np.ndarray) or x.ndim != 1:
+		raise ValueError("Input 'x' must be a 1D NumPy array.")
+	idx = np.searchsorted(x, xval)
+	if idx == 0: return y[0]
+	elif idx == len(x): return y[-1]
+	else:
+		x0, x1 = x[idx - 1], x[idx]
+		alpha = (xval - x0) / (x1 - x0)
+		return (1 - alpha) * y[idx - 1] + alpha * y[idx]
+
 def sH(h: float|np.ndarray) -> str:
 	if type(h) is np.ndarray:
 		h = h.item() if h.ndim == 0 else h[0]
@@ -641,10 +652,25 @@ class ClassificationEvalPlot(SignalPlot):
 			self.log.info( f"\n       mark_octave: {f0:.3f} ->  {f1:.3f}, xlim={lstr(self.ax.get_xlim())}, ylim={lstr(self.ax.get_ylim())}\n")
 			self.mark_freq_range(f0,f1)
 
-	def mark_partiton_peaks(self, x: np.ndarray, y: np.ndarray, partition: int):
+	def mark_partiton_peaks1(self, x: np.ndarray, y: np.ndarray, partition: int):
 		nfreq_part = self.nfreq_oct // self.oparts
 		self.log.info( f" ------------------- mark_partiton_peaks({partition}): prange = {partition*nfreq_part} -> {(partition+1)*nfreq_part}, nfreq_part = {nfreq_part}")
 		ppeak_xvals: List[float] = self.get_peak_part_xvals(x, y, partition)
+		if len(self.peak_markers) == 0:
+			for ip in range(len(ppeak_xvals)):
+				self.peak_markers.append( self.ax.axvline( ppeak_xvals[ip], 0.0, 1.0, color='orange', linestyle='-', linewidth=2, alpha=0.7) )
+		else:
+			for ip in range(len(ppeak_xvals)):
+				self.peak_markers[ip].set_xdata([ppeak_xvals[ip],ppeak_xvals[ip]])
+
+	def mark_partiton_peaks(self, x: np.ndarray, y: np.ndarray, partition: int):
+		nfreq_part = self.nfreq_oct // self.oparts
+		yf: np.ndarray = y.reshape( self.noctaves, self.nfreq_oct )
+		ip0, ip1 = [ nfreq_part*partition, nfreq_part*(partition+1)]
+		yfp: np.ndarray = yf[:,ip0:ip1].sum(axis=0,keepdims=False)
+		ipp: int = np.argmax(yfp)
+		ppeak_xvals: List[float] = [ x[ oi*self.nfreq_oct + partition*nfreq_part + ipp ] for oi in range(self.noctaves) ]
+		self.log.info( f" ------------------- mark_partiton_peaks({partition}): yf{yf.shape}, nfreq_part = {nfreq_part}, prange={[ip0, ip1]}, ipp={ipp}, ppeak_xvals={ppeak_xvals}")
 		if len(self.peak_markers) == 0:
 			for ip in range(len(ppeak_xvals)):
 				self.peak_markers.append( self.ax.axvline( ppeak_xvals[ip], 0.0, 1.0, color='orange', linestyle='-', linewidth=2, alpha=0.7) )
@@ -677,7 +703,7 @@ class ClassificationEvalPlot(SignalPlot):
 			yp: np.ndarray = y.flatten()[obase+idx_rng[0]:obase+idx_rng[1]]
 			ipeak: int = yp.argmax()
 			pval: float = yp[ipeak]
-			self.log.info( f" ** octave={octave}, partition={partition}, obase={obase}, ipeak=({ipeak},{obase+ipeak}), pval={pval:.3f}")
+			self.log.info( f" ** octave={octave}, partition={partition}, obase={obase}, ipeak=({ipeak},{obase+ipeak}), pval={pval:.3f}, idx_rng={idx_rng}")
 			if (pimax == -1) or (pval > pvmax):
 				pvmax = pval
 				pimax = idx_rng[0] + ipeak
@@ -689,7 +715,6 @@ class ClassificationEvalPlot(SignalPlot):
 		o_idx, pp_idx = self.get_peak_part_idx(y,partition)
 		for octave in range(self.evaluator.noctaves):
 			pidx = octave * self.nfreq_oct + pp_idx
-			self.log.info(f"  ---> o={octave},  pp_idx={pp_idx}, pidx={pidx} ")
 			peak_part_xvals.append( x[pidx] )
 		return peak_part_xvals
 
