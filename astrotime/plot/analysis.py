@@ -680,7 +680,7 @@ class ClassificationEvalPlot(SignalPlot):
 
 	def mark_octave_parition(self, octave: int, partition: int ):
 		psize, nfo = self.nfreq_oct / self.evaluator.oparts, self.nfreq_oct
-		obase, iprng =  octave*nfo, ( psize*partition, psize*partition+1 )
+		obase, iprng =  octave*nfo, ( psize*partition, psize*(partition+1) )
 		pf = [ self.evaluator.f0 * np.power(2.0, (obase+ip)/nfo ) for ip in iprng ]
 		self.mark_freq_range( *pf )
 
