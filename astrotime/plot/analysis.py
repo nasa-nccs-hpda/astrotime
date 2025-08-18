@@ -662,7 +662,7 @@ class ClassificationEvalPlot(SignalPlot):
 		self.log.info( f" ------------------- mark_partiton_peaks({partition}): yf{yf.shape}, nfreq_part = {nfreq_part}, prange={[ip0, ip1]}, ipp={ipp}, ppeak_xvals={ppeak_xvals}")
 		if len(self.peak_markers) == 0:
 			for ip in range(len(ppeak_xvals)):
-				self.peak_markers.append( self.ax.axvline( ppeak_xvals[ip], 0.0, 1.0, color='darkorange', linestyle='-', linewidth=5, alpha=0.2) )
+				self.peak_markers.append( self.ax.axvline( ppeak_xvals[ip], 0.0, 1.0, color='darkorange', linestyle='-', linewidth=3, alpha=0.4) )
 		else:
 			for ip in range(len(ppeak_xvals)):
 				self.peak_markers[ip].set_xdata([ppeak_xvals[ip],ppeak_xvals[ip]])
