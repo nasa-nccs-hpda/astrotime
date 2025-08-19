@@ -72,12 +72,12 @@ class OctaveClassificationTrainer(object):
 
     def get_octave(self, f: Tensor) -> Tensor:
         self.target_frequency = f
-        octave = torch.floor( torch.log2(f/self.f0) ).to(torch.long)
+        o = torch.log2(f/self.f0)
+        octave = torch.floor( o )
         if self.oparts < 2:
-            return octave
+            return octave.to(torch.long)
         else:
-            octave_base_freq = self.f0 * torch.pow(2, octave)
-            return torch.floor(  (f/octave_base_freq-1)*self.oparts ).to(torch.long)
+            return torch.floor( self.oparts*(o-octave) ).to(torch.long)
 
     def get_octave_element(self, f: float) -> int:
         self.target_frequency = f
