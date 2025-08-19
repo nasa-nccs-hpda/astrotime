@@ -72,21 +72,21 @@ class OctaveClassificationTrainer(object):
 
     def get_octave(self, f: Tensor) -> Tensor:
         self.target_frequency = f
-        o = torch.log2(f/self.f0)
-        octave = torch.floor( o )
+        octave = torch.log2(f/self.f0)
+        ioct = torch.floor( octave )
         if self.oparts < 2:
-            return octave.to(torch.long)
+            return ioct.to(torch.long)
         else:
-            return torch.floor( self.oparts*(o-octave) ).to(torch.long)
+            return torch.floor( self.oparts*(octave-ioct) ).to(torch.long)
 
     def get_octave_element(self, f: float) -> int:
         self.target_frequency = f
-        octave = math.floor( math.log2(f/self.f0) )
+        octave = math.log2(f/self.f0)
+        ioct = math.floor( octave )
         if self.oparts < 2:
-            return octave
+            return ioct
         else:
-            octave_base_freq = self.f0 * math.pow(2, octave)
-            return math.floor(  (f/octave_base_freq-1)*self.oparts )
+            return math.floor( self.oparts*(octave-ioct) )
 
     def get_input(self, batch: TRDict) -> Tensor:
         return batch['z']
