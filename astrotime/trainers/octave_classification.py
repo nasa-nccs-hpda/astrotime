@@ -284,7 +284,7 @@ class OctaveClassificationTrainer(object):
                 result: Tensor = self.model(binput)
 
                 y: np.ndarray = self.embedding.get_result()
-                x: np.ndarray = self.embedding.xdata.numpy()
+                x: np.ndarray = self.embedding.xdata.cpu().numpy()
                 max_idx: int = torch.argmax(result, dim=1, keepdim=False).item()
                 model_freq = self.get_partition_peak( x, y, max_idx, self.target_frequency)
 
