@@ -727,8 +727,8 @@ class ClassificationEvalPlot(SignalPlot):
 		if target_freq is None:
 			print( f"No data for element {self.element} in file-{self.evaluator.loader.ifile} ---")
 		else:
-			model_octave  = self.evaluator.model_octave
-			target_octave = self.evaluator.target_octave
+			model_class  = self.evaluator.model_class
+			target_class = self.evaluator.target_class
 		#	loss =  self.evaluator.lossdata['model']
 			x: np.ndarray = self.evaluator.embedding.xdata.cpu().numpy()
 			y: np.ndarray = self.evaluator.embedding.get_result()
@@ -739,10 +739,10 @@ class ClassificationEvalPlot(SignalPlot):
 			self.ax.set_ylim( y.min(), y.max() )
 
 			self.target_marker: Line2D = self.ax.axvline( target_freq, 0.0, 1.0, label='target', color='blue', linestyle='-', linewidth=1, alpha=1.0)
-			self.mark_class_partition(x,y.flatten(),model_octave)
+			self.mark_class_partition(x,y.flatten(),model_class)
 		#	self.model_marker: Line2D  = self.ax.axvline( model_freq,  0.0, 1.0, label='model', color=self.marker_colors[1], linestyle='-', linewidth=2, alpha=0.7)
 		#	self.peaks_marker: Line2D  = self.ax.axvline( peak_freq,  0.0, 1.0, label='peak', color=self.marker_colors[2], linestyle='-', linewidth=3, alpha=0.5)
-			self.ax.title.set_text(f"{self.name}({self.file},{self.element}): model_octave={model_octave}, target_octave={target_octave}, target_freq={target_freq:.3f}")
+			self.ax.title.set_text(f"{self.name}({self.file},{self.element}): model_class={model_class}, target_class={target_class}, target_freq={target_freq:.3f}")
 			self.ax.title.set_fontsize(8)
 			self.ax.title.set_fontweight('bold')
 			self.ax.set_xscale('log')
@@ -789,8 +789,8 @@ class ClassificationEvalPlot(SignalPlot):
 			self.ax.figure.canvas.draw_idle()
 		else:
 			target_freq = self.evaluator.target_frequency
-			model_class  = self.evaluator.model_octave
-			target_class = self.evaluator.target_octave
+			model_class  = self.evaluator.model_class
+			target_class = self.evaluator.target_class
 			x = self.evaluator.embedding.xdata.cpu().numpy()
 			y = self.evaluator.embedding.get_result()
 

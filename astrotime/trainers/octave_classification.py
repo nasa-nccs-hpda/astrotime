@@ -51,8 +51,8 @@ class OctaveClassificationTrainer(object):
         self.global_time = None
         self.exec_stats = []
         self.target_frequency = None
-        self.target_octave = None
-        self.model_octave = None
+        self.target_class = None
+        self.model_class = None
         self.lossdata = {}
         if model is not None:
             for module in model.modules(): self.add_callbacks(module)
@@ -274,11 +274,11 @@ class OctaveClassificationTrainer(object):
                 result: Tensor = self.model(binput)
                 max_idx: int = torch.argmax(result, dim=1, keepdim=False).item()
 
-                self.target_octave = target
-                self.model_octave = max_idx
+                self.target_class = target
+                self.model_class = max_idx
             else:
-                self.target_octave = None
-                self.model_octave = None
+                self.target_class = None
+                self.model_class = None
 
 
     def init_eval(self, version):
