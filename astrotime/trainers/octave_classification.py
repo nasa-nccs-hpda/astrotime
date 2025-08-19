@@ -281,10 +281,10 @@ class OctaveClassificationTrainer(object):
             if batch is not None:
                 binput: Tensor = self.get_input(batch)
                 target: int = self.get_target_element(batch)
+                result: Tensor = self.model(binput)
+
                 y: np.ndarray = self.embedding.get_result()
                 x: np.ndarray = self.embedding.xdata.numpy()
-
-                result: Tensor = self.model(binput)
                 max_idx: int = torch.argmax(result, dim=1, keepdim=False).item()
                 model_freq = self.get_partition_peak( x, y, max_idx, self.target_frequency)
 
