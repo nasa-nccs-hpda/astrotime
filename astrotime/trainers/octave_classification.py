@@ -53,9 +53,20 @@ class OctaveClassificationTrainer(object):
         self.target_frequency = None
         self.target_class = None
         self.model_class = None
+        self.model_frequency = None
         self.lossdata = {}
         if model is not None:
             for module in model.modules(): self.add_callbacks(module)
+
+    def get_partition_peak(self, x: np.ndarray, y: np.ndarray, partition: int, target: float) -> float:
+        nfreq_part = self.nfreq_oct // self.oparts
+        yf: np.ndarray = y.reshape(self.noctaves, self.nfreq_oct)
+        ip0, ip1 = [nfreq_part * partition, nfreq_part * (partition + 1)]
+        yfp: np.ndarray = yf[:, ip0:ip1].sum(axis=0, keepdims=False)
+        ipp: int = np.argmax(yfp)
+        ppeak_xvals: np.array = np.array([x[oi * self.nfreq_oct + partition * nfreq_part + ipp] for oi in range(self.noctaves)])
+        dels = np.abs(ppeak_xvals - target)
+        return ppeak_xvals[np.argmin(dels)]
 
     def add_callbacks(self, module):
         pass
@@ -270,15 +281,20 @@ class OctaveClassificationTrainer(object):
             if batch is not None:
                 binput: Tensor = self.get_input(batch)
                 target: int = self.get_target_element(batch)
+                y: np.ndarray = self.embedding.get_result()
+                x: np.ndarray = self.embedding.xdata.numpy()
 
                 result: Tensor = self.model(binput)
                 max_idx: int = torch.argmax(result, dim=1, keepdim=False).item()
+                model_freq = self.get_partition_peak( x, y, max_idx, self.target_frequency)
 
                 self.target_class = target
                 self.model_class = max_idx
+                self.model_frequency = model_freq
             else:
                 self.target_class = None
                 self.model_class = None
+                self.model_frequency = None
 
 
     def init_eval(self, version):

@@ -375,7 +375,6 @@ class DatasetPlot(SignalPlot):
 		self.log.info( f" ---- DatasetPlot-> update({self.element}: xlim=({xdata.min():.3f},{xdata.max():.3f}), ylim=({ydata.min():.3f},{ydata.max():.3f}), xdata.shape={self.plot.get_xdata().shape} origin={self.origin} ---" )
 		self.ax.figure.canvas.draw_idle()
 
-
 class TransformPlot(SignalPlot):
 
 	def __init__(self, name: str, data_loader: ElementLoader, transform: Transform, **kwargs):
@@ -791,6 +790,7 @@ class ClassificationEvalPlot(SignalPlot):
 			target_freq = self.evaluator.target_frequency
 			model_class  = self.evaluator.model_class
 			target_class = self.evaluator.target_class
+			model_freq = self.evaluator.model_frequency
 			x = self.evaluator.embedding.xdata.cpu().numpy()
 			y = self.evaluator.embedding.get_result()
 
@@ -803,7 +803,7 @@ class ClassificationEvalPlot(SignalPlot):
 
 			self.target_marker.set_xdata([target_freq,target_freq])
 			self.mark_class_partition(x,y.flatten(),model_class)
-			#self.process_event(id="period-update", period=1/model_freq,  ax=str(id(self.ax)), color=self.marker_colors[1])
+			self.process_event(id="period-update", period=1/model_freq,  ax=str(id(self.ax)), color=self.marker_colors[1])
 			self.ax.title.set_text(f"{self.name}({self.file},{self.element}): model_class={model_class}, target_class={target_class}, target_freq={target_freq:.3f}")
 			self.ax.figure.canvas.draw_idle()
 
