@@ -120,7 +120,7 @@ class SyntheticElementLoader(ElementLoader):
 		if self.data is not None:
 			batch_start = batch_index * self.batch_size
 			batch_end = min(batch_start + self.batch_size, self.file_size)
-			self.log.info(f"Loader.get_batch(F{self.file_index}.B{batch_index}): {batch_start} -> {batch_end}")
+			#self.log.info(f"Loader.get_batch(F{self.file_index}.B{batch_index}): {batch_start} -> {batch_end}")
 			t,y,p,o,stype,result,tlen0,tlen1 = [],[],[],[],[],{},1000000,0
 			for ielem in range(batch_start, batch_end):
 				elem = self.get_raw_element(ielem)
@@ -140,7 +140,7 @@ class SyntheticElementLoader(ElementLoader):
 				result['stype'] = np.array(stype)
 				result['offset'] = batch_start
 				result['file'] = self.file_index
-				self.log.info(f" **** LOADED: y{result['y'].shape}, t{result['t'].shape}, len-diff={tlen1-tlen0}, pmax={result['p'].max():.3f}, trng0={result['t'][0][-1]-result['t'][0][0]:.3f}")
+				#self.log.info(f" **** LOADED: y{result['y'].shape}, t{result['t'].shape}, len-diff={tlen1-tlen0}, pmax={result['p'].max():.3f}, trng0={result['t'][0][-1]-result['t'][0][0]:.3f}")
 				return result
 		return None
 
