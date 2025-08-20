@@ -68,6 +68,9 @@ class OctaveClassificationTrainer(object):
         dels = np.abs(ppeak_xvals - target)
         return ppeak_xvals[np.argmin(dels)]
 
+    def get_partition_peaks(self, x, y, partition, target) :
+        self.log.info(f"get_partition_peaks: {type(x)}:x{shp(x)}, {type(y)}:y{shp(y)} {type(partition)}:partition{shp(partition)} {type(target)}:target{shp(target)}")
+
     def add_callbacks(self, module):
         pass
         #module.register_forward_hook(self.store_time)
@@ -266,6 +269,10 @@ class OctaveClassificationTrainer(object):
                         results.append( max_idx )
                         ncorrect = torch.eq(max_idx,target).sum()
                         losses.append( (ncorrect,result.shape[0]) )
+
+                        y: np.ndarray = self.embedding.get_result()
+                        x: np.ndarray = self.embedding.xdata.cpu().numpy()
+                        self.get_partition_peaks(x, y, max_idx, self.target_frequency)
             except StopIteration:
                     ncorrect, ntotal = 0, 0
                     for (nc,nt) in losses:
@@ -295,7 +302,6 @@ class OctaveClassificationTrainer(object):
                 self.target_class = None
                 self.model_class = None
                 self.model_frequency = None
-
 
     def init_eval(self, version):
         self.optimizer = self.get_optimizer()

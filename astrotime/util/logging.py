@@ -11,7 +11,9 @@ def lstr(x: Iterable[float]):
     sx = [f"{x:.3f}" for x in x]
     return '[' + ', '.join(sx) + ']'
 
-def shp(x): return list(x.shape)
+def shp(x):
+    try:    return list(x.shape)
+    except: return f"({x})"
 
 def exception_handled(func):
     @wraps(func)

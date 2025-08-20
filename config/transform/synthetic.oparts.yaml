@@ -1,0 +1,15 @@
+sparsity:   0.0                       # Fraction of observations to drop (randomly)
+batch_size: ${data.batch_size}      # Batch size for training
+nfreq_oct:  ${data.nfreq_oct}       # Number of frequency values (log2 spaced) in each octave
+base_freq:  ${data.base_freq}       # Start frequency of base octave
+noctaves:   ${data.noctaves}        # Number of octaves in base frequency space
+test_mode:  ${data.test_mode}
+maxh:       ${data.maxh}
+accumh:     false
+decay_factor: 0.0                   # Time envelope decay factor
+subbatch_size: 4                     # If>0: Split batches into (serially computed) subbatches in order to fit into gpu memory
+norm:        std
+octave_partitions: ${train.octave_partitions}
+
+
+
