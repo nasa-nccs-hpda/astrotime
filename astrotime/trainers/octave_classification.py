@@ -69,7 +69,21 @@ class OctaveClassificationTrainer(object):
         return ppeak_xvals[np.argmin(dels)]
 
     def get_partition_peaks(self, x, y, partition, target) :
-        self.log.info(f"get_partition_peaks: {type(x)}:x{shp(x)}, {type(y)}:y{shp(y)} {type(partition)}:partition{shp(partition)} {type(target)}:target{shp(target)}")
+        f: np.ndarray = x                              # [Nf]          [4608]
+        s: np.ndarray = y                              # [B,No,Nfo]    [16,9,512]
+        p: np.ndarray = partition.cpu().numpy()        # [B]           [16]
+        t: np.ndarray = target.cpu().numpy()           # [B]           [16]
+
+        # nfreq_part = self.nfreq_oct // self.oparts
+        # yf: np.ndarray = y.reshape(self.noctaves, self.nfreq_oct)
+        # ip0, ip1 = [nfreq_part * partition, nfreq_part * (partition + 1)]
+        # yfp: np.ndarray = yf[:, ip0:ip1].sum(axis=0, keepdims=False)
+        # ipp: int = np.argmax(yfp)
+        # ppeak_xvals: np.array = np.array([x[oi * self.nfreq_oct + partition * nfreq_part + ipp] for oi in range(self.noctaves)])
+        # dels = np.abs(ppeak_xvals - target)
+        # return ppeak_xvals[np.argmin(dels)]
+
+
 
     def add_callbacks(self, module):
         pass
