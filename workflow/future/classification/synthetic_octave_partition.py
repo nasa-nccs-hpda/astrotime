@@ -13,7 +13,7 @@ version = "synthetic_period_cnn.classification.octave_partition"
 def my_app(cfg: DictConfig) -> None:
 	device: torch.device = astrotime_initialize( cfg, version )
 	embedding_space_array, embedding_space_tensor = embedding_space(cfg.transform, device)
-	data_loader = SyntheticElementLoader(cfg.data)
+	data_loader = SyntheticElementLoader(cfg.data, files_per_epoch=10)
 
 	embedding = SpectralProjection( cfg.transform, embedding_space_tensor, device )
 	model: nn.Module = get_model_from_cfg( cfg, embedding ).to(device)

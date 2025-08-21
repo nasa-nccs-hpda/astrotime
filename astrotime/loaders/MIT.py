@@ -402,9 +402,10 @@ class MITElementLoader(ElementLoader):
 
 	def update_file(self):
 		if self.batch_offset >= self.nelements-1:
+			max_files_per_epoch = min(self.files_per_epoch, len(self.file_sort))
 			self.batch_offset = 0
 			self.ifile += 1
-			if (self.ifile >= self.max_files_per_epoch) or (self.tset == TSet.Validation):
+			if self.ifile >= max_files_per_epoch:
 				raise StopIteration
 			self.load_data()
 

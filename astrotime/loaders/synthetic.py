@@ -107,9 +107,10 @@ class SyntheticElementLoader(ElementLoader):
 	def get_next_batch( self ) -> Optional[Dict[str,Any]]:
 		batch_start = self.batch_index*self.batch_size
 		if batch_start >= self.file_size:
+			max_files_per_epoch = min(self.files_per_epoch, len(self.file_sort))
 			self.ifile += 1
 			self.batch_index = 0
-			if self.ifile  >= self.max_files_per_epoch:
+			if self.ifile >= max_files_per_epoch:
 				raise StopIteration
 			self._load_cache_dataset()
 		batch: Optional[Dict[str,Any]] = self.get_batch(self.batch_index)

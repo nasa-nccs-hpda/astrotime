@@ -90,8 +90,8 @@ class SinusoidElementLoader(ElementLoader):
 			return None
 
 	def check_epoch_end(self):
-		end_index = self.max_files_per_epoch if (self.tset == TSet.Train) else 1
-		if self.ifile >= end_index:
+		max_files_per_epoch = min(self.files_per_epoch, len(self.file_sort))
+		if self.ifile >= max_files_per_epoch:
 			raise StopIteration
 
 	def get_next_batch( self ) -> Optional[Dict[str,Any]]:

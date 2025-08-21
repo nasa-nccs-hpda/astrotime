@@ -70,7 +70,7 @@ class ElementLoader(Loader):
 		self.tset: TSet = None
 		self.batch_offset = 0
 		self.params: Dict[str, float] = {}
-		self.max_files_per_epoch = kwargs.get( 'files_per_epoch', self.ntfiles )
+		self.files_per_epoch = kwargs.get( 'files_per_epoch', 1e10 )
 
 	def set_params(self, params: Dict[str, float]):
 		self.params = params
