@@ -393,7 +393,7 @@ class MITElementLoader(ElementLoader):
 			ss = y.std()
 			if (ss > 0.0) and (ss < 1e10):
 				train_data = dict( t=dst.values[~nanmask], y=y, p=period, sn=sn, sector=self.ifile, tic=TIC )
-				print(f"* ELEM-{elem_index} ({TIC}): keys={list(train_data.keys())}")
+				# print(f"* ELEM-{elem_index} ({TIC}): keys={list(train_data.keys())}")
 				return train_data
 		return None
 
