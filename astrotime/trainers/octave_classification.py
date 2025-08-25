@@ -74,16 +74,24 @@ class OctaveClassificationTrainer(object):
         p: np.ndarray = partition.cpu().numpy()        # [B]           [16]
         t: np.ndarray = target.cpu().numpy()           # [B]           [16]
 
-        # nfreq_part = self.nfreq_oct // self.oparts
-        # yf: np.ndarray = y.reshape(self.noctaves, self.nfreq_oct)
-        # ip0, ip1 = [nfreq_part * partition, nfreq_part * (partition + 1)]
-        # yfp: np.ndarray = yf[:, ip0:ip1].sum(axis=0, keepdims=False)
-        # ipp: int = np.argmax(yfp)
-        # ppeak_xvals: np.array = np.array([x[oi * self.nfreq_oct + partition * nfreq_part + ipp] for oi in range(self.noctaves)])
-        # dels = np.abs(ppeak_xvals - target)
-        # return ppeak_xvals[np.argmin(dels)]
+        best_peak_freqs = []
+        nfreq_part = self.nfreq_oct // self.oparts
+        for ib in range(p.size):
+            ip0, ip1 = [nfreq_part * p[ib], nfreq_part * (p[ib] + 1)]
+            sp: np.ndarray = s[ib,:,ip0:ip1].sum( axis=1, keepdims=False )    # [Nfp]
+            ipp: int = np.argmax(sp)
+            ppeak_freqs: np.array = np.array([f[oi * self.nfreq_oct + p[ib] * nfreq_part + ipp] for oi in range(self.noctaves)]) # [No]
+            dels: np.array = np.abs(ppeak_freqs - t[ib])              # [No]
+            best_peak_freqs.append( ppeak_freqs[np.argmin(dels)] )
+        return np.ndarray( best_peak_freqs )   # [B]
 
-
+    def rloss(self, product: np.ndarray, target: np.ndarray ) -> np.ndarray:
+        zf = self.f0 * 1.01
+        pf: np.ndarray = (product + zf)
+        tf: np.ndarray = (target + zf)
+        ptr: np.ndarray = np.log2(pf / tf)
+        result = np.abs(ptr)
+        return result
 
     def add_callbacks(self, module):
         pass
@@ -268,32 +276,34 @@ class OctaveClassificationTrainer(object):
                 print(f" ------ Epoch Loss: mean={epoch_losses.mean():.3f}, median={np.median(epoch_losses):.3f}, range=({epoch_losses.min():.3f} -> {epoch_losses.max():.3f})")
                 self.evaluate_classification()
 
-    def evaluate_classification(self) -> Tensor:
+    def evaluate_classification(self) -> np.ndarray:
         with self.device:
             self.loader.init_epoch(TSet.Validation)
-            losses, log_interval, results = [], 50, []
-            try:
-                for ibatch in range(0, sys.maxsize):
-                    batch = self.get_next_batch()
-                    if batch is not None:
-                        binput: Tensor = self.get_input(batch)
-                        target: Tensor = self.get_target(batch)
-                        result: Tensor = self.model(binput)
-                        max_idx: Tensor = torch.argmax(result,dim=1,keepdim=False)
-                        results.append( max_idx )
-                        ncorrect = torch.eq(max_idx,target).sum()
-                        losses.append( (ncorrect,result.shape[0]) )
+            class_losses, regression_losses, log_interval, results = [], [], 50, []
+            for ibatch in range(0, sys.maxsize):
+                batch = self.get_next_batch()
+                if batch is not None:
+                    binput: Tensor = self.get_input(batch)
+                    target: Tensor = self.get_target(batch)
+                    result: Tensor = self.model(binput)
+                    max_idx: Tensor = torch.argmax(result,dim=1,keepdim=False)
+                    results.append( max_idx )
+                    ncorrect = torch.eq(max_idx,target).sum()
+                    class_losses.append( (ncorrect,result.shape[0]) )
 
-                        y: np.ndarray = self.embedding.get_result()
-                        x: np.ndarray = self.embedding.xdata.cpu().numpy()
-                        self.get_partition_peaks(x, y, max_idx, self.target_frequency)
-            except StopIteration:
-                    ncorrect, ntotal = 0, 0
-                    for (nc,nt) in losses:
-                        ncorrect += nc
-                        ntotal += nt
-                    print(f"       *** Classification: {ncorrect*100.0/ntotal:.1f}% correct with {ntotal} elements.")
-            return torch.concatenate(results)
+                    y: np.ndarray = self.embedding.get_result()
+                    x: np.ndarray = self.embedding.xdata.cpu().numpy()
+                    ppeaks: np.ndarray = self.get_partition_peaks(x, y, max_idx, self.target_frequency)
+                    regression_losses.append( self.rloss( ppeaks, result.cpu().numpy() ) )
+
+            ncorrect, ntotal = 0, 0
+            for (nc, nt) in class_losses:
+                ncorrect += nc
+                ntotal += nt
+            print(f"  ------ Eval Classification Results: ( {ncorrect * 100.0 / ntotal:.1f}% correct with {ntotal} elements )")
+            epoch_rlosses = np.concatenate( regression_losses )
+            print(f"         ---> Regression Loss: mean={epoch_rlosses.mean():.3f}, median={np.median(epoch_rlosses):.3f}, range=({epoch_rlosses.min():.3f} -> {epoch_rlosses.max():.3f})")
+
 
     @exception_handled
     def evaluate_element(self, ielem: int, **kwargs):
