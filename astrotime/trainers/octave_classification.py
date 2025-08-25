@@ -294,7 +294,7 @@ class OctaveClassificationTrainer(object):
                     y: np.ndarray = self.embedding.get_result()
                     x: np.ndarray = self.embedding.xdata.cpu().numpy()
                     ppeaks: np.ndarray = self.get_partition_peaks(x, y, max_idx, self.target_frequency)
-                    regression_losses.append( self.rloss( ppeaks, result.detach().cpu().numpy() ) )
+                    regression_losses.append( self.rloss( ppeaks, self.target_frequency.detach().cpu().numpy() ) )
 
             ncorrect, ntotal = 0, 0
             for (nc, nt) in class_losses:
