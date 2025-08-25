@@ -280,29 +280,31 @@ class OctaveClassificationTrainer(object):
         with self.device:
             self.loader.init_epoch(TSet.Validation)
             class_losses, regression_losses, log_interval, results = [], [], 50, []
-            for ibatch in range(0, sys.maxsize):
-                batch = self.get_next_batch()
-                if batch is not None:
-                    binput: Tensor = self.get_input(batch)
-                    target: Tensor = self.get_target(batch)
-                    result: Tensor = self.model(binput)
-                    max_idx: Tensor = torch.argmax(result,dim=1,keepdim=False)
-                    results.append( max_idx )
-                    ncorrect = torch.eq(max_idx,target).sum()
-                    class_losses.append( (ncorrect,result.shape[0]) )
+            try:
+                for ibatch in range(0, sys.maxsize):
+                    batch = self.get_next_batch()
+                    if batch is not None:
+                        binput: Tensor = self.get_input(batch)
+                        target: Tensor = self.get_target(batch)
+                        result: Tensor = self.model(binput)
+                        max_idx: Tensor = torch.argmax(result,dim=1,keepdim=False)
+                        results.append( max_idx )
+                        ncorrect = torch.eq(max_idx,target).sum()
+                        class_losses.append( (ncorrect,result.shape[0]) )
 
-                    y: np.ndarray = self.embedding.get_result()
-                    x: np.ndarray = self.embedding.xdata.cpu().numpy()
-                    ppeaks: np.ndarray = self.get_partition_peaks(x, y, max_idx, self.target_frequency)
-                    regression_losses.append( self.rloss( ppeaks, self.target_frequency.detach().cpu().numpy() ) )
+                        y: np.ndarray = self.embedding.get_result()
+                        x: np.ndarray = self.embedding.xdata.cpu().numpy()
+                        ppeaks: np.ndarray = self.get_partition_peaks(x, y, max_idx, self.target_frequency)
+                        regression_losses.append( self.rloss( ppeaks, self.target_frequency.detach().cpu().numpy() ) )
 
-            ncorrect, ntotal = 0, 0
-            for (nc, nt) in class_losses:
-                ncorrect += nc
-                ntotal += nt
-            print(f"  ------ Eval Classification Results: ( {ncorrect * 100.0 / ntotal:.1f}% correct with {ntotal} elements )")
-            epoch_rlosses = np.concatenate( regression_losses )
-            print(f"         ---> Regression Loss: mean={epoch_rlosses.mean():.3f}, median={np.median(epoch_rlosses):.3f}, range=({epoch_rlosses.min():.3f} -> {epoch_rlosses.max():.3f})")
+            except StopIteration:
+                ncorrect, ntotal = 0, 0
+                for (nc, nt) in class_losses:
+                    ncorrect += nc
+                    ntotal += nt
+                print(f"  ------ Eval Classification Results: ( {ncorrect * 100.0 / ntotal:.1f}% correct with {ntotal} elements )")
+                epoch_rlosses = np.concatenate( regression_losses )
+                print(f"         ---> Regression Loss: mean={epoch_rlosses.mean():.3f}, median={np.median(epoch_rlosses):.3f}, range=({epoch_rlosses.min():.3f} -> {epoch_rlosses.max():.3f})")
 
 
     @exception_handled
