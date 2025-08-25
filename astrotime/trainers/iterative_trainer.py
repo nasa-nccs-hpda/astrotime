@@ -143,8 +143,8 @@ class IterativeTrainer(object):
         return dict( z=z, target=1/p, octave=o, **batch )
 
     def encode_element(self, element: RDict) -> TRDict:
-        t,y = element.pop('t'), element.pop('y')
-        p: float = element.pop('p')
+        t,y = element['t'], element['y']
+        p: float = element['p']
         z: Tensor = self.to_tensor( t, y )
         return dict( z=z, target=1/p, **element )
 
@@ -265,14 +265,13 @@ class IterativeTrainer(object):
 
                 epoch_losses = np.array(losses)
                 print(f" ------ Epoch Loss: mean={epoch_losses.mean():.3f}, median={np.median(epoch_losses):.3f}, range=({epoch_losses.min():.3f} -> {epoch_losses.max():.3f})")
-                self.evaluate_batch_elems()
+                self.evaluate()
 
     def init_eval(self, version):
         self.optimizer = self.get_optimizer()
         self.initialize_checkpointing(version)
         with self.device:
             self.loader.initialize()
-
 
     def process_event( self, id: str, key: str, ax=None, **kwargs ) -> Optional[Dict[str,Any]]:
         if id == "KeyEvent":
@@ -353,7 +352,7 @@ class IterativeTrainer(object):
         with self.device:
             self.loader.init_epoch(TSet.Validation)
             losses, peak_losses,  nelem, sl = [], [], 0, 0
-            for ielement in range(0,self.loader.batch_size):
+            for ielement in range(0,sys.maxsize):
                 element = self.get_element(ielement)
                 if element is not None:
                     binput: Tensor = element['z']
