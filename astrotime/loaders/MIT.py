@@ -393,6 +393,7 @@ class MITElementLoader(ElementLoader):
 			ss = y.std()
 			if (ss > 0.0) and (ss < 1e10):
 				train_data = dict( t=dst.values[~nanmask], y=y, p=period, sn=sn, sector=self.ifile, tic=TIC )
+				print(f"* ELEM-{elem_index} ({TIC}): keys={list(train_data.keys())}")
 				return train_data
 		return None
 
@@ -405,7 +406,6 @@ class MITElementLoader(ElementLoader):
 			max_files_per_epoch = min(self.files_per_epoch, len(self.file_sort))
 			self.batch_offset = 0
 			self.ifile += 1
-			# print( f"-----> Update File {self.ifile}/{max_files_per_epoch} <------")
 			if self.ifile >= max_files_per_epoch:
 				raise StopIteration
 			self.load_data()
@@ -432,7 +432,7 @@ class MITElementLoader(ElementLoader):
 					tics.append(elem['tic'])
 					slens.append( elem['y'].size )
 				except KeyError as err:
-					print( f" ---------> get_next_batch KeyError: keys= {list(elem.keys())}")
+					print( f" ---------> get_next_batch(IE={ielem}) KeyError: keys= {list(elem.keys())}")
 					raise err
 			if len(ts) >= self.cfg.batch_size:
 				break
