@@ -308,6 +308,7 @@ class IterativeTrainer(object):
     def evaluate( self ):
         with self.device:
             self.loader.init_epoch(TSet.Validation)
+            self.model.train(False)
             losses, peak_losses, nelem = [], [], 0
             try:
                 for ibatch in range(0,sys.maxsize):
