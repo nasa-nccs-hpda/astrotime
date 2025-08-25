@@ -9,4 +9,4 @@ mode:  train                                            # execution mode: 'train
 base_freq:  ${data.base_freq}                           # lowest value of freq range
 ckp_version: synthetic_period_cnn
 ngpu: 1
-
+octave_partitions: 0
