@@ -83,7 +83,7 @@ class OctaveClassificationTrainer(object):
             ppeak_freqs: np.array = np.array([f[oi * self.nfreq_oct + p[ib] * nfreq_part + ipp] for oi in range(self.noctaves)]) # [No]
             dels: np.array = np.abs(ppeak_freqs - t[ib])              # [No]
             best_peak_freqs.append( ppeak_freqs[np.argmin(dels)] )
-        return np.ndarray( best_peak_freqs )   # [B]
+        return np.array( best_peak_freqs )   # [B]
 
     def rloss(self, product: np.ndarray, target: np.ndarray ) -> np.ndarray:
         zf = self.f0 * 1.01
