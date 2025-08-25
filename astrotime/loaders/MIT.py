@@ -424,12 +424,16 @@ class MITElementLoader(ElementLoader):
 		for ielem in range( b0, self.nelements ):
 			elem: RDict = self.get_element(ielem)
 			if elem is not None:
-				ts.append(elem['t'])
-				ys.append(elem['y'])
-				periods.append(elem['p'])
-				sns.append(elem['sn'])
-				tics.append(elem['tic'])
-				slens.append( elem['y'].size )
+				try:
+					ts.append(elem['t'])
+					ys.append(elem['y'])
+					periods.append(elem['p'])
+					sns.append(elem['sn'])
+					tics.append(elem['tic'])
+					slens.append( elem['y'].size )
+				except KeyError as err:
+					print( f" ---------> get_next_batch KeyError: keys= {list(elem.keys())}")
+					raise err
 			if len(ts) >= self.cfg.batch_size:
 				break
 		self.batch_offset = ielem + 1
