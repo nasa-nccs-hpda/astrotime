@@ -405,6 +405,7 @@ class MITElementLoader(ElementLoader):
 			max_files_per_epoch = min(self.files_per_epoch, len(self.file_sort))
 			self.batch_offset = 0
 			self.ifile += 1
+			# print( f"-----> Update File {self.ifile}/{max_files_per_epoch} <------")
 			if self.ifile >= max_files_per_epoch:
 				raise StopIteration
 			self.load_data()
