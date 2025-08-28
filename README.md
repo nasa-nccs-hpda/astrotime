@@ -430,6 +430,12 @@ sbatch --mem-per-cpu=10240 -G1 -c10 -t01:00:00 -J astrotime --wrap="time $your_s
     >   * mamba activate astrotime
     >   * pip install torch jupyterlab==4.0.13 ipywidgets==7.8.4 cuda-python jupyterlab_widgets torchmetrics pytorch-lightning ipykernel==6.29 ipympl ipython==8.26 xarray netCDF4 pygam scikit-learn hydra-core rich timesfm[torch]
 
+### Tensorflow Environment:
+
+    >   * mamba create -n astrotime.tf ninja python=3.10
+    >   * mamba activate astrotime.tf
+    >   * mamba -c conda-forge tensorflow-gpu numpy jupyterlab==4.0.13 ipywidgets==7.8.4 cuda-python jupyterlab_widgets ipykernel==6.29 ipympl ipython==8.26 xarray netCDF4 scikit-learn
+
 ## Dataset Preparation
 
 * This project utilizes three datasets (sinusoid, synthetic, and MIT) which are located in the **cfg.platform.project_root** directory. The project_root directory on explore is: **/explore/nobackup/projects/ilab/data/astrotime**.
