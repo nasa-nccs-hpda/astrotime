@@ -3,7 +3,7 @@ import tensorflow as tf
 from tensorflow.keras.callbacks import ModelCheckpoint
 from tensorflow.keras.optimizers import Adam
 
-signal_index=3
+signal_index=2
 expt_index=1
 nepochs=1000
 use_ckpt=True
