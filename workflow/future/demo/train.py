@@ -16,7 +16,7 @@ ckp_file = f"{data_dir}/embed_time_predict.e{expt_index}.s{signal_index}.weights
 data=np.load( f'{data_dir}/jordan_data.npz',allow_pickle=True )
 signals = data['signals']
 times = data['times']
-binary_times = data['binary_times']
+# binary_times = data['binary_times']
 
 def get_features( T: np.ndarray ) -> np.ndarray:
     features = []
