@@ -1,12 +1,12 @@
 import time, numpy as np
 import tensorflow as tf
 from tensorflow.keras.callbacks import ModelCheckpoint
+from tensorflow.keras.optimizers import Adam
 
 signal_index=3
-expt_index=0
+expt_index=1
 nepochs=1000
 use_ckpt=True
-optimizer = 'rmsprop'
 
 data_dir =  "/explore/nobackup/projects/ilab/data/astrotime/demo"
 ckp_file = f"{data_dir}/embed_time_predict.e{expt_index}.s{signal_index}.weights.h5"
@@ -96,6 +96,7 @@ def create_resnet_model(n_filters_start):
     model = tf.keras.Model(inputs=binary_times_input, outputs=outputs)
     return model
 
+optimizer = Adam( learning_rate=0.001, name='adam' )
 model = create_resnet_model(32)
 model.compile(optimizer=optimizer, loss='mae')
 if use_ckpt: model.load_weights( ckp_file )
