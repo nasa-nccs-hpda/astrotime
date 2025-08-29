@@ -21,11 +21,11 @@ times = data['times']
 def get_features( T: np.ndarray ) -> np.ndarray:
     features = []
     t, tL = T-T[0], T[-1]-T[0]
-    features.add(t/tL)
-    for ibase, np in [ (2,12) ]: # , (3,8), (5,5), (6,4), (7,3) ]:
-        for ip in range(1,np+1):
+    features.append(t/tL)
+    for ibase, npow in [ (2,12) ]: # , (3,8), (5,5), (6,4), (7,3) ]:
+        for ip in range(1,npow+1):
             base = tL/math.pow( ibase, ip )
-            features.add( np.mod(t,base)/base )
+            features.append( np.mod(t,base)/base )
     return np.stack(features, axis=1)
 
 # X = binary_times[signal_index].astype(np.float32)
