@@ -4,10 +4,11 @@ from tensorflow.keras.callbacks import ModelCheckpoint
 from tensorflow.keras.optimizers import Adam
 
 signal_index=2
-expt_index=1
+expt_index=2
 nepochs=1000
 batch_size=64
 learning_rate=0.001
+dropout_frac=0.5
 use_ckpt=True
 
 data_dir =  "/explore/nobackup/projects/ilab/data/astrotime/demo"
@@ -16,6 +17,12 @@ data=np.load( f'{data_dir}/jordan_data.npz',allow_pickle=True )
 signals = data['signals']
 times = data['times']
 binary_times = data['binary_times']
+
+# def get_features( T: np.ndarray ) -> np.ndarray:
+#     for ibase, np in [ (2,12), (3,8), (5,5), (6,4), (7,3) ]:
+#         for ip in range(1,np):
+#             p = mod
+#             f = np.mod(r,23).tolist()/23
 
 X = binary_times[signal_index].astype(np.float32)
 Y = signals[signal_index]
@@ -26,80 +33,27 @@ Xval=X[validation_split:]
 Ytrain=Y[:validation_split]
 Yval=Y[validation_split:]
 
-def residual_block(x, filters, kernel_size=3, stride=1):
-    shortcut = x
-
-    x = tf.keras.layers.Conv1D(filters, kernel_size, strides=stride, padding='same')(x)
-    x = tf.keras.layers.BatchNormalization()(x)
-    x = tf.keras.layers.Activation('leaky_relu')(x)
-
-    x = tf.keras.layers.Conv1D(filters, kernel_size, padding='same')(x)
-    x = tf.keras.layers.BatchNormalization()(x)
-
-    if stride != 1 or shortcut.shape[-1] != filters:
-        shortcut = tf.keras.layers.Conv1D(filters, 1, strides=stride, padding='same')(shortcut)
-        shortcut = tf.keras.layers.BatchNormalization()(shortcut)
-
-    x = tf.keras.layers.Add()([shortcut, x])
-    x = tf.keras.layers.Activation('leaky_relu')(x)
-
-    return x
-
-
-def create_resnet_model(n_filters_start):
+def create_small_model(dropout_frac):
     binary_times_input = tf.keras.Input(shape=(64,), name="binary_times_input")
 
-    x = tf.keras.layers.Dense(256, activation='tanh')(binary_times_input)
-    x = tf.keras.layers.Dense(256, activation='tanh')(x)
-    x = tf.keras.layers.Dense(128, activation='tanh')(x)
-    x = tf.keras.layers.Reshape((128,1))(x)
+    x = tf.keras.layers.Dense(512, activation='tanh')(binary_times_input)
+    x = tf.keras.layers.Dropout(dropout_frac)(x)
+    x = tf.keras.layers.BatchNormalization()(x)
+    x = tf.keras.layers.Dense(512, activation='tanh')(x)
+    x = tf.keras.layers.Dropout(dropout_frac)(x)
+    x = tf.keras.layers.BatchNormalization()(x)
+    x = tf.keras.layers.Dense(512, activation='tanh')(x)
+    x = tf.keras.layers.Dropout(dropout_frac)(x)
+    x = tf.keras.layers.BatchNormalization()(x)
+    x = tf.keras.layers.Dense(512, activation='tanh')(x)
+    x = tf.keras.layers.BatchNormalization()(x)
 
-    nblock=0
-    x = residual_block(x, n_filters_start)
-    x = residual_block(x, n_filters_start+4)
-    x = residual_block(x, n_filters_start+8)
-    x = residual_block(x, n_filters_start+12)
-    nblock+=1
-    x = residual_block(x, n_filters_start+(16*nblock), stride=2)
-    x = residual_block(x, n_filters_start+(16*nblock+4))
-    x = residual_block(x, n_filters_start+(16*nblock+8))
-    x = residual_block(x, n_filters_start+(16*nblock+12))
-    nblock+=1
-    x = residual_block(x, n_filters_start+(16*nblock), stride=2)
-    x = residual_block(x, n_filters_start+(16*nblock+4))
-    x = residual_block(x, n_filters_start+(16*nblock+8))
-    x = residual_block(x, n_filters_start+(16*nblock+12))
-    nblock+=1
-    x = residual_block(x, n_filters_start+(16*nblock), stride=2)
-    x = residual_block(x, n_filters_start+(16*nblock+4))
-    x = residual_block(x, n_filters_start+(16*nblock+8))
-    x = residual_block(x, n_filters_start+(16*nblock+12))
-    nblock+=1
-    x = residual_block(x, n_filters_start+(16*nblock), stride=2)
-    x = residual_block(x, n_filters_start+(16*nblock+4))
-    x = residual_block(x, n_filters_start+(16*nblock+8))
-    x = residual_block(x, n_filters_start+(16*nblock+12))
-    nblock+=1
-    x = residual_block(x, n_filters_start+(16*nblock), stride=2)
-    x = residual_block(x, n_filters_start+(16*nblock+4))
-    x = residual_block(x, n_filters_start+(16*nblock+8))
-    x = residual_block(x, n_filters_start+(16*nblock+12))
-    nblock+=1
-    x = residual_block(x, n_filters_start+(16*nblock), stride=2)
-    x = residual_block(x, n_filters_start+(16*nblock+4))
-    x = residual_block(x, n_filters_start+(16*nblock+8))
-    x = residual_block(x, n_filters_start+(16*nblock+12))
-
-    x = tf.keras.layers.Flatten()(x)
-    x = tf.keras.layers.Dense(512, activation='linear')(x)
-    x = tf.keras.layers.Dense(512, activation='linear')(x)
     outputs = tf.keras.layers.Dense(1, activation='linear')(x)
-
     model = tf.keras.Model(inputs=binary_times_input, outputs=outputs)
     return model
 
 optimizer = Adam( learning_rate=learning_rate, name='adam' )
-model = create_resnet_model(32)
+model = create_small_model(dropout_frac)
 model.compile(optimizer=optimizer, loss='mae')
 if use_ckpt:
     if os.path.exists(ckp_file): model.load_weights( ckp_file )
