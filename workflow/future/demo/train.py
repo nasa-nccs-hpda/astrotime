@@ -1,4 +1,4 @@
-import time, numpy as np
+import time, os, numpy as np
 import tensorflow as tf
 from tensorflow.keras.callbacks import ModelCheckpoint
 from tensorflow.keras.optimizers import Adam
@@ -99,7 +99,9 @@ def create_resnet_model(n_filters_start):
 optimizer = Adam( learning_rate=0.001, name='adam' )
 model = create_resnet_model(32)
 model.compile(optimizer=optimizer, loss='mae')
-if use_ckpt: model.load_weights( ckp_file )
+if use_ckpt:
+    if os.path.exists(ckp_file): model.load_weights( ckp_file )
+    else: print( f"Checkpoint file '{ckp_file}' not found. Training from scratch." )
 
 ckp_args = dict( save_best_only=True, save_weights_only=True, monitor='val_loss' )
 ckp_callback = ModelCheckpoint(ckp_file, **ckp_args)
