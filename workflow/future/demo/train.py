@@ -6,7 +6,7 @@ from tensorflow.keras.optimizers import Adam
 signal_index=2
 expt_index=2
 nepochs=1000
-batch_size=64
+batch_size=256
 learning_rate=0.001
 dropout_frac=0.5
 use_ckpt=True
