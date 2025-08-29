@@ -4,11 +4,11 @@ from tensorflow.keras.callbacks import ModelCheckpoint
 from tensorflow.keras.optimizers import Adam
 
 signal_index=2
-expt_index=3
+expt_index=4
 nepochs=1000
-batch_size=256
+batch_size=64
 learning_rate=0.001
-dropout_frac=0.5
+dropout_frac=0.0
 use_ckpt=True
 
 data_dir =  "/explore/nobackup/projects/ilab/data/astrotime/demo"
@@ -22,7 +22,7 @@ def get_features( T: np.ndarray ) -> np.ndarray:
     features = []
     t, tL = T-T[0], T[-1]-T[0]
     features.append(t/tL)
-    for ibase, npow in [ (2,12) ]: # , (3,8), (5,5), (6,4), (7,3) ]:
+    for ibase, npow in [ (2,12), (3,8), (5,5), (6,4), (7,3) ]:
         for ip in range(1,npow+1):
             base = tL/math.pow( ibase, ip )
             features.append( np.mod(t,base)/base )
