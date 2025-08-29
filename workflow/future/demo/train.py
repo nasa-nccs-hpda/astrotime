@@ -6,6 +6,8 @@ from tensorflow.keras.optimizers import Adam
 signal_index=2
 expt_index=1
 nepochs=1000
+batch_size=64
+learning_rate=0.001
 use_ckpt=True
 
 data_dir =  "/explore/nobackup/projects/ilab/data/astrotime/demo"
@@ -96,7 +98,7 @@ def create_resnet_model(n_filters_start):
     model = tf.keras.Model(inputs=binary_times_input, outputs=outputs)
     return model
 
-optimizer = Adam( learning_rate=0.001, name='adam' )
+optimizer = Adam( learning_rate=learning_rate, name='adam' )
 model = create_resnet_model(32)
 model.compile(optimizer=optimizer, loss='mae')
 if use_ckpt:
@@ -113,7 +115,7 @@ history = model.fit(
     epochs=nepochs,
     validation_data=(Xval,Yval),
     callbacks=[ckp_callback],
-    batch_size=256,
+    batch_size=batch_size,
     shuffle=True
 )
 print( f"Completed training for {nepochs} epochs in {(time.time()-t0)/60:.2f} min.")
