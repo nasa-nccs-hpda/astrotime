@@ -2,7 +2,7 @@ import time, os, math, numpy as np
 import tensorflow as tf
 from tensorflow.keras.callbacks import ModelCheckpoint
 from tensorflow.keras.optimizers import Adam
-import model
+import tmodel
 
 signal_index=2
 expt_index=4
@@ -12,13 +12,13 @@ learning_rate=0.001
 dropout_frac=0.0
 use_ckpt=True
 
-data = model.get_demo_data()
+data = tmodel.get_demo_data()
 signals = data['signals']
 times = data['times']
-ckp_file = model.get_ckp_file( expt_index, signal_index )
+ckp_file = tmodel.get_ckp_file( expt_index, signal_index )
 
 # X = binary_times[signal_index].astype(np.float32)
-X: np.ndarray = model.get_features( times[signal_index] )
+X: np.ndarray = tmodel.get_features( times[signal_index] )
 Y: np.ndarray = signals[signal_index]
 validation_split: int = int(0.8*X.shape[0])
 
@@ -28,17 +28,17 @@ Ytrain=Y[:validation_split]
 Yval=Y[validation_split:]
 
 optimizer = Adam( learning_rate=learning_rate, name='adam' )
-model = model.create_small_model(X.shape[1],dropout_frac)
-model.compile(optimizer=optimizer, loss='mae')
+tmodel = tmodel.create_small_model(X.shape[1],dropout_frac)
+tmodel.compile(optimizer=optimizer, loss='mae')
 if use_ckpt:
-    if os.path.exists(ckp_file): model.load_weights( ckp_file )
+    if os.path.exists(ckp_file): tmodel.load_weights( ckp_file )
     else: print( f"Checkpoint file '{ckp_file}' not found. Training from scratch." )
 
 ckp_args = dict( save_best_only=True, save_weights_only=True, monitor='val_loss' )
 ckp_callback = ModelCheckpoint(ckp_file, **ckp_args)
 
 t0 = time.time()
-history = model.fit(
+history = tmodel.fit(
     Xtrain,
     Ytrain,
     epochs=nepochs,

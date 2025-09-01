@@ -1,4 +1,6 @@
 import time, os, math, numpy as np
+from typing import List, Optional, Dict, Type, Union, Tuple
+import matplotlib.pyplot as plt
 import tensorflow as tf
 from tensorflow.keras.callbacks import ModelCheckpoint
 from tensorflow.keras.optimizers import Adam
@@ -48,3 +50,9 @@ def get_features( T: np.ndarray, feature_type: int = 0 ) -> np.ndarray:
 		return np.stack(features, axis=1)
 	else:
 		raise ValueError(f"Invalid feature_type: {feature_type}")
+
+def select_feature( plots: List[plt.Line2D], sval: float):
+	for ip in range(len(plots)):
+		alpha = 1.0 if ip == int(sval) else 0.3
+		plots[ip].set_alpha(alpha)
+	plt.show()
