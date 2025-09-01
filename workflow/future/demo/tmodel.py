@@ -53,9 +53,10 @@ def get_features( T: np.ndarray, feature_type: int = 0 ) -> np.ndarray:
 def alpha( ip: int, ipsel: int ):
 	return 1.0 if ip == ipsel else 0.1
 
-def select_feature( plots: List[plt.Line2D], sval: float):
+def select_feature( plots: List[plt.Line2D], fig, sval: float):
 	for ip in range(len(plots)):
 		plots[ip].set_alpha( alpha(ip,int(sval)) )
+	fig.draw()
 
 
 
