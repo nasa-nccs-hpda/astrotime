@@ -32,9 +32,19 @@ def create_small_model(nfeatures: int, dropout_frac: float):
 def get_features( T: np.ndarray, feature_type: int = 0 ) -> np.ndarray:
 	features = []
 	t, tL = T-T[0], T[-1]-T[0]
-	features.append(t/tL)
-	for ibase, npow in [ (2,12), (3,8), (5,5), (6,4), (7,3) ]:
-		for ip in range(1,npow+1):
-			base = tL/math.pow( ibase, ip )
-			features.append( np.mod(t,base)/base )
-	return np.stack(features, axis=1)
+	if feature_type == 0:
+		for x in T.tolist():
+			binary_str = np.binary_repr(np.float64(x).view(np.int64), width=64)
+			features.append( np.array([int(bit) for bit in binary_str], dtype=np.float64) )
+		rv = np.stack(features, axis=0)
+		print( f"Created features, shape = {rv.shape}")
+		return rv
+	elif feature_type == 2:
+		features.append(t/tL)
+		for ibase, npow in [ (2,12), (3,8), (5,5), (6,4), (7,3) ]:
+			for ip in range(1,npow+1):
+				base = tL/math.pow( ibase, ip )
+				features.append( np.mod(t,base)/base )
+		return np.stack(features, axis=1)
+	else:
+		raise ValueError(f"Invalid feature_type: {feature_type}")
