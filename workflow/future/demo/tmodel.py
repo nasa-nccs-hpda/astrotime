@@ -39,7 +39,6 @@ def get_features( T: np.ndarray, feature_type: int = 0 ) -> np.ndarray:
 			binary_str = np.binary_repr(np.float64(x).view(np.int64), width=64)
 			features.append( np.array([int(bit) for bit in binary_str], dtype=np.float64) )
 		rv = np.stack(features, axis=0)
-		print( f"Created features, shape = {rv.shape}")
 		return rv
 	elif feature_type == 2:
 		features.append(t/tL)
@@ -55,4 +54,4 @@ def select_feature( plots: List[plt.Line2D], sval: float):
 	for ip in range(len(plots)):
 		alpha = 1.0 if ip == int(sval) else 0.3
 		plots[ip].set_alpha(alpha)
-	plt.show()
+
