@@ -31,7 +31,7 @@ def create_small_model(nfeatures: int, dropout_frac: float):
 	model = tf.keras.Model(inputs=binary_times_input, outputs=outputs)
 	return model
 
-def get_features( T: np.ndarray, feature_type: int = 0 ) -> np.ndarray:
+def get_features( T: np.ndarray, feature_type: int ) -> np.ndarray:
 	features = []
 	t, tL = T-T[0], T[-1]-T[0]
 	if feature_type == 0:

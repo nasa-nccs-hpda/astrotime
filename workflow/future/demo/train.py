@@ -5,12 +5,12 @@ from tensorflow.keras.optimizers import Adam
 import tmodel
 
 signal_index=2
-expt_index=4
+expt_index=1
 nepochs=1000
 batch_size=64
 learning_rate=0.001
 dropout_frac=0.0
-use_ckpt=True
+use_ckpt=False
 
 data = tmodel.get_demo_data()
 signals = data['signals']
@@ -18,7 +18,7 @@ times = data['times']
 ckp_file = tmodel.get_ckp_file( expt_index, signal_index )
 
 # X = binary_times[signal_index].astype(np.float32)
-X: np.ndarray = tmodel.get_features( times[signal_index] )
+X: np.ndarray = tmodel.get_features( times[signal_index], expt_index )
 Y: np.ndarray = signals[signal_index]
 validation_split: int = int(0.8*X.shape[0])
 
