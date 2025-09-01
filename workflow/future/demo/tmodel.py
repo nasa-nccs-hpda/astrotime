@@ -51,7 +51,7 @@ def get_features( T: np.ndarray, feature_type: int = 0 ) -> np.ndarray:
 		raise ValueError(f"Invalid feature_type: {feature_type}")
 
 def alpha( ip: int, ipsel: int ):
-	return 1.0 if ip == ipsel else 0.3
+	return 1.0 if ip == ipsel else 0.1
 
 def select_feature( plots: List[plt.Line2D], sval: float):
 	for ip in range(len(plots)):
