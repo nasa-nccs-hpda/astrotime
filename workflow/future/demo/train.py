@@ -10,7 +10,7 @@ nepochs=1000
 batch_size=64
 learning_rate=0.001
 dropout_frac=0.0
-use_ckpt=False
+use_ckpt=True
 
 data = tmodel.get_demo_data()
 signals = data['signals']
