@@ -40,6 +40,12 @@ def get_features( T: np.ndarray, feature_type: int = 0 ) -> np.ndarray:
 			features.append( np.array([int(bit) for bit in binary_str], dtype=np.float64) )
 		rv = np.stack(features, axis=0)
 		return rv
+	elif feature_type == 1:
+		for ip in range(1,12):
+			alpha = math.pi*math.pow(2,ip)/tL
+			features.append( np.sin(alpha*t) )
+			features.append( np.cos(alpha*t) )
+		return np.stack(features, axis=1)
 	elif feature_type == 2:
 		features.append(t/tL)
 		for ibase, npow in [ (2,12), (3,8), (5,5), (6,4), (7,3) ]:
@@ -56,7 +62,7 @@ def alpha( ip: int, ipsel: int ):
 def select_feature( plots: List[plt.Line2D], fig, sval: float):
 	for ip in range(len(plots)):
 		plots[ip].set_alpha( alpha(ip,int(sval)) )
-	fig.draw()
+	fig.canvas.draw_idle()
 
 
 
