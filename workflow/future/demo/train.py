@@ -2,7 +2,7 @@ import time, os, math, numpy as np
 import tensorflow as tf
 from tensorflow.keras.callbacks import ModelCheckpoint
 from tensorflow.keras.optimizers import Adam
-from .model import create_small_model, get_demo_data, get_ckp_file, get_features
+import model
 
 signal_index=2
 expt_index=4
@@ -12,13 +12,13 @@ learning_rate=0.001
 dropout_frac=0.0
 use_ckpt=True
 
-data = get_demo_data()
+data = model.get_demo_data()
 signals = data['signals']
 times = data['times']
-ckp_file = get_ckp_file( expt_index, signal_index )
+ckp_file = model.get_ckp_file( expt_index, signal_index )
 
 # X = binary_times[signal_index].astype(np.float32)
-X: np.ndarray = get_features( times[signal_index] )
+X: np.ndarray = model.get_features( times[signal_index] )
 Y: np.ndarray = signals[signal_index]
 validation_split: int = int(0.8*X.shape[0])
 
@@ -28,7 +28,7 @@ Ytrain=Y[:validation_split]
 Yval=Y[validation_split:]
 
 optimizer = Adam( learning_rate=learning_rate, name='adam' )
-model = create_small_model(X.shape[1],dropout_frac)
+model = model.create_small_model(X.shape[1],dropout_frac)
 model.compile(optimizer=optimizer, loss='mae')
 if use_ckpt:
     if os.path.exists(ckp_file): model.load_weights( ckp_file )
