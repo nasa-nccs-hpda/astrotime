@@ -10,21 +10,21 @@ parser = argparse.ArgumentParser(
                     formatter_class=argparse.RawDescriptionHelpFormatter,
                     description='Trains time-aware model on demo data.')
 
-parser.add_argument('-s', default=2)
-parser.add_argument('-e', default=1)
-parser.add_argument('-n', default=1000)
+parser.add_argument('-s', '--signal', default=2)
+parser.add_argument('-e', '--experiment', default=1)
+parser.add_argument('-n', '--nepochs', default=1000)
 parser.add_argument('-r', '--refresh', action='store_true')
 args = parser.parse_args()
 
 print( f"\nRunning with args: {args}\n")
 
-signal_index=args.s
-expt_index=args.e
-nepochs=args.n
+signal_index=args.signal
+expt_index=args.experiment
+nepochs=args.nepochs
 batch_size=64
 learning_rate=0.001
 dropout_frac=0.0
-refresh=args.r
+refresh=args.refresh
 loss='mse'
 
 data = tmodel.get_demo_data()
