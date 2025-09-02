@@ -10,10 +10,10 @@ parser = argparse.ArgumentParser(
                     formatter_class=argparse.RawDescriptionHelpFormatter,
                     description='Trains time-aware model on demo data.')
 
-parser.add_argument('-s', '--signal', default=2)
-parser.add_argument('-e', '--experiment', default=1)
-parser.add_argument('-n', '--nepochs', default=1000)
-parser.add_argument('-r', '--refresh', action='store_true')
+parser.add_argument('-s', '--signal',     type=int, default=2)
+parser.add_argument('-e', '--experiment', type=int, default=1)
+parser.add_argument('-n', '--nepochs',    type=int, default=1000)
+parser.add_argument('-r', '--refresh',    action='store_true')
 args = parser.parse_args()
 
 print( f"\nRunning with args: {args}\n")
@@ -33,7 +33,6 @@ times = data['times']
 ckp_file = tmodel.get_ckp_file( expt_index, signal_index )
 if refresh: os.remove(ckp_file)
 
-# X = binary_times[signal_index].astype(np.float32)
 X: np.ndarray = tmodel.get_features( times[signal_index], expt_index )
 Y: np.ndarray = signals[signal_index]
 validation_split: int = int(0.8*X.shape[0])
