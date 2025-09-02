@@ -12,7 +12,7 @@ parser = argparse.ArgumentParser(
 
 parser.add_argument('-s', '--signal',     type=int, default=2)
 parser.add_argument('-e', '--experiment', type=int, default=1)
-parser.add_argument('-n', '--nepochs',    type=int, default=1000)
+parser.add_argument('-n', '--nepochs',    type=int, default=500)
 parser.add_argument('-r', '--refresh',    action='store_true')
 args = parser.parse_args()
 
@@ -21,9 +21,8 @@ print( f"\nRunning with args: {args}\n")
 signal_index=args.signal
 expt_index=args.experiment
 nepochs=args.nepochs
-batch_size=64
-learning_rate=0.001
-dropout_frac=0.0
+batch_size=256
+dropout_frac=0.5
 refresh=args.refresh
 loss='mae'
 
@@ -44,9 +43,8 @@ Xval=X[validation_split:]
 Ytrain=Y[:validation_split]
 Yval=Y[validation_split:]
 
-optimizer = Adam( learning_rate=learning_rate, name='adam' )
 tmodel = tmodel.create_small_model(X.shape[1],dropout_frac)
-tmodel.compile(optimizer=optimizer, loss=loss )
+tmodel.compile(optimizer='rmsprop', loss='mae')
 
 if os.path.exists(ckp_file): tmodel.load_weights( ckp_file )
 else: print( f"Checkpoint file '{ckp_file}' not found. Training from scratch." )
