@@ -8,16 +8,15 @@ parser = argparse.ArgumentParser(
                     prog='timehascome',
                     usage='python train.py --help',
                     formatter_class=argparse.RawDescriptionHelpFormatter,
-                    prefix_chars='-',
                     description='Trains time-aware model on demo data.')
 
 parser.add_argument('-s', default=2)
 parser.add_argument('-e', default=1)
 parser.add_argument('-n', default=1000)
-parser.add_argument('-r', action='store_true')
-args = parser.parse_args([])
+parser.add_argument('-r', '--refresh', action='store_true')
+args = parser.parse_args()
 
-print( f"Running with args: {args}")
+print( f"\nRunning with args: {args}\n")
 
 signal_index=args.s
 expt_index=args.e
