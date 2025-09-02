@@ -5,12 +5,12 @@ from tensorflow.keras.optimizers import Adam
 import tmodel
 
 signal_index=2
-expt_index=1
+expt_index=0
 nepochs=5000
 batch_size=64
 learning_rate=0.001
 dropout_frac=0.0
-use_ckpt=True
+use_ckpt=False
 loss='mse'
 
 data = tmodel.get_demo_data()
