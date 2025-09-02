@@ -1,16 +1,29 @@
-import time, os, math, numpy as np
+import time, os, math, argparse, numpy as np
 import tensorflow as tf
 from tensorflow.keras.callbacks import ModelCheckpoint
 from tensorflow.keras.optimizers import Adam
 import tmodel
 
-signal_index=2
-expt_index=0
-nepochs=5000
+parser = argparse.ArgumentParser(
+                    prog='timehascome',
+                    usage='python train.py --help',
+                    formatter_class=argparse.RawDescriptionHelpFormatter,
+                    prefix_chars='-',
+                    description='Trains time-aware model on demo data.')
+
+parser.add_argument('-s', default=2)
+parser.add_argument('-e', default=1)
+parser.add_argument('-n', default=1000)
+parser.add_argument('-r', action='store_true')
+args = parser.parse_args([])
+
+signal_index=args.s
+expt_index=args.e
+nepochs=args.n
 batch_size=64
 learning_rate=0.001
 dropout_frac=0.0
-use_ckpt=False
+refresh=args.r
 loss='mse'
 
 data = tmodel.get_demo_data()
@@ -31,7 +44,7 @@ Yval=Y[validation_split:]
 optimizer = Adam( learning_rate=learning_rate, name='adam' )
 tmodel = tmodel.create_small_model(X.shape[1],dropout_frac)
 tmodel.compile(optimizer=optimizer, loss=loss )
-if use_ckpt:
+if not refresh:
     if os.path.exists(ckp_file): tmodel.load_weights( ckp_file )
     else: print( f"Checkpoint file '{ckp_file}' not found. Training from scratch." )
 
