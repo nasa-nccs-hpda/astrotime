@@ -12,7 +12,7 @@ parser = argparse.ArgumentParser(
 
 parser.add_argument('-s', '--signal',     type=int, default=2)
 parser.add_argument('-e', '--experiment', type=int, default=1)
-parser.add_argument('-n', '--nepochs',    type=int, default=500)
+parser.add_argument('-n', '--nepochs',    type=int, default=1000)
 parser.add_argument('-r', '--refresh',    action='store_true')
 args = parser.parse_args()
 
