@@ -25,7 +25,7 @@ batch_size=64
 learning_rate=0.001
 dropout_frac=0.0
 refresh=args.refresh
-loss='mse'
+loss='mae'
 
 data = tmodel.get_demo_data()
 signals = data['signals']
