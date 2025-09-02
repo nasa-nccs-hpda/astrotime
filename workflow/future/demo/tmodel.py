@@ -13,6 +13,11 @@ def get_demo_data( ):
 def get_ckp_file( expt_index, signal_index ):
 	return f"{data_dir}/embed_time_predict.e{expt_index}.s{signal_index}.weights.h5"
 
+def tnorm(x: np.ndarray, dim: int=0) -> np.ndarray:
+	m: np.ndarray = x.mean( axis=dim, keepdims=True )
+	s: np.ndarray = x.std( axis=dim, keepdims=True )
+	return (x - m) / s
+
 def create_small_model(nfeatures: int, dropout_frac: float):
 	binary_times_input = tf.keras.Input(shape=(nfeatures,), name="time_features")
 
@@ -58,7 +63,7 @@ def get_features( T: np.ndarray, feature_type: int ) -> np.ndarray:
 			features.append( np.array([int(bit) for bit in binary_str], dtype=np.float64) )
 		return np.stack(features, axis=0)
 	elif feature_type == 1:
-		for x in T.tolist():
+		for x in t.tolist():
 			binary_str = float_to_binary_precise(x/tL, places=64)
 			features.append( np.array([int(bit) for bit in binary_str], dtype=np.float64) )
 		return np.stack(features, axis=0)

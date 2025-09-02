@@ -34,8 +34,9 @@ ckp_file = tmodel.get_ckp_file( expt_index, signal_index )
 if refresh and os.path.exists(ckp_file): os.remove(ckp_file)
 
 X: np.ndarray = tmodel.get_features( times[signal_index], expt_index )
-Y: np.ndarray = signals[signal_index]
+Y: np.ndarray = tmodel.tnorm(signals[signal_index])
 validation_split: int = int(0.8*X.shape[0])
+print( f"X.shape={X.shape}, Y.shape={Y.shape}")
 
 Xtrain=X[:validation_split]
 Xval=X[validation_split:]
