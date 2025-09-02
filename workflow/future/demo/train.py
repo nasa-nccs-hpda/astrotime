@@ -11,6 +11,7 @@ batch_size=64
 learning_rate=0.001
 dropout_frac=0.0
 use_ckpt=True
+loss='mse'
 
 data = tmodel.get_demo_data()
 signals = data['signals']
@@ -29,7 +30,7 @@ Yval=Y[validation_split:]
 
 optimizer = Adam( learning_rate=learning_rate, name='adam' )
 tmodel = tmodel.create_small_model(X.shape[1],dropout_frac)
-tmodel.compile(optimizer=optimizer, loss='mae')
+tmodel.compile(optimizer=optimizer, loss=loss )
 if use_ckpt:
     if os.path.exists(ckp_file): tmodel.load_weights( ckp_file )
     else: print( f"Checkpoint file '{ckp_file}' not found. Training from scratch." )
