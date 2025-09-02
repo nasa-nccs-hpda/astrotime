@@ -17,6 +17,8 @@ parser.add_argument('-n', default=1000)
 parser.add_argument('-r', action='store_true')
 args = parser.parse_args([])
 
+print( f"Running with args: {args}")
+
 signal_index=args.s
 expt_index=args.e
 nepochs=args.n
@@ -30,6 +32,7 @@ data = tmodel.get_demo_data()
 signals = data['signals']
 times = data['times']
 ckp_file = tmodel.get_ckp_file( expt_index, signal_index )
+if refresh: os.remove(ckp_file)
 
 # X = binary_times[signal_index].astype(np.float32)
 X: np.ndarray = tmodel.get_features( times[signal_index], expt_index )
@@ -44,10 +47,9 @@ Yval=Y[validation_split:]
 optimizer = Adam( learning_rate=learning_rate, name='adam' )
 tmodel = tmodel.create_small_model(X.shape[1],dropout_frac)
 tmodel.compile(optimizer=optimizer, loss=loss )
-if not refresh:
-    if os.path.exists(ckp_file): tmodel.load_weights( ckp_file )
-    else: print( f"Checkpoint file '{ckp_file}' not found. Training from scratch." )
 
+if os.path.exists(ckp_file): tmodel.load_weights( ckp_file )
+else: print( f"Checkpoint file '{ckp_file}' not found. Training from scratch." )
 ckp_args = dict( save_best_only=True, save_weights_only=True, monitor='val_loss' )
 ckp_callback = ModelCheckpoint(ckp_file, **ckp_args)
 
