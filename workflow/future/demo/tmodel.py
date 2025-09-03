@@ -43,7 +43,7 @@ def float_to_binary_precise(fval: float, places=64) -> str:
 def get_features( T: np.ndarray, feature_type: int, nf: int = 64 ) -> np.ndarray:
 	features, eps = [], 1e-5
 	t, tL = T-T[0], T[-1]-T[0]
-	ts: np.ndarray = (t/tL)*0.99
+	ts: np.ndarray = (t/tL)*0.9
 	if feature_type == 1:
 		for x in ts.tolist():
 			binary_str: str = float_to_binary_precise(x, places=nf)
