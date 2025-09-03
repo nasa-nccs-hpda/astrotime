@@ -23,8 +23,9 @@ def parse_args( parser ) -> Namespace:
 	return args
 
 def load_args( ) -> Namespace:
-	with open(args_path, 'wb') as afile:
+	with open(args_path, 'rb') as afile:
 		args = pickle.load(afile)
+	print(f"Running with args: {args}")
 	return args
 
 def tnorm(x: np.ndarray, dim: int=0) -> np.ndarray:
