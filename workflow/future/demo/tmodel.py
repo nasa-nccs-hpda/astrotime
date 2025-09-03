@@ -40,18 +40,13 @@ def create_small_model(nfeatures: int, dropout_frac: float):
 def float_to_binary_precise(fval: float, places=64) -> str:
 	return bin(int(fval * pow(2, places)))[2:].rjust(places, '0')
 
-def get_features( T: np.ndarray, feature_type: int ) -> np.ndarray:
+def get_features( T: np.ndarray, feature_type: int, nf: int = 64 ) -> np.ndarray:
 	features, eps = [], 1e-5
 	t, tL = T-T[0], T[-1]-T[0]
-	ts: np.ndarray = t/(tL*(1-eps))
-	if feature_type == 0:
-		for x in T.tolist():
-			binary_str = np.binary_repr(np.float64(x).view(np.int64), width=64)
-			features.append( np.array([int(bit) for bit in binary_str], dtype=np.float64) )
-		return np.stack(features, axis=0)
-	elif feature_type == 1:
+	ts: np.ndarray = (t/tL)*0.99
+	if feature_type == 1:
 		for x in ts.tolist():
-			binary_str: str = float_to_binary_precise(x, places=64)
+			binary_str: str = float_to_binary_precise(x, places=nf)
 			features.append( np.array([int(bit) for bit in binary_str], dtype=np.float64) )
 		return np.stack(features, axis=0)
 	elif feature_type == 2:
