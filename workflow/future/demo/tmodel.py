@@ -37,34 +37,21 @@ def create_small_model(nfeatures: int, dropout_frac: float):
 	model = tf.keras.Model(inputs=binary_times_input, outputs=outputs)
 	return model
 
-def float_to_binary_precise(num, places=64):
-	getcontext().prec = places
-	decimal_num = Decimal(str(num))
-	integer_part = int(decimal_num)
-	fractional_part = decimal_num - integer_part
+def float_to_binary_precise(fval: float, places=64) -> str:
+	return bin(int(fval * pow(2, places)))[2:].rjust(places, '0')
 
-	integer_binary = bin(integer_part)[2:]  # remove '0b' prefix
-
-	fractional_binary = ""
-	for _ in range(places):
-		fractional_part *= 2
-		bit = int(fractional_part)
-		fractional_binary += str(bit)
-		fractional_part -= bit
-
-	return fractional_binary
-
-def get_features( T: np.ndarray, feature_type: int ) -> np.ndarray:
+def get_features( T: np.ndarray, feature_type: int, tscale: float = 1.0 ) -> np.ndarray:
 	features = []
 	t, tL = T-T[0], T[-1]-T[0]
+	ts: np.ndarray = (t/tL)*tscale
 	if feature_type == 0:
 		for x in T.tolist():
 			binary_str = np.binary_repr(np.float64(x).view(np.int64), width=64)
 			features.append( np.array([int(bit) for bit in binary_str], dtype=np.float64) )
 		return np.stack(features, axis=0)
 	elif feature_type == 1:
-		for x in t.tolist():
-			binary_str = float_to_binary_precise(x/tL, places=64)
+		for x in ts.tolist():
+			binary_str: str = float_to_binary_precise(x, places=64)
 			features.append( np.array([int(bit) for bit in binary_str], dtype=np.float64) )
 		return np.stack(features, axis=0)
 	elif feature_type == 2:

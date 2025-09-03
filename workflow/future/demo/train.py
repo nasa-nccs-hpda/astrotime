@@ -23,6 +23,7 @@ expt_index=args.experiment
 nepochs=args.nepochs
 batch_size=256
 dropout_frac=0.5
+tscale: float = 0.8
 refresh=args.refresh
 loss='mae'
 
@@ -32,10 +33,9 @@ times = data['times']
 ckp_file = tmodel.get_ckp_file( expt_index, signal_index )
 if refresh and os.path.exists(ckp_file): os.remove(ckp_file)
 
-X: np.ndarray = tmodel.get_features( times[signal_index], expt_index )
+X: np.ndarray = tmodel.get_features( times[signal_index], expt_index, tscale )
 Y: np.ndarray = signals[signal_index]
 validation_split: int = int(0.8*X.shape[0])
-print( f"X.shape={X.shape}, Y.shape={Y.shape}")
 # Y = tmodel.tnorm(Y)
 
 Xtrain=X[:validation_split]
