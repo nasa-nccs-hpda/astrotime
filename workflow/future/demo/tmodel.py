@@ -17,14 +17,16 @@ def get_ckp_file( expt_index, signal_index ):
 
 def parse_args( parser ) -> Namespace:
 	args: Namespace = parser.parse_args()
-	with open(args_path, 'wb') as afile:
-		pickle.dump(args, afile)
+	afile = open(args_path, 'wb')
+	pickle.dump(args, afile)
+	afile.close()
 	print(f"\nRunning with args: {args}\n")
 	return args
 
 def load_args( ) -> Namespace:
-	with open(args_path, 'rb') as afile:
-		args = pickle.load(afile)
+	afile = open(args_path, 'rb')
+	args = pickle.load(afile)
+	afile.close()
 	print(f"Running with args: {args}")
 	return args
 
