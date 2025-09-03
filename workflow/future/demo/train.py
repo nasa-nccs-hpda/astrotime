@@ -10,10 +10,11 @@ parser = argparse.ArgumentParser(
                     formatter_class=argparse.RawDescriptionHelpFormatter,
                     description='Trains time-aware model on demo data.')
 
-parser.add_argument('-s', '--signal',      type=int, default=2)
-parser.add_argument('-e', '--experiment',  type=int, default=1)
-parser.add_argument('-n', '--nepochs',     type=int, default=1000)
-parser.add_argument('-r', '--refresh',     action='store_true')
+parser.add_argument('-s',  '--signal',     type=int, default=2)
+parser.add_argument('-e',  '--experiment', type=int, default=1)
+parser.add_argument('-ne', '--nepochs',    type=int, default=1000)
+parser.add_argument('-nf', '--nfeatures',  type=int, default=64)
+parser.add_argument('-r',  '--refresh',    action='store_true')
 args = parser.parse_args()
 
 print( f"\nRunning with args: {args}\n")
@@ -21,6 +22,7 @@ print( f"\nRunning with args: {args}\n")
 signal_index=args.signal
 expt_index=args.experiment
 nepochs=args.nepochs
+nfeatures=args.nfeatures
 batch_size=256
 dropout_frac=0.5
 refresh=args.refresh
@@ -32,7 +34,7 @@ times = data['times']
 ckp_file = tmodel.get_ckp_file( expt_index, signal_index )
 if refresh and os.path.exists(ckp_file): os.remove(ckp_file)
 
-X: np.ndarray = tmodel.get_features( times[signal_index], expt_index )
+X: np.ndarray = tmodel.get_features( times[signal_index], expt_index, nfeatures )
 Y: np.ndarray = signals[signal_index]
 validation_split: int = int(0.8*X.shape[0])
 # Y = tmodel.tnorm(Y)
