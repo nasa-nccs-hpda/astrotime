@@ -1,6 +1,10 @@
 from decimal import getcontext, Decimal
 from typing import List, Optional, Dict, Type, Union, Tuple, Any
 
+def float_to_binary_2(fval: float, places: int =64) -> List[int]:
+	fractional_binary = bin(int(fval*pow(2,places)))[2:]
+	return [int(bit) for bit in fractional_binary]
+
 def float_to_binary_1(fval: float, places: int =64) -> List[int]:
 	fractional_binary: str = ""
 	for _ in range(places):
@@ -32,3 +36,4 @@ if __name__ == "__main__":
 
 	print( float_to_binary_0(fval, places=64) )
 	print( float_to_binary_1(fval, places=64) )
+	print( float_to_binary_2(fval, places=64) )
