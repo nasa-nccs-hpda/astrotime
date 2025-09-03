@@ -2,7 +2,7 @@ from decimal import getcontext, Decimal
 from typing import List, Optional, Dict, Type, Union, Tuple, Any
 
 def float_to_binary_2(fval: float, places: int =64) -> List[int]:
-	fractional_binary = bin(int(fval*pow(2,places)))[2:]
+	fractional_binary = bin(int(fval*pow(2,places)))[2:].rjust(places, '0')
 	return [int(bit) for bit in fractional_binary]
 
 def float_to_binary_1(fval: float, places: int =64) -> List[int]:
@@ -10,7 +10,6 @@ def float_to_binary_1(fval: float, places: int =64) -> List[int]:
 	for _ in range(places):
 		fval *= 2
 		bit = int(fval)
-		print( f" fval={fval:.4f}, bit={bit}")
 		fractional_binary += str(bit)
 		fval -= bit
 	return [int(bit) for bit in fractional_binary]
