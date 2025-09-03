@@ -11,7 +11,6 @@ parser = argparse.ArgumentParser(
                     description='Trains time-aware model on demo data.')
 
 parser.add_argument('-s', '--signal',      type=int, default=2)
-parser.add_argument('-ts', '--time_scale', type=float, default=1.0)
 parser.add_argument('-e', '--experiment',  type=int, default=1)
 parser.add_argument('-n', '--nepochs',     type=int, default=1000)
 parser.add_argument('-r', '--refresh',     action='store_true')
@@ -24,7 +23,6 @@ expt_index=args.experiment
 nepochs=args.nepochs
 batch_size=256
 dropout_frac=0.5
-tscale: float = args.time_scale
 refresh=args.refresh
 loss='mae'
 
@@ -34,7 +32,7 @@ times = data['times']
 ckp_file = tmodel.get_ckp_file( expt_index, signal_index )
 if refresh and os.path.exists(ckp_file): os.remove(ckp_file)
 
-X: np.ndarray = tmodel.get_features( times[signal_index], expt_index, tscale )
+X: np.ndarray = tmodel.get_features( times[signal_index], expt_index )
 Y: np.ndarray = signals[signal_index]
 validation_split: int = int(0.8*X.shape[0])
 # Y = tmodel.tnorm(Y)
