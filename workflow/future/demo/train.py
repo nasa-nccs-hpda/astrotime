@@ -1,23 +1,17 @@
 import time, os, math, argparse, numpy as np
+from argparse import Namespace
 import tensorflow as tf
 from tensorflow.keras.callbacks import ModelCheckpoint
 from tensorflow.keras.optimizers import Adam
 import tmodel
 
-parser = argparse.ArgumentParser(
-                    prog='timehascome',
-                    usage='python train.py --help',
-                    formatter_class=argparse.RawDescriptionHelpFormatter,
-                    description='Trains time-aware model on demo data.')
-
+parser = argparse.ArgumentParser( prog='timehascome', usage='python train.py --help', description='Trains time-aware CNN on demo data.')
 parser.add_argument('-s',  '--signal',     type=int, default=2)
 parser.add_argument('-e',  '--experiment', type=int, default=1)
 parser.add_argument('-ne', '--nepochs',    type=int, default=1000)
 parser.add_argument('-nf', '--nfeatures',  type=int, default=64)
 parser.add_argument('-r',  '--refresh',    action='store_true')
-args = parser.parse_args()
-
-print( f"\nRunning with args: {args}\n")
+args: Namespace = tmodel.parse_args(parser)
 
 signal_index=args.signal
 expt_index=args.experiment

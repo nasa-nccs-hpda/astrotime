@@ -1,4 +1,5 @@
-import time, os, math, numpy as np
+import time, os, math, pickle, numpy as np
+from argparse import Namespace
 from typing import List, Optional, Dict, Type, Union, Tuple
 import matplotlib.pyplot as plt
 from decimal import getcontext, Decimal
@@ -6,12 +7,25 @@ import tensorflow as tf
 from tensorflow.keras.callbacks import ModelCheckpoint
 from tensorflow.keras.optimizers import Adam
 data_dir = "/explore/nobackup/projects/ilab/data/astrotime/demo"
+args_path = f"{data_dir}/args.pkl"
 
 def get_demo_data( ):
 	return np.load(f'{data_dir}/jordan_data.npz', allow_pickle=True)
 
 def get_ckp_file( expt_index, signal_index ):
 	return f"{data_dir}/embed_time_predict.e{expt_index}.s{signal_index}.weights.h5"
+
+def parse_args( parser ) -> Namespace:
+	args: Namespace = parser.parse_args()
+	with open(args_path, 'wb') as afile:
+		pickle.dump(args, afile)
+	print(f"\nRunning with args: {args}\n")
+	return args
+
+def load_args( ) -> Namespace:
+	with open(args_path, 'wb') as afile:
+		args = pickle.load(afile)
+	return args
 
 def tnorm(x: np.ndarray, dim: int=0) -> np.ndarray:
 	m: np.ndarray = x.mean( axis=dim, keepdims=True )
