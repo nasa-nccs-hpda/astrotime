@@ -20,7 +20,6 @@ nfeatures=args.nfeatures
 batch_size=256
 dropout_frac=0.5
 refresh=args.refresh
-normalize=True
 loss='mae'
 
 data = tmodel.get_demo_data()
@@ -32,7 +31,6 @@ if refresh and os.path.exists(ckp_file): os.remove(ckp_file)
 X: np.ndarray = tmodel.get_features( times[signal_index], expt_index, nfeatures )
 Y: np.ndarray = signals[signal_index]
 validation_split: int = int(0.8*X.shape[0])
-if normalize: Y = tmodel.tnorm(Y)
 
 Xtrain=X[:validation_split]
 Xval=X[validation_split:]
