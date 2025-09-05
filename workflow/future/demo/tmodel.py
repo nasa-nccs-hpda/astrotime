@@ -61,18 +61,18 @@ def get_features( T: np.ndarray, feature_type: int, nf: int = 64 ) -> np.ndarray
 	features = []
 	t, tL = T-T[0], T[-1]-T[0]
 	ts: np.ndarray = (t/tL)*0.9
-	if feature_type == 1:
+	if feature_type == 0:
 		for x in ts.tolist():
 			binary_str: str = float_to_binary_precise(x, places=nf)
 			features.append( np.array([int(bit) for bit in binary_str], dtype=np.float64) )
 		return np.stack(features, axis=0)
-	elif feature_type == 2:
+	elif feature_type == 1:
 		for ip in range(nf):
 			alpha = math.pi*math.pow(2,ip+1)
 			features.append( np.sin(alpha*ts) )
 			features.append( np.cos(alpha*ts) )
 		return np.stack(features, axis=1)
-	elif feature_type == 3:
+	elif feature_type == 2:
 		for ip in range(nf):
 			alpha = 2*math.pi*(ip+1)
 			features.append( np.sin(alpha*ts) )
