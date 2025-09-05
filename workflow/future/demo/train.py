@@ -22,12 +22,14 @@ nfeatures=args.nfeatures
 learning_rate=args.learning_rate
 batch_size=args.batch_size
 dropout_frac=0.5
+refresh=args.refresh
 loss='mae'
 
 data = tmodel.get_demo_data()
 signals = data['signals']
 times = data['times']
 ckp_file = tmodel.get_ckp_file( expt_index, signal_index )
+if refresh and os.path.exists(ckp_file): os.remove(ckp_file)
 
 X: np.ndarray = tmodel.get_features( times[signal_index], expt_index, nfeatures )
 Y: np.ndarray = signals[signal_index]
