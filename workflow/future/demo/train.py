@@ -10,6 +10,8 @@ parser.add_argument('-s',  '--signal',     type=int, default=2)
 parser.add_argument('-e',  '--experiment', type=int, default=1)
 parser.add_argument('-ne', '--nepochs',    type=int, default=1000)
 parser.add_argument('-nf', '--nfeatures',  type=int, default=64)
+parser.add_argument('-bs', '--batch_size',  type=int, default=16)
+parser.add_argument('-lr', '--learning_rate',  type=float, default=0.001)
 parser.add_argument('-r',  '--refresh',    action='store_true')
 args: Namespace = tmodel.parse_args(parser)
 
@@ -17,7 +19,8 @@ signal_index=args.signal
 expt_index=args.experiment
 nepochs=args.nepochs
 nfeatures=args.nfeatures
-batch_size=256
+learning_rate=args.learning_rate
+batch_size=args.batch_size
 dropout_frac=0.5
 loss='mae'
 
@@ -35,16 +38,15 @@ Xval=X[validation_split:]
 Ytrain=Y[:validation_split]
 Yval=Y[validation_split:]
 
-tmodel = tmodel.create_small_model(X.shape[1],dropout_frac)
-tmodel.compile(optimizer='rmsprop', loss='mae')
-
-if os.path.exists(ckp_file): tmodel.load_weights( ckp_file )
+small_model = tmodel.create_small_model(X.shape[1],dropout_frac)
+small_model.compile(optimizer=Adam(learning_rate=learning_rate), loss='mae')
+if os.path.exists(ckp_file): small_model.load_weights( ckp_file )
 else: print( f"Checkpoint file '{ckp_file}' not found. Training from scratch." )
 ckp_args = dict( save_best_only=True, save_weights_only=True, monitor='val_loss' )
 ckp_callback = ModelCheckpoint(ckp_file, **ckp_args)
 
 t0 = time.time()
-history = tmodel.fit(
+history = small_model.fit(
     Xtrain,
     Ytrain,
     epochs=nepochs,
