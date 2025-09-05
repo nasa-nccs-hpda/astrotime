@@ -58,7 +58,7 @@ def float_to_binary_precise(fval: float, places=64) -> str:
 	return bin(int(fval * pow(2, places)))[2:].rjust(places, '0')
 
 def get_features( T: np.ndarray, feature_type: int, nf: int = 64 ) -> np.ndarray:
-	features, eps = [], 1e-5
+	features = []
 	t, tL = T-T[0], T[-1]-T[0]
 	ts: np.ndarray = (t/tL)*0.9
 	if feature_type == 1:
@@ -67,17 +67,16 @@ def get_features( T: np.ndarray, feature_type: int, nf: int = 64 ) -> np.ndarray
 			features.append( np.array([int(bit) for bit in binary_str], dtype=np.float64) )
 		return np.stack(features, axis=0)
 	elif feature_type == 2:
-		for ip in range(1,12):
-			alpha = math.pi*math.pow(2,ip)/tL
-			features.append( np.sin(alpha*t) )
-			features.append( np.cos(alpha*t) )
+		for ip in range(nf):
+			alpha = math.pi*math.pow(2,ip+1)
+			features.append( np.sin(alpha*ts) )
+			features.append( np.cos(alpha*ts) )
 		return np.stack(features, axis=1)
 	elif feature_type == 3:
-		features.append(t/tL)
-		for ibase, npow in [ (2,12), (3,8), (5,5), (6,4), (7,3) ]:
-			for ip in range(1,npow+1):
-				base = tL/math.pow( ibase, ip )
-				features.append( np.mod(t,base)/base )
+		for ip in range(nf):
+			alpha = 2*math.pi*(ip+1)
+			features.append( np.sin(alpha*ts) )
+			features.append( np.cos(alpha*ts) )
 		return np.stack(features, axis=1)
 	else:
 		raise ValueError(f"Invalid feature_type: {feature_type}")
