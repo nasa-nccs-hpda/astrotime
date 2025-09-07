@@ -10,9 +10,10 @@ parser.add_argument('-s',  '--signal',     type=int, default=2)
 parser.add_argument('-e',  '--experiment', type=int, default=1)
 parser.add_argument('-ne', '--nepochs',    type=int, default=1000)
 parser.add_argument('-nf', '--nfeatures',  type=int, default=64)
-parser.add_argument('-bs', '--batch_size',  type=int, default=128)
-parser.add_argument('-lr', '--learning_rate',  type=float, default=0.001)
+parser.add_argument('-bs', '--batch_size', type=int, default=128)
+parser.add_argument('-l',  '--loss',       type=str, default="mse")
 parser.add_argument('-r',  '--refresh',    action='store_true')
+parser.add_argument('-lr', '--learning_rate',  type=float, default=0.001)
 args: Namespace = tmodel.parse_args(parser)
 
 signal_index=args.signal
@@ -23,7 +24,7 @@ learning_rate=args.learning_rate
 batch_size=args.batch_size
 dropout_frac=0.5
 refresh=args.refresh
-loss='mse'
+loss=args.loss
 
 data = tmodel.get_demo_data()
 signals = data['signals']
