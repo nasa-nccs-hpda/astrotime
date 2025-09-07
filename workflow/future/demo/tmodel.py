@@ -68,10 +68,11 @@ def get_features( T: np.ndarray, feature_type: int, nf: int = 64 ) -> np.ndarray
 		return np.stack(features, axis=0)
 	elif feature_type == 1:
 		pbase = 1.115
+		alpha = 2*math.pi
 		for ip in range(nf):
-			alpha = math.pi*math.pow(pbase,ip+1)
 			features.append( np.sin(alpha*ts) )
 			features.append( np.cos(alpha*ts) )
+			alpha = alpha * pbase
 		return np.stack(features, axis=1)
 	elif feature_type == 2:
 		for ip in range(nf):
