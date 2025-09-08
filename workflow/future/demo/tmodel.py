@@ -60,21 +60,21 @@ def float_to_binary_precise(fval: float, places=64) -> str:
 def get_features( T: np.ndarray, feature_type: int, nf: int = 64 ) -> np.ndarray:
 	features = []
 	t, tL = T-T[0], T[-1]-T[0]
-	ts: np.ndarray = (t/tL)*0.9
 	if feature_type == 0:
+		ts: np.ndarray = (t / tL) * 0.9
 		for x in ts.tolist():
 			binary_str: str = float_to_binary_precise(x, places=nf)
 			features.append( np.array([int(bit) for bit in binary_str], dtype=np.float64) )
 		return np.stack(features, axis=0)
 	elif feature_type == 1:
+		ts: np.ndarray = t/tL
 		sfactor = math.exp( math.log(T.shape[-1]/2)/nf )
-		print( f"Using sfactor: {sfactor}, T{T.shape}, nf={nf}")
 		omega = 2*math.pi
 		for ip in range(nf):
 			features.append( np.sin(omega*ts) )
 			features.append( np.cos(omega*ts) )
 			omega = omega*sfactor
-		print(f"Using sfactor: {sfactor}, Ts={T.shape[-1]}, nf={nf}, Pmin={2*math.pi/omega}")
+		print(f"Using sfactor: {sfactor}, T{T.shape}, nf={nf}, Pmin={2*math.pi/omega}")
 		return np.stack(features, axis=1)
 	else:
 		raise ValueError(f"Invalid feature_type: {feature_type}")
