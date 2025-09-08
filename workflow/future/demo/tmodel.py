@@ -57,24 +57,25 @@ def create_small_model(nfeatures: int, dropout_frac: float):
 def float_to_binary_precise(fval: float, places=64) -> str:
 	return bin(int(fval * pow(2, places)))[2:].rjust(places, '0')
 
-def get_features( T: np.ndarray, feature_type: int, nf: int = 64 ) -> np.ndarray:
+def get_features( T: np.ndarray, feature_type: int, args: Namespace ) -> np.ndarray:
 	features = []
 	t, tL = T-T[0], T[-1]-T[0]
 	if feature_type == 0:
 		ts: np.ndarray = (t / tL) * 0.9
 		for x in ts.tolist():
-			binary_str: str = float_to_binary_precise(x, places=nf)
+			binary_str: str = float_to_binary_precise(x, places=args.nfeatures)
 			features.append( np.array([int(bit) for bit in binary_str], dtype=np.float64) )
 		return np.stack(features, axis=0)
 	elif feature_type == 1:
 		ts: np.ndarray = t/tL
-		sfactor = math.exp( math.log(T.shape[-1]/2)/nf )
+		pmin = 2*args.minp_factor/T.shape[-1]
+		sfactor = math.exp( math.log(1/pmin)/args.nfeatures )
 		omega = 2*math.pi
-		for ip in range(nf):
+		for ip in range(args.nfeatures):
 			features.append( np.sin(omega*ts) )
 			features.append( np.cos(omega*ts) )
 			omega = omega*sfactor
-		print(f"Using sfactor: {sfactor}, T{T.shape}, nf={nf}, Pmin={2*math.pi/omega}")
+		print(f"Using sfactor: {sfactor}, T{T.shape}, nf={args.nfeatures}, Pmin={2*math.pi/omega}, mpf={args.minp_factor}")
 		return np.stack(features, axis=1)
 	else:
 		raise ValueError(f"Invalid feature_type: {feature_type}")

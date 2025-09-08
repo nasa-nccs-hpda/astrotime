@@ -8,18 +8,19 @@ import tmodel
 parser = argparse.ArgumentParser( prog='timehascome', usage='python train.py --help', description='Trains time-aware CNN on demo data.')
 parser.add_argument('-s',  '--signal',     type=int, default=2)
 parser.add_argument('-e',  '--experiment', type=int, default=1)
-parser.add_argument('-ne', '--nepochs',    type=int, default=1000)
+parser.add_argument('-ne', '--nepochs',    type=int, default=2000)
 parser.add_argument('-nf', '--nfeatures',  type=int, default=64)
-parser.add_argument('-bs', '--batch_size', type=int, default=128)
+parser.add_argument('-bs', '--batch_size', type=int, default=256)
 parser.add_argument('-l',  '--loss',       type=str, default="mae")
 parser.add_argument('-r',  '--refresh',    action='store_true')
 parser.add_argument('-lr', '--learning_rate',  type=float, default=0.001)
+parser.add_argument('-pf', '--minp_factor',  type=float, default=1.0)
+
 args: Namespace = tmodel.parse_args(parser)
 
 signal_index=args.signal
 expt_index=args.experiment
 nepochs=args.nepochs
-nfeatures=args.nfeatures
 learning_rate=args.learning_rate
 batch_size=args.batch_size
 dropout_frac=0.5
@@ -32,7 +33,7 @@ times = data['times']
 ckp_file = tmodel.get_ckp_file( expt_index, signal_index )
 if refresh and os.path.exists(ckp_file): os.remove(ckp_file)
 
-X: np.ndarray = tmodel.get_features( times[signal_index], expt_index, nfeatures )
+X: np.ndarray = tmodel.get_features( times[signal_index], expt_index, args )
 Y: np.ndarray = signals[signal_index]
 validation_split: int = int(0.8*X.shape[0])
 
