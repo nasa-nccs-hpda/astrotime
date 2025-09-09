@@ -12,18 +12,19 @@ parser.add_argument('-ne', '--nepochs',    type=int, default=2000)
 parser.add_argument('-nf', '--nfeatures',  type=int, default=64)
 parser.add_argument('-bs', '--batch_size', type=int, default=256)
 parser.add_argument('-l',  '--loss',       type=str, default="mae")
+parser.add_argument('-ns', '--nstreams',   type=int, default=20)
 parser.add_argument('-r',  '--refresh',    action='store_true')
-parser.add_argument('-lr', '--learning_rate',  type=float, default=0.001)
-parser.add_argument('-pf', '--minp_factor',  type=float, default=1.0)
+parser.add_argument('-lr', '--learning_rate', type=float, default=0.01)
+parser.add_argument('-pf', '--minp_factor',   type=float, default=1.0)
+parser.add_argument('-do', '--dropout_frac',  type=float, default=0.5)
 
 args: Namespace = tmodel.parse_args(parser)
-
 signal_index=args.signal
 expt_index=args.experiment
 nepochs=args.nepochs
-learning_rate=args.learning_rate
 batch_size=args.batch_size
 dropout_frac=0.5
+nstreams=args.nstreams
 refresh=args.refresh
 loss=args.loss
 
@@ -42,15 +43,21 @@ Xval=X[validation_split:]
 Ytrain=Y[:validation_split]
 Yval=Y[validation_split:]
 
-small_model = tmodel.create_small_model(X.shape[1],dropout_frac)
-small_model.compile(optimizer=Adam(learning_rate=learning_rate), loss='mae')
-if os.path.exists(ckp_file): small_model.load_weights( ckp_file )
+strategy = tf.distribute.MirroredStrategy()
+print(f"Number of devices: {strategy.num_replicas_in_sync}")
+
+with strategy.scope():
+    optimizer = tf.keras.optimizers.Adam(learning_rate=args.learning_rate)
+    model = tmodel.create_dense_model( X.shape[1], args.dropout_frac, args.nstreams )
+    model.compile(optimizer, loss=args.loss)
+
+if os.path.exists(ckp_file): model.load_weights( ckp_file )
 else: print( f"Checkpoint file '{ckp_file}' not found. Training from scratch." )
 ckp_args = dict( save_best_only=True, save_weights_only=True, monitor='val_loss' )
 ckp_callback = ModelCheckpoint(ckp_file, **ckp_args)
 
 t0 = time.time()
-history = small_model.fit(
+history = model.fit(
     Xtrain,
     Ytrain,
     epochs=nepochs,

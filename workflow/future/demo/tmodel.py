@@ -36,9 +36,9 @@ def tnorm(x: np.ndarray, dim: int=0) -> np.ndarray:
 	return (x - m) / s
 
 def create_small_model(nfeatures: int, dropout_frac: float):
-	binary_times_input = tf.keras.Input(shape=(nfeatures,), name="time_features")
+	time_features = tf.keras.Input(shape=(nfeatures,), name="time_features")
 
-	x = tf.keras.layers.Dense(512, activation='tanh')(binary_times_input)
+	x = tf.keras.layers.Dense(512, activation='tanh')(time_features)
 	x = tf.keras.layers.Dropout(dropout_frac)(x)
 	x = tf.keras.layers.BatchNormalization()(x)
 	x = tf.keras.layers.Dense(512, activation='tanh')(x)
@@ -51,6 +51,81 @@ def create_small_model(nfeatures: int, dropout_frac: float):
 	x = tf.keras.layers.BatchNormalization()(x)
 
 	outputs = tf.keras.layers.Dense(1, activation='linear')(x)
+	model = tf.keras.Model(inputs=time_features, outputs=outputs)
+	return model
+
+class FirstLastElementConstraint(tf.keras.constraints.Constraint):
+	def __call__(self, w):
+		input_dim = w.shape[-2]
+		output_dim = w.shape[-1]
+		mask = tf.concat([
+			tf.ones((1, input_dim, output_dim)),
+			tf.zeros((tf.shape(w)[0] - 2, input_dim, output_dim)),
+			tf.ones((1, input_dim, output_dim))
+		], axis=0)
+		return w * mask
+
+def create_dense_model(nfeatures: int, dropout_frac: float, n_streams: int ):
+	times_input = tf.keras.Input(shape=(nfeatures,), name="times_input")
+
+	def apply_relpos(xx):
+		x = tf.keras.layers.Dense(512, activation='elu')(xx)
+		x = tf.keras.layers.Dropout(dropout_frac)(x)
+		x = tf.keras.layers.BatchNormalization()(x)
+		x = tf.keras.layers.Dense(512, activation='elu')(x)
+		x = tf.keras.layers.Dropout(dropout_frac)(x)
+		x = tf.keras.layers.BatchNormalization()(x)
+		x = tf.keras.layers.Dense(512, activation='elu')(x)
+		x = tf.keras.layers.Dropout(dropout_frac)(x)
+		x = tf.keras.layers.BatchNormalization()(x)
+		x = tf.keras.layers.Dense(512, activation='elu')(x)
+		x = tf.keras.layers.Dropout(dropout_frac)(x)
+		x = tf.keras.layers.BatchNormalization()(x)
+		x = tf.keras.layers.Dense(512, activation='elu')(x)
+		x = tf.keras.layers.Dropout(dropout_frac)(x)
+		x = tf.keras.layers.BatchNormalization()(x)
+		x = tf.keras.layers.Dense(512, activation='elu')(x)
+		return x
+
+	streams = [apply_relpos(times_input) for i in range(n_streams)]
+
+	x = tf.keras.layers.Concatenate(axis=-1)(streams)
+	x = tf.keras.layers.BatchNormalization()(x)
+	x = tf.keras.layers.Dropout(dropout_frac)(x)
+	x = tf.keras.layers.Dense(512, activation='elu')(x)
+	x = tf.keras.layers.BatchNormalization()(x)
+
+	outputs = tf.keras.layers.Dense(1, activation='linear')(x)
+	model = tf.keras.Model(inputs=times_input, outputs=outputs)
+	return model
+
+def create_rel_pos_model(dropout_frac, num_conv):
+	binary_times_input = tf.keras.Input(shape=(64,), name="binary_times_input")
+
+	binary_times_reshape = tf.keras.layers.Reshape((64, 1))(binary_times_input)
+
+	pos_layers = []
+	for i in range(num_conv):
+		conv = tf.keras.layers.Conv1D(8, i + 2, strides=1, padding='valid', activation='tanh', kernel_constraint=FirstLastElementConstraint() if i > 0 else None)
+		pos = conv(binary_times_reshape)
+		pos = tf.keras.layers.Flatten()(pos)
+		pos = tf.keras.layers.Dense(32, activation='tanh')(pos)
+		pos_layers.append(pos)
+
+	pos = tf.keras.layers.Concatenate(axis=-1)(pos_layers)
+	pos = tf.keras.layers.Dropout(dropout_frac)(pos)
+	pos = tf.keras.layers.BatchNormalization()(pos)
+
+	x = pos
+	for _ in range(6):
+		x = tf.keras.layers.Dense(512, activation='tanh')(x)
+		x = tf.keras.layers.Dropout(dropout_frac)(x)
+		x = tf.keras.layers.BatchNormalization()(x)
+
+	x = tf.keras.layers.Dense(512, activation='tanh')(x)
+	x = tf.keras.layers.BatchNormalization()(x)
+	outputs = tf.keras.layers.Dense(1, activation='linear')(x)
+
 	model = tf.keras.Model(inputs=binary_times_input, outputs=outputs)
 	return model
 
