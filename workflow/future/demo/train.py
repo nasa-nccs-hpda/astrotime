@@ -15,6 +15,7 @@ parser.add_argument('-l',  '--loss',       type=str, default="mae")
 parser.add_argument('-r',  '--refresh',    action='store_true')
 parser.add_argument('-lr', '--learning_rate',  type=float, default=0.001)
 parser.add_argument('-pf', '--minp_factor',  type=float, default=1.0)
+parser.add_argument('-do', '--dropout',  type=float, default=0.0)
 
 args: Namespace = tmodel.parse_args(parser)
 
@@ -23,7 +24,7 @@ expt_index=args.experiment
 nepochs=args.nepochs
 learning_rate=args.learning_rate
 batch_size=args.batch_size
-dropout_frac=0.5
+dropout_frac=args.dropout
 refresh=args.refresh
 loss=args.loss
 
