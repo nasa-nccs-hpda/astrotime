@@ -24,7 +24,7 @@ expt_index=args.experiment
 nepochs=args.nepochs
 learning_rate=args.learning_rate
 batch_size=args.batch_size
-dropout_frac=args.dropout
+dropout_frac=0.5
 refresh=args.refresh
 loss=args.loss
 
