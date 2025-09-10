@@ -1,4 +1,4 @@
-import time, os, math, argparse, numpy as np
+import time, os, argparse, numpy as np
 from argparse import Namespace
 import tensorflow as tf
 from tensorflow.keras.callbacks import ModelCheckpoint
@@ -31,10 +31,10 @@ loss=args.loss
 data = tmodel.get_demo_data()
 signals = data['signals']
 times = data['times']
-ckp_file = tmodel.get_ckp_file( expt_index, signal_index )
+ckp_file = tmodel.get_ckp_file( expt_index, signal_index)
 if refresh and os.path.exists(ckp_file): os.remove(ckp_file)
 
-X: np.ndarray = tmodel.get_features( times[signal_index], expt_index, args )
+X: np.ndarray = tmodel.get_features( times[signal_index], expt_index, args)
 Y: np.ndarray = signals[signal_index]
 validation_split: int = int(0.8*X.shape[0])
 
@@ -48,7 +48,7 @@ print(f"Number of devices: {strategy.num_replicas_in_sync}")
 
 with strategy.scope():
     optimizer = tf.keras.optimizers.Adam(learning_rate=args.learning_rate)
-    model = tmodel.create_dense_model( X.shape[1], args.dropout_frac, args.nstreams )
+    model = tmodel.create_dense_model( X.shape[1], args.dropout_frac, args.nstreams)
     model.compile(optimizer, loss=args.loss)
 
 if os.path.exists(ckp_file): model.load_weights( ckp_file )

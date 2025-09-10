@@ -1,13 +1,9 @@
-
-import numpy as np
-import tensorflow as tf
-from tensorflow import keras
-from decimal import Decimal, getcontext
-import matplotlib.pyplot as plt
+import time, os, argparse, numpy as np
 from argparse import Namespace
+import tensorflow as tf
 from tensorflow.keras.callbacks import ModelCheckpoint
 from tensorflow.keras.optimizers import Adam
-import tmodel, argparse
+import tmodel
 
 parser = argparse.ArgumentParser( prog='timehascome', usage='python train.py --help', description='Trains time-aware CNN on demo data.')
 parser.add_argument('-s',  '--signal',     type=int, default=2)
@@ -21,20 +17,26 @@ parser.add_argument('-r',  '--refresh',    action='store_true')
 parser.add_argument('-lr', '--learning_rate', type=float, default=0.01)
 parser.add_argument('-pf', '--minp_factor',   type=float, default=1.0)
 parser.add_argument('-do', '--dropout_frac',  type=float, default=0.5)
-args: Namespace = tmodel.parse_args(parser)
 
-data=tmodel.get_demo_data()
+args: Namespace = tmodel.parse_args(parser)
+signal_index=args.signal
+expt_index=args.experiment
+nepochs=args.nepochs
+batch_size=args.batch_size
+dropout_frac=0.5
+nstreams=args.nstreams
+refresh=args.refresh
+loss=args.loss
+
+data = tmodel.get_demo_data()
 signals = data['signals']
 times = data['times']
+ckp_file = tmodel.get_ckp_file( expt_index, signal_index)
+if refresh and os.path.exists(ckp_file): os.remove(ckp_file)
 
-# each index is a different time series... pick an index from 0-99
-signal_index=2
-feature_type=0
-
-ckp_file = tmodel.get_ckp_file( feature_type, signal_index)
-X: np.ndarray = tmodel.get_features( times[signal_index], feature_type, args)
-Y = signals[signal_index]
-validation_split = int(0.8*X.shape[0])
+X: np.ndarray = tmodel.get_features( times[signal_index], expt_index, args)
+Y: np.ndarray = signals[signal_index]
+validation_split: int = int(0.8*X.shape[0])
 
 Xtrain=X[:validation_split]
 Xval=X[validation_split:]
@@ -43,34 +45,28 @@ Yval=Y[validation_split:]
 
 strategy = tf.distribute.MirroredStrategy()
 print(f"Number of devices: {strategy.num_replicas_in_sync}")
+
 with strategy.scope():
-    model = tmodel.create_streams_model(args.nfeatures,dropout_frac=0.5,n_streams=20)
-    model.compile(optimizer = tf.keras.optimizers.Adam(learning_rate=.01), loss='mae')
+    optimizer = tf.keras.optimizers.Adam(learning_rate=args.learning_rate)
+    model = tmodel.create_dense_model( X.shape[1], args.dropout_frac, args.nstreams)
+    model.compile(optimizer, loss=args.loss)
 
-checkpoint_callback = tf.keras.callbacks.ModelCheckpoint(ckp_file, save_best_only=True, save_weights_only=True, monitor='val_loss')
+if os.path.exists(ckp_file): model.load_weights( ckp_file )
+else: print( f"Checkpoint file '{ckp_file}' not found. Training from scratch." )
+ckp_args = dict( save_best_only=True, save_weights_only=True, monitor='val_loss' )
+ckp_callback = ModelCheckpoint(ckp_file, **ckp_args)
 
+t0 = time.time()
 history = model.fit(
     Xtrain,
     Ytrain,
-    epochs=10000,
+    epochs=nepochs,
     validation_data=(Xval,Yval),
-    callbacks=[checkpoint_callback],
-    batch_size=512,
+    callbacks=[ckp_callback],
+    batch_size=batch_size,
     shuffle=True
 )
+print( f"Completed training for {nepochs} epochs in {(time.time()-t0)/60:.2f} min.")
+print( f"Saved checkpoint to '{ckp_file}'")
 
 
-# plot
-
-model.load_weights(ckp_file)
-p0=model.predict(Xtrain,batch_size=256)
-p1=model.predict(Xval,batch_size=256)
-
-plt.figure(figsize=(15,5))
-plt.plot(times[signal_index],Y,label='truth')
-plt.plot(times[signal_index][:validation_split],p0[:,0],label='train prediction')
-plt.plot(times[signal_index][validation_split:],p1[:,0],label='val prediction')
-
-
-plt.savefig('timepred37.png')
-plt.close()
