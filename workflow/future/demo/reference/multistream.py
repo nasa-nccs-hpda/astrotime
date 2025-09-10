@@ -2,11 +2,6 @@
 import numpy as np
 import tensorflow as tf
 from tensorflow import keras
-import pickle
-from tqdm import tqdm
-import random
-import os
-from scipy.stats import norm
 from decimal import Decimal, getcontext
 import matplotlib.pyplot as plt
 
@@ -16,8 +11,6 @@ def float_to_binary_precise(num, places=64):
     integer_part = int(decimal_num)
     fractional_part = decimal_num - integer_part
 
-    integer_binary = bin(integer_part)[2:]  # remove '0b' prefix
-
     fractional_binary = ""
     for _ in range(places):
         fractional_part *= 2
@@ -25,7 +18,6 @@ def float_to_binary_precise(num, places=64):
         fractional_binary += str(bit)
         fractional_part -= bit
 
-    #return f"{integer_binary}.{fractional_binary}"
     return fractional_binary
 
 def float_to_binary_array_not_IEEE(x):
