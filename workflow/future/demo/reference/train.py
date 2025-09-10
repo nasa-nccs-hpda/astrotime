@@ -38,7 +38,7 @@ Yval=Y[validation_split:]
 strategy = tf.distribute.MirroredStrategy()
 print(f"Number of devices: {strategy.num_replicas_in_sync}")
 with strategy.scope():
-    model = tmodel.create_streams_model( args.nfeatures, dropout_frac=args.dropout_frac, n_streams=args.nstreams )
+    model = tmodel.create_streams_model( X.shape[1], dropout_frac=args.dropout_frac, n_streams=args.nstreams )
     model.compile( optimizer=tf.keras.optimizers.Adam( learning_rate=args.learning_rate ), loss=args.loss )
 
 ckp_file = tmodel.get_ckp_file( feature_type, signal_index)
