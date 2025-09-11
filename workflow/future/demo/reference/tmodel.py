@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 import tensorflow as tf
 from tensorflow.keras.callbacks import ModelCheckpoint
 from tensorflow.keras.optimizers import Adam
-data_dir = "/explore/nobackup/projects/ilab/data/astrotime/demo"
+data_dir = os.environ.get('ASTROTIME_DATA_DIR', "/explore/nobackup/projects/ilab/data/astrotime/demo")
 args_path = f"{data_dir}/args.pkl"
 
 def get_demo_data( ):
