@@ -61,4 +61,4 @@ history = model.fit(
     shuffle=True
 )
 print( f"Completed training for {args.nepochs} epochs in {(time.time()-t0)/60:.2f} min.")
-print( f"Saved checkpoint to '{ckp_file}'")
+print( f"Saved checkpoint to '{ckp_file}'  ")
