@@ -32,7 +32,8 @@ def load_args( ) -> Namespace:
 	afile = open(args_path, 'rb')
 	args = pickle.load(afile)
 	afile.close()
-	print(f"Running with args: {args}")
+	print(f" ***** Running with args: {args}")
+	print(f" ***** log_file: {log_file}")
 	return args
 
 def tnorm(x: np.ndarray, dim: int=0) -> np.ndarray:
