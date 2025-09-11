@@ -11,6 +11,19 @@ log_file = f"{data_dir}/astrotime.log"
 args_path = f"{data_dir}/args.pkl"
 logging.basicConfig( filename=log_file, level=logging.INFO,  format='%(asctime)s - %(levelname)s - %(message)s',  filemode='w' )
 
+def float_to_binary_str( feature: float, places: int ) -> str:
+	fractional_binary = ""
+	for _ in range(places):
+		feature *= 2
+		bit = int(feature)
+		fractional_binary += str(bit)
+		feature -= bit
+	return fractional_binary
+
+def float_to_binary_array(x: float, places: int) -> np.array:
+	binary_str: str = float_to_binary_str( x, places )
+	return np.array( [int(bit) for bit in binary_str], dtype=np.float64 )
+
 def smooth( data: np.ndarray, window_width: int ) -> np.ndarray:
 	if window_width > 1:
 		cumsum_vec = np.cumsum( np.insert(data, 0, 0) )
@@ -163,5 +176,7 @@ def get_features( T: np.ndarray, feature_type: int, args: Namespace ) -> np.ndar
 			omega = omega*sfactor
 		print(f"Using sfactor: {sfactor}, T{T.shape}, nf={args.nfeatures}, Pmin={2*math.pi/omega}, mpf={args.minp_factor}")
 		return np.stack(features, axis=1)
+	elif feature_type == 2:
+		return np.stack( [ float_to_binary_array(x,args.nfeatures) for x in ts.tolist() ], axis=0 )
 	else:
 		raise ValueError(f"Invalid feature_type: {feature_type}")
