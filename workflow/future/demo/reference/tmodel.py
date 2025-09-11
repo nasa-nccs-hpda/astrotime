@@ -26,8 +26,8 @@ def float_to_binary_array(x: float, places: int) -> np.array:
 
 def smooth( data: np.ndarray, window_width: int ) -> np.ndarray:
 	if window_width > 1:
-		cumsum_vec = np.cumsum( np.insert(data, 0, 0) )
-		return (cumsum_vec[window_width:] - cumsum_vec[:-window_width]) / window_width
+		cumsum_vec = np.cumsum( np.insert(data, 0, 0, axis=0), axis=0 )
+		return (cumsum_vec[window_width:,:] - cumsum_vec[:-window_width,:]) / window_width
 	else: return data
 
 def get_demo_data( ):
@@ -161,11 +161,8 @@ def get_features( T: np.ndarray, feature_type: int, args: Namespace ) -> np.ndar
 	dt = T.max()/T.shape[-1]
 	ts: np.ndarray = T/(T.max()+dt)
 	if feature_type == 0:
-		for x in ts.tolist():
-			binary_str: str = float_to_binary(x, args.nfeatures)
-			bin_feature = np.array( [int(bit) for bit in binary_str], dtype=np.float64 )
-			features.append( smooth( bin_feature, args.smooth_win ) )
-		return np.stack(features, axis=0)
+		features: List[np.ndarray] = [ np.array( [int(bit) for bit in float_to_binary(x, args.nfeatures)], dtype=np.float64 ) for x in ts.tolist() ]
+		return smooth( np.stack(features, axis=0), args.smooth_win )
 	elif feature_type == 1:
 		pmin = 2*args.minp_factor/T.shape[-1]
 		sfactor = math.exp( math.log(1/pmin)/args.nfeatures )
