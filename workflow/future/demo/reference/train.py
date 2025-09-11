@@ -53,6 +53,7 @@ ckp_args = dict( save_best_only=True, save_weights_only=True, monitor='val_loss'
 checkpoint_callback = tf.keras.callbacks.ModelCheckpoint( ckp_file, **ckp_args )
 
 t0 = time.time()
+print( f"Fit: Xtrain{Xtrain.shape} Ytrain{Ytrain.shape} T{T.shape} X{X.shape} Y{Y.shape} " )
 history = model.fit(
     Xtrain,
     Ytrain,
