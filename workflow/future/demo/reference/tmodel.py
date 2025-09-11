@@ -1,4 +1,4 @@
-import time, os, math, pickle, numpy as np
+import time, os, math, pickle, logging, numpy as np
 from argparse import Namespace
 from typing import List, Optional, Dict, Type, Union, Tuple
 import matplotlib.pyplot as plt
@@ -6,10 +6,15 @@ import tensorflow as tf
 from tensorflow.keras.callbacks import ModelCheckpoint
 from tensorflow.keras.optimizers import Adam
 data_dir = os.environ.get('ASTROTIME_DATA_DIR', "/explore/nobackup/projects/ilab/data/astrotime/demo")
+log_file = f"{data_dir}/astrotime.log"
 args_path = f"{data_dir}/args.pkl"
+logging.basicConfig( filename=log_file, level=logging.INFO,  format='%(asctime)s - %(levelname)s - %(message)s',  filemode='w' )
 
 def get_demo_data( ):
 	return np.load(f'{data_dir}/jordan_data.npz', allow_pickle=True)
+
+def log( msg: str ):
+	logging.info( msg )
 
 def get_ckp_file( args: Namespace ):
 	return f"{data_dir}/streamed_time_predict.s{args.signal}.f{args.feature_type}.nf{args.nfeatures}.bs{args.batch_size}.weights.h5"
@@ -19,7 +24,8 @@ def parse_args( parser ) -> Namespace:
 	afile = open(args_path, 'wb')
 	pickle.dump(args, afile)
 	afile.close()
-	print(f"\nRunning with args: {args}\n")
+	print(f" ***** Running with args: {args}")
+	print(f" ***** log_file: {log_file}")
 	return args
 
 def load_args( ) -> Namespace:
@@ -152,8 +158,11 @@ def alpha( ip: int, ipsel: int ):
 	return 1.0 if ip == ipsel else 0.05
 
 def select_feature( plots: List[plt.Line2D], fig, sval: float):
+	log( f"Selecting feature {sval:.3f}, isel={int(sval)} " )
 	for ip in range(len(plots)):
-		plots[ip].set_alpha( alpha(ip,int(sval)) )
+		a = alpha(ip,int(sval))
+		log(f"  ** f{ip}: a= {a:.3f} ")
+		plots[ip].set_alpha( a )
 	fig.canvas.draw_idle()
 
 
