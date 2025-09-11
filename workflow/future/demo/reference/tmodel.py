@@ -124,15 +124,16 @@ def create_dense_model(nfeatures: int, dropout_frac: float, n_streams: int ):
 	model = tf.keras.Model(inputs=times_input, outputs=outputs)
 	return model
 
-def float_to_binary(fval: float, places=64) -> str:
+def float_to_binary(fval: float, places) -> str:
 	return bin(int(fval * pow(2, places)))[2:].rjust(places, '0')
 
 def get_features( T: np.ndarray, feature_type: int, args: Namespace ) -> np.ndarray:
 	features = []
-	ts: np.ndarray = T/T.max()
+	dt = T.max()/T.shape[-1]
+	ts: np.ndarray = T/(T.max()+dt)
 	if feature_type == 0:
 		for x in ts.tolist():
-			binary_str: str = float_to_binary(x, places=args.nfeatures)
+			binary_str: str = float_to_binary(x, args.nfeatures)
 			features.append( np.array([int(bit) for bit in binary_str], dtype=np.float64) )
 		return np.stack(features, axis=0)
 	elif feature_type == 1:
