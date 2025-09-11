@@ -11,6 +11,12 @@ log_file = f"{data_dir}/astrotime.log"
 args_path = f"{data_dir}/args.pkl"
 logging.basicConfig( filename=log_file, level=logging.INFO,  format='%(asctime)s - %(levelname)s - %(message)s',  filemode='w' )
 
+def smooth( data: np.ndarray, window_width: int ) -> np.ndarray:
+	if window_width > 0:
+		cumsum_vec = np.cumsum( np.insert(data, 0, 0) )
+		return (cumsum_vec[window_width:] - cumsum_vec[:-window_width]) / window_width
+	else: return data
+
 def get_demo_data( ):
 	return np.load(f'{data_dir}/jordan_data.npz', allow_pickle=True)
 
@@ -144,7 +150,8 @@ def get_features( T: np.ndarray, feature_type: int, args: Namespace ) -> np.ndar
 	if feature_type == 0:
 		for x in ts.tolist():
 			binary_str: str = float_to_binary(x, args.nfeatures)
-			features.append( np.array([int(bit) for bit in binary_str], dtype=np.float64) )
+			bin_feature = np.array( [int(bit) for bit in binary_str], dtype=np.float64 )
+			features.append( smooth( bin_feature, args.smooth_win ) )
 		return np.stack(features, axis=0)
 	elif feature_type == 1:
 		pmin = 2*args.minp_factor/T.shape[-1]
@@ -158,21 +165,3 @@ def get_features( T: np.ndarray, feature_type: int, args: Namespace ) -> np.ndar
 		return np.stack(features, axis=1)
 	else:
 		raise ValueError(f"Invalid feature_type: {feature_type}")
-
-def alpha( ip: int, ipsel: int ):
-	return 1.0 if ip == ipsel else 0.05
-
-def select_feature( plots: List[plt.Line2D], fig, sval: float):
-	try:
-		log(f"Selecting feature {sval:.3f}, isel={int(sval)} ")
-		for ip in range(len(plots)):
-			a = alpha(ip, int(sval))
-			log(f"  ** f{ip}: a= {a:.3f} ")
-			plots[ip].set_alpha(a)
-		fig.canvas.draw_idle()
-	except:
-		error( f"Error while selecting feature:  " )
-
-
-
-
