@@ -3,6 +3,7 @@ from argparse import Namespace
 from typing import List, Optional, Dict, Type, Union, Tuple
 import matplotlib.pyplot as plt
 import tensorflow as tf
+from pexpect.pxssh import ExceptionPxssh
 from tensorflow.keras.callbacks import ModelCheckpoint
 from tensorflow.keras.optimizers import Adam
 data_dir = os.environ.get('ASTROTIME_DATA_DIR', "/explore/nobackup/projects/ilab/data/astrotime/demo")
@@ -15,6 +16,9 @@ def get_demo_data( ):
 
 def log( msg: str ):
 	logging.info( msg )
+
+def error( msg: str ):
+	logging.exception( f"{msg}" )
 
 def get_ckp_file( args: Namespace ):
 	return f"{data_dir}/streamed_time_predict.s{args.signal}.f{args.feature_type}.nf{args.nfeatures}.bs{args.batch_size}.weights.h5"
@@ -159,12 +163,16 @@ def alpha( ip: int, ipsel: int ):
 	return 1.0 if ip == ipsel else 0.05
 
 def select_feature( plots: List[plt.Line2D], fig, sval: float):
-	log( f"Selecting feature {sval:.3f}, isel={int(sval)} " )
-	for ip in range(len(plots)):
-		a = alpha(ip,int(sval))
-		log(f"  ** f{ip}: a= {a:.3f} ")
-		plots[ip].set_alpha( a )
-	fig.canvas.draw_idle()
+	try:
+		log(f"Selecting feature {sval:.3f}, isel={int(sval)} ")
+		for ip in range(len(plots)):
+			a = alpha(ip, int(sval))
+			log(f"  ** f{ip}: a= {a:.3f} ")
+			plots[ip].set_alpha(a)
+		fig.canvas.draw_idle()
+	except:
+		error( f"Error while selecting feature:  " )
+
 
 
 
