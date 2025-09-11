@@ -41,7 +41,7 @@ with strategy.scope():
     model = tmodel.create_streams_model( X.shape[1], dropout_frac=args.dropout_frac, n_streams=args.nstreams )
     model.compile( optimizer=tf.keras.optimizers.Adam( learning_rate=args.learning_rate ), loss=args.loss )
 
-ckp_file = tmodel.get_ckp_file( feature_type, signal_index)
+ckp_file = tmodel.get_ckp_file( args )
 if args.refresh and os.path.exists(ckp_file): os.remove(ckp_file)
 if os.path.exists(ckp_file): model.load_weights(ckp_file)
 else: print( f"Checkpoint file '{ckp_file}' not found. Training from scratch." )

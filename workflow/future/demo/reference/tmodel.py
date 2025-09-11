@@ -2,7 +2,6 @@ import time, os, math, pickle, numpy as np
 from argparse import Namespace
 from typing import List, Optional, Dict, Type, Union, Tuple
 import matplotlib.pyplot as plt
-from decimal import getcontext, Decimal
 import tensorflow as tf
 from tensorflow.keras.callbacks import ModelCheckpoint
 from tensorflow.keras.optimizers import Adam
@@ -12,8 +11,8 @@ args_path = f"{data_dir}/args.pkl"
 def get_demo_data( ):
 	return np.load(f'{data_dir}/jordan_data.npz', allow_pickle=True)
 
-def get_ckp_file( expt_index, signal_index ):
-	return f"{data_dir}/streamed_time_predict.e{expt_index}.s{signal_index}.weights.h5"
+def get_ckp_file( args: Namespace ):
+	return f"{data_dir}/streamed_time_predict.s{args.signal}.f{args.feature_type}.nf{args.nfeatures}.bs{args.batch_size}.weights.h5"
 
 def parse_args( parser ) -> Namespace:
 	args: Namespace = parser.parse_args()
