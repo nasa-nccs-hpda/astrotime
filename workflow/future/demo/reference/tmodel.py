@@ -12,7 +12,7 @@ args_path = f"{data_dir}/args.pkl"
 logging.basicConfig( filename=log_file, level=logging.INFO,  format='%(asctime)s - %(levelname)s - %(message)s',  filemode='w' )
 
 def smooth( data: np.ndarray, window_width: int ) -> np.ndarray:
-	if window_width > 0:
+	if window_width > 1:
 		cumsum_vec = np.cumsum( np.insert(data, 0, 0) )
 		return (cumsum_vec[window_width:] - cumsum_vec[:-window_width]) / window_width
 	else: return data
