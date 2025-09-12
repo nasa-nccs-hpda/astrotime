@@ -31,6 +31,7 @@ def smooth( data: np.ndarray, window_width: int ) -> np.ndarray:
 		print(f"Smoothed shape: {smoothed.shape}, data shape: {data.shape}")
 		np.insert(smoothed, 0, data[0], axis=0)
 		np.append(smoothed,  data[-1], axis=0)
+		print(f"smooth result shape: {smoothed.shape}")
 		return smoothed
 	else: return data
 
