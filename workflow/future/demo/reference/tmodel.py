@@ -29,8 +29,8 @@ def smooth( data: np.ndarray, window_width: int ) -> np.ndarray:
 		cumsum_vec: np.ndarray = np.cumsum( np.insert(data, 0, 0, axis=0), axis=0 )
 		smoothed: np.ndarray = (cumsum_vec[window_width:,:] - cumsum_vec[:-window_width,:]) / window_width
 	#	print(f"Smoothed shape: {smoothed.shape}, data shape: {data.shape}")
-		np.insert(smoothed, 0, data[0], axis=0)
-		np.append(smoothed,  data[-1,:][np.newaxis,:], axis=0)
+		smoothed = np.insert(smoothed, 0, data[0], axis=0)
+		smoothed = np.append(smoothed,  data[-1,:][np.newaxis,:], axis=0)
 	#	print(f"smooth result shape: {smoothed.shape}")
 		return smoothed
 	else: return data
