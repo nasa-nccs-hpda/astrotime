@@ -182,9 +182,9 @@ def get_features( T: np.ndarray, feature_type: int, args: Namespace ) -> np.ndar
 		return np.stack(features, axis=1)
 	elif feature_type == 3:
 		omega = 2*math.pi
-		for ip in range(args.nfeatures):
+		for ip in range(args.nfeatures//2):
 			features.append( np.sin(omega*ts) )
-	#		features.append( np.cos(omega*ts) )
+			features.append( np.cos(omega*ts) )
 			omega = omega*2
 		fmin = omega/(2*math.pi)
 		print(f"Using fmin={fmin}, Pmin={1/fmin}, nf={args.nfeatures}, T{T.shape}")
