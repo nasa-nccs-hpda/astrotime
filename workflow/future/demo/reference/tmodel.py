@@ -143,8 +143,8 @@ def float_to_binary_array(x: float, places: int) -> np.array:
 
 def get_features( T: np.ndarray, feature_type: int, args: Namespace ) -> np.ndarray:
 	features = []
-	dt = T.max()/T.shape[-1]
-	ts: np.ndarray = T/(T.max()+dt)
+	tm = T[-1]*(1+(1.0/T.size))
+	ts: np.ndarray = T/tm
 	if feature_type == 0:
 		return np.stack( [ float_to_binary_array(x,args.nfeatures) for x in ts.tolist() ], axis=0 )
 	elif feature_type == 1:
