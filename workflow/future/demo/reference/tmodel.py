@@ -167,7 +167,7 @@ def get_features( T: np.ndarray, feature_type: int, args: Namespace ) -> np.ndar
 	ts: np.ndarray = T/(T.max()+dt)
 	if feature_type == 0:
 		features: List[np.ndarray] = [ np.array( [int(bit) for bit in float_to_binary(x, args.nfeatures)], dtype=np.float64 ) for x in ts.tolist() ]
-		return smooth( np.stack(features, axis=0), args.smooth_win )
+		return np.stack(features, axis=0)
 	elif feature_type == 1:
 		return np.stack( [ float_to_binary_array(x,args.nfeatures) for x in ts.tolist() ], axis=0 )
 	elif feature_type == 2:
