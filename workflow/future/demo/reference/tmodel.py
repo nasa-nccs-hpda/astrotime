@@ -11,30 +11,6 @@ log_file = f"{data_dir}/astrotime.log"
 args_path = f"{data_dir}/args.pkl"
 logging.basicConfig( filename=log_file, level=logging.INFO,  format='%(asctime)s - %(levelname)s - %(message)s',  filemode='w' )
 
-def float_to_binary_str( feature: float, places: int ) -> str:
-	fractional_binary = ""
-	for _ in range(places):
-		feature *= 2
-		bit = int(feature)
-		fractional_binary += str(bit)
-		feature -= bit
-	return fractional_binary
-
-def float_to_binary_array(x: float, places: int) -> np.array:
-	binary_str: str = float_to_binary_str( x, places )
-	return np.array( [int(bit) for bit in binary_str], dtype=np.float64 )
-
-def smooth( data: np.ndarray, window_width: int ) -> np.ndarray:
-	if window_width > 1:
-		cumsum_vec: np.ndarray = np.cumsum( np.insert(data, 0, 0, axis=0), axis=0 )
-		smoothed: np.ndarray = (cumsum_vec[window_width:,:] - cumsum_vec[:-window_width,:]) / window_width
-	#	print(f"Smoothed shape: {smoothed.shape}, data shape: {data.shape}")
-		smoothed = np.insert(smoothed, 0, data[0], axis=0)
-		smoothed = np.append(smoothed,  data[-1,:][np.newaxis,:], axis=0)
-	#	print(f"smooth result shape: {smoothed.shape}")
-		return smoothed
-	else: return data
-
 def get_demo_data( ):
 	return np.load(f'{data_dir}/jordan_data.npz', allow_pickle=True)
 
@@ -44,8 +20,8 @@ def log( msg: str ):
 def error( msg: str ):
 	logging.exception( f"{msg}" )
 
-def get_ckp_file( args: Namespace ):
-	return f"{data_dir}/streamed_time_predict.s{args.signal}.f{args.feature_type}.nf{args.nfeatures}.bs{args.batch_size}.weights.h5"
+def get_ckp_file( args: Namespace, cptype: str ):
+	return f"{data_dir}/streamed_time_predict.s{args.signal}.f{args.feature_type}.nf{args.nfeatures}.bs{args.batch_size}.{cptype}.weights.h5"
 
 def parse_args( parser ) -> Namespace:
 	args: Namespace = parser.parse_args()
@@ -161,32 +137,21 @@ def create_dense_model(nfeatures: int, dropout_frac: float, n_streams: int ):
 def float_to_binary(fval: float, places) -> str:
 	return bin(int(fval * pow(2, places)))[2:].rjust(places, '0')
 
+def float_to_binary_array(x: float, places: int) -> np.array:
+	binary_str: str = float_to_binary( x, places )
+	return np.array( [int(bit) for bit in binary_str], dtype=np.float64 )
+
 def get_features( T: np.ndarray, feature_type: int, args: Namespace ) -> np.ndarray:
 	features = []
 	dt = T.max()/T.shape[-1]
 	ts: np.ndarray = T/(T.max()+dt)
 	if feature_type == 0:
-		features: List[np.ndarray] = [ np.array( [int(bit) for bit in float_to_binary(x, args.nfeatures)], dtype=np.float64 ) for x in ts.tolist() ]
-		return np.stack(features, axis=0)
-	elif feature_type == 1:
 		return np.stack( [ float_to_binary_array(x,args.nfeatures) for x in ts.tolist() ], axis=0 )
-	elif feature_type == 2:
-		pmin = 2*args.minp_factor/T.shape[-1]
-		sfactor = math.exp( math.log(1/pmin)/args.nfeatures )
-		omega = 2*math.pi
-		for ip in range(args.nfeatures):
-			features.append( np.sin(omega*ts) )
-			features.append( np.cos(omega*ts) )
-			omega = omega*sfactor
-		print(f"Using sfactor: {sfactor}, T{T.shape}, nf={args.nfeatures}, Pmin={2*math.pi/omega}, mpf={args.minp_factor}")
-		return np.stack(features, axis=1)
-	elif feature_type == 3:
+	elif feature_type == 1:
 		omega = 2*math.pi
 		for ip in range(args.nfeatures):
 			features.append( np.sin(omega*ts) )
 			omega = omega*2
-		fmin = omega/(2*math.pi)
-		print(f"Using fmin={fmin}, Pmin={1/fmin}, nf={args.nfeatures}, T{T.shape}")
 		return np.stack(features, axis=1)
 	else:
 		raise ValueError(f"Invalid feature_type: {feature_type}")

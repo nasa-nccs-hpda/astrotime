@@ -45,12 +45,14 @@ with strategy.scope():
     model = tmodel.create_streams_model( X.shape[1], dropout_frac=args.dropout_frac, n_streams=args.nstreams )
     model.compile( optimizer=tf.keras.optimizers.Adam( learning_rate=args.learning_rate ), loss=args.loss )
 
-ckp_file = tmodel.get_ckp_file( args )
-if args.refresh and os.path.exists(ckp_file): os.remove(ckp_file)
-if os.path.exists(ckp_file): model.load_weights(ckp_file)
-else: print( f"Checkpoint file '{ckp_file}' not found. Training from scratch." )
-ckp_args = dict( save_best_only=True, save_weights_only=True, monitor='val_loss' )
-checkpoint_callback = tf.keras.callbacks.ModelCheckpoint( ckp_file, **ckp_args )
+best_ckp_file = tmodel.get_ckp_file( args, "best" )
+latest_ckp_file = tmodel.get_ckp_file( args, "latest" )
+if args.refresh and os.path.exists(best_ckp_file): os.remove(best_ckp_file)
+if os.path.exists(best_ckp_file): model.load_weights(best_ckp_file)
+else: print( f"Checkpoint file '{best_ckp_file}' not found. Training from scratch." )
+
+ckp_callback_best   = tf.keras.callbacks.ModelCheckpoint( best_ckp_file, save_best_only=True, save_weights_only=True, monitor='val_loss' )
+ckp_callback_latest = tf.keras.callbacks.ModelCheckpoint( latest_ckp_file, save_weights_only=True )
 
 t0 = time.time()
 print( f"Fit: Xtrain{Xtrain.shape} Ytrain{Ytrain.shape} Xval{Xval.shape} Yval{Yval.shape} T{T.shape} X{X.shape} Y{Y.shape} " )
@@ -59,9 +61,9 @@ history = model.fit(
     Ytrain,
     epochs=args.nepochs,
     validation_data=(Xval,Yval),
-    callbacks=[checkpoint_callback],
+    callbacks=[ckp_callback_best, ckp_callback_latest],
     batch_size=args.batch_size,
     shuffle=True
 )
 print( f"Completed training for {args.nepochs} epochs in {(time.time()-t0)/60:.2f} min.")
-print( f"Saved checkpoint to '{ckp_file}'  ")
+print( f"Saving checkpoints to '{best_ckp_file}' and '{latest_ckp_file}' ")
