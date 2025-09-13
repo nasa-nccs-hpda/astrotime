@@ -149,9 +149,9 @@ def get_features( T: np.ndarray, feature_type: int, args: Namespace ) -> np.ndar
 		return np.stack( [ float_to_binary_array(x,args.nfeatures) for x in ts.tolist() ], axis=0 )
 	elif feature_type == 1:
 		omega = 2*math.pi
-		for ip in range(args.nfeatures//2):
-			features.append( np.cos(omega*ts) )
-			features.append( np.sin(omega*ts) )
+		for ip in range(args.nfeatures):
+			features.append(0.5 + 0.5*np.sin(omega*ts))
+			features.append(0.5 + 0.5*np.cos(omega*ts))
 			omega = omega*2
 		return np.stack(features, axis=1)
 	else:
