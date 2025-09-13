@@ -147,12 +147,12 @@ def get_features( T: np.ndarray, feature_type: int, args: Namespace ) -> np.ndar
 	ts: np.ndarray = T/tm
 	if feature_type == 0:
 		return np.stack( [ float_to_binary_array(x,args.nfeatures) for x in ts.tolist() ], axis=0 )
-	elif feature_type == 1:
+	elif feature_type in (1,2):
 		omega = 2*math.pi
 		for ip in range(args.nfeatures):
-			features.append(0.5 + 0.5*np.sin(omega*ts))
-			features.append(0.5 + 0.5*np.cos(omega*ts))
+			features.append(np.sin(omega*ts))
 			omega = omega*2
-		return np.stack(features, axis=1)
+		sf = np.stack(features, axis=1)
+		return sf if (feature_type==1) else np.where(sf>0, 1, 0)
 	else:
 		raise ValueError(f"Invalid feature_type: {feature_type}")
