@@ -54,7 +54,7 @@ if os.path.exists(best_ckp_file): model.load_weights(best_ckp_file)
 else: print( f"Checkpoint file '{best_ckp_file}' not found. Training from scratch." )
 
 ckp_callback_best   = tf.keras.callbacks.ModelCheckpoint( best_ckp_file, save_best_only=True, save_weights_only=True, monitor='val_loss' )
-ckp_callback_latest = tf.keras.callbacks.ModelCheckpoint( latest_ckp_file, save_weights_only=True )
+ckp_callback_latest = tf.keras.callbacks.ModelCheckpoint( latest_ckp_file, save_freq=10*args.batch_size, save_weights_only=True )
 
 t0 = time.time()
 print( f"Fit: Xtrain{Xtrain.shape} Ytrain{Ytrain.shape} Xval{Xval.shape} Yval{Yval.shape} T{T.shape} X{X.shape} Y{Y.shape} " )
