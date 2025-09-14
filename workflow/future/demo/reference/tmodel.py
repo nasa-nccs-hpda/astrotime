@@ -1,4 +1,4 @@
-import time, os, math, pickle, logging, numpy as np
+import time, os, math, pickle, logging, numpy as np, shutil
 from argparse import Namespace
 from typing import List, Optional, Dict, Type, Union, Tuple
 import matplotlib.pyplot as plt
@@ -8,6 +8,7 @@ from tensorflow.keras.callbacks import ModelCheckpoint
 from tensorflow.keras.optimizers import Adam
 data_dir = os.environ.get('ASTROTIME_DATA_DIR', "/explore/nobackup/projects/ilab/data/astrotime/demo")
 log_file = f"{data_dir}/astrotime.log"
+current_args_path = f"{data_dir}/args.pkl"
 logging.basicConfig( filename=log_file, level=logging.INFO,  format='%(asctime)s - %(levelname)s - %(message)s',  filemode='w' )
 
 def args_path( signal: int, ftype: int ) -> str:
@@ -27,15 +28,18 @@ def get_ckp_file( args: Namespace, cptype: str ):
 
 def parse_args( parser  ) -> Namespace:
 	args: Namespace = parser.parse_args()
-	afile = open( args_path(args.signal,args.feature_type), 'wb' )
+	apath = args_path(args.signal,args.feature_type)
+	afile = open( apath, 'wb' )
 	pickle.dump(args, afile)
 	afile.close()
+	shutil.copyfile( apath, current_args_path )
 	print(f" ***** Running with args: {args}")
 	print(f" ***** log_file: {log_file}")
 	return args
 
-def load_args( signal: int, ftype: int ) -> Namespace:
-	afile = open(args_path(signal,ftype), 'rb')
+def load_args( signal: int = -1, ftype: int = -1 ) -> Namespace:
+	apath = current_args_path if ftype < 0 else args_path(signal,ftype)
+	afile = open(apath, 'rb')
 	args = pickle.load(afile)
 	afile.close()
 	print(f" ***** Running with args: {args}")
