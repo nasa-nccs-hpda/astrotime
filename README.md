@@ -432,9 +432,9 @@ sbatch --mem-per-cpu=10240 -G1 -c10 -t01:00:00 -J astrotime --wrap="time $your_s
 
 ### Tensorflow Environment:
 
-    >   * mamba create -n astrotime.tf ninja python=3.10
-    >   * mamba activate astrotime.tf
-    >   * mamba -c conda-forge tensorflow-gpu numpy jupyterlab==4.0.13 ipywidgets==7.8.4 cuda-python jupyterlab_widgets ipykernel==6.29 ipympl ipython==8.26 xarray netCDF4 scikit-learn
+    >   * mamba create -n astrotime.hvtf 
+    >   * mamba activate astrotime.hvtf
+    >   * mamba install -c conda-forge tensorflow-gpu numpy cuda-python scikit-learn xarray pyviz hvplot
 
 ## Dataset Preparation
 
