@@ -8,8 +8,10 @@ from tensorflow.keras.callbacks import ModelCheckpoint
 from tensorflow.keras.optimizers import Adam
 data_dir = os.environ.get('ASTROTIME_DATA_DIR', "/explore/nobackup/projects/ilab/data/astrotime/demo")
 log_file = f"{data_dir}/astrotime.log"
-args_path = f"{data_dir}/args.pkl"
 logging.basicConfig( filename=log_file, level=logging.INFO,  format='%(asctime)s - %(levelname)s - %(message)s',  filemode='w' )
+
+def args_path( signal: int, ftype: int ) -> str:
+	return f"{data_dir}/args-{signal}-{ftype}.pkl"
 
 def get_demo_data( ):
 	return np.load(f'{data_dir}/jordan_data.npz', allow_pickle=True)
@@ -23,17 +25,17 @@ def error( msg: str ):
 def get_ckp_file( args: Namespace, cptype: str ):
 	return f"{data_dir}/streamed_time_predict.s{args.signal}.f{args.feature_type}.nf{args.nfeatures}.bs{args.batch_size}.{cptype}.weights.h5"
 
-def parse_args( parser ) -> Namespace:
+def parse_args( parser  ) -> Namespace:
 	args: Namespace = parser.parse_args()
-	afile = open(args_path, 'wb')
+	afile = open( args_path(args.signal,args.feature_type), 'wb' )
 	pickle.dump(args, afile)
 	afile.close()
 	print(f" ***** Running with args: {args}")
 	print(f" ***** log_file: {log_file}")
 	return args
 
-def load_args( ) -> Namespace:
-	afile = open(args_path, 'rb')
+def load_args( signal: int, ftype: int ) -> Namespace:
+	afile = open(args_path(signal,ftype), 'rb')
 	args = pickle.load(afile)
 	afile.close()
 	print(f" ***** Running with args: {args}")
