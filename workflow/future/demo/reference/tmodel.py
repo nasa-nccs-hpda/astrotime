@@ -160,5 +160,13 @@ def get_features( T: np.ndarray, feature_type: int, args: Namespace ) -> np.ndar
 			omega = omega*2
 		sf = np.stack(features, axis=1)
 		return sf if (feature_type==1) else np.where(sf>0, 1, 0)
+	elif feature_type in (3,4):
+		omega = 2*math.pi
+		for ip in range(args.nfeatures//2):
+			features.append(np.sin(omega*ts))
+			features.append(np.cos(omega*ts))
+			omega = omega*2
+		sf = np.stack(features, axis=1)
+		return sf if (feature_type==3) else np.where(sf>0, 1, 0)
 	else:
 		raise ValueError(f"Invalid feature_type: {feature_type}")
