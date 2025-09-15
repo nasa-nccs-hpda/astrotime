@@ -434,7 +434,7 @@ sbatch --mem-per-cpu=10240 -G1 -c10 -t01:00:00 -J astrotime --wrap="time $your_s
 
     >   * mamba create -n astrotime.hvtf python=3.10
     >   * mamba activate astrotime.hvtf
-    >   * mamba install -c conda-forge tensorflow-gpu numpy xarray hvplot scikit-learn netCDF4 jupyterlab ipywidgets jupyterlab_widgets
+    >   * mamba install -c conda-forge tensorflow-gpu numpy xarray hvplot scikit-learn netCDF4 jupyterlab ipywidgets jupyterlab_widgets shap
 
 ## Dataset Preparation
 
