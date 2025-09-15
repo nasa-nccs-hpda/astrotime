@@ -1,11 +1,5 @@
 import time, os, math, pickle, logging, numpy as np, shutil
 from argparse import Namespace
-from typing import List, Optional, Dict, Type, Union, Tuple
-import matplotlib.pyplot as plt
-import tensorflow as tf
-from pexpect.pxssh import ExceptionPxssh
-from tensorflow.keras.callbacks import ModelCheckpoint
-from tensorflow.keras.optimizers import Adam
 data_dir = os.environ.get('ASTROTIME_DATA_DIR', "/explore/nobackup/projects/ilab/data/astrotime/demo")
 log_file = f"{data_dir}/astrotime.log"
 current_args_path = f"{data_dir}/args.pkl"
@@ -53,60 +47,7 @@ def tnorm(x: np.ndarray, dim: int=0) -> np.ndarray:
 
 
 def create_streams_model(nfeatures, dropout_frac, n_streams):
-	times_input = tf.keras.Input(shape=(nfeatures,), name="times_input")
-
-	def apply_relpos(xx):
-		x = tf.keras.layers.Dense(512, activation='elu')(xx)
-		x = tf.keras.layers.Dropout(dropout_frac)(x)
-		x = tf.keras.layers.BatchNormalization()(x)
-		x = tf.keras.layers.Dense(512, activation='elu')(x)
-		x = tf.keras.layers.Dropout(dropout_frac)(x)
-		x = tf.keras.layers.BatchNormalization()(x)
-		x = tf.keras.layers.Dense(512, activation='elu')(x)
-		x = tf.keras.layers.Dropout(dropout_frac)(x)
-		x = tf.keras.layers.BatchNormalization()(x)
-		x = tf.keras.layers.Dense(512, activation='elu')(x)
-		x = tf.keras.layers.Dropout(dropout_frac)(x)
-		x = tf.keras.layers.BatchNormalization()(x)
-		x = tf.keras.layers.Dense(512, activation='elu')(x)
-		x = tf.keras.layers.Dropout(dropout_frac)(x)
-		x = tf.keras.layers.BatchNormalization()(x)
-		x = tf.keras.layers.Dense(512, activation='elu')(x)
-		return x
-
-
-	streams = [apply_relpos(times_input) for i in range(n_streams)]
-
-	x = tf.keras.layers.Concatenate(axis=-1)(streams)
-	x = tf.keras.layers.BatchNormalization()(x)
-	x = tf.keras.layers.Dropout(dropout_frac)(x)
-	x = tf.keras.layers.Dense(512, activation='elu')(x)
-	x = tf.keras.layers.BatchNormalization()(x)
-
-	outputs = tf.keras.layers.Dense(1, activation='linear')(x)
-	model = tf.keras.Model(inputs=times_input, outputs=outputs)
-	return model
-
-def create_small_model(nfeatures: int, dropout_frac: float):
-	time_features = tf.keras.Input(shape=(nfeatures,), name="time_features")
-
-	x = tf.keras.layers.Dense(512, activation='tanh')(time_features)
-	x = tf.keras.layers.Dropout(dropout_frac)(x)
-	x = tf.keras.layers.BatchNormalization()(x)
-	x = tf.keras.layers.Dense(512, activation='tanh')(x)
-	x = tf.keras.layers.Dropout(dropout_frac)(x)
-	x = tf.keras.layers.BatchNormalization()(x)
-	x = tf.keras.layers.Dense(512, activation='tanh')(x)
-	x = tf.keras.layers.Dropout(dropout_frac)(x)
-	x = tf.keras.layers.BatchNormalization()(x)
-	x = tf.keras.layers.Dense(512, activation='tanh')(x)
-	x = tf.keras.layers.BatchNormalization()(x)
-
-	outputs = tf.keras.layers.Dense(1, activation='linear')(x)
-	model = tf.keras.Model(inputs=time_features, outputs=outputs)
-	return model
-
-def create_dense_model(nfeatures: int, dropout_frac: float, n_streams: int ):
+	import tensorflow as tf
 	times_input = tf.keras.Input(shape=(nfeatures,), name="times_input")
 
 	def apply_relpos(xx):
