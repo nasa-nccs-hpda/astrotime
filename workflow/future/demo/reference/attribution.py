@@ -35,12 +35,6 @@ T: np.ndarray = times[signal_index].copy()
 X: np.ndarray = tmodel.get_features( T, feature_type, args )
 Y: np.ndarray = signals[signal_index]
 
-validation_split = int(0.8*X.shape[0])
-Xtrain=X[:validation_split]
-Xval=X[validation_split:]
-Ytrain=Y[:validation_split]
-Yval=Y[validation_split:]
-
 strategy = tf.distribute.MirroredStrategy([f"GPU:{i}" for i in args.devices])
 print(f"Number of devices: {strategy.num_replicas_in_sync}")
 with strategy.scope():
@@ -52,18 +46,7 @@ if args.refresh and os.path.exists(latest_ckp_file): os.remove(latest_ckp_file)
 if os.path.exists(latest_ckp_file): model.load_weights(latest_ckp_file)
 else: print( f"Checkpoint file '{latest_ckp_file}' not found. Training from scratch." )
 
-ckp_callback_latest = tf.keras.callbacks.ModelCheckpoint( latest_ckp_file, save_freq=10*args.batch_size, save_weights_only=True )
+P=model.predict( X, batch_size=args.batch_size )
 
-t0 = time.time()
-print( f"Fit: Xtrain{Xtrain.shape} Ytrain{Ytrain.shape} Xval{Xval.shape} Yval{Yval.shape} T{T.shape} X{X.shape} Y{Y.shape} " )
-history = model.fit(
-    Xtrain,
-    Ytrain,
-    epochs=args.nepochs,
-    validation_data=(Xval,Yval),
-    callbacks=[ckp_callback_latest],
-    batch_size=args.batch_size,
-    shuffle=True
-)
-print( f"Completed training for {args.nepochs} epochs in {(time.time()-t0)/60:.2f} min.")
-print( f"Saving checkpoints to  '{latest_ckp_file}' ")
+print( f" Model shapes: X{X.shape} Y{Y.shape} P{P.shape}")
+
