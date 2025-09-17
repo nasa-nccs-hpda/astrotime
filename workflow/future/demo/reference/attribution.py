@@ -12,6 +12,7 @@ parser = argparse.ArgumentParser( prog='timehascome', usage='python train.py --h
 parser.add_argument('-s',  '--signal',        type=int, default=2)
 parser.add_argument('-f',  '--feature_type',  type=int, default=1)
 parser.add_argument('-nf', '--nfeatures',     type=int, default=32)
+parser.add_argument('-bs', '--batch_size',    type=int, default=512)
 parser.add_argument('-l',  '--loss',          type=str, default="mae")
 parser.add_argument('-ns', '--nstreams',      type=int, default=10)
 parser.add_argument('-dd',  '--data_dir',     type=str, default=default_data_dir)
