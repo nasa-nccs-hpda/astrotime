@@ -143,6 +143,7 @@ def get_masked_attribution( model, X, Y, args ) -> Tuple[np.ndarray,np.ndarray]:
 
 	At, Av = [], []
 	for iF in range(X.shape[1]):
+		print( f"Computing masked attribution for feature {iF} ... ", flush=True )
 		Xm = mask_feature(X, iF)
 		Pm = model.predict(Xm, batch_size=args.batch_size)
 		Pmt = Pm[:validation_split]
