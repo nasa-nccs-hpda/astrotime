@@ -1,5 +1,6 @@
 import time, os, math, pickle, logging, numpy as np, shutil
 from argparse import Namespace
+from typing import List, Optional, Dict, Type, Tuple, Union
 data_dir = os.environ.get('ASTROTIME_DATA_DIR', "/explore/nobackup/projects/ilab/data/astrotime/demo")
 log_file = f"{data_dir}/astrotime.log"
 current_args_path = f"{data_dir}/args.pkl"
@@ -16,6 +17,11 @@ def log( msg: str ):
 
 def error( msg: str ):
 	logging.exception( f"{msg}" )
+
+def mask_feature( x: np.ndarray, iFeature: int ) -> np.ndarray:
+	xf: np.ndarray = x.copy()
+	xf[:,iFeature] = 0
+	return xf
 
 def get_ckp_file( args: Namespace, cptype: str ):
 	return f"{data_dir}/streamed_time_predict.s{args.signal}.f{args.feature_type}.nf{args.nfeatures}.bs{args.batch_size}.{cptype}.weights.h5"
@@ -111,3 +117,37 @@ def get_features( T: np.ndarray, feature_type: int, args: Namespace ) -> np.ndar
 		return sf if (feature_type==3) else np.where(sf>0, 1, 0)
 	else:
 		raise ValueError(f"Invalid feature_type: {feature_type}")
+
+def get_grad_attribution( model, X: np.ndarray, Y: np.ndarray ) -> np.ndarray:
+	import tensorflow as tf
+	with tf.GradientTape() as tape:
+		y_pred = model(X, training=False)
+		loss = tf.keras.losses.mean_squared_error(Y, y_pred)
+	grads = tape.gradient(loss, model.trainable_variables)
+	return np.stack( [ g.numpy().flatten() for g in grads ], axis=1 )
+
+
+def mae( Y: np.ndarray, P: np.ndarray ):
+	return np.mean( np.abs( P - Y ))
+
+def get_masked_attribution( model, X, Y, args ) -> Tuple[np.ndarray,np.ndarray]:
+	validation_split = int(0.8 * X.shape[0])
+	Ytrain = Y[:validation_split]
+	Yval = Y[validation_split:]
+
+	P = model.predict(X, batch_size=args.batch_size)
+	Pt = P[:validation_split]
+	Pv = P[validation_split:]
+	Lt = mae(Ytrain, Pt)
+	Lv = mae(Yval, Pv)
+
+	At, Av = [], []
+	for iF in range(X.shape[1]):
+		Xm = mask_feature(X, iF)
+		Pm = model.predict(Xm, batch_size=args.batch_size)
+		Pmt = Pm[:validation_split]
+		Pmv = Pm[validation_split:]
+		At.append(mae(Ytrain, Pmt) - Lt)
+		Av.append(mae(Yval, Pmv) - Lv)
+
+	return np.array(At), np.array(Av)
