@@ -126,29 +126,21 @@ def get_grad_attribution( model, X: np.ndarray, Y: np.ndarray ) -> np.ndarray:
 	grads = tape.gradient(loss, model.trainable_variables)
 	return np.stack( [ g.numpy().flatten() for g in grads ], axis=1 )
 
+def mse( Y: np.ndarray, P: np.ndarray ) -> float:
+	E = P - Y
+	return np.mean( E*E )
 
-def mae( Y: np.ndarray, P: np.ndarray ):
+def mae( Y: np.ndarray, P: np.ndarray ) -> float:
 	return np.mean( np.abs( P - Y ))
 
-def get_masked_attribution( model, X, Y, args ) -> Tuple[np.ndarray,np.ndarray]:
-	validation_split = int(0.8 * X.shape[0])
-	Ytrain = Y[:validation_split]
-	Yval = Y[validation_split:]
-
+def get_masked_attribution( model, X, Y, args ) -> np.ndarray:
 	P = model.predict(X, batch_size=args.batch_size)
-	Pt = P[:validation_split]
-	Pv = P[validation_split:]
-	Lt = mae(Ytrain, Pt)
-	Lv = mae(Yval, Pv)
-
-	At, Av = [], []
+	L = mse(Y, P)
+	A = []
 	for iF in range(X.shape[1]):
 		print( f"Computing masked attribution for feature {iF} ... ", flush=True )
 		Xm = mask_feature(X, iF)
 		Pm = model.predict(Xm, batch_size=args.batch_size)
-		Pmt = Pm[:validation_split]
-		Pmv = Pm[validation_split:]
-		At.append(mae(Ytrain, Pmt) - Lt)
-		Av.append(mae(Yval, Pmv) - Lv)
+		A.append( mse(Y, Pm) - L )
 
-	return np.array(At), np.array(Av)
+	return np.array(A)
