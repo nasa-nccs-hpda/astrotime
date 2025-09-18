@@ -3,7 +3,6 @@ from argparse import Namespace
 import tmodel_pt as tmodel, argparse
 import torch
 import torch.nn as nn
-import torch.optim as optim
 from checkpoints import CheckpointManager
 from torch.utils.data import DataLoader, TensorDataset
 from torch.nn.parallel import DistributedDataParallel as DDP
@@ -14,6 +13,7 @@ default_data_dir = "/explore/nobackup/projects/ilab/data/astrotime/demo"
 def intlist(arg:str): return list(map(int, arg.split(",")))
 
 def main( rank, world_size, args: Namespace ):
+    print( f"Running on rank {rank} of {world_size}, args={args}")
     tmodel.ddp_setup( rank, world_size, args)
     signal_index = args.signal
     feature_type = args.feature_type
@@ -49,6 +49,8 @@ def main( rank, world_size, args: Namespace ):
         model.train()
         losses = []
         for batch_idx, (inputs, targets) in enumerate(dataloader):
+            inputs: torch.Tensor = inputs.cuda()
+            targets: torch.Tensor = targets.cuda()
             optimizer.zero_grad()
             outputs = torch.squeeze( model(inputs) )
             loss = loss_fn( outputs, targets)
