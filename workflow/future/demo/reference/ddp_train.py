@@ -49,7 +49,7 @@ def train_fn(rank, world_size):
 
     model = tmodel.MultiStreamModel( args.nfeatures, args.dropout_frac, args.nstreams)
     model = DDP(model, device_ids=[rank])
-    loss_fn = nn.MSELoss()
+    loss_fn = nn.L1Loss()
     optimizer = optim.Adam(model.parameters(), lr=args.learning_rate)
     checkpoints: CheckpointManager = tmodel.initialize_checkpointing( version, model, optimizer, args )
 
@@ -73,7 +73,7 @@ def train_fn(rank, world_size):
         dist.barrier()
         if rank == 0:
             checkpoints.save_checkpoint( epoch+1, 0 )
-            print(f"Epoch {epoch+1}, Mean Loss: {np.array(losses).mean():.3f}")
+            print(f"Epoch {epoch+1}, Mean Loss: {np.array(losses).mean():.4f}")
 
 if __name__ == "__main__":
     world_size = torch.cuda.device_count()
