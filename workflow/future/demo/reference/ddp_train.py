@@ -13,29 +13,12 @@ import torch.distributed as dist
 default_data_dir = "/explore/nobackup/projects/ilab/data/astrotime/demo"
 def intlist(arg:str): return list(map(int, arg.split(",")))
 
-parser = argparse.ArgumentParser( prog='timehascome', usage='python train.py --help', description='Trains time-aware CNN on demo data.')
-parser.add_argument('-s',  '--signal',        type=int, default=2)
-parser.add_argument('-f',  '--feature_type',  type=int, default=1)
-parser.add_argument('-ne', '--nepochs',       type=int, default=2000)
-parser.add_argument('-nf', '--nfeatures',     type=int, default=32)
-parser.add_argument('-bs', '--batch_size',    type=int, default=512)
-parser.add_argument('-l',  '--loss',          type=str, default="mae")
-parser.add_argument('-ns', '--nstreams',      type=int, default=10)
-parser.add_argument('-sw', '--smooth_win',    type=int, default=0)
-parser.add_argument('-r',  '--refresh',       action='store_true')
-parser.add_argument('-lr', '--learning_rate', type=float, default=0.01)
-parser.add_argument('-pf', '--minp_factor',   type=float, default=2.0)
-parser.add_argument('-do', '--dropout_frac',  type=float, default=0.5)
-parser.add_argument('-dd',  '--data_dir',     type=str, default=default_data_dir)
-parser.add_argument('-dv',  '--devices',      type=intlist, default="0")
-args: Namespace = tmodel.parse_args(parser)
-
-signal_index=args.signal
-feature_type=args.feature_type
-version = f"{signal_index}.{feature_type}.{args.nfeatures}"
-
-def train_fn(rank, world_size):
+def main( rank, world_size, args: Namespace ):
     tmodel.ddp_setup( rank, world_size, args)
+    signal_index = args.signal
+    feature_type = args.feature_type
+
+    version = f"{signal_index}.{feature_type}.{args.nfeatures}"
     data=tmodel.get_demo_data()
     signals = data['signals']
     times = data['times']
@@ -48,16 +31,18 @@ def train_fn(rank, world_size):
     Ytrain=Y[:validation_split]
 
     model = tmodel.MultiStreamModel( args.nfeatures, args.dropout_frac, args.nstreams)
+    model = nn.SyncBatchNorm.convert_sync_batchnorm(model)
     model = DDP(model, device_ids=[rank])
     loss_fn = nn.L1Loss()
-    optimizer = DistributedOptimizer(optim.Adam, args=(model.parameters()), lr=args.learning_rate)
+    optimizer = torch.optim.Adam( model.parameters(), lr=args.learning_rate )
     checkpoints: CheckpointManager = tmodel.initialize_checkpointing( version, model, optimizer, args )
 
     X_train: torch.Tensor = torch.from_numpy(Xtrain)
     y_train: torch.Tensor = torch.from_numpy(Ytrain)
     dataset = TensorDataset(X_train, y_train)
     sampler = DistributedSampler(dataset, num_replicas=world_size, rank=rank)
-    dataloader = DataLoader(dataset, batch_size=args.batch_size, sampler=sampler)
+    dataloader = DataLoader( dataset, pin_memory=True, shuffle=False,batch_size=args.batch_size, sampler=sampler )
+#    optimizer = DistributedOptimizer( optimizer, device_ids=[rank])
 
     for epoch in range(args.nepochs):
         sampler.set_epoch(epoch)
@@ -75,5 +60,22 @@ def train_fn(rank, world_size):
             print(f"Epoch {epoch+1}, Mean Loss: {np.array(losses).mean():.4f}")
 
 if __name__ == "__main__":
+    parser = argparse.ArgumentParser(prog='timehascome', usage='python train.py --help', description='Trains time-aware CNN on demo data.')
+    parser.add_argument('-s', '--signal', type=int, default=2)
+    parser.add_argument('-f', '--feature_type', type=int, default=1)
+    parser.add_argument('-ne', '--nepochs', type=int, default=2000)
+    parser.add_argument('-nf', '--nfeatures', type=int, default=32)
+    parser.add_argument('-bs', '--batch_size', type=int, default=512)
+    parser.add_argument('-l', '--loss', type=str, default="mae")
+    parser.add_argument('-ns', '--nstreams', type=int, default=10)
+    parser.add_argument('-sw', '--smooth_win', type=int, default=0)
+    parser.add_argument('-r', '--refresh', action='store_true')
+    parser.add_argument('-lr', '--learning_rate', type=float, default=0.01)
+    parser.add_argument('-pf', '--minp_factor', type=float, default=2.0)
+    parser.add_argument('-do', '--dropout_frac', type=float, default=0.5)
+    parser.add_argument('-dd', '--data_dir', type=str, default=default_data_dir)
+    parser.add_argument('-dv', '--devices', type=intlist, default="0")
+    args: Namespace = tmodel.parse_args(parser)
+
     world_size = torch.cuda.device_count()
-    torch.multiprocessing.spawn(train_fn, args=(world_size,), nprocs=world_size, join=True)
+    torch.multiprocessing.spawn( main, args=(world_size,args), nprocs=world_size, join=True )
