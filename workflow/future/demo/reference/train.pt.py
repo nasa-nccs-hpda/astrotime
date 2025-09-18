@@ -46,7 +46,7 @@ Yval=Y[validation_split:]
 model = tmodel.MultiStreamModel( args.nfeatures, args.dropout_frac, args.nstreams)
 loss_fn = nn.MSELoss()
 optimizer = optim.Adam(model.parameters(), lr=args.learning_rate)
-checkpoints = tmodel.initialize_checkpointing( version, model, optimizer, args )
+checkpoints: CheckpointManager = tmodel.initialize_checkpointing( version, model, optimizer, args )
 
 X_train: torch.Tensor = torch.from_numpy(Xtrain)
 y_train: torch.Tensor = torch.from_numpy(Ytrain)
