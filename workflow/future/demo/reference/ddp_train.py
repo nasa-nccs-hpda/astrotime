@@ -34,8 +34,7 @@ feature_type=args.feature_type
 version = f"{signal_index}.{feature_type}.{args.nfeatures}"
 
 def train_fn(rank, world_size):
-    dist.init_process_group(backend="nccl", rank=rank, world_size=world_size)
-    torch.cuda.set_device(rank)
+    tmodel.ddp_setup( rank, world_size, args)
     data=tmodel.get_demo_data()
     signals = data['signals']
     times = data['times']
@@ -70,7 +69,6 @@ def train_fn(rank, world_size):
             loss.backward()
             optimizer.step()
             losses.append( loss.item() )
-        dist.barrier()
         if rank == 0:
             checkpoints.save_checkpoint( epoch+1, 0 )
             print(f"Epoch {epoch+1}, Mean Loss: {np.array(losses).mean():.4f}")

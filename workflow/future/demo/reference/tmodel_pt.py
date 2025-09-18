@@ -3,10 +3,17 @@ from argparse import Namespace
 from checkpoints import CheckpointManager
 from typing import List, Optional, Dict, Type, Tuple, Union
 from torch import Tensor, device, nn
+from torch.distributed import init_process_group, destroy_process_group
 data_dir = os.environ.get('ASTROTIME_DATA_DIR', "/explore/nobackup/projects/ilab/data/astrotime/demo")
 log_file = f"{data_dir}/astrotime.log"
 current_args_path = f"{data_dir}/args.pkl"
 logging.basicConfig( filename=log_file, level=logging.INFO,  format='%(asctime)s - %(levelname)s - %(message)s',  filemode='w' )
+
+def ddp_setup(rank: int, world_size: int, args: Namespace):
+	os.environ["MASTER_ADDR"] = "localhost"
+	os.environ["MASTER_PORT"] = "12355"
+	torch.cuda.set_device(rank)
+	init_process_group(backend="nccl", rank=rank, world_size=world_size)
 
 def args_path( signal: int, ftype: int ) -> str:
 	return f"{data_dir}/args-{signal}-{ftype}.pkl"
