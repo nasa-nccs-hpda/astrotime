@@ -23,7 +23,7 @@ parser.add_argument('-lr', '--learning_rate', type=float, default=0.01)
 parser.add_argument('-pf', '--minp_factor',   type=float, default=2.0)
 parser.add_argument('-do', '--dropout_frac',  type=float, default=0.5)
 parser.add_argument('-dd',  '--data_dir',     type=str, default=default_data_dir)
-parser.add_argument('-dv-dv',  '--devices',      type=intlist, default="0")
+parser.add_argument('-dv',  '--devices',      type=intlist, default="0")
 args: Namespace = tmodel.parse_args(parser)
 
 signal_index=args.signal
