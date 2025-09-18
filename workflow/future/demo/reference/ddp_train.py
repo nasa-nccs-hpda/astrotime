@@ -7,6 +7,7 @@ import torch.optim as optim
 from checkpoints import CheckpointManager
 from torch.utils.data import DataLoader, TensorDataset
 from torch.nn.parallel import DistributedDataParallel as DDP
+from torch.distributed.optim import DistributedOptimizer
 from torch.utils.data.distributed import DistributedSampler
 import torch.distributed as dist
 default_data_dir = "/explore/nobackup/projects/ilab/data/astrotime/demo"
@@ -49,7 +50,7 @@ def train_fn(rank, world_size):
     model = tmodel.MultiStreamModel( args.nfeatures, args.dropout_frac, args.nstreams)
     model = DDP(model, device_ids=[rank])
     loss_fn = nn.L1Loss()
-    optimizer = optim.Adam(model.parameters(), lr=args.learning_rate)
+    optimizer = DistributedOptimizer(optim.Adam, args=(model.parameters()), lr=args.learning_rate)
     checkpoints: CheckpointManager = tmodel.initialize_checkpointing( version, model, optimizer, args )
 
     X_train: torch.Tensor = torch.from_numpy(Xtrain)
