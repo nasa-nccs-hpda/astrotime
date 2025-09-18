@@ -34,8 +34,8 @@ data=tmodel.get_demo_data()
 signals = data['signals']
 times = data['times']
 T: np.ndarray = times[signal_index].copy()
-X: np.ndarray = tmodel.get_features( T, feature_type, args )
-Y: np.ndarray = signals[signal_index]
+X: np.ndarray = tmodel.get_features( T, feature_type, args ).astype(np.float32)
+Y: np.ndarray = signals[signal_index].astype(np.float32)
 
 validation_split = int(0.8*X.shape[0])
 Xtrain=X[:validation_split]

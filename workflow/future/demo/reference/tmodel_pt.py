@@ -55,7 +55,7 @@ def tnorm(x: np.ndarray, dim: int=0) -> np.ndarray:
 
 def build_dense_layer( N_input_features, dropout_frac, N_hidden_features=512 ):
 	stream: nn.Sequential = nn.Sequential()
-	stream.append(nn.Linear(N_input_features, N_hidden_features))
+	stream.append(nn.Linear(N_input_features, N_hidden_features, dtype=torch.float32 ))
 	stream.append(nn.ELU())
 	stream.append( nn.Dropout(p=dropout_frac) )
 	stream.append( nn.BatchNorm1d(N_hidden_features) )
@@ -69,7 +69,7 @@ def build_network_stream( N_input_features, dropout_frac, nstreams: int, N_hidde
 		streams.append( build_dense_layer(nfeatures, dropout_frac, N_hidden_features) )
 		nfeatures = N_hidden_features
 
-	streams.append(nn.Linear(N_hidden_features, N_hidden_features))
+	streams.append(nn.Linear(N_hidden_features, N_hidden_features, dtype=torch.float32 ))
 	streams.append(nn.ELU())
 	return streams
 
@@ -79,7 +79,7 @@ class MultiStreamModel(nn.Module):
 		super().__init__()
 		self.streams: List[nn.Module] = [ build_network_stream(N_input_features, dropout_frac, n_streams, N_hidden_features) for i in range(n_streams) ]
 		self.final_layer = build_dense_layer( N_hidden_features*n_streams, dropout_frac, N_hidden_features )
-		self.output_layer = nn.Linear(N_hidden_features, 1)
+		self.output_layer = nn.Linear(N_hidden_features, 1, dtype=torch.float32 )
 
 	def forward(self, x):
 		outputs = [stream(x) for stream in self.streams]
