@@ -1,5 +1,6 @@
 import time, os, math, pickle, logging, numpy as np, shutil, torch
 from argparse import Namespace
+from checkpoints import CheckpointManager
 from typing import List, Optional, Dict, Type, Tuple, Union
 from torch import Tensor, device, nn
 data_dir = os.environ.get('ASTROTIME_DATA_DIR', "/explore/nobackup/projects/ilab/data/astrotime/demo")
@@ -72,10 +73,6 @@ def build_network_stream( N_input_features, dropout_frac, nstreams: int, N_hidde
 	streams.append(nn.ELU())
 	return streams
 
-def build_postproc(dropout_frac, N_hidden_features):
-	modules: nn.Sequential = nn.Sequential()
-	modules.append(build_dense_layer(N_hidden_features, dropout_frac, N_hidden_features))
-
 
 class MultiStreamModel(nn.Module):
 	def __init__(self, N_input_features, dropout_frac, n_streams, N_hidden_features=512 ):
@@ -139,3 +136,9 @@ def get_masked_attribution( model, X, Y, args ) -> np.ndarray:
 		A.append( mse(Y, Pm) - L )
 
 	return np.array(A)
+
+def initialize_checkpointing( version: str, model, optimizer, args: Namespace) -> CheckpointManager:
+	checkpoint_manager = CheckpointManager(version, model, optimizer, args)
+	if args.refresh: checkpoint_manager.clear_checkpoints()
+	checkpoint_manager.load_checkpoint(update_model=True)
+	return checkpoint_manager

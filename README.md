@@ -428,13 +428,21 @@ sbatch --mem-per-cpu=10240 -G1 -c10 -t01:00:00 -J astrotime --wrap="time $your_s
 
     >   * mamba create -n astrotime ninja python=3.10
     >   * mamba activate astrotime
-    >   * pip install torch jupyterlab==4.0.13 ipywidgets==7.8.4 cuda-python jupyterlab_widgets torchmetrics pytorch-lightning ipykernel==6.29 ipympl ipython==8.26 xarray netCDF4 pygam scikit-learn hydra-core rich timesfm[torch]
+    >   * pip install pytorch jupyterlab==4.0.13 ipywidgets==7.8.4 cuda-python jupyterlab_widgets torchmetrics pytorch-lightning ipykernel==6.29 ipympl ipython==8.26 xarray netCDF4 pygam scikit-learn hydra-core rich timesfm[torch]
+
+    >   * conda create -n astrotime.pthv ninja python=3.10
+    >   * conda activate astrotime.pthv
+    >   * conda install pytorch jupyterlab=4.3.6 cuda-python torchmetrics numpy xarray netCDF4 hydra-core pooch scikit-learn
+    >   * conda install -c pyviz pyviz_comms hvplot
 
 ### Tensorflow Environment:
 
     >   * conda create -n astrotime.hv python=3.12
     >   * conda activate astrotime.hv
     >   * conda install -c conda-forge tensorflow-gpu numpy xarray hvplot scikit-learn netCDF4 jupyterlab ipywidgets jupyterlab_widgets jupyter_bokeh pyviz_comms shap pooch
+
+
+-c pyviz hvplot
 
 ## Dataset Preparation
 

@@ -1,6 +1,11 @@
 import numpy as np, os, time
 from argparse import Namespace
-import tmodel.pt as tmodel, argparse
+import tmodel_pt as tmodel, argparse
+import torch
+import torch.nn as nn
+import torch.optim as optim
+from checkpoints import CheckpointManager
+from torch.utils.data import DataLoader, TensorDataset
 default_data_dir = "/explore/nobackup/projects/ilab/data/astrotime/demo"
 def intlist(arg:str): return list(map(int, arg.split(",")))
 
@@ -23,6 +28,7 @@ args: Namespace = tmodel.parse_args(parser)
 
 signal_index=args.signal
 feature_type=args.feature_type
+version = f"{signal_index}.{feature_type}.{args.nfeatures}"
 
 data=tmodel.get_demo_data()
 signals = data['signals']
@@ -37,26 +43,25 @@ Xval=X[validation_split:]
 Ytrain=Y[:validation_split]
 Yval=Y[validation_split:]
 
-model = tmodel.create_streams_model( X.shape[1], dropout_frac=args.dropout_frac, n_streams=args.nstreams )
-model.compile( optimizer=tf.keras.optimizers.Adam( learning_rate=args.learning_rate ), loss=args.loss )
+model = tmodel.MultiStreamModel( args.nfeatures, args.dropout_frac, args.nstreams)
+loss_fn = nn.MSELoss()
+optimizer = optim.Adam(model.parameters(), lr=args.learning_rate)
+checkpoints = tmodel.initialize_checkpointing( version, model, optimizer, args )
 
-latest_ckp_file = tmodel.get_ckp_file( args, "latest" )
-if args.refresh and os.path.exists(latest_ckp_file): os.remove(latest_ckp_file)
-if os.path.exists(latest_ckp_file): model.load_weights(latest_ckp_file)
-else: print( f"Checkpoint file '{latest_ckp_file}' not found. Training from scratch." )
+X_train: torch.Tensor = torch.from_numpy(Xtrain)
+y_train: torch.Tensor = torch.from_numpy(Ytrain)
+train_dataset = TensorDataset(X_train, y_train)
+train_loader = DataLoader(train_dataset, batch_size=args.batch_size)
 
-ckp_callback_latest = tf.keras.callbacks.ModelCheckpoint( latest_ckp_file, save_freq=10*args.batch_size, save_weights_only=True )
-
-t0 = time.time()
-print( f"Fit: Xtrain{Xtrain.shape} Ytrain{Ytrain.shape} Xval{Xval.shape} Yval{Yval.shape} T{T.shape} X{X.shape} Y{Y.shape} " )
-history = model.fit(
-    Xtrain,
-    Ytrain,
-    epochs=args.nepochs,
-    validation_data=(Xval,Yval),
-    callbacks=[ckp_callback_latest],
-    batch_size=args.batch_size,
-    shuffle=True
-)
-print( f"Completed training for {args.nepochs} epochs in {(time.time()-t0)/60:.2f} min.")
-print( f"Saving checkpoints to  '{latest_ckp_file}' ")
+for epoch in range(args.nepochs):
+    model.train()
+    losses = []
+    for batch_idx, (inputs, targets) in enumerate(train_loader):
+        optimizer.zero_grad()
+        outputs = model(inputs)
+        loss = loss_fn(outputs, targets)
+        loss.backward()
+        optimizer.step()
+        losses.append( loss.item() )
+    checkpoints.save_checkpoint( epoch+1, 0 )
+    print(f"Epoch {epoch+1}, Mean Loss: {np.array(losses).mean():.3f}")
