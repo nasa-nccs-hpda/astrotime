@@ -58,8 +58,8 @@ for epoch in range(args.nepochs):
     losses = []
     for batch_idx, (inputs, targets) in enumerate(train_loader):
         optimizer.zero_grad()
-        outputs = model(inputs)
-        loss = loss_fn(outputs, targets)
+        outputs = torch.squeeze( model(inputs) )
+        loss = loss_fn( outputs, targets)
         loss.backward()
         optimizer.step()
         losses.append( loss.item() )
