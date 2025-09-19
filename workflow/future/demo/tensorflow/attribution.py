@@ -30,8 +30,11 @@ T: np.ndarray = times[signal_index].copy()
 X: np.ndarray = tmodel.get_features( T, feature_type, args )
 Y: np.ndarray = signals[signal_index]
 
-model = tmodel.create_streams_model( X.shape[1], 0.0, n_streams=args.nstreams )
-model.compile( optimizer=tf.keras.optimizers.Adam( learning_rate=0.01 ), loss=args.loss )
+strategy = tf.distribute.MirroredStrategy([f"GPU:{i}" for i in args.devices])
+print(f"Number of devices: {strategy.num_replicas_in_sync}")
+with strategy.scope():
+	model = tmodel.create_streams_model( X.shape[1], 0.0, n_streams=args.nstreams )
+	model.compile( optimizer=tf.keras.optimizers.Adam( learning_rate=0.01 ), loss=args.loss )
 
 latest_ckp_file = tmodel.get_ckp_file( args, "latest" )
 assert os.path.exists(latest_ckp_file), f"Checkpint file '{latest_ckp_file}' not found."
