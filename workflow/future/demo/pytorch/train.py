@@ -1,6 +1,6 @@
 import numpy as np, os, time
 from argparse import Namespace
-import tmodel_pt as tmodel, argparse
+import tmodel as tmodel, argparse
 import torch
 import torch.nn as nn
 import torch.optim as optim
