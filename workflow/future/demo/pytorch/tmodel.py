@@ -20,6 +20,11 @@ def set_device( rank: int ):
 	device = "cpu" if device_id < 0 else f"cuda:{device_id}"
 	return torch.cuda.set_device(device)
 
+def get_loss( loss: str ) -> nn.Module:
+	if   loss == "mse": return nn.MSELoss()
+	elif loss == "mae": return nn.L1Loss()
+	else: raise ValueError(f"Invalid loss: {loss}")
+
 def args_path( signal: int, ftype: int ) -> str:
 	return f"{data_dir}/args-{signal}-{ftype}.pkl"
 

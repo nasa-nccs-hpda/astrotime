@@ -45,7 +45,7 @@ Ytrain=Y[:validation_split]
 Yval=Y[validation_split:]
 
 model = tmodel.MultiStreamModel( args.nfeatures, args.dropout_frac, args.nstreams )
-loss_fn = nn.L1Loss()
+loss_fn = tmodel.get_loss(args.loss)
 optimizer = optim.Adam(model.parameters(), lr=args.learning_rate)
 checkpoints: CheckpointManager = tmodel.initialize_checkpointing( version, model, optimizer, args )
 
