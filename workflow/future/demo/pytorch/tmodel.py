@@ -60,7 +60,7 @@ def tnorm(x: np.ndarray, dim: int=0) -> np.ndarray:
 	s: np.ndarray = x.std( axis=dim, keepdims=True )
 	return (x - m) / s
 
-def build_dense_layer( N_input_features, dropout_frac, N_hidden_features=512 ):
+def build_stream_layer( N_input_features, dropout_frac, N_hidden_features=512 ):
 	stream: nn.Sequential = nn.Sequential()
 	stream.append(nn.Linear(N_input_features, N_hidden_features, dtype=torch.float32 ))
 	stream.append(nn.ELU())
@@ -68,12 +68,22 @@ def build_dense_layer( N_input_features, dropout_frac, N_hidden_features=512 ):
 	stream.append( nn.BatchNorm1d(N_hidden_features) )
 	return stream
 
-def build_network_stream( N_input_features, dropout_frac, nstreams: int, N_hidden_features=512 ) -> nn.Sequential:
+def build_final_layer( N_input_features, dropout_frac, N_hidden_features=512 ):
+	stream: nn.Sequential = nn.Sequential()
+	stream.append(nn.BatchNorm1d(N_input_features))
+	stream.append( nn.Dropout(p=dropout_frac) )
+	stream.append(nn.Linear(N_input_features, N_hidden_features, dtype=torch.float32 ))
+	stream.append(nn.ELU())
+	stream.append(nn.BatchNorm1d(N_hidden_features))
+	stream.append(nn.Linear(N_hidden_features, 1, dtype=torch.float32 ))
+	return stream
+
+def build_network_stream( N_input_features, dropout_frac, N_hidden_features=512, nlayers: int = 5 ) -> nn.Sequential:
 	streams: nn.Sequential = nn.Sequential()
 	nfeatures = N_input_features
 
-	for iF in range(nstreams):
-		streams.append( build_dense_layer(nfeatures, dropout_frac, N_hidden_features) )
+	for iF in range(nlayers):
+		streams.append( build_stream_layer(nfeatures, dropout_frac, N_hidden_features) )
 		nfeatures = N_hidden_features
 
 	streams.append(nn.Linear(N_hidden_features, N_hidden_features, dtype=torch.float32 ))
@@ -82,17 +92,15 @@ def build_network_stream( N_input_features, dropout_frac, nstreams: int, N_hidde
 
 
 class MultiStreamModel(nn.Module):
-	def __init__(self, N_input_features, dropout_frac, n_streams, N_hidden_features=512 ):
+	def __init__(self, N_input_features, dropout_frac, n_streams, N_hidden_features ):
 		super().__init__()
-		self.streams: List[nn.Module] = [ build_network_stream(N_input_features, dropout_frac, n_streams, N_hidden_features) for i in range(n_streams) ]
-		self.final_layer = build_dense_layer( N_hidden_features*n_streams, dropout_frac, N_hidden_features )
-		self.output_layer = nn.Linear(N_hidden_features, 1, dtype=torch.float32 )
+		self.streams: List[nn.Module] = [ build_network_stream(N_input_features, dropout_frac, N_hidden_features) for i in range(n_streams) ]
+		self.final_layer = build_final_layer( N_hidden_features*n_streams, dropout_frac, N_hidden_features )
 
 	def forward(self, x):
 		outputs = [stream(x) for stream in self.streams]
 		combined_output = torch.cat(outputs, dim=-1)
-		result = self.final_layer(combined_output)
-		return self.output_layer(result)
+		return self.final_layer(combined_output)
 
 def float_to_binary(fval: float, places) -> str:
 	return bin(int(fval * pow(2, places)))[2:].rjust(places, '0')
