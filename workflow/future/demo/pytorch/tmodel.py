@@ -92,7 +92,7 @@ def build_network_stream( N_input_features, dropout_frac, N_hidden_features=512,
 
 
 class MultiStreamModel(nn.Module):
-	def __init__(self, N_input_features, dropout_frac, n_streams, N_hidden_features ):
+	def __init__(self, N_input_features, dropout_frac, n_streams, N_hidden_features=512 ):
 		super().__init__()
 		self.streams: List[nn.Module] = [ build_network_stream(N_input_features, dropout_frac, N_hidden_features) for i in range(n_streams) ]
 		self.final_layer = build_final_layer( N_hidden_features*n_streams, dropout_frac, N_hidden_features )
