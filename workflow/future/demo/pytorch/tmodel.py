@@ -15,6 +15,11 @@ def ddp_setup(rank: int, world_size: int, args: Namespace):
 	torch.cuda.set_device(rank)
 	init_process_group(backend="nccl", rank=rank, world_size=world_size)
 
+def set_device( rank: int ):
+	device_id = rank if torch.cuda.is_available() else -1
+	device = "cpu" if device_id < 0 else f"cuda:{device_id}"
+	return torch.cuda.set_device(device)
+
 def args_path( signal: int, ftype: int ) -> str:
 	return f"{data_dir}/args-{signal}-{ftype}.pkl"
 
