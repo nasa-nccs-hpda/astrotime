@@ -133,14 +133,13 @@ def mse( Y: np.ndarray, P: np.ndarray ) -> float:
 def mae( Y: np.ndarray, P: np.ndarray ) -> float:
 	return np.mean( np.abs( P - Y ))
 
-def get_masked_attribution( model, X, Y, args ) -> np.ndarray:
+def get_masked_attribution( model, X ) -> np.ndarray:
 	P = model.predict(X)
-	L = mse(Y, P)
 	A = []
 	for iF in range(X.shape[1]):
 		print( f"Computing masked attribution for feature {iF} ... ", flush=True )
 		Xm = mask_feature(X, iF)
-		Pm = model.predict(Xm)
-		A.append( mse(Y, Pm) - L )
-
-	return np.array(A)
+		Y = model.predict(Xm)
+		A.append( np.mean( np.abs( P - Y )) )
+	Ap =  np.array(A)
+	return Ap/Ap.mean()
