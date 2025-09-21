@@ -111,6 +111,12 @@ def get_features( T: np.ndarray, feature_type: int, args: Namespace ) -> np.ndar
 			return  0.5*(1-fbin) + 0.5*( 0.5 + 0.5*sf )
 		else:
 			return sf if (feature_type==1) else np.where(sf>0, 1, 0)
+	elif feature_type == 4:
+		p = 1.0
+		for ip in range(args.nfeatures):
+			features.append( np.mod(ts,p) )
+			p = p/2
+		return np.stack(features, axis=1)
 	else:
 		raise ValueError(f"Invalid feature_type: {feature_type}")
 
