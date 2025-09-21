@@ -103,13 +103,12 @@ def get_features( T: np.ndarray, feature_type: int, args: Namespace ) -> np.ndar
 	elif feature_type in (1,2,3):
 		omega = 2*math.pi
 		for ip in range(args.nfeatures):
-			z = np.cos(omega*ts) if (feature_type==3) else np.sin(omega*ts)
-			features.append(z)
+			features.append(np.sin(omega*ts))
 			omega = omega*2
 		sf = np.stack(features, axis=1)
 		if feature_type==3:
 			fbin = np.stack( [ float_to_binary_array(x,args.nfeatures) for x in ts.tolist() ], axis=0 )
-			return  0.25 + 0.25*sf + 0.5*fbin
+			return  0.5*(1-fbin) + 0.5*( 0.5 + 0.5*sf )
 		else:
 			return sf if (feature_type==1) else np.where(sf>0, 1, 0)
 	else:
