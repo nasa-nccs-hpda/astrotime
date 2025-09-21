@@ -134,11 +134,13 @@ def mae( Y: np.ndarray, P: np.ndarray ) -> float:
 	return np.mean( np.abs( P - Y ))
 
 def get_masked_attribution( model, X ) -> np.ndarray:
-	P = model.predict(X)
+	validation_split = int(0.8 * X.shape[0])
+	Xtrain = X[:validation_split]
+	P = model.predict(Xtrain)
 	A = []
 	for iF in range(X.shape[1]):
 		print( f"Computing masked attribution for feature {iF} ... ", flush=True )
-		Xm = mask_feature(X, iF)
+		Xm = mask_feature(Xtrain, iF)
 		Y = model.predict(Xm)
 		A.append( np.mean( np.abs( P - Y )) )
 	Ap =  np.array(A)
