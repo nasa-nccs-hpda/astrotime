@@ -114,7 +114,7 @@ def get_features( T: np.ndarray, feature_type: int, args: Namespace ) -> np.ndar
 	elif feature_type == 4:
 		p = 1.0
 		for ip in range(args.nfeatures):
-			features.append( np.mod(ts,p) )
+			features.append( np.mod(ts,p)/p )
 			p = p/2
 		return np.stack(features, axis=1)
 	else:
