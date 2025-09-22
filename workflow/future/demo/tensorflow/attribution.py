@@ -23,6 +23,7 @@ Tt = T[:validation_split]
 avars, args = {}, None
 
 for feature_type in range(5):
+	print( f"Computing attribution for Feature type {feature_type}" )
 	args: Namespace = tmodel.load_args(signal_index, feature_type)
 	X: np.ndarray = tmodel.get_features( T, feature_type, args )
 	Xt = X[:validation_split]
@@ -37,7 +38,7 @@ for feature_type in range(5):
 	print( f"Loading checkpoint from '{latest_ckp_file}'")
 	model.load_weights(latest_ckp_file)
 
-	A, P = tmodel.get_masked_attribution( model, X )
+	A, P = tmodel.get_masked_attribution( model, Xt )
 	avars[ f"AF{feature_type}" ] = xa.DataArray( P, name=f"AF{feature_type}", dims=["feature","time"], coords={"time":Tt, "feature":np.arange(P.shape[0])}, attrs=dict(scores=A) )
 
 xa.Dataset( avars ).to_netcdf( tmodel.attribution_path( args, signal_index) )
