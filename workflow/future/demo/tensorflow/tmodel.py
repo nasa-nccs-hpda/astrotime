@@ -146,7 +146,7 @@ def get_masked_attribution( model, X ) -> Tuple[np.ndarray,np.ndarray]:
 		Xm = mask_feature(Xtrain, iF)
 		Y = model.predict(Xm)
 		A.append( np.mean( np.abs( P - Y )) )
-		R.append( Y )
+		R.append( Y.flatten() )
 	Ap =  np.array(A)
 	Ar =  np.stack(R, axis=0)
 	return Ap/Ap.mean(), Ar
