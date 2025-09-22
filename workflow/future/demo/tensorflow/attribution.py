@@ -23,10 +23,10 @@ Tt = T[:validation_split]
 avars, args = {}, None
 
 for feature_type in range(5):
+	print(f"\n\t\t * Computing attribution for Feature type {feature_type} *")
 	args: Namespace = tmodel.load_args(signal_index, feature_type)
 	latest_ckp_file = tmodel.get_ckp_file( args, "latest" )
 	if os.path.exists(latest_ckp_file):
-		print( f"\n\t\t * Computing attribution for Feature type {feature_type} *" )
 		X: np.ndarray = tmodel.get_features( T, feature_type, args )
 		Xt = X[:validation_split]
 
@@ -41,8 +41,12 @@ for feature_type in range(5):
 			avars[ f"AF{feature_type}" ] = xa.DataArray( P, name=f"AF{feature_type}", dims=["feature","time"], coords={"time":Tt, "feature":np.arange(P.shape[0])}, attrs=dict(scores=A) )
 		except OSError as e:
 			print(f" ---> Unable to read checkpoint file '{latest_ckp_file}', skipping this feature type.")
+	else:
+		print(f" ---> Checkpoint file '{latest_ckp_file}' does not exist, skipping this feature type.")
 
-xa.Dataset( avars ).to_netcdf( tmodel.attribution_path( args, signal_index) )
+att_path = tmodel.attribution_path( args, signal_index )
+xa.Dataset( avars ).to_netcdf( att_path )
+print(f"\n  *** Saved attribution datset to '{att_path}' *** ")
 
 
 
