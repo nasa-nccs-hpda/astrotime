@@ -9,6 +9,11 @@ logging.basicConfig( filename=log_file, level=logging.INFO,  format='%(asctime)s
 def args_path( signal: int, ftype: int ) -> str:
 	return f"{data_dir}/args-{signal}-{ftype}.pkl"
 
+def attribution_path( args, signal_index: int ) -> str:
+	results_dir = f"{args.data_dir}/attribution"
+	os.makedirs(results_dir, exist_ok=True)
+	return f"{results_dir}/att_data_{signal_index}.nc"
+
 def get_demo_data( ):
 	return np.load(f'{data_dir}/jordan_data.npz', allow_pickle=True)
 
@@ -137,13 +142,11 @@ def mae( Y: np.ndarray, P: np.ndarray ) -> float:
 	return np.mean( np.abs( P - Y ))
 
 def get_masked_attribution( model, X ) -> Tuple[np.ndarray,np.ndarray]:
-	validation_split = int(0.8 * X.shape[0])
-	Xtrain = X[:validation_split]
-	P = model.predict(Xtrain)
+	P = model.predict(X)
 	A, R = [], [ P.flatten() ]
 	for iF in range(X.shape[1]):
 		print( f"Computing masked attribution for feature {iF} ... ", flush=True )
-		Xm = mask_feature(Xtrain, iF)
+		Xm = mask_feature(X, iF)
 		Y = model.predict(Xm)
 		A.append( np.mean( np.abs( P - Y )) )
 		R.append( Y.flatten() )
