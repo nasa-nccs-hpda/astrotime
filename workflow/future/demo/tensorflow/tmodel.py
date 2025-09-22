@@ -140,7 +140,7 @@ def get_masked_attribution( model, X ) -> Tuple[np.ndarray,np.ndarray]:
 	validation_split = int(0.8 * X.shape[0])
 	Xtrain = X[:validation_split]
 	P = model.predict(Xtrain)
-	A, R = [], []
+	A, R = [], [ P.flatten() ]
 	for iF in range(X.shape[1]):
 		print( f"Computing masked attribution for feature {iF} ... ", flush=True )
 		Xm = mask_feature(Xtrain, iF)
