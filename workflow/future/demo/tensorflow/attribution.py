@@ -34,12 +34,13 @@ for feature_type in range(5):
 		with strategy.scope():
 			model = tmodel.create_streams_model( X.shape[1], 0.0, n_streams=args.nstreams )
 			model.compile( optimizer=tf.keras.optimizers.Adam( learning_rate=0.01 ), loss=args.loss )
-		assert os.path.exists(latest_ckp_file), f"Checkpint file '{latest_ckp_file}' not found."
-		print( f"Loading checkpoint from '{latest_ckp_file}'")
-		model.load_weights(latest_ckp_file)
-
-		A, P = tmodel.get_masked_attribution( model, Xt )
-		avars[ f"AF{feature_type}" ] = xa.DataArray( P, name=f"AF{feature_type}", dims=["feature","time"], coords={"time":Tt, "feature":np.arange(P.shape[0])}, attrs=dict(scores=A) )
+		try:
+			model.load_weights(latest_ckp_file)
+			print(f"Loading checkpoint from '{latest_ckp_file}'")
+			A, P = tmodel.get_masked_attribution( model, Xt )
+			avars[ f"AF{feature_type}" ] = xa.DataArray( P, name=f"AF{feature_type}", dims=["feature","time"], coords={"time":Tt, "feature":np.arange(P.shape[0])}, attrs=dict(scores=A) )
+		except OSError as e:
+			print(f" ---> Unable to read checkpoint file '{latest_ckp_file}', skipping this feature type.")
 
 xa.Dataset( avars ).to_netcdf( tmodel.attribution_path( args, signal_index) )
 
