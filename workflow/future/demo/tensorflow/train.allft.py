@@ -38,7 +38,7 @@ strategy = tf.distribute.MirroredStrategy([f"GPU:{i}" for i in args.devices])
 print(f"Number of devices: {strategy.num_replicas_in_sync}")
 
 for feature_type in range(5):
-    args['feature_type'] = feature_type
+    args.feature_type = feature_type
     tmodel.save_args(args)
     X: np.ndarray = tmodel.get_features( T, args )
     Xtrain=X[:validation_split]
