@@ -33,6 +33,9 @@ def get_ckp_file( args: Namespace, cptype: str ):
 
 def parse_args( parser  ) -> Namespace:
 	args: Namespace = parser.parse_args()
+	return save_args(args)
+
+def save_args( args: Namespace  ) -> Namespace:
 	apath = args_path(args.signal,args.feature_type)
 	afile = open( apath, 'wb' )
 	pickle.dump(args, afile)

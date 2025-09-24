@@ -22,7 +22,7 @@ parser.add_argument('-pf', '--minp_factor',   type=float, default=2.0)
 parser.add_argument('-do', '--dropout_frac',  type=float, default=0.5)
 parser.add_argument('-dd',  '--data_dir',     type=str, default=default_data_dir)
 parser.add_argument('-dv-dv',  '--devices',      type=intlist, default="0")
-args: Namespace = tmodel.parse_args(parser)
+args: Namespace = parser.parse_args()
 
 data=tmodel.get_demo_data()
 signals = data['signals']
@@ -39,6 +39,7 @@ print(f"Number of devices: {strategy.num_replicas_in_sync}")
 
 for feature_type in range(5):
     args['feature_type'] = feature_type
+    tmodel.save_args(args)
     X: np.ndarray = tmodel.get_features( T, args )
     Xtrain=X[:validation_split]
     Xval=X[validation_split:]
