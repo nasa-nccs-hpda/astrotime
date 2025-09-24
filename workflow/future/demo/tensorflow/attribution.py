@@ -27,7 +27,7 @@ for feature_type in range(5):
 	args: Namespace = tmodel.load_args(signal_index, feature_type)
 	latest_ckp_file = tmodel.get_ckp_file( args, "latest" )
 	if os.path.exists(latest_ckp_file):
-		X: np.ndarray = tmodel.get_features( T, feature_type, args )
+		X: np.ndarray = tmodel.get_features( T, args )
 		Xt = X[:validation_split]
 
 		strategy = tf.distribute.MirroredStrategy([f"GPU:{i}" for i in args.devices])

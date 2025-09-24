@@ -99,8 +99,9 @@ def float_to_binary_array(x: float, places: int) -> np.array:
 	binary_str: str = float_to_binary( x, places )
 	return np.array( [int(bit) for bit in binary_str], dtype=np.float64 )
 
-def get_features( T: np.ndarray, feature_type: int, args: Namespace ) -> np.ndarray:
+def get_features( T: np.ndarray,  args: Namespace ) -> np.ndarray:
 	features = []
+	feature_type: int = args.feature_type
 	tm = T[-1]*(1+(1.0/T.size))
 	ts: np.ndarray = T/tm
 	if feature_type == 0:
