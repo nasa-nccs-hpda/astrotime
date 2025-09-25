@@ -14,6 +14,17 @@ def attribution_path( args, signal_index: int ) -> str:
 	os.makedirs(results_dir, exist_ok=True)
 	return f"{results_dir}/att_data_{signal_index}.nc"
 
+def upscale2x( T: np.ndarray, Y: np.ndarray ) -> Tuple[np.ndarray,np.ndarray]:
+	T_interp = (T[1:] + T[:1])/2
+	T_new = np.empty((T.size + T_interp.size,), dtype=T.dtype)
+	T_new[0::2] = T; T_new[1::2] = T_interp
+	return T_new, np.interp(T_new, T, Y)
+
+def upscale( T: np.ndarray, Y: np.ndarray, upscale_factor: int ) -> Tuple[np.ndarray,np.ndarray]:
+	for i in range(upscale_factor):
+		T, Y = upscale2x(T, Y)
+	return T, Y
+
 def get_demo_data( ):
 	return np.load(f'{data_dir}/jordan_data.npz', allow_pickle=True)
 
