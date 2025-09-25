@@ -40,7 +40,9 @@ def mask_feature( x: np.ndarray, iFeature: int ) -> np.ndarray:
 	return xf
 
 def get_ckp_file( args: Namespace, cptype: str ):
-	return f"{data_dir}/streamed_time_predict.s{args.signal}.f{args.feature_type}.nf{args.nfeatures}.bs{args.batch_size}.{cptype}.weights.h5"
+	base_path = f"{data_dir}/streamed_time_predict.s{args.signal}.f{args.feature_type}.nf{args.nfeatures}.bs{args.batch_size}"
+	if args.upscale > 0: base_path = f"{base_path}.u{args.upscale}"
+	return f"{base_path}.{cptype}.weights.h5"
 
 def parse_args( parser  ) -> Namespace:
 	args: Namespace = parser.parse_args()
