@@ -43,6 +43,7 @@ for feature_type in range(5):
 		print(f" ---> Checkpoint file '{latest_ckp_file}' does not exist, skipping this feature type.")
 
 att_path = tmodel.attribution_path( args, signal_index )
+if os.path.exists(att_path): os.remove(att_path)
 xa.Dataset( avars ).to_netcdf( att_path )
 print(f"\n  *** Saved attribution datset to '{att_path}' *** ")
 
