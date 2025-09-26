@@ -3,8 +3,6 @@ import xarray as xa
 import tensorflow as tf
 from tensorflow import keras
 from argparse import Namespace
-from tensorflow.keras.callbacks import ModelCheckpoint
-from tensorflow.keras.optimizers import Adam
 import holoviews as hv
 from holoviews import opts
 hv.extension('bokeh')
