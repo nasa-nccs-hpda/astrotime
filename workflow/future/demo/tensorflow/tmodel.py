@@ -20,9 +20,17 @@ def upscale2x( T: np.ndarray, Y: np.ndarray ) -> Tuple[np.ndarray,np.ndarray]:
 	T_new[0::2] = T; T_new[1::2] = T_interp
 	return T_new, np.interp(T_new, T, Y)
 
+def downscale2x( T: np.ndarray, Y: np.ndarray ) -> Tuple[np.ndarray,np.ndarray]:
+	return  T[::2], Y[::2]
+
 def upscale( T: np.ndarray, Y: np.ndarray, upscale_factor: int ) -> Tuple[np.ndarray,np.ndarray]:
 	for i in range(upscale_factor):
 		T, Y = upscale2x(T, Y)
+	return T, Y
+
+def downscale( T: np.ndarray, Y: np.ndarray, downscale_factor: int ) -> Tuple[np.ndarray,np.ndarray]:
+	for i in range(downscale_factor):
+		T, Y = downscale2x(T, Y)
 	return T, Y
 
 def get_demo_data( ):

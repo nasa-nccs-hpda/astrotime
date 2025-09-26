@@ -22,7 +22,8 @@ parser.add_argument('-pf', '--minp_factor',   type=float, default=2.0)
 parser.add_argument('-do', '--dropout_frac',  type=float, default=0.5)
 parser.add_argument('-dd',  '--data_dir',     type=str, default=default_data_dir)
 parser.add_argument('-dv',  '--devices',      type=intlist, default="0")
-parser.add_argument('-u',   '--upscale',      type=int, default=0)
+parser.add_argument('-us',  '--upscale',      type=int, default=0 )
+parser.add_argument('-ds',  '--downscale',    type=int, default=0 )
 args: Namespace = parser.parse_args()
 
 data=tmodel.get_demo_data()
@@ -31,6 +32,7 @@ times = data['times']
 T: np.ndarray = times[args.signal].copy()
 Y: np.ndarray = signals[args.signal]
 T, Y = tmodel.upscale( T, Y, args.upscale )
+T, Y = tmodel.downscale( T, Y, args.downscale )
 validation_split = int(0.8 * Y.shape[0])
 batches_per_epoch = validation_split // args.batch_size
 Ytrain = Y[:validation_split]
