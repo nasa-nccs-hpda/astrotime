@@ -20,7 +20,7 @@ validation_split = int(0.8 * T.shape[0])
 Tt = T[:validation_split]
 avars, args = {}, None
 
-for feature_type in range(5):
+for feature_type in range(4,6):
 	print(f"\n\t\t * Computing attribution for Feature type {feature_type} *")
 	args: Namespace = tmodel.load_args(signal_index, feature_type)
 	latest_ckp_file = tmodel.get_ckp_file( args, "latest" )
