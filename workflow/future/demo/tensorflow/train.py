@@ -21,6 +21,7 @@ parser.add_argument('-r',  '--refresh',       action='store_true')
 parser.add_argument('-lr', '--learning_rate', type=float, default=0.01)
 parser.add_argument('-pf', '--minp_factor',   type=float, default=2.0)
 parser.add_argument('-do', '--dropout_frac',  type=float, default=0.5)
+parser.add_argument('-df', '--dense_features', action='store_true')
 parser.add_argument('-dd',  '--data_dir',     type=str, default=default_data_dir)
 parser.add_argument('-dv',  '--devices',      type=intlist, default="0")
 parser.add_argument('-us',  '--upscale',      type=int, default=0 )
@@ -37,7 +38,8 @@ T: np.ndarray = times[signal_index].copy()
 Y: np.ndarray = signals[signal_index]
 T, Y = tmodel.upscale( T, Y, args.upscale )
 T, Y = tmodel.downscale( T, Y, args.downscale )
-X: np.ndarray = tmodel.get_features( T, args )
+X: np.ndarray = tmodel.get_dense_features( T, args ) if args.dense_features else tmodel.get_features( T, args )
+assert X is not None, f"No features found for signal {signal_index} feature type {feature_type}."
 
 validation_split = int(0.8*X.shape[0])
 Xtrain=X[:validation_split]
