@@ -149,6 +149,13 @@ def get_features( T: np.ndarray,  args: Namespace ) -> np.ndarray:
 			features.append( np.mod(ts,p)/p )
 			p = p/2
 		return np.stack(features, axis=1)
+	elif feature_type in (6,7):
+		omega = 2*math.pi
+		f = np.cos if (feature_type == 6) else np.sin
+		for ip in range(1,args.nfeatures+1):
+			features.append( f(ip*omega*ts) )
+		sf = np.stack(features, axis=1)
+		return sf
 	else:
 		raise ValueError(f"Invalid feature_type: {feature_type}")
 
