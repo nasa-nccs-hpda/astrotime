@@ -17,6 +17,7 @@ parser.add_argument('-l',  '--loss',          type=str, default="mae")
 parser.add_argument('-ns', '--nstreams',      type=int, default=10)
 parser.add_argument('-sw', '--smooth_win',    type=int, default=0)
 parser.add_argument('-r',  '--refresh',       action='store_true')
+parser.add_argument('-df', '--dense_features', action='store_true')
 parser.add_argument('-lr', '--learning_rate', type=float, default=0.01)
 parser.add_argument('-pf', '--minp_factor',   type=float, default=2.0)
 parser.add_argument('-do', '--dropout_frac',  type=float, default=0.5)
@@ -31,8 +32,6 @@ signals = data['signals']
 times = data['times']
 T: np.ndarray = times[args.signal].copy()
 Y: np.ndarray = signals[args.signal]
-T, Y = tmodel.upscale( T, Y, args.upscale )
-T, Y = tmodel.downscale( T, Y, args.downscale )
 validation_split = int(0.8 * Y.shape[0])
 batches_per_epoch = validation_split // args.batch_size
 Ytrain = Y[:validation_split]
@@ -41,33 +40,34 @@ Yval = Y[validation_split:]
 strategy = tf.distribute.MirroredStrategy([f"GPU:{i}" for i in args.devices])
 print(f"Number of devices: {strategy.num_replicas_in_sync}")
 
-for feature_type in range(6):
+for feature_type in range(10):
     args.feature_type = feature_type
     tmodel.save_args(args)
-    X: np.ndarray = tmodel.get_features( T, args )
-    Xtrain=X[:validation_split]
-    Xval=X[validation_split:]
+    X: np.ndarray = tmodel.get_dense_features( T, args ) if args.dense_features else tmodel.get_features( T, args )
+    if X is not None:
+        Xtrain=X[:validation_split]
+        Xval=X[validation_split:]
 
-    with strategy.scope():
-        model = tmodel.create_streams_model( X.shape[1], dropout_frac=args.dropout_frac, n_streams=args.nstreams )
-        model.compile( optimizer=tf.keras.optimizers.Adam( learning_rate=args.learning_rate ), loss=args.loss )
+        with strategy.scope():
+            model = tmodel.create_streams_model( X.shape[1], dropout_frac=args.dropout_frac, n_streams=args.nstreams )
+            model.compile( optimizer=tf.keras.optimizers.Adam( learning_rate=args.learning_rate ), loss=args.loss )
 
-    latest_ckp_file = tmodel.get_ckp_file( args, "latest" )
-    if args.refresh and os.path.exists(latest_ckp_file): os.remove(latest_ckp_file)
-    if os.path.exists(latest_ckp_file): model.load_weights(latest_ckp_file)
-    else: print( f"Checkpoint file '{latest_ckp_file}' not found. Training from scratch." )
-    ckp_callback_latest = tf.keras.callbacks.ModelCheckpoint( latest_ckp_file, save_freq=10*batches_per_epoch, save_weights_only=True )
+        latest_ckp_file = tmodel.get_ckp_file( args, "latest" )
+        if args.refresh and os.path.exists(latest_ckp_file): os.remove(latest_ckp_file)
+        if os.path.exists(latest_ckp_file): model.load_weights(latest_ckp_file)
+        else: print( f"Checkpoint file '{latest_ckp_file}' not found. Training from scratch." )
+        ckp_callback_latest = tf.keras.callbacks.ModelCheckpoint( latest_ckp_file, save_freq=10*batches_per_epoch, save_weights_only=True )
 
-    t0 = time.time()
-    print( f"Fit: Xtrain{Xtrain.shape} Ytrain{Ytrain.shape} Xval{Xval.shape} Yval{Yval.shape} T{T.shape} X{X.shape} Y{Y.shape} " )
-    history = model.fit(
-        Xtrain,
-        Ytrain,
-        epochs=args.nepochs,
-        validation_data=(Xval,Yval),
-        callbacks=[ckp_callback_latest],
-        batch_size=args.batch_size,
-        shuffle=True
-    )
-    print( f"Completed training for {args.nepochs} epochs in {(time.time()-t0)/60:.2f} min.")
-    print( f"Saving checkpoints to  '{latest_ckp_file}' ")
+        t0 = time.time()
+        print( f"Fit: Xtrain{Xtrain.shape} Ytrain{Ytrain.shape} Xval{Xval.shape} Yval{Yval.shape} T{T.shape} X{X.shape} Y{Y.shape} " )
+        history = model.fit(
+            Xtrain,
+            Ytrain,
+            epochs=args.nepochs,
+            validation_data=(Xval,Yval),
+            callbacks=[ckp_callback_latest],
+            batch_size=args.batch_size,
+            shuffle=True
+        )
+        print( f"Completed training for {args.nepochs} epochs in {(time.time()-t0)/60:.2f} min.")
+        print( f"Saving checkpoints to  '{latest_ckp_file}' ")

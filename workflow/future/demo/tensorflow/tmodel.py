@@ -1,5 +1,6 @@
 import time, os, math, pickle, logging, numpy as np, shutil
 from argparse import Namespace
+from scipy import signal
 from typing import List, Optional, Dict, Type, Tuple, Union
 data_dir = os.environ.get('ASTROTIME_DATA_DIR', "/explore/nobackup/projects/ilab/data/astrotime/demo")
 log_file = f"{data_dir}/astrotime.log"
@@ -122,7 +123,7 @@ def float_to_binary_array(x: float, places: int) -> np.array:
 	binary_str: str = float_to_binary( x, places )
 	return np.array( [int(bit) for bit in binary_str], dtype=np.float64 )
 
-def get_features( T: np.ndarray,  args: Namespace ) -> np.ndarray:
+def get_features( T: np.ndarray,  args: Namespace )  -> Optional[np.ndarray]:
 	features = []
 	feature_type: int = args.feature_type
 	tm = T[-1]*(1+(1.0/T.size))
@@ -157,7 +158,30 @@ def get_features( T: np.ndarray,  args: Namespace ) -> np.ndarray:
 		sf = np.stack(features, axis=1)
 		return sf
 	else:
-		raise ValueError(f"Invalid feature_type: {feature_type}")
+		return None
+
+def get_dense_features( T: np.ndarray,  args: Namespace ) -> Optional[np.ndarray]:
+	features = []
+	feature_type: int = args.feature_type
+	tm = T[-1]*(1+(1.0/T.size))
+	ts: np.ndarray = T/tm
+	if feature_type == 0:
+		for ip in range(args.nfeatures):
+			features.append( signal.square(2 * np.pi * ip * ts) )
+		return np.stack(features, axis=1)
+	elif feature_type in (1,2,3):
+		omega = 2 * math.pi
+		for ip in range(1, args.nfeatures + 1):
+			if feature_type in (1,2): features.append(np.cos(ip * omega * ts))
+			if feature_type in (2,3): features.append(np.sin(ip * omega * ts))
+		sf = np.stack(features, axis=1)
+		return sf
+	elif feature_type == 4:
+		for ip in range(args.nfeatures):
+			features.append( np.mod(ts,ip)/ip )
+		return np.stack(features, axis=1)
+	else:
+		return None
 
 def get_grad_attribution( model, X: np.ndarray, Y: np.ndarray ) -> np.ndarray:
 	import tensorflow as tf
