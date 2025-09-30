@@ -1,6 +1,7 @@
 import time, os, math, pickle, logging, numpy as np, shutil
 from argparse import Namespace
 from scipy import signal
+from random import random
 from typing import List, Optional, Dict, Type, Tuple, Union
 data_dir = os.environ.get('ASTROTIME_DATA_DIR', "/explore/nobackup/projects/ilab/data/astrotime/demo")
 log_file = f"{data_dir}/astrotime.log"
@@ -175,17 +176,14 @@ def get_dense_features( T: np.ndarray,  args: Namespace ) -> Optional[np.ndarray
 		for ip in range(args.nfeatures):
 			features.append( signal.square(2 * np.pi * ip * ts) )
 		return np.stack(features, axis=1)
-	elif feature_type in (1,2,3):
+	elif feature_type in (1,2,3,4):
 		omega = 2 * math.pi
 		for ip in range(1, args.nfeatures + 1):
 			if feature_type in (1,2): features.append(np.cos(ip * omega * ts))
 			if feature_type in (2,3): features.append(np.sin(ip * omega * ts))
+			if feature_type == 4: features.append(np.cos(ip * omega * (ts + random())))
 		sf = np.stack(features, axis=1)
 		return sf
-	elif feature_type == 4:
-		for ip in range(args.nfeatures):
-			features.append( np.mod(ts,ip)/ip )
-		return np.stack(features, axis=1)
 	else:
 		return None
 
