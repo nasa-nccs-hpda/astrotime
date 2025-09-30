@@ -184,6 +184,11 @@ def get_dense_features( T: np.ndarray,  args: Namespace ) -> Optional[np.ndarray
 			if feature_type == 4: features.append( np.cos( ip*omega*(ts+random()) ) )
 		sf = np.stack(features, axis=1)
 		return sf
+	elif feature_type == 5:
+		for ip in range(1,args.nfeatures+1):
+			p = 1.0/ip
+			features.append( np.mod(ts,p)/p )
+		return np.stack(features, axis=1)
 	else:
 		return None
 
