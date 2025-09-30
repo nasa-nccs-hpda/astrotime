@@ -53,7 +53,9 @@ def mask_feature( x: np.ndarray, iFeature: int ) -> np.ndarray:
 def get_ckp_file( args: Namespace, cptype: str ):
 	base_path = f"{data_dir}/streamed_time_predict.s{args.signal}.f{args.feature_type}.nf{args.nfeatures}.bs{args.batch_size}"
 	if args.dense_features: base_path = f"{base_path}.d."
-	return f"{base_path}.{cptype}.weights.h5"
+	ckp_file = f"{base_path}.{cptype}.weights.h5"
+	print( f" *** Loaded checkpoint file: {ckp_file} *** ")
+	return ckp_file
 
 def parse_args( parser  ) -> Namespace:
 	args: Namespace = parser.parse_args()
