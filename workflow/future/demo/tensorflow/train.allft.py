@@ -43,7 +43,7 @@ print(f"Number of devices: {strategy.num_replicas_in_sync}")
 for feature_type in range(10):
     args.feature_type = feature_type
     tmodel.save_args(args)
-    X: np.ndarray = tmodel.get_dense_features( T, args ) if args.dense_features else tmodel.get_features( T, args )
+    X: np.ndarray =  tmodel.get_features( T, args )
     if X is not None:
         Xtrain=X[:validation_split]
         Xval=X[validation_split:]

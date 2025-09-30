@@ -7,8 +7,9 @@ log_file = f"{data_dir}/astrotime.log"
 current_args_path = f"{data_dir}/args.pkl"
 logging.basicConfig( filename=log_file, level=logging.INFO,  format='%(asctime)s - %(levelname)s - %(message)s',  filemode='w' )
 
-def args_path( signal: int, ftype: int ) -> str:
-	return f"{data_dir}/args-{signal}-{ftype}.pkl"
+def args_path( signal, feature_type, dense_features=False ) -> str:
+	ft = f"{feature_type}-{'d' if dense_features else 's'}"
+	return f"{data_dir}/args-{signal}-{ft}.pkl"
 
 def attribution_path( args, signal_index: int ) -> str:
 	results_dir = f"{args.data_dir}/attribution"
@@ -50,6 +51,7 @@ def mask_feature( x: np.ndarray, iFeature: int ) -> np.ndarray:
 
 def get_ckp_file( args: Namespace, cptype: str ):
 	base_path = f"{data_dir}/streamed_time_predict.s{args.signal}.f{args.feature_type}.nf{args.nfeatures}.bs{args.batch_size}"
+	if args.dense_features: base_path = f"{base_path}.d."
 	return f"{base_path}.{cptype}.weights.h5"
 
 def parse_args( parser  ) -> Namespace:
@@ -57,7 +59,7 @@ def parse_args( parser  ) -> Namespace:
 	return save_args(args)
 
 def save_args( args: Namespace  ) -> Namespace:
-	apath = args_path(args.signal,args.feature_type)
+	apath = args_path(args.signal, args.feature_type, args.dense_features)
 	afile = open( apath, 'wb' )
 	pickle.dump(args, afile)
 	afile.close()
@@ -66,8 +68,8 @@ def save_args( args: Namespace  ) -> Namespace:
 	print(f" ***** log_file: {log_file}")
 	return args
 
-def load_args( signal: int = -1, ftype: int = -1 ) -> Namespace:
-	apath = current_args_path if ftype < 0 else args_path(signal,ftype)
+def load_args( signal: int = -1, ftype: int = -1, dense_features=False ) -> Namespace:
+	apath = current_args_path if ftype < 0 else args_path(signal, ftype, dense_features)
 	afile = open(apath, 'rb')
 	args = pickle.load(afile)
 	afile.close()
@@ -124,6 +126,10 @@ def float_to_binary_array(x: float, places: int) -> np.array:
 	return np.array( [int(bit) for bit in binary_str], dtype=np.float64 )
 
 def get_features( T: np.ndarray,  args: Namespace )  -> Optional[np.ndarray]:
+	if args.dense_features: return get_dense_features( T, args )
+	else:                   return get_sparse_features( T, args )
+
+def get_sparse_features( T: np.ndarray,  args: Namespace )  -> Optional[np.ndarray]:
 	features = []
 	feature_type: int = args.feature_type
 	tm = T[-1]*(1+(1.0/T.size))
