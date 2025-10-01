@@ -34,9 +34,7 @@ signal_indices = signal_batches[args.signal_batch]
 data=tmodel.get_demo_data()
 signals = data['signals']
 times = data['times']
-T: np.ndarray = times[args.signal].copy()
-validation_split = int(0.8 * T.shape[0])
-batches_per_epoch = validation_split // args.batch_size
+
 
 strategy = tf.distribute.MirroredStrategy([f"GPU:{i}" for i in args.devices])
 print(f"Number of devices: {strategy.num_replicas_in_sync}")
@@ -44,10 +42,18 @@ print(f"Number of devices: {strategy.num_replicas_in_sync}")
 for signal_index in signal_indices:
     args.signal = signal_index
     tmodel.save_args(args)
+
+    T: np.ndarray = times[signal_index].copy()
+    Y: np.ndarray = signals[signal_index]
+    validation_split = int(0.8 * Y.shape[0])
+    batches_per_epoch = validation_split // args.batch_size
+
     X: np.ndarray =  tmodel.get_features( T, args )
     if X is not None:
         Xtrain=X[:validation_split]
         Xval=X[validation_split:]
+        Ytrain = Y[:validation_split]
+        Yval = Y[validation_split:]
 
         with strategy.scope():
             model = tmodel.create_streams_model( X.shape[1], dropout_frac=args.dropout_frac, n_streams=args.nstreams )
@@ -58,10 +64,6 @@ for signal_index in signal_indices:
         if os.path.exists(latest_ckp_file): model.load_weights(latest_ckp_file)
         else: print( f"Checkpoint file '{latest_ckp_file}' not found. Training from scratch." )
         ckp_callback_latest = tf.keras.callbacks.ModelCheckpoint( latest_ckp_file, save_freq=10*batches_per_epoch, save_weights_only=True )
-
-        Y: np.ndarray = signals[signal_index]
-        Ytrain = Y[:validation_split]
-        Yval = Y[validation_split:]
 
         t0 = time.time()
         print( f"Fit: Xtrain{Xtrain.shape} Ytrain{Ytrain.shape} Xval{Xval.shape} Yval{Yval.shape} T{T.shape} X{X.shape} Y{Y.shape} " )
