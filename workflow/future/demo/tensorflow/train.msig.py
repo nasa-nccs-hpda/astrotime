@@ -10,7 +10,6 @@ def intlist(arg:str): return list(map(int, arg.split(",")))
 
 parser = argparse.ArgumentParser( prog='timehascome', usage='python train.py --help', description='Trains time-aware CNN on demo data.')
 parser.add_argument('-f',  '--feature_type',  type=int, default=0)
-parser.add_argument('-sb', '--signal_batch',  type=int, default=0)
 parser.add_argument('-ne', '--nepochs',       type=int, default=3000)
 parser.add_argument('-nf', '--nfeatures',     type=int, default=16)
 parser.add_argument('-bs', '--batch_size',    type=int, default=512)
@@ -23,22 +22,19 @@ parser.add_argument('-lr', '--learning_rate', type=float, default=0.01)
 parser.add_argument('-pf', '--minp_factor',   type=float, default=2.0)
 parser.add_argument('-do', '--dropout_frac',  type=float, default=0.5)
 parser.add_argument('-dd',  '--data_dir',     type=str, default=default_data_dir)
-parser.add_argument('-dv',  '--devices',      type=intlist, default="0")
+parser.add_argument('-dv',  '--device',       type=int, default=0)
 parser.add_argument('-us',  '--upscale',      type=int, default=0 )
 parser.add_argument('-ds',  '--downscale',    type=int, default=0 )
 args: Namespace = parser.parse_args()
 
 signal_batches = { 0: [2,20,24,35,42,47], 1: [52,56,64,69,79,84,99] }
-signal_indices = signal_batches[args.signal_batch]
+signal_indices = signal_batches[args.device]
 
 data=tmodel.get_demo_data()
 signals = data['signals']
 times = data['times']
 
-
-strategy = tf.distribute.MirroredStrategy([f"GPU:{i}" for i in args.devices])
-print(f"Number of devices: {strategy.num_replicas_in_sync}")
-
+strategy = tf.distribute.MirroredStrategy([f"GPU:{args.device}"])
 for signal_index in signal_indices:
     args.signal = signal_index
     tmodel.save_args(args)
