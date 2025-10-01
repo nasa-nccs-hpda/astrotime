@@ -128,11 +128,11 @@ def float_to_binary_array(x: float, places: int) -> np.array:
 	binary_str: str = float_to_binary( x, places )
 	return np.array( [int(bit) for bit in binary_str], dtype=np.float64 )
 
-def get_features( T: np.ndarray,  args: Namespace )  -> Optional[np.ndarray]:
-	if args.dense_features: return get_dense_features( T, args )
-	else:                   return get_sparse_features( T, args )
+# def get_features( T: np.ndarray,  args: Namespace )  -> Optional[np.ndarray]:
+# 	if args.dense_features: return get_dense_features( T, args )
+# 	else:                   return get_sparse_features( T, args )
 
-def get_sparse_features( T: np.ndarray,  args: Namespace )  -> Optional[np.ndarray]:
+def get_features( T: np.ndarray,  args: Namespace )  -> Optional[np.ndarray]:
 	features = []
 	feature_type: int = args.feature_type
 	tm = T[-1]*(1+(1.0/T.size))
@@ -166,6 +166,11 @@ def get_sparse_features( T: np.ndarray,  args: Namespace )  -> Optional[np.ndarr
 			features.append( f(ip*omega*ts) )
 		sf = np.stack(features, axis=1)
 		return sf
+	elif feature_type == 8:
+		features.append( ts )
+		return np.stack(features, axis=1)
+	elif feature_type == 9:
+		return None
 	else:
 		return None
 
