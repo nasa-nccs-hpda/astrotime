@@ -8,8 +8,8 @@ log_file = f"{data_dir}/astrotime.log"
 current_args_path = f"{data_dir}/args.pkl"
 logging.basicConfig( filename=log_file, level=logging.INFO,  format='%(asctime)s - %(levelname)s - %(message)s',  filemode='w' )
 
-def args_path( signal, feature_type, dense_features=False ) -> str:
-	ft = f"{feature_type}-{'d' if dense_features else 's'}"
+def args_path( signal: int, feature_type: int, feature_class: str="" ) -> str:
+	ft = f"{feature_type}{feature_class}"
 	return f"{data_dir}/args-{signal}-{ft}.pkl"
 
 def attribution_path( args, signal_index: int ) -> str:
@@ -51,8 +51,8 @@ def mask_feature( x: np.ndarray, iFeature: int ) -> np.ndarray:
 	return xf
 
 def get_ckp_file( args: Namespace, cptype: str ):
-	base_path = f"{data_dir}/streamed_time_predict.s{args.signal}.f{args.feature_type}.nf{args.nfeatures}.bs{args.batch_size}"
-	if args.dense_features: base_path = f"{base_path}.d."
+	ft = f"{args.feature_type}{args.feature_class}"
+	base_path = f"{data_dir}/streamed_time_predict.s{args.signal}.f{ft}.nf{args.nfeatures}.bs{args.batch_size}"
 	ckp_file = f"{base_path}.{cptype}.weights.h5"
 	print( f" *** Loaded checkpoint file: {ckp_file} *** ")
 	return ckp_file
@@ -62,7 +62,7 @@ def parse_args( parser  ) -> Namespace:
 	return save_args(args)
 
 def save_args( args: Namespace  ) -> Namespace:
-	apath = args_path(args.signal, args.feature_type, args.dense_features)
+	apath = args_path(args.signal, args.feature_type, args.feature_class)
 	afile = open( apath, 'wb' )
 	pickle.dump(args, afile)
 	afile.close()
@@ -71,8 +71,8 @@ def save_args( args: Namespace  ) -> Namespace:
 	print(f" ***** log_file: {log_file}")
 	return args
 
-def load_args( signal: int = -1, ftype: int = -1, dense_features=False ) -> Namespace:
-	apath = current_args_path if ftype < 0 else args_path(signal, ftype, dense_features)
+def load_args( signal: int = -1, ftype: int = -1, feature_class="" ) -> Namespace:
+	apath = current_args_path if ftype < 0 else args_path(signal, ftype, feature_class)
 	afile = open(apath, 'rb')
 	args = pickle.load(afile)
 	afile.close()
