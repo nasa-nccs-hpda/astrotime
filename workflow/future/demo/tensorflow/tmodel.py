@@ -76,7 +76,7 @@ def parse_args( parser  ) -> Namespace:
 	return save_args(args)
 
 def save_args( args: Namespace  ) -> Namespace:
-	apath = args_path(args.signal, args.feature_type, args.get('feature_class',"") )
+	apath = args_path(args.signal, args.feature_type, vars(args).get('feature_class',"") )
 	afile = open( apath, 'wb' )
 	pickle.dump(args, afile)
 	afile.close()
