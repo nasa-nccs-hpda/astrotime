@@ -276,12 +276,20 @@ def get_results_plot(args: Namespace, results: Tuple[np.ndarray,Dict[str,np.ndar
 	overlay_plot: Element = (plot1 * plot2 * plot3).opts(**fargs)
 	return overlay_plot
 
-def get_result_plots(args: Namespace):
-	ncol = 5
-	nrow = signals.shape[0]//ncol
-	def idx(fr,fc): return (nrow-fr-1)*ncol + fc
-	curve_dict1 = { (fc,fr): hv.Curve((times[idx(fr,fc)], signals[idx(fr,fc)]), 'Time', 'Amplitude')  for fr in range( nrow ) for fc in range( ncol ) }
+def get_result_plots(feature_type: int, stype: int, sgroup: int, pdims: Tuple[int,int]):
+	import holoviews as hv
+	from holoviews import opts
+	plot_dict = {}
+	for is0 in range(pdims[0]):
+		for is1 in range(pdims[1]):
+			isig = is0*pdims[1] + is1
+			signal_index =get_signal_index(stype, sgroup, isig)
+			args: Namespace =load_args(signal_index, feature_type)
+			data =get_demo_data()
+			results =apply_model(data, args)
+			plot_dict[(is0,is1)] =get_results_plot(args, results)
+
 	kdims = [ hv.Dimension(('sr', 'Signal0'), default=0), hv.Dimension(('sc', 'Signal1'), default=0) ]
-	holomap1 = hv.HoloMap(curve_dict1, kdims=kdims)
-	grid = hv.GridSpace(holomap1)
-	return grid.opts( opts.GridSpace(plot_size=300))
+	holomap = hv.HoloMap(plot_dict, kdims=kdims)
+	grid = hv.GridSpace(holomap)
+	return grid.opts( opts.GridSpace(plot_size=300) )
