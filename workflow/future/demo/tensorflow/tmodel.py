@@ -261,8 +261,7 @@ def apply_model( data: Dict, args: Namespace, ctype: str="latest") -> Tuple[np.n
 def get_results_plot(args: Namespace, results: Tuple[np.ndarray,Dict[str,np.ndarray],Dict[str,np.ndarray]] ) -> Element:
 	title = f'Signal {args.signal} (ftype={args.feature_type}): nfeatures={args.nfeatures}'
 	Y, T, P = results
-
-	target = pd.DataFrame({'t': T, 's': Y})
+	target = pd.DataFrame({'t': np.concatenate((T['train'],T['val'])), 's': Y})
 	train_result = pd.DataFrame({'t': T['train'], 's': P['train']})
 	val_result = pd.DataFrame({'t': T['val'], 's': P['val']})
 
