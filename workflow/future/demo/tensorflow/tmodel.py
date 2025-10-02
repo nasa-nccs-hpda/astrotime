@@ -1,5 +1,8 @@
 import time, os, math, pickle, logging, numpy as np, shutil
 from argparse import Namespace
+import tensorflow as tf
+from holoviews.core import Element
+import pandas as pd
 from scipy import signal
 from random import random
 from typing import List, Optional, Dict, Type, Tuple, Union
@@ -226,3 +229,37 @@ def get_masked_attribution( model, X ) -> Tuple[np.ndarray,np.ndarray]:
 	Ap =  np.array(A)
 	Ar =  np.stack(R, axis=0)
 	return Ap/Ap.mean(), Ar
+
+def apply_model( data: Dict, args: Namespace, ctype: str="latest") -> Tuple[np.ndarray,Dict[str,np.ndarray],Dict[str,np.ndarray]]:
+	signals = data['signals']
+	T: np.ndarray = data['times'][args.signal]
+	X: np.ndarray = get_features(T, args)
+	Y: np.ndarray = signals[args.signal]
+	validation_split = int(0.8 * X.shape[0])
+
+	strategy = tf.distribute.MirroredStrategy()
+	print(f"Number of devices: {strategy.num_replicas_in_sync}")
+	model = create_streams_model(X.shape[1], dropout_frac=args.dropout_frac, n_streams=args.nstreams)
+	model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=args.learning_rate), loss=args.loss)
+
+	ckp_file = get_ckp_file(args,ctype)
+	model.load_weights(ckp_file)
+	P = model.predict(X)
+	return Y, dict(train=T[:validation_split], val=T[validation_split:]), dict(train=P[:validation_split, 0], val=P[validation_split:, 0])
+
+def get_results_plot(args: Namespace, results: Tuple[np.ndarray,Dict[str,np.ndarray],Dict[str,np.ndarray]] ) -> Element:
+	title = f'Signal {args.signal} (ftype={args.feature_type}): nfeatures={args.nfeatures}'
+	Y, T, P = results
+
+	target = pd.DataFrame({'t': T, 's': Y})
+	train_result = pd.DataFrame({'t': T['train'], 's': P['train']})
+	val_result = pd.DataFrame({'t': T['val'], 's': P['val']})
+
+	pargs = dict(x='t', y='s', ylim=(Y.min() * .98, Y.max() * 1.02))
+	fargs = dict(legend_position='right', show_legend=True, title=title, xlabel='Time', height=500, width=1500)
+	plot1 = target.hvplot.line(**pargs, label='Target', color='red')
+	plot2 = train_result.hvplot.line(**pargs, label='Train', color='blue')
+	plot3 = val_result.hvplot.line(**pargs, label='Validation', color='green')
+
+	overlay_plot: Element = (plot1 * plot2 * plot3).opts(**fargs)
+	return overlay_plot
