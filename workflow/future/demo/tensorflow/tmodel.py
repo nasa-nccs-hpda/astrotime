@@ -276,9 +276,11 @@ def get_results_plot(args: Namespace, results: Tuple[np.ndarray,Dict[str,np.ndar
 	overlay_plot: Element = (plot1 * plot2 * plot3).opts(**fargs)
 	return overlay_plot
 
-def get_result_plots(feature_type: int, stype: int, sgroup: int, pdims: Tuple[int,int]):
+def get_result_plots(feature_type: int, stype: int, sgroup: int, **kwargs):
 	import holoviews as hv
 	from holoviews import opts
+	pdims: Tuple[int, int] = kwargs.get('pdims', (3, 2))
+	psize:  int = kwargs.get('psize', 400)
 	plot_dict = {}
 	for is0 in range(pdims[0]):
 		for is1 in range(pdims[1]):
@@ -292,4 +294,4 @@ def get_result_plots(feature_type: int, stype: int, sgroup: int, pdims: Tuple[in
 	kdims = [ hv.Dimension(('sr', 'Signal0'), default=0), hv.Dimension(('sc', 'Signal1'), default=0) ]
 	holomap = hv.HoloMap(plot_dict, kdims=kdims)
 	grid = hv.GridSpace(holomap)
-	return grid.opts( opts.GridSpace(plot_size=300) )
+	return grid.opts( opts.GridSpace(plot_size=psize) )
