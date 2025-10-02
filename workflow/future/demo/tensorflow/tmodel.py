@@ -11,6 +11,17 @@ log_file = f"{data_dir}/astrotime.log"
 current_args_path = f"{data_dir}/args.pkl"
 logging.basicConfig( filename=log_file, level=logging.INFO,  format='%(asctime)s - %(levelname)s - %(message)s',  filemode='w' )
 
+def get_signal_indices( signal_type: int, signal_group: int ) -> List[int]:
+	signal_batches = {  0: { 0: [ 2, 20, 24, 35, 42, 47],
+							 1: [52, 56, 64, 69, 79, 84] },
+						1: { 0: [16, 27, 41, 48, 50, 58],
+							 1: [68, 80, 88, 92, 94, 96] } }
+	return signal_batches[signal_type][signal_group]
+
+def get_signal_index( signal_type: int, signal_group: int, signal_index: int ) -> int:
+	indices: List[int] = get_signal_indices(signal_type, signal_group)
+	return indices[signal_index]
+
 def args_path( signal: int, feature_type: int, feature_class: str="" ) -> str:
 	ft = f"{feature_type}{feature_class}"
 	return f"{data_dir}/args-{signal}-{ft}.pkl"
