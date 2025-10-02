@@ -18,6 +18,8 @@ def get_signal_indices( signal_type: int, signal_group: int ) -> List[int]:
 							 1: [68, 80, 88, 92, 94, 96] } }
 	return signal_batches[signal_type][signal_group]
 
+def fc(args: Namespace): return vars(args).get('feature_class',"")
+
 def get_signal_index( signal_type: int, signal_group: int, signal_index: int ) -> int:
 	indices: List[int] = get_signal_indices(signal_type, signal_group)
 	return indices[signal_index]
@@ -65,7 +67,7 @@ def mask_feature( x: np.ndarray, iFeature: int ) -> np.ndarray:
 	return xf
 
 def get_ckp_file( args: Namespace, cptype: str ):
-	ft = f"{args.feature_type}{args.feature_class}"
+	ft = f"{args.feature_type}{fc(args)}"
 	base_path = f"{data_dir}/streamed_time_predict.s{args.signal}.f{ft}.nf{args.nfeatures}.bs{args.batch_size}"
 	ckp_file = f"{base_path}.{cptype}.weights.h5"
 	print( f" *** Loaded checkpoint file: {ckp_file} *** ")
@@ -76,7 +78,7 @@ def parse_args( parser  ) -> Namespace:
 	return save_args(args)
 
 def save_args( args: Namespace  ) -> Namespace:
-	apath = args_path(args.signal, args.feature_type, vars(args).get('feature_class',"") )
+	apath = args_path(args.signal, args.feature_type, fc(args) )
 	afile = open( apath, 'wb' )
 	pickle.dump(args, afile)
 	afile.close()
