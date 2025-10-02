@@ -27,7 +27,7 @@ parser.add_argument('-us',  '--upscale',      type=int, default=0 )
 parser.add_argument('-ds',  '--downscale',    type=int, default=0 )
 args: Namespace = parser.parse_args()
 
-signal_batches = { 0: [2,20,24,35,42,47], 1: [52,56,64,69,79,84,99] }
+signal_batches = { 0: [2,20,24,35,42,47], 1: [52,56,64,69,79,84] }
 signal_indices = signal_batches[args.device]
 
 data=tmodel.get_demo_data()
