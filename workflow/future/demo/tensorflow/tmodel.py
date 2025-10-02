@@ -273,3 +273,13 @@ def get_results_plot(args: Namespace, results: Tuple[np.ndarray,Dict[str,np.ndar
 
 	overlay_plot: Element = (plot1 * plot2 * plot3).opts(**fargs)
 	return overlay_plot
+
+def get_result_plots(args: Namespace):
+	ncol = 5
+	nrow = signals.shape[0]//ncol
+	def idx(fr,fc): return (nrow-fr-1)*ncol + fc
+	curve_dict1 = { (fc,fr): hv.Curve((times[idx(fr,fc)], signals[idx(fr,fc)]), 'Time', 'Amplitude')  for fr in range( nrow ) for fc in range( ncol ) }
+	kdims = [ hv.Dimension(('sr', 'Signal0'), default=0), hv.Dimension(('sc', 'Signal1'), default=0) ]
+	holomap1 = hv.HoloMap(curve_dict1, kdims=kdims)
+	grid = hv.GridSpace(holomap1)
+	return grid.opts( opts.GridSpace(plot_size=300))
