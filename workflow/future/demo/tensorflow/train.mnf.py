@@ -27,6 +27,7 @@ parser.add_argument('-us',  '--upscale',      type=int, default=0 )
 parser.add_argument('-ds',  '--downscale',    type=int, default=0 )
 args: Namespace = parser.parse_args()
 nfeatures_lists = { 0: [8,10,12,14], 1: [16,24,32,64] }
+print( f"  <<-------->> Device: {args.device} <<-------->> ")
 
 data=tmodel.get_demo_data()
 signals = data['signals']
