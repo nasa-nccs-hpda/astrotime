@@ -26,15 +26,14 @@ parser.add_argument('-dv',  '--device',       type=int, default=0)
 parser.add_argument('-us',  '--upscale',      type=int, default=0 )
 parser.add_argument('-ds',  '--downscale',    type=int, default=0 )
 args: Namespace = parser.parse_args()
-
-nfeatures_list = [8,10,12,14,16,24,32,64]
+nfeatures_lists = { 0: [8,10,12,14], 1: [16,24,32,64] }
 
 data=tmodel.get_demo_data()
 signals = data['signals']
 times = data['times']
 
 strategy = tf.distribute.MirroredStrategy([f"GPU:{args.device}"])
-for nf in nfeatures_list:
+for nf in nfeatures_lists[args.device]:
     args.nfeatures = nf
     tmodel.save_args(args)
 
