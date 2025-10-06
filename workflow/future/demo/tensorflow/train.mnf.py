@@ -26,7 +26,7 @@ parser.add_argument('-dv',  '--device',       type=int, default=0)
 parser.add_argument('-us',  '--upscale',      type=int, default=0 )
 parser.add_argument('-ds',  '--downscale',    type=int, default=0 )
 args: Namespace = parser.parse_args()
-nfeatures_lists = { 0: [8,10,12,14], 1: [16,24,32,64] }
+nfeatures_lists = { 0: [35,40,45,50], 1: [55,60,65,70] }
 print( f"  <<-------->> Device: {args.device} <<-------->> ")
 
 data=tmodel.get_demo_data()
