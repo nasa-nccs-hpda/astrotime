@@ -290,14 +290,12 @@ def get_msig_result_plots(feature_type: int, stype: int, sgroup: int, **kwargs):
 	layout = hv.Layout(plots).cols(ncols)
 	return layout
 
-def get_mnf_result_plots(feature_type: int, stype: int, sgroup: int, **kwargs):
+def get_mnf_result_plots(args: Namespace, nfs: List[str], **kwargs):
 	import holoviews as hv
 	ncols:  int = kwargs.pop('ncols', 3)
-	nplots:  int = kwargs.pop('nplots', 6)
 	plots = []
-	for isig in range(nplots):
-		signal_index =get_signal_index(stype, sgroup, isig)
-		args: Namespace =load_args(signal_index, feature_type)
+	for nf in nfs:
+		args.nfeatures = nf
 		data =get_demo_data()
 		results =apply_model(data, args)
 		plots.append( get_results_plot(args, results, **kwargs) )
