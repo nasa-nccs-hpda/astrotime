@@ -260,9 +260,10 @@ def apply_model( data: Dict, args: Namespace, ctype: str="latest") -> Tuple[np.n
 	P = model.predict(X)
 	return Y, dict(train=T[:validation_split], val=T[validation_split:]), dict(train=P[:validation_split, 0], val=P[validation_split:, 0])
 
-def get_results_plot(args: Namespace, results: Tuple[np.ndarray,Dict[str,np.ndarray],Dict[str,np.ndarray]] ) -> Element:
+def get_results_plot(args: Namespace, results: Tuple[np.ndarray,Dict[str,np.ndarray],Dict[str,np.ndarray]], **kwargs ) -> Element:
 	import holoviews as hv
 	from holoviews import opts
+	psize:  int = kwargs.get('psize', 400)
 	group = f'Signal {args.signal} ftype={args.feature_type} nfeatures={args.nfeatures}'
 	Y, T, P = results
 	Ttot = np.concatenate((T['train'], T['val']))
@@ -272,21 +273,19 @@ def get_results_plot(args: Namespace, results: Tuple[np.ndarray,Dict[str,np.ndar
 	val    = hv.Curve((T['val'], P['val']),     'Time', [], group=group, label='validation' ).opts( color='green' )
 
 	overlay_plot: Element = (target * train * val)
-	return overlay_plot.opts( opts.Curve( ylim=(Y.min() * .98, Y.max() * 1.02), height=500, width=1500, tools=['hover']) )
+	return overlay_plot.opts( opts.Curve( ylim=(Y.min() * .98, Y.max() * 1.02), height=psize//2, width=psize, tools=['hover']) )
 
 def get_msig_result_plots(feature_type: int, stype: int, sgroup: int, **kwargs):
 	import holoviews as hv
-	from holoviews import opts
-	ncols:  int = kwargs.get('ncols', 3)
-	nplots:  int = kwargs.get('nplots', 6)
-	psize:  int = kwargs.get('psize', 400)
+	ncols:  int = kwargs.pop('ncols', 3)
+	nplots:  int = kwargs.pop('nplots', 6)
 	plots = []
 	for isig in range(nplots):
 		signal_index =get_signal_index(stype, sgroup, isig)
 		args: Namespace =load_args(signal_index, feature_type)
 		data =get_demo_data()
 		results =apply_model(data, args)
-		plots.append( get_results_plot(args, results) )
+		plots.append( get_results_plot(args, results, **kwargs) )
 
 	layout = hv.Layout(plots).cols(ncols)
 	return layout
