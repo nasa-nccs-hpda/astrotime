@@ -273,7 +273,7 @@ def get_results_plot(args: Namespace, results: Tuple[np.ndarray,Dict[str,np.ndar
 	val    = hv.Curve((T['val'], P['val']),     'Time', [], group=group, label='validation' ).opts( color='green' )
 
 	overlay_plot: Element = (target * train * val)
-	return overlay_plot.opts( opts.Curve( ylim=(Y.min() * .98, Y.max() * 1.02), height=psize//2, width=psize, tools=['hover']), legend_position='right' )
+	return overlay_plot.opts( ylim=(Y.min() * .98, Y.max() * 1.02), height=psize//2, width=psize, tools=['hover'], legend_position='right' )
 
 def get_msig_result_plots(feature_type: int, stype: int, sgroup: int, **kwargs):
 	import holoviews as hv
