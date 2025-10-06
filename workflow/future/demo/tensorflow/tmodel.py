@@ -262,17 +262,17 @@ def apply_model( data: Dict, args: Namespace, ctype: str="latest") -> Tuple[np.n
 
 def get_results_plot(args: Namespace, results: Tuple[np.ndarray,Dict[str,np.ndarray],Dict[str,np.ndarray]] ) -> Element:
 	import holoviews as hv
+	from holoviews import opts
 	group = f'Signal {args.signal} ftype={args.feature_type} nfeatures={args.nfeatures}'
 	Y, T, P = results
 	Ttot = np.concatenate((T['train'], T['val']))
 
-	pargs = dict(group=group, xlabel='Time', ylim=(Y.min() * .98, Y.max() * 1.02), height=500, width=1500)
-	target = hv.Curve((Ttot, Y),                label='target',     color='red',   **pargs)
-	train  = hv.Curve((T['train'], P['train']), label='train',      color='blue',  **pargs)
-	val    = hv.Curve((T['val'], P['val']),     label='validation', color='green', **pargs)
+	target = hv.Curve((Ttot, Y),                'Time', [], group=group, label='target' ).opts(     color='red' )
+	train  = hv.Curve((T['train'], P['train']), 'Time', [], group=group, label='train'  ).opts(     color='blue' )
+	val    = hv.Curve((T['val'], P['val']),     'Time', [], group=group, label='validation' ).opts( color='green' )
 
 	overlay_plot: Element = (target * train * val)
-	return overlay_plot
+	return overlay_plot.opts( opts.Curve( ylim=(Y.min() * .98, Y.max() * 1.02), height=500, width=1500, tools=['hover']) )
 
 def get_msig_result_plots(feature_type: int, stype: int, sgroup: int, **kwargs):
 	import holoviews as hv
