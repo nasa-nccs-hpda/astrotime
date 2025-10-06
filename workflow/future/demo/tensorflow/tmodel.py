@@ -260,11 +260,11 @@ def apply_model( data: Dict, args: Namespace, ctype: str="latest") -> Tuple[np.n
 	P = model.predict(X)
 	return Y, dict(train=T[:validation_split], val=T[validation_split:]), dict(train=P[:validation_split, 0], val=P[validation_split:, 0])
 
-def get_results_plot(args: Namespace, results: Tuple[np.ndarray,Dict[str,np.ndarray],Dict[str,np.ndarray]], **kwargs ) -> Element:
+def get_results_plot(args: Namespace, results: Tuple[np.ndarray,Dict[str,np.ndarray],Dict[str,np.ndarray]], title: str, **kwargs ) -> Element:
 	import holoviews as hv
 	from holoviews import opts
 	psize:  int = kwargs.get('psize', 400)
-	group = f'Signal {args.signal} ftype={args.feature_type} nfeatures={args.nfeatures}'
+	group = f'Signal {args.signal} {title}'
 	Y, T, P = results
 	Ttot = np.concatenate((T['train'], T['val']))
 
@@ -273,7 +273,7 @@ def get_results_plot(args: Namespace, results: Tuple[np.ndarray,Dict[str,np.ndar
 	val    = hv.Curve((T['val'], P['val']),     'Time', [], group=group, label='validation' ).opts( color='green' )
 
 	overlay_plot: Element = (target * train * val)
-	return overlay_plot.opts( opts.Curve( ylim=(Y.min() * .98, Y.max() * 1.02), height=psize//2, width=psize, tools=['hover']) )
+	return overlay_plot.opts( opts.Curve( ylim=(Y.min() * .98, Y.max() * 1.02), height=psize//2, width=psize, tools=['hover']), legend_position='right' )
 
 def get_msig_result_plots(feature_type: int, stype: int, sgroup: int, **kwargs):
 	import holoviews as hv
@@ -285,7 +285,7 @@ def get_msig_result_plots(feature_type: int, stype: int, sgroup: int, **kwargs):
 		args: Namespace =load_args(signal_index, feature_type)
 		data =get_demo_data()
 		results =apply_model(data, args)
-		plots.append( get_results_plot(args, results, **kwargs) )
+		plots.append( get_results_plot(args, results, f'ftype={args.feature_type} nfeatures={args.nfeatures}', **kwargs) )
 
 	layout = hv.Layout(plots).cols(ncols)
 	return layout
@@ -298,7 +298,7 @@ def get_mnf_result_plots(args: Namespace, nfs: List[str], **kwargs):
 		args.nfeatures = nf
 		data =get_demo_data()
 		results =apply_model(data, args)
-		plots.append( get_results_plot(args, results, **kwargs) )
+		plots.append( get_results_plot(args, results, f'nfeatures={args.nfeatures}', **kwargs) )
 
 	layout = hv.Layout(plots).cols(ncols)
 	return layout
