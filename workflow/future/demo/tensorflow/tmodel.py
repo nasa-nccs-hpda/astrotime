@@ -261,37 +261,32 @@ def apply_model( data: Dict, args: Namespace, ctype: str="latest") -> Tuple[np.n
 	return Y, dict(train=T[:validation_split], val=T[validation_split:]), dict(train=P[:validation_split, 0], val=P[validation_split:, 0])
 
 def get_results_plot(args: Namespace, results: Tuple[np.ndarray,Dict[str,np.ndarray],Dict[str,np.ndarray]] ) -> Element:
-	title = f'Signal {args.signal} (ftype={args.feature_type}): nfeatures={args.nfeatures}'
+	import holoviews as hv
+	group = f'Signal {args.signal} ftype={args.feature_type} nfeatures={args.nfeatures}'
 	Y, T, P = results
-	target = pd.DataFrame({'t': np.concatenate((T['train'],T['val'])), 's': Y})
-	train_result = pd.DataFrame({'t': T['train'], 's': P['train']})
-	val_result = pd.DataFrame({'t': T['val'], 's': P['val']})
+	Ttot = np.concatenate((T['train'], T['val']))
 
-	pargs = dict(x='t', y='s', ylim=(Y.min() * .98, Y.max() * 1.02))
-	fargs = dict(legend_position='right', show_legend=True, title=title, xlabel='Time', height=500, width=1500)
-	plot1 = target.hvplot.line(**pargs, label='Target', color='red')
-	plot2 = train_result.hvplot.line(**pargs, label='Train', color='blue')
-	plot3 = val_result.hvplot.line(**pargs, label='Validation', color='green')
+	pargs = dict(group=group, xlabel='Time', ylim=(Y.min() * .98, Y.max() * 1.02), height=500, width=1500)
+	target = hv.Curve((Ttot, Y),                label='target',     color='red',   **pargs)
+	train  = hv.Curve((T['train'], P['train']), label='train',      color='blue',  **pargs)
+	val    = hv.Curve((T['val'], P['val']),     label='validation', color='green', **pargs)
 
-	overlay_plot: Element = (plot1 * plot2 * plot3).opts(**fargs)
+	overlay_plot: Element = (target * train * val)
 	return overlay_plot
 
-def get_result_plots(feature_type: int, stype: int, sgroup: int, **kwargs):
+def get_msig_result_plots(feature_type: int, stype: int, sgroup: int, **kwargs):
 	import holoviews as hv
 	from holoviews import opts
-	pdims: Tuple[int, int] = kwargs.get('pdims', (3, 2))
+	ncols:  int = kwargs.get('ncols', 3)
+	nplots:  int = kwargs.get('nplots', 6)
 	psize:  int = kwargs.get('psize', 400)
-	plot_dict = {}
-	for is0 in range(pdims[0]):
-		for is1 in range(pdims[1]):
-			isig = is0*pdims[1] + is1
-			signal_index =get_signal_index(stype, sgroup, isig)
-			args: Namespace =load_args(signal_index, feature_type)
-			data =get_demo_data()
-			results =apply_model(data, args)
-			plot_dict[(is0,is1)] =get_results_plot(args, results)
+	plots = []
+	for isig in range(nplots):
+		signal_index =get_signal_index(stype, sgroup, isig)
+		args: Namespace =load_args(signal_index, feature_type)
+		data =get_demo_data()
+		results =apply_model(data, args)
+		plots.append( get_results_plot(args, results) )
 
-	kdims = [ hv.Dimension(('sr', 'Signal0'), default=0), hv.Dimension(('sc', 'Signal1'), default=0) ]
-	holomap = hv.HoloMap(plot_dict, kdims=kdims)
-	grid = hv.GridSpace(holomap)
-	return grid.opts( opts.GridSpace(plot_size=psize) )
+	layout = hv.Layout(plots).cols(ncols)
+	return layout
