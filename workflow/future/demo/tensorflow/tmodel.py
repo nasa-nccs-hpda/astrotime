@@ -262,7 +262,6 @@ def apply_model( data: Dict, args: Namespace, ctype: str="latest") -> Tuple[np.n
 
 def get_results_plot(args: Namespace, results: Tuple[np.ndarray,Dict[str,np.ndarray],Dict[str,np.ndarray]], title: str, **kwargs ) -> Element:
 	import holoviews as hv
-	from holoviews import opts
 	psize:  int = kwargs.get('psize', 400)
 	group = f'Signal {args.signal} {title}'
 	Y, T, P = results
