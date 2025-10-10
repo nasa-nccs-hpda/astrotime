@@ -10,6 +10,7 @@ def intlist(arg:str): return list(map(int, arg.split(",")))
 
 parser = argparse.ArgumentParser( prog='timehascome', usage='python train.py --help', description='Trains time-aware CNN on demo data.')
 parser.add_argument('-s',  '--signal',        type=int, default=2)
+parser.add_argument('-f',  '--feature_type',  type=int, default=0)
 parser.add_argument('-ne', '--nepochs',       type=int, default=2000)
 parser.add_argument('-nf', '--nfeatures',     type=int, default=32)
 parser.add_argument('-ni', '--ninstances',    type=int, default=8)
