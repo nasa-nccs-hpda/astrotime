@@ -14,12 +14,13 @@ parser.add_argument('-f',  '--feature_type',  type=int, default=0)
 parser.add_argument('-ne', '--nepochs',       type=int, default=2000)
 parser.add_argument('-nf', '--nfeatures',     type=int, default=32)
 parser.add_argument('-ni', '--ninstances',    type=int, default=8)
-parser.add_argument('-il', '--instance_label', type=str, default='ti')
+parser.add_argument('-ner', '--nepoch_ranges', type=int, default=5)
+parser.add_argument('-ser', '--start_epoch_ranges', type=int, default=0)
+parser.add_argument('-el', '--expt_label',    type=str, default='ti')
 parser.add_argument('-bs', '--batch_size',    type=int, default=512)
 parser.add_argument('-l',  '--loss',          type=str, default="mae")
 parser.add_argument('-ns', '--nstreams',      type=int, default=10)
 parser.add_argument('-sw', '--smooth_win',    type=int, default=0)
-parser.add_argument('-r',  '--refresh',       action='store_true')
 parser.add_argument('-fc', '--feature_class', type=str, default='' )
 parser.add_argument('-lr', '--learning_rate', type=float, default=0.01)
 parser.add_argument('-pf', '--minp_factor',   type=float, default=2.0)
@@ -48,28 +49,30 @@ tmodel.save_args(args)
 strategy = tf.distribute.MirroredStrategy([f"GPU:{i}" for i in args.devices])
 print(f"Number of devices: {strategy.num_replicas_in_sync}")
 
-for train_instance in range(args.ninstances):
+for epoch_range_idx in range(args.start_epoch_ranges,args.nepoch_ranges):
 
-        with strategy.scope():
-            model = tmodel.create_streams_model( X.shape[1], dropout_frac=args.dropout_frac, n_streams=args.nstreams )
-            model.compile( optimizer=tf.keras.optimizers.Adam( learning_rate=args.learning_rate ), loss=args.loss )
+    for train_instance in range(args.ninstances):
 
-        ckp_file = tmodel.get_ckp_file( args, f"{args.instance_label}_{train_instance}" )
-        if args.refresh and os.path.exists(ckp_file): os.remove(ckp_file)
-        if os.path.exists(ckp_file): model.load_weights(ckp_file)
-        else: print( f"Checkpoint file '{ckp_file}' not found. Training from scratch." )
-        ckp_callback_latest = tf.keras.callbacks.ModelCheckpoint( ckp_file, save_freq=10*batches_per_epoch, save_weights_only=True )
+            with strategy.scope():
+                model = tmodel.create_streams_model( X.shape[1], dropout_frac=args.dropout_frac, n_streams=args.nstreams )
+                model.compile( optimizer=tf.keras.optimizers.Adam( learning_rate=args.learning_rate ), loss=args.loss )
 
-        t0 = time.time()
-        print( f"Fit-{args.instance_label} Instance {train_instance}: Xtrain{Xtrain.shape} Ytrain{Ytrain.shape} Xval{Xval.shape} Yval{Yval.shape} T{T.shape} X{X.shape} Y{Y.shape} " )
-        history = model.fit(
-            Xtrain,
-            Ytrain,
-            epochs=args.nepochs,
-            validation_data=(Xval,Yval),
-            callbacks=[ckp_callback_latest],
-            batch_size=args.batch_size,
-            shuffle=True
-        )
-        print( f"Completed training for {args.nepochs} epochs in {(time.time()-t0)/60:.2f} min.")
-        print( f"Saving checkpoints to  '{ckp_file}' ")
+            ckp_file = tmodel.get_ckp_file( args, f"{args.expt_label}{epoch_range_idx*args.nepochs}_{train_instance}" )
+            if os.path.exists(ckp_file) and epoch_range_idx==0: os.remove(ckp_file)
+            if os.path.exists(ckp_file): model.load_weights(ckp_file)
+            else: print( f"Checkpoint file '{ckp_file}' not found. Training from scratch." )
+            ckp_callback_latest = tf.keras.callbacks.ModelCheckpoint( ckp_file, save_freq=10*batches_per_epoch, save_weights_only=True )
+
+            t0 = time.time()
+            print( f"Fit-{args.instance_label} Instance {train_instance}: Xtrain{Xtrain.shape} Ytrain{Ytrain.shape} Xval{Xval.shape} Yval{Yval.shape} T{T.shape} X{X.shape} Y{Y.shape} " )
+            history = model.fit(
+                Xtrain,
+                Ytrain,
+                epochs=args.nepochs,
+                validation_data=(Xval,Yval),
+                callbacks=[ckp_callback_latest],
+                batch_size=args.batch_size,
+                shuffle=True
+            )
+            print( f"Completed training for {args.nepochs} epochs in {(time.time()-t0)/60:.2f} min.")
+            print( f"Saving checkpoints to  '{ckp_file}' ")
