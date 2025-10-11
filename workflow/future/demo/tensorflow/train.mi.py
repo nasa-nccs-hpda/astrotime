@@ -47,11 +47,12 @@ Xval = X[validation_split:]
 
 tmodel.save_args(args)
 strategy = tf.distribute.MirroredStrategy([f"GPU:{i}" for i in args.devices])
-print(f"Number of devices: {strategy.num_replicas_in_sync}")
+
 
 for epoch_range_idx in range(args.start_epoch_ranges,args.n_epoch_ranges):
 
     for train_instance in range(args.ninstances):
+            print(f"EXEC: epoch_range_idx={epoch_range_idx}, train_instance={train_instance}")
 
             with strategy.scope():
                 model = tmodel.create_streams_model( X.shape[1], dropout_frac=args.dropout_frac, n_streams=args.nstreams )
