@@ -70,7 +70,6 @@ def get_ckp_file( args: Namespace, cptype: str ):
 	ft = f"{args.feature_type}{fc(args)}"
 	base_path = f"{data_dir}/streamed_time_predict.s{args.signal}.f{ft}.nf{args.nfeatures}.bs{args.batch_size}"
 	ckp_file = f"{base_path}.{cptype}.weights.h5"
-	print( f" *** Loaded checkpoint file: {ckp_file} *** ")
 	return ckp_file
 
 def parse_args( parser  ) -> Namespace:

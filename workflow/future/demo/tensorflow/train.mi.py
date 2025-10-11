@@ -64,8 +64,11 @@ for epoch_range_idx in range(args.start_epoch_ranges,args.n_epoch_ranges):
                 base_ckp_file = tmodel.get_ckp_file(args, f"{args.expt_label}{(epoch_range_idx-1) * args.nepochs}_{train_instance}")
                 shutil.copyfile(base_ckp_file, ckp_file)
 
-            if os.path.exists(ckp_file): model.load_weights(ckp_file)
-            else: print( f"Checkpoint file '{ckp_file}' not found. Training from scratch." )
+            if os.path.exists(ckp_file):
+                print(f"Loading checkpoint file '{ckp_file}'")
+                model.load_weights(ckp_file)
+            else:
+                print( f"Checkpoint file '{ckp_file}' not found. Training from scratch." )
             ckp_callback_latest = tf.keras.callbacks.ModelCheckpoint( ckp_file, save_freq=10*batches_per_epoch, save_weights_only=True )
 
             t0 = time.time()
