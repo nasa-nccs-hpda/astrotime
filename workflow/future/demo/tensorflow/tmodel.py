@@ -312,7 +312,7 @@ def get_mi_result_plots(args: Namespace, epoch_range_idx, **kwargs):
 
 	for train_instance in range(args.ninstances):
 		try:
-			nepochs = epoch_range_idx*args.nepochs
+			nepochs = (epoch_range_idx+1)*args.nepochs
 			ctype = f"{args.expt_label}{nepochs}_{train_instance}"
 			results =apply_model(data, args, ctype)
 			plots.append( get_results_plot(args, results, f'nfeatures={args.nfeatures}, nepochs={nepochs}, instance={train_instance}', **kwargs) )
