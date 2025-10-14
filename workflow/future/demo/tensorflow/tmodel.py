@@ -155,6 +155,13 @@ def PCA( X: np.ndarray, n_components: int ) -> np.ndarray:
 	print( f"PCA: X{X.shape} -> PC{result.shape}, explained variance ratio: {pca.explained_variance_ratio_}")
 	return result
 
+def TSNE( X: np.ndarray, n_components: int, perplexity: float = 30.0 ) -> np.ndarray:
+	from sklearn.manifold import TSNE
+	tsne = TSNE(n_components=n_components, perplexity=perplexity, random_state=42)
+	result: np.ndarray = tsne.fit_transform(X)
+	print( f"TSNE: X{X.shape} -> PC{result.shape}")
+	return result
+
 def get_features( T: np.ndarray,  args: Namespace )  -> Optional[np.ndarray]:
 	features = []
 	feature_type: int = args.feature_type
