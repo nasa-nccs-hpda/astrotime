@@ -147,6 +147,14 @@ def float_to_binary_array(x: float, places: int) -> np.array:
 # 	if args.dense_features: return get_dense_features( T, args )
 # 	else:                   return get_sparse_features( T, args )
 
+def PCA( X: np.ndarray, n_components: int ) -> np.ndarray:
+	from sklearn.decomposition import PCA
+	pca = PCA(n_components=n_components)
+	pca.fit(X)
+	result: np.ndarray = pca.components_
+	print( f"PCA: X{X.shape} -> PC{result.shape}, explained variance ratio: {pca.explained_variance_ratio_}")
+	return result
+
 def get_features( T: np.ndarray,  args: Namespace )  -> Optional[np.ndarray]:
 	features = []
 	feature_type: int = args.feature_type
