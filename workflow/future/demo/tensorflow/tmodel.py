@@ -158,7 +158,7 @@ def PCA( X: np.ndarray, n_components: int ) -> np.ndarray:
 def TSNE( X: np.ndarray, n_components: int, perplexity: float = 30.0 ) -> np.ndarray:
 	from sklearn.manifold import TSNE
 	tsne = TSNE(n_components=n_components, perplexity=perplexity, random_state=42)
-	result: np.ndarray = tsne.fit_transform(X)
+	result: np.ndarray = tsne.fit_transform(X.transpose())
 	print( f"TSNE: X{X.shape} -> PC{result.shape}")
 	return result
 
