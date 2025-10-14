@@ -8,8 +8,6 @@ from scipy import signal
 from random import random
 from typing import List, Optional, Dict, Type, Tuple, Union
 
-from workflow.future.demo.tensorflow.manifold_plot import ncomponents
-
 data_dir = os.environ.get('ASTROTIME_DATA_DIR', "/explore/nobackup/projects/ilab/data/astrotime/demo")
 log_file = f"{data_dir}/astrotime.log"
 current_args_path = f"{data_dir}/args.pkl"
