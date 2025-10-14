@@ -168,8 +168,8 @@ def TSNE( X: np.ndarray, ncomponents: int, perplexity: float = 30.0 ) -> np.ndar
 def UMAP( X: np.ndarray, ncomponents: int ) -> np.ndarray:
 	import umap
 	reducer = umap.UMAP(n_components=ncomponents, random_state=42)
-	Xs = StandardScaler().fit_transform(X)
-	embedding = reducer.fit_transform(Xs)
+	Xs = StandardScaler().fit_transform( X.transpose() )
+	embedding = reducer.fit_transform(Xs).transpose()
 	print( f"UMAP: X{Xs.shape} -> embedding{embedding.shape}")
 	return embedding
 
