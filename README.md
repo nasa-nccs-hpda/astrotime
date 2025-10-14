@@ -439,7 +439,7 @@ sbatch --mem-per-cpu=10240 -G1 -c10 -t01:00:00 -J astrotime --wrap="time $your_s
 
     >   * conda create -n astrotime.hv python=3.12
     >   * conda activate astrotime.hv
-    >   * conda install -c conda-forge tensorflow-gpu numpy xarray hvplot scikit-learn netCDF4 jupyterlab ipywidgets jupyterlab_widgets jupyter_bokeh pyviz_comms shap pooch umap-learn plotly
+    >   * conda install -c conda-forge tensorflow-gpu numpy xarray hvplot scikit-learn netCDF4 jupyterlab ipywidgets jupyterlab_widgets jupyter_bokeh pyviz_comms shap pooch umap-learn plotly anywidget
 
 
 -c pyviz hvplot
