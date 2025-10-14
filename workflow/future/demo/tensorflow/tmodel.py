@@ -2,10 +2,14 @@ import time, os, math, pickle, logging, numpy as np, shutil
 from argparse import Namespace
 import tensorflow as tf
 from holoviews.core import Element
+from sklearn.preprocessing import StandardScaler
 import pandas as pd
 from scipy import signal
 from random import random
 from typing import List, Optional, Dict, Type, Tuple, Union
+
+from workflow.future.demo.tensorflow.manifold_plot import ncomponents
+
 data_dir = os.environ.get('ASTROTIME_DATA_DIR', "/explore/nobackup/projects/ilab/data/astrotime/demo")
 log_file = f"{data_dir}/astrotime.log"
 current_args_path = f"{data_dir}/args.pkl"
@@ -155,12 +159,21 @@ def PCA( X: np.ndarray, n_components: int ) -> np.ndarray:
 	print( f"PCA: X{X.shape} -> PC{result.shape}, explained variance ratio: {pca.explained_variance_ratio_}")
 	return result
 
-def TSNE( X: np.ndarray, n_components: int, perplexity: float = 30.0 ) -> np.ndarray:
+def TSNE( X: np.ndarray, ncomponents: int, perplexity: float = 30.0 ) -> np.ndarray:
 	from sklearn.manifold import TSNE
-	tsne = TSNE(n_components=n_components, perplexity=perplexity, random_state=42)
-	result: np.ndarray = tsne.fit_transform( X.transpose() ).transpose()
-	print( f"TSNE: X{X.shape} -> PC{result.shape}")
+	tsne = TSNE(n_components=ncomponents, perplexity=perplexity, random_state=42)
+	Xs = StandardScaler().fit_transform(X)
+	result: np.ndarray = tsne.fit_transform( Xs.transpose() ).transpose()
+	print( f"TSNE: X{X.shape} -> embedding{result.shape}")
 	return result
+
+def UMAP( X: np.ndarray, ncomponents: int ) -> np.ndarray:
+	import umap
+	reducer = umap.UMAP(ncomponents=ncomponents, random_state=42)
+	Xs = StandardScaler().fit_transform(X)
+	embedding = reducer.fit_transform(Xs)
+	print( f"UMAP: X{Xs.shape} -> embedding{embedding.shape}")
+	return embedding
 
 def get_features( T: np.ndarray,  args: Namespace )  -> Optional[np.ndarray]:
 	features = []
