@@ -13,6 +13,7 @@ parser.add_argument('-s',  '--signal',        type=int, default=2)
 parser.add_argument('-f',  '--feature_type',  type=int, default=0)
 parser.add_argument('-ne', '--nepochs',       type=int, default=2000)
 parser.add_argument('-nf', '--nfeatures',     type=int, default=32)
+parser.add_argument('-rs', '--reduction_size', type=int, default=0)
 parser.add_argument('-ni', '--ninstances',    type=int, default=8)
 parser.add_argument('-ner', '--n_epoch_ranges', type=int, default=5)
 parser.add_argument('-ser', '--start_epoch_ranges', type=int, default=0)
@@ -55,10 +56,12 @@ for epoch_range_idx in range(args.start_epoch_ranges,args.n_epoch_ranges):
             print(f"EXEC: epoch_range_idx={epoch_range_idx}, train_instance={train_instance}")
 
             with strategy.scope():
-                model = tmodel.create_streams_model( X.shape[1], dropout_frac=args.dropout_frac, n_streams=args.nstreams )
+                model = tmodel.create_streams_model( X.shape[1], dropout_frac=args.dropout_frac, n_streams=args.nstreams, reduction_size=args.reduction_size )
                 model.compile( optimizer=tf.keras.optimizers.Adam( learning_rate=args.learning_rate ), loss=args.loss )
 
-            ckp_file = tmodel.get_ckp_file( args, f"{args.expt_label}{epoch_range_idx*args.nepochs}_{train_instance}" )
+            ctype = f"{args.expt_label}{epoch_range_idx*args.nepochs}_{train_instance}"
+            if args.reduction_size>0: ctype += f"_rs{args.reduction_size}"
+            ckp_file = tmodel.get_ckp_file( args, ctype )
             if os.path.exists(ckp_file): os.remove(ckp_file)
             if epoch_range_idx>0:
                 base_ckp_file = tmodel.get_ckp_file(args, f"{args.expt_label}{(epoch_range_idx-1) * args.nepochs}_{train_instance}")

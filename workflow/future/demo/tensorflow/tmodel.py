@@ -103,7 +103,7 @@ def tnorm(x: np.ndarray, dim: int=0) -> np.ndarray:
 	return (x - m) / s
 
 
-def create_streams_model(nfeatures, dropout_frac, n_streams) -> tf.keras.Model:
+def create_streams_model(nfeatures, dropout_frac, n_streams, reduction_size=0) -> tf.keras.Model:
 	import tensorflow as tf
 	times_input = tf.keras.Input(shape=(nfeatures,), name="times_input")
 
@@ -132,7 +132,13 @@ def create_streams_model(nfeatures, dropout_frac, n_streams) -> tf.keras.Model:
 	x = tf.keras.layers.BatchNormalization()(x)
 	x = tf.keras.layers.Dropout(dropout_frac)(x)
 	x = tf.keras.layers.Dense(512, activation='elu')(x)
-	x = tf.keras.layers.BatchNormalization(name='embedding_layer')(x)
+
+	if reduction_size > 0:
+		x = tf.keras.layers.BatchNormalization()(x)
+		x = tf.keras.layers.Dense(reduction_size, activation='elu')(x)
+		x = tf.keras.layers.BatchNormalization(name='embedding_layer')(x)
+	else:
+		x = tf.keras.layers.BatchNormalization(name='embedding_layer')(x)
 
 	outputs = tf.keras.layers.Dense(1, activation='linear', name='final_layer')(x)
 	model = tf.keras.Model(inputs=times_input, outputs=outputs)
