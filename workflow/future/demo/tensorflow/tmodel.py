@@ -103,7 +103,7 @@ def tnorm(x: np.ndarray, dim: int=0) -> np.ndarray:
 	return (x - m) / s
 
 
-def create_streams_model(nfeatures, dropout_frac, n_streams):
+def create_streams_model(nfeatures, dropout_frac, n_streams) -> tf.keras.Model:
 	import tensorflow as tf
 	times_input = tf.keras.Input(shape=(nfeatures,), name="times_input")
 
@@ -132,11 +132,20 @@ def create_streams_model(nfeatures, dropout_frac, n_streams):
 	x = tf.keras.layers.BatchNormalization()(x)
 	x = tf.keras.layers.Dropout(dropout_frac)(x)
 	x = tf.keras.layers.Dense(512, activation='elu')(x)
-	x = tf.keras.layers.BatchNormalization()(x)
+	x = tf.keras.layers.BatchNormalization(name='embedding_layer')(x)
 
-	outputs = tf.keras.layers.Dense(1, activation='linear')(x)
+	outputs = tf.keras.layers.Dense(1, activation='linear', name='final_layer')(x)
 	model = tf.keras.Model(inputs=times_input, outputs=outputs)
 	return model
+
+def create_embedding_model(nfeatures, dropout_frac, n_streams) -> tf.keras.Model:
+	import tensorflow as tf
+	base_model: tf.keras.Model = create_streams_model(nfeatures, dropout_frac, n_streams)
+	embedding_model = tf.keras.Model(inputs=base_model.input, outputs=base_model.get_layer('embedding_layer').output)
+	return embedding_model
+
+def get_model_embedding( model, X: np.ndarray ) -> np.ndarray:
+	return model.predict(X)
 
 def float_to_binary(fval: float, places) -> str:
 	return bin(int(fval * pow(2, places)))[2:].rjust(places, '0')
@@ -284,6 +293,16 @@ def apply_model( data: Dict, args: Namespace, ctype: str="latest") -> Tuple[np.n
 	model.load_weights(ckp_file)
 	P = model.predict(X)
 	return Y, dict(train=T[:validation_split], val=T[validation_split:]), dict(train=P[:validation_split, 0], val=P[validation_split:, 0])
+
+def apply_embedding_model( data: Dict, args: Namespace, ctype: str="latest") -> Tuple[np.ndarray,np.ndarray]:
+	T: np.ndarray = data['times'][args.signal]
+	X: np.ndarray = get_features(T, args)
+	model = create_embedding_model( X.shape[1], dropout_frac=args.dropout_frac, n_streams=args.nstreams )
+	model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=args.learning_rate), loss=args.loss)
+	ckp_file = get_ckp_file(args,ctype)
+	model.load_weights(ckp_file)
+	E = model.predict(X)
+	return T, E
 
 def get_results_plot(args: Namespace, results: Tuple[np.ndarray,Dict[str,np.ndarray],Dict[str,np.ndarray]], title: str, **kwargs ) -> Element:
 	import holoviews as hv
