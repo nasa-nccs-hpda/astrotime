@@ -294,15 +294,17 @@ def apply_model( data: Dict, args: Namespace, ctype: str="latest") -> Tuple[np.n
 	P = model.predict(X)
 	return Y, dict(train=T[:validation_split], val=T[validation_split:]), dict(train=P[:validation_split, 0], val=P[validation_split:, 0])
 
-def apply_embedding_model( data: Dict, args: Namespace, ctype: str="latest") -> Tuple[np.ndarray,np.ndarray]:
+def apply_embedding_model( data: Dict, args: Namespace, ctype: str="latest") -> Tuple[np.ndarray,np.ndarray,np.ndarray]:
+	signals = data['signals']
 	T: np.ndarray = data['times'][args.signal]
 	X: np.ndarray = get_features(T, args)
+	Y: np.ndarray = signals[args.signal]
 	model = create_embedding_model( X.shape[1], dropout_frac=args.dropout_frac, n_streams=args.nstreams )
 	model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=args.learning_rate), loss=args.loss)
 	ckp_file = get_ckp_file(args,ctype)
 	model.load_weights(ckp_file)
 	E = model.predict(X)
-	return T, E
+	return Y, T, E
 
 def get_results_plot(args: Namespace, results: Tuple[np.ndarray,Dict[str,np.ndarray],Dict[str,np.ndarray]], title: str, **kwargs ) -> Element:
 	import holoviews as hv
