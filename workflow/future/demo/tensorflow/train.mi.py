@@ -49,7 +49,6 @@ Xval = X[validation_split:]
 tmodel.save_args(args)
 strategy = tf.distribute.MirroredStrategy([f"GPU:{i}" for i in args.devices])
 
-
 for epoch_range_idx in range(args.start_epoch_ranges,args.n_epoch_ranges):
 
     for train_instance in range(args.ninstances):
@@ -64,7 +63,9 @@ for epoch_range_idx in range(args.start_epoch_ranges,args.n_epoch_ranges):
             ckp_file = tmodel.get_ckp_file( args, ctype )
             if os.path.exists(ckp_file): os.remove(ckp_file)
             if epoch_range_idx>0:
-                base_ckp_file = tmodel.get_ckp_file(args, f"{args.expt_label}{(epoch_range_idx-1) * args.nepochs}_{train_instance}")
+                ctype = f"{args.expt_label}{(epoch_range_idx-1) * args.nepochs}_{train_instance}"
+                if args.reduction_size > 0: ctype += f"_rs{args.reduction_size}"
+                base_ckp_file = tmodel.get_ckp_file(args, ctype )
                 shutil.copyfile(base_ckp_file, ckp_file)
 
             if os.path.exists(ckp_file):
