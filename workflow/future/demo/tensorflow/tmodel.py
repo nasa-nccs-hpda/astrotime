@@ -161,7 +161,7 @@ def float_to_binary_array(x: float, places: int) -> np.array:
 def PCA( X: np.ndarray, n_components: int ) -> np.ndarray:
 	from sklearn.decomposition import PCA
 	pca = PCA(n_components=n_components)
-	pca.fit(X)
+	pca.fit( X.transpose() )
 	result: np.ndarray = pca.components_
 	print( f"PCA: X{X.shape} -> PC{result.shape}, explained variance ratio: {pca.explained_variance_ratio_}")
 	return result
