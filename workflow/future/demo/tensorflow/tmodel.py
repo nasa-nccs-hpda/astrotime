@@ -170,7 +170,7 @@ def TSNE( X: np.ndarray, ncomponents: int, perplexity: float = 30.0 ) -> np.ndar
 	from sklearn.manifold import TSNE
 	tsne = TSNE(n_components=ncomponents, perplexity=perplexity, random_state=42)
 	Xs = StandardScaler().fit_transform(X)
-	result: np.ndarray = tsne.fit_transform( Xs.transpose() ).transpose()
+	result: np.ndarray = tsne.fit_transform( Xs )
 	print( f"TSNE: X{X.shape} -> embedding{result.shape}")
 	return result
 
