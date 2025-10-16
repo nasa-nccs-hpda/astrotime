@@ -1,9 +1,10 @@
 import numpy as np
+import tmodel
 import tensorflow as tf
 from tensorflow import keras
 from base_model import float_to_binary_array_not_IEEE, create_dense_model
 
-data=np.load('jordan_data.npz',allow_pickle=True)
+data=tmodel.get_demo_data()
 signals = data['signals']
 times = data['times']
 signal=2
