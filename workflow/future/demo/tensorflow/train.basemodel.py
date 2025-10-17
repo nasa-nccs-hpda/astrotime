@@ -28,7 +28,7 @@ for ti in range(ninstances):
         model = create_dense_model(dropout_frac=0.5,n_streams=20)
         model.compile(optimizer = tf.keras.optimizers.Adam(learning_rate=.01), loss='mae')
 
-    checkpoint_callback = tf.keras.callbacks.ModelCheckpoint(f"base_model_{signal}_{ti}.weights.h5", save_best_only=True, save_weights_only=True, monitor='val_loss')
+    checkpoint_callback = tf.keras.callbacks.ModelCheckpoint(f"{tmodel.data_dir}/base_model_{signal}_{ti}.weights.h5", save_best_only=True, save_weights_only=True, monitor='val_loss')
 
     history = model.fit(
         Xtrain,
