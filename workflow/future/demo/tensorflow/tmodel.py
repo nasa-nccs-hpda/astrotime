@@ -133,6 +133,8 @@ def create_streams_model(nfeatures, dropout_frac, n_streams, reduction_size=0) -
 	x = tf.keras.layers.Dropout(dropout_frac)(x)
 	x = tf.keras.layers.Dense(512, activation='elu')(x)
 
+	print( f"CREATE MODEL: Reduction size = {reduction_size}")
+
 	if reduction_size > 0:
 		x = tf.keras.layers.BatchNormalization()(x)
 		x = tf.keras.layers.Dense(reduction_size, activation='elu')(x)
@@ -283,29 +285,32 @@ def get_masked_attribution( model, X ) -> Tuple[np.ndarray,np.ndarray]:
 	Ar =  np.stack(R, axis=0)
 	return Ap/Ap.mean(), Ar
 
-def apply_model( data: Dict, args: Namespace, ctype: str="latest") -> Tuple[np.ndarray,Dict[str,np.ndarray],Dict[str,np.ndarray]]:
+def apply_model( data: Dict, args: Namespace, ctype: str="latest", vf: float=0.2 ) -> Tuple[np.ndarray,np.ndarray|Dict[str,np.ndarray],np.ndarray|Dict[str,np.ndarray]]:
 	signals = data['signals']
 	T: np.ndarray = data['times'][args.signal]
 	X: np.ndarray = get_features(T, args)
 	Y: np.ndarray = signals[args.signal]
-	validation_split = int(0.8 * X.shape[0])
 
-	strategy = tf.distribute.MirroredStrategy()
-	print(f"Number of devices: {strategy.num_replicas_in_sync}")
-	model = create_streams_model(X.shape[1], dropout_frac=args.dropout_frac, n_streams=args.nstreams)
+	if args.reduction_size == 0:  model = create_streams_model(   X.shape[1], dropout_frac=args.dropout_frac, n_streams=args.nstreams )
+	else:                         model = create_embedding_model( X.shape[1], dropout_frac=args.dropout_frac, n_streams=args.nstreams, reduction_size=args.reduction_size )
 	model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=args.learning_rate), loss=args.loss)
 
 	ckp_file = get_ckp_file(args,ctype)
 	model.load_weights(ckp_file)
 	P = model.predict(X)
-	return Y, dict(train=T[:validation_split], val=T[validation_split:]), dict(train=P[:validation_split, 0], val=P[validation_split:, 0])
+
+	if vf > 0.0:
+		validation_split = int((1-vf) * X.shape[0])
+		return Y, dict(train=T[:validation_split], val=T[validation_split:]), dict(train=P[:validation_split, 0], val=P[validation_split:, 0])
+	else:
+		return Y, T, P
 
 def apply_embedding_model( data: Dict, args: Namespace, ckp_file: str ) -> Tuple[np.ndarray,np.ndarray,np.ndarray]:
 	signals = data['signals']
 	T: np.ndarray = data['times'][args.signal]
 	X: np.ndarray = get_features(T, args)
 	Y: np.ndarray = signals[args.signal]
-	model = create_embedding_model( X.shape[1], dropout_frac=args.dropout_frac, n_streams=args.nstreams )
+	model = create_embedding_model( X.shape[1], dropout_frac=args.dropout_frac, n_streams=args.nstreams, reduction_size=args.reduction_size )
 	model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=args.learning_rate), loss=args.loss)
 	model.load_weights(f"{data_dir}/{ckp_file}.weights.h5")
 	E = model.predict(X)
