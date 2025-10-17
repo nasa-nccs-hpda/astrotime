@@ -144,9 +144,9 @@ def create_streams_model(nfeatures, dropout_frac, n_streams, reduction_size=0) -
 	model = tf.keras.Model(inputs=times_input, outputs=outputs)
 	return model
 
-def create_embedding_model(nfeatures, dropout_frac, n_streams) -> tf.keras.Model:
+def create_embedding_model(nfeatures, dropout_frac, n_streams, reduction_size=0) -> tf.keras.Model:
 	import tensorflow as tf
-	base_model: tf.keras.Model = create_streams_model(nfeatures, dropout_frac, n_streams)
+	base_model: tf.keras.Model = create_streams_model(nfeatures, dropout_frac, n_streams, reduction_size)
 	embedding_model = tf.keras.Model(inputs=base_model.input, outputs=base_model.get_layer('embedding_layer').output)
 	return embedding_model
 
