@@ -131,22 +131,26 @@ def create_streams_model(nfeatures, dropout_frac, n_streams, reduction_size=0) -
 	x = tf.keras.layers.Concatenate(axis=-1)(streams)
 	x = tf.keras.layers.BatchNormalization()(x)
 	x = tf.keras.layers.Dropout(dropout_frac)(x)
-	x = tf.keras.layers.Dense(512, activation='elu')(x)
 
 	print( f"CREATE MODEL: Reduction size = {reduction_size}")
 
 	if reduction_size > 0:
+		x = tf.keras.layers.Dense(512, activation='elu')(x)
 		if reduction_size < 10:
 			x = tf.keras.layers.BatchNormalization()(x)
 			x = tf.keras.layers.Dense(32, activation='elu')(x)
-			x = tf.keras.layers.BatchNormalization(name='embedding_layer')(x)
+			x = tf.keras.layers.BatchNormalization()(x)
 			x = tf.keras.layers.Dense(reduction_size, activation='elu')(x)
 			x = tf.keras.layers.BatchNormalization(name='embedding_layer')(x)
 		else:
 			x = tf.keras.layers.BatchNormalization()(x)
 			x = tf.keras.layers.Dense(reduction_size, activation='elu')(x)
 			x = tf.keras.layers.BatchNormalization(name='embedding_layer')(x)
+	elif reduction_size < 0:
+		x = tf.keras.layers.Dense( -reduction_size, activation='elu' )(x)
+		x = tf.keras.layers.BatchNormalization(name='embedding_layer')(x)
 	else:
+		x = tf.keras.layers.Dense(512, activation='elu')(x)
 		x = tf.keras.layers.BatchNormalization(name='embedding_layer')(x)
 
 	outputs = tf.keras.layers.Dense(1, activation='linear', name='final_layer')(x)
