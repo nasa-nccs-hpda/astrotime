@@ -47,7 +47,9 @@ Xtrain = X[:validation_split]
 Xval = X[validation_split:]
 
 tmodel.save_args(args)
-strategy = tf.distribute.MirroredStrategy([f"GPU:{i}" for i in args.devices])
+devices = [f"GPU:{i}" for i in args.devices]
+print(f"Running with {len(devices)} GPUS: {devices}")
+strategy = tf.distribute.MirroredStrategy(devices)
 
 for epoch_range_idx in range(args.start_epoch_ranges,args.n_epoch_ranges):
 
@@ -58,33 +60,33 @@ for epoch_range_idx in range(args.start_epoch_ranges,args.n_epoch_ranges):
                 model = tmodel.create_streams_model( X.shape[1], dropout_frac=args.dropout_frac, n_streams=args.nstreams, reduction_size=args.reduction_size )
                 model.compile( optimizer=tf.keras.optimizers.Adam( learning_rate=args.learning_rate ), loss=args.loss )
 
-            ctype = f"{args.expt_label}{epoch_range_idx*args.nepochs}_{train_instance}"
-            if args.reduction_size>0: ctype += f"_rs{args.reduction_size}"
-            ckp_file = tmodel.get_ckp_file( args, ctype )
-            if os.path.exists(ckp_file): os.remove(ckp_file)
-            if epoch_range_idx>0:
-                ctype = f"{args.expt_label}{(epoch_range_idx-1) * args.nepochs}_{train_instance}"
-                if args.reduction_size > 0: ctype += f"_rs{args.reduction_size}"
-                base_ckp_file = tmodel.get_ckp_file(args, ctype )
-                shutil.copyfile(base_ckp_file, ckp_file)
+                ctype = f"{args.expt_label}{epoch_range_idx*args.nepochs}_{train_instance}"
+                if args.reduction_size>0: ctype += f"_rs{args.reduction_size}"
+                ckp_file = tmodel.get_ckp_file( args, ctype )
+                if os.path.exists(ckp_file): os.remove(ckp_file)
+                if epoch_range_idx>0:
+                    ctype = f"{args.expt_label}{(epoch_range_idx-1) * args.nepochs}_{train_instance}"
+                    if args.reduction_size > 0: ctype += f"_rs{args.reduction_size}"
+                    base_ckp_file = tmodel.get_ckp_file(args, ctype )
+                    shutil.copyfile(base_ckp_file, ckp_file)
 
-            if os.path.exists(ckp_file):
-                print(f"Loading checkpoint file '{ckp_file}'")
-                model.load_weights(ckp_file)
-            else:
-                print( f"Checkpoint file '{ckp_file}' not found. Training from scratch." )
-            ckp_callback_latest = tf.keras.callbacks.ModelCheckpoint( ckp_file, save_freq=10*batches_per_epoch, save_weights_only=True )
+                if os.path.exists(ckp_file):
+                    print(f"Loading checkpoint file '{ckp_file}'")
+                    model.load_weights(ckp_file)
+                else:
+                    print( f"Checkpoint file '{ckp_file}' not found. Training from scratch." )
+                ckp_callback_latest = tf.keras.callbacks.ModelCheckpoint( ckp_file, save_freq=10*batches_per_epoch, save_weights_only=True )
 
-            t0 = time.time()
-            print( f"Fit-{args.expt_label} Instance {train_instance}.{epoch_range_idx}: Xtrain{Xtrain.shape} Ytrain{Ytrain.shape} Xval{Xval.shape} Yval{Yval.shape} T{T.shape} X{X.shape} Y{Y.shape} " )
-            history = model.fit(
-                Xtrain,
-                Ytrain,
-                epochs=args.nepochs,
-                validation_data=(Xval,Yval),
-                callbacks=[ckp_callback_latest],
-                batch_size=args.batch_size,
-                shuffle=True
-            )
-            print( f"Completed training({train_instance}.{epoch_range_idx}) for {args.nepochs} epochs in {(time.time()-t0)/60:.2f} min.")
-            print( f"Saving checkpoints to  '{ckp_file}' ")
+                t0 = time.time()
+                print( f"Fit-{args.expt_label} Instance {train_instance}.{epoch_range_idx}: Xtrain{Xtrain.shape} Ytrain{Ytrain.shape} Xval{Xval.shape} Yval{Yval.shape} T{T.shape} X{X.shape} Y{Y.shape} " )
+                history = model.fit(
+                    Xtrain,
+                    Ytrain,
+                    epochs=args.nepochs,
+                    validation_data=(Xval,Yval),
+                    callbacks=[ckp_callback_latest],
+                    batch_size=args.batch_size,
+                    shuffle=True
+                )
+                print( f"Completed training({train_instance}.{epoch_range_idx}) for {args.nepochs} epochs in {(time.time()-t0)/60:.2f} min.")
+                print( f"Saving checkpoints to  '{ckp_file}' ")
