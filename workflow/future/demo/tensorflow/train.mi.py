@@ -60,13 +60,13 @@ for epoch_range_idx in range(args.start_epoch_ranges,args.n_epoch_ranges):
                 model = tmodel.create_streams_model( X.shape[1], dropout_frac=args.dropout_frac, n_streams=args.nstreams, reduction_size=args.reduction_size )
                 model.compile( optimizer=tf.keras.optimizers.Adam( learning_rate=args.learning_rate ), loss=args.loss )
 
-                ctype = f"{args.expt_label}{(epoch_range_idx+1)*args.nepochs}_{train_instance}"
-                if args.reduction_size>0: ctype += f"_rs{args.reduction_size}"
+                ctype = f"{args.expt_label}_{epoch_range_idx+1}_{train_instance}"
+                if args.reduction_size != 0: ctype += f"_rs{args.reduction_size}"
                 ckp_file = tmodel.get_ckp_file( args, ctype )
                 if os.path.exists(ckp_file): os.remove(ckp_file)
                 if epoch_range_idx>0:
-                    ctype = f"{args.expt_label}{epoch_range_idx*args.nepochs}_{train_instance}"
-                    if args.reduction_size > 0: ctype += f"_rs{args.reduction_size}"
+                    ctype = f"{args.expt_label}_{epoch_range_idx}_{train_instance}"
+                    if args.reduction_size != 0: ctype += f"_rs{args.reduction_size}"
                     base_ckp_file = tmodel.get_ckp_file(args, ctype )
                     shutil.copyfile(base_ckp_file, ckp_file)
 
