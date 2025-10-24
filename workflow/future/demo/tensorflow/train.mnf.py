@@ -11,7 +11,7 @@ def intlist(arg:str): return list(map(int, arg.split(",")))
 parser = argparse.ArgumentParser( prog='timehascome', usage='python train.py --help', description='Trains time-aware CNN on demo data.')
 parser.add_argument('-f',  '--feature_type',  type=int, default=0)
 parser.add_argument('-s',  '--signal',        type=int, default=2)
-parser.add_argument('-ne', '--nepochs',       type=int, default=3000)
+parser.add_argument('-ne', '--nepochs',       type=int, default=5000)
 parser.add_argument('-bs', '--batch_size',    type=int, default=512)
 parser.add_argument('-rs', '--reduction_size', type=int, default=0)
 parser.add_argument('-l',  '--loss',          type=str, default="mae")
@@ -27,7 +27,7 @@ parser.add_argument('-dv',  '--device',       type=int, default=0)
 parser.add_argument('-us',  '--upscale',      type=int, default=0 )
 parser.add_argument('-ds',  '--downscale',    type=int, default=0 )
 args: Namespace = parser.parse_args()
-nfeatures_lists = { 0: [35,40,45,50], 1: [55,60,65,70] }
+nfeatures_lists = { 0: [8,10,12,14], 1: [16,24,32,64] }
 print( f"  <<-------->> Device: {args.device} <<-------->> ")
 
 data=tmodel.get_demo_data()

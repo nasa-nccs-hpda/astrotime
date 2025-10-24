@@ -12,10 +12,10 @@ parser = argparse.ArgumentParser( prog='timehascome', usage='python train.py --h
 parser.add_argument('-s',  '--signal',        type=int, default=2)
 parser.add_argument('-f',  '--feature_type',  type=int, default=0)
 parser.add_argument('-ne', '--nepochs',       type=int, default=2000)
-parser.add_argument('-nf', '--nfeatures',     type=int, default=32)
+parser.add_argument('-nf', '--nfeatures',     type=int, default=16)
 parser.add_argument('-rs', '--reduction_size', type=int, default=0)
 parser.add_argument('-ni', '--ninstances',    type=int, default=8)
-parser.add_argument('-ner', '--n_epoch_ranges', type=int, default=5)
+parser.add_argument('-ner', '--n_epoch_ranges', type=int, default=4)
 parser.add_argument('-ser', '--start_epoch_ranges', type=int, default=0)
 parser.add_argument('-el', '--expt_label',    type=str, default='ti')
 parser.add_argument('-bs', '--batch_size',    type=int, default=512)
@@ -63,6 +63,7 @@ for epoch_range_idx in range(args.start_epoch_ranges,args.n_epoch_ranges):
                 ctype = f"{args.expt_label}_{epoch_range_idx+1}_{train_instance}"
                 if args.reduction_size != 0: ctype += f"_rs{args.reduction_size}"
                 ckp_file = tmodel.get_ckp_file( args, ctype )
+                ckp_file_best = tmodel.get_ckp_file(args, ctype + ".best")
                 if os.path.exists(ckp_file): os.remove(ckp_file)
                 if epoch_range_idx>0:
                     ctype = f"{args.expt_label}_{epoch_range_idx}_{train_instance}"
@@ -76,6 +77,7 @@ for epoch_range_idx in range(args.start_epoch_ranges,args.n_epoch_ranges):
                 else:
                     print( f"Checkpoint file '{ckp_file}' not found. Training from scratch." )
                 ckp_callback_latest = tf.keras.callbacks.ModelCheckpoint( ckp_file, save_freq=10*batches_per_epoch, save_weights_only=True )
+                ckp_callback_best = tf.keras.callbacks.ModelCheckpoint( ckp_file_best, save_best_only=True, save_weights_only=True, monitor='val_loss')
 
                 t0 = time.time()
                 print( f"Fit-{args.expt_label} Instance {train_instance}.{epoch_range_idx}: Xtrain{Xtrain.shape} Ytrain{Ytrain.shape} Xval{Xval.shape} Yval{Yval.shape} T{T.shape} X{X.shape} Y{Y.shape} " )
@@ -84,7 +86,7 @@ for epoch_range_idx in range(args.start_epoch_ranges,args.n_epoch_ranges):
                     Ytrain,
                     epochs=args.nepochs,
                     validation_data=(Xval,Yval),
-                    callbacks=[ckp_callback_latest],
+                    callbacks=[ckp_callback_latest,ckp_callback_best],
                     batch_size=args.batch_size,
                     shuffle=True
                 )
