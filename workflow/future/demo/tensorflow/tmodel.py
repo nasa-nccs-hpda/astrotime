@@ -377,7 +377,7 @@ def get_mnf_result_plots(args: Namespace, nfs: List[str], **kwargs):
 	layout = hv.Layout(plots).cols(ncols)
 	return layout
 
-def get_mi_result_plots(args: Namespace, epoch_range_idx, **kwargs):
+def get_mi_result_plots(args: Namespace, epoch_range_idx, ckpt_type, **kwargs):
 	import holoviews as hv
 	ncols:  int = kwargs.pop('ncols', 4)
 	data = get_demo_data()
@@ -388,7 +388,7 @@ def get_mi_result_plots(args: Namespace, epoch_range_idx, **kwargs):
 			nepochs = (epoch_range_idx+1)*args.nepochs
 			ctype = f"{args.expt_label}_{epoch_range_idx + 1}_{train_instance}"
 			if args.reduction_size != 0: ctype += f"_rs{args.reduction_size}"
-			results =apply_model(data, args, ctype)
+			results =apply_model(data, args, f"{ctype}.{ckpt_type}" )
 			plots.append( get_results_plot(args, results, f'nfeatures={args.nfeatures}, nepochs={nepochs}, instance={train_instance}', **kwargs) )
 		except Exception as e:
 			print( f"Error applying model for train_instance={train_instance}: {e}")

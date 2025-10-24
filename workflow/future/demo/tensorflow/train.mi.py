@@ -62,21 +62,21 @@ for epoch_range_idx in range(args.start_epoch_ranges,args.n_epoch_ranges):
 
                 ctype = f"{args.expt_label}_{epoch_range_idx+1}_{train_instance}"
                 if args.reduction_size != 0: ctype += f"_rs{args.reduction_size}"
-                ckp_file = tmodel.get_ckp_file( args, ctype )
+                ckp_file_latest = tmodel.get_ckp_file( args, ctype + ".latest" )
                 ckp_file_best = tmodel.get_ckp_file(args, ctype + ".best")
-                if os.path.exists(ckp_file): os.remove(ckp_file)
+                if os.path.exists(ckp_file_latest): os.remove(ckp_file_latest)
                 if epoch_range_idx>0:
                     ctype = f"{args.expt_label}_{epoch_range_idx}_{train_instance}"
                     if args.reduction_size != 0: ctype += f"_rs{args.reduction_size}"
-                    base_ckp_file = tmodel.get_ckp_file(args, ctype )
-                    shutil.copyfile(base_ckp_file, ckp_file)
+                    base_ckp_file = tmodel.get_ckp_file(args, ctype + ".latest" )
+                    shutil.copyfile(base_ckp_file, ckp_file_latest)
 
-                if os.path.exists(ckp_file):
-                    print(f"Loading checkpoint file '{ckp_file}'")
-                    model.load_weights(ckp_file)
+                if os.path.exists(ckp_file_latest):
+                    print(f"Loading checkpoint file '{ckp_file_latest}'")
+                    model.load_weights(ckp_file_latest)
                 else:
-                    print( f"Checkpoint file '{ckp_file}' not found. Training from scratch." )
-                ckp_callback_latest = tf.keras.callbacks.ModelCheckpoint( ckp_file, save_freq=10*batches_per_epoch, save_weights_only=True )
+                    print( f"Checkpoint file '{ckp_file_latest}' not found. Training from scratch." )
+                ckp_callback_latest = tf.keras.callbacks.ModelCheckpoint( ckp_file_latest, save_freq=10*batches_per_epoch, save_weights_only=True )
                 ckp_callback_best = tf.keras.callbacks.ModelCheckpoint( ckp_file_best, save_best_only=True, save_weights_only=True, monitor='val_loss')
 
                 t0 = time.time()
