@@ -91,17 +91,16 @@ def save_args( args: Namespace  ) -> Namespace:
 def load_args( signal: int = -1, ftype: int = -1, feature_class="" ) -> Namespace:
 	apath = current_args_path if ftype < 0 else args_path(signal, ftype, feature_class)
 	afile = open(apath, 'rb')
-	args = fill_args( pickle.load(afile) )
+	args: Namespace = fill_args( pickle.load(afile) )
 	afile.close()
 	print(f" ***** Running with args: {args}")
 	print(f" ***** log_file: {log_file}")
 	return args
 
 def fill_args( args: Namespace  ) -> Namespace:
-	filler_args = dict( reduction_size=0 )
-	for(k,v) in filler_args.items():
-		if k not in args: args[k] = v
-	return args
+	adict: Dict = dict( reduction_size=0 )
+	adict.update(vars(args))
+	return Namespace(**adict)
 
 def tnorm(x: np.ndarray, dim: int=0) -> np.ndarray:
 	m: np.ndarray = x.mean( axis=dim, keepdims=True )
