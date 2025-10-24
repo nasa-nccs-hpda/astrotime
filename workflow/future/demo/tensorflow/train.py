@@ -58,8 +58,10 @@ latest_ckp_file = tmodel.get_ckp_file( args, "latest" )
 if args.refresh and os.path.exists(latest_ckp_file): os.remove(latest_ckp_file)
 if os.path.exists(latest_ckp_file): model.load_weights(latest_ckp_file)
 else: print( f"Checkpoint file '{latest_ckp_file}' not found. Training from scratch." )
+best_ckp_file = tmodel.get_ckp_file( args, "best" )
 
 ckp_callback_latest = tf.keras.callbacks.ModelCheckpoint( latest_ckp_file, save_freq=10*batches_per_epoch, save_weights_only=True )
+ckp_callback_best = tf.keras.callbacks.ModelCheckpoint( best_ckp_file, save_best_only=True, save_weights_only=True, monitor='val_loss' )
 
 t0 = time.time()
 print( f"Fit: Xtrain{Xtrain.shape} Ytrain{Ytrain.shape} Xval{Xval.shape} Yval{Yval.shape} T{T.shape} X{X.shape} Y{Y.shape} " )
@@ -68,7 +70,7 @@ history = model.fit(
     Ytrain,
     epochs=args.nepochs,
     validation_data=(Xval,Yval),
-    callbacks=[ckp_callback_latest],
+    callbacks=[ckp_callback_latest, ckp_callback_best],
     batch_size=args.batch_size,
     shuffle=True
 )
