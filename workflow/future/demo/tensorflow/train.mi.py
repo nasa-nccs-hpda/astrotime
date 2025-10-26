@@ -91,4 +91,4 @@ for epoch_range_idx in range(args.start_epoch_ranges,args.n_epoch_ranges):
                     shuffle=True
                 )
                 print( f"Completed training({train_instance}.{epoch_range_idx}) for {args.nepochs} epochs in {(time.time()-t0)/60:.2f} min.")
-                print( f"Saving checkpoints to  '{ckp_file}' ")
+                print( f"Saving checkpoints to  '{ckp_file_best}' & '{ckp_file_latest}'")
