@@ -62,13 +62,13 @@ for epoch_range_idx in range(args.start_epoch_ranges,args.n_epoch_ranges):
 
                 ctype = f"{args.expt_label}_{epoch_range_idx+1}_{train_instance}"
                 if args.reduction_size != 0: ctype += f"_rs{args.reduction_size}"
-                ckp_file_latest = tmodel.get_ckp_file( args, ctype + ".latest" )
+                ckp_file_latest = tmodel.get_ckp_file( args, ctype )
                 ckp_file_best = tmodel.get_ckp_file(args, ctype + ".best")
                 if os.path.exists(ckp_file_latest): os.remove(ckp_file_latest)
                 if epoch_range_idx>0:
                     ctype = f"{args.expt_label}_{epoch_range_idx}_{train_instance}"
                     if args.reduction_size != 0: ctype += f"_rs{args.reduction_size}"
-                    base_ckp_file = tmodel.get_ckp_file(args, ctype + ".latest" )
+                    base_ckp_file = tmodel.get_ckp_file(args, ctype )
                     shutil.copyfile(base_ckp_file, ckp_file_latest)
 
                 if os.path.exists(ckp_file_latest):
