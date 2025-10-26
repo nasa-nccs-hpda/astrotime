@@ -312,6 +312,7 @@ def apply_model( data: Dict, args: Namespace, ctype: str="latest", vf: float=0.2
 	model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=args.learning_rate), loss=args.loss)
 
 	ckp_file = get_ckp_file(args,ctype)
+	print( f"Loading checkpoint {ckp_file} ..." )
 	model.load_weights(ckp_file)
 	P = model.predict(X)
 
