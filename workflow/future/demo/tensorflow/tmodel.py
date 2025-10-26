@@ -88,17 +88,18 @@ def save_args( args: Namespace  ) -> Namespace:
 	print(f" ***** log_file: {log_file}")
 	return args
 
-def load_args( signal: int = -1, ftype: int = -1, feature_class="" ) -> Namespace:
+def load_args( signal: int = -1, ftype: int = -1, feature_class="", **kwargs ) -> Namespace:
 	apath = current_args_path if ftype < 0 else args_path(signal, ftype, feature_class)
 	afile = open(apath, 'rb')
-	args: Namespace = fill_args( pickle.load(afile) )
+	args: Namespace = fill_args( pickle.load(afile), **kwargs )
 	afile.close()
 	print(f" ***** Running with args: {args}")
 	print(f" ***** log_file: {log_file}")
 	return args
 
-def fill_args( args: Namespace  ) -> Namespace:
+def fill_args( args: Namespace, **kwargs  ) -> Namespace:
 	adict: Dict = dict( reduction_size=0 )
+	adict.update(kwargs)
 	adict.update(vars(args))
 	return Namespace(**adict)
 
